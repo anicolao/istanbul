@@ -7,9 +7,11 @@ import {
   type ReplayProjection,
   type RoomMode
 } from './protocol';
+import { createSetup } from './setup';
 
 const emptyProjection = (): ReplayProjection => ({
   room: null,
+  game: null,
   acceptedEventIds: [],
   diagnostics: []
 });
@@ -87,7 +89,7 @@ function applyEvent(state: ReplayProjection, event: CanonicalEvent): boolean {
 
   if (event.type === 'player/joined') {
     const name = stringField(event.payload, 'name');
-    if (!name || name.length > 24) {
+    if (state.room.status !== 'lobby' || !name || name.length > 24) {
       reject(state, event, 'invalid-player-name');
       return false;
     }
@@ -104,7 +106,7 @@ function applyEvent(state: ReplayProjection, event: CanonicalEvent): boolean {
   }
 
   if (event.type === 'game/configured') {
-    if (event.actorUid !== state.room.hostUid) {
+    if (state.room.status !== 'lobby' || event.actorUid !== state.room.hostUid) {
       reject(state, event, 'host-only');
       return false;
     }
@@ -127,11 +129,28 @@ function applyEvent(state: ReplayProjection, event: CanonicalEvent): boolean {
 
   if (event.type === 'player/ready') {
     const seat = state.room.seats.find((candidate) => candidate.uid === event.actorUid);
-    if (!seat || typeof event.payload.ready !== 'boolean') {
+    if (state.room.status !== 'lobby' || !seat || typeof event.payload.ready !== 'boolean') {
       reject(state, event, 'invalid-readiness');
       return false;
     }
     seat.ready = event.payload.ready;
+    return true;
+  }
+
+  if (event.type === 'game/started') {
+    const seed = stringField(event.payload, 'seed');
+    if (
+      state.room.status !== 'lobby' ||
+      event.actorUid !== state.room.hostUid ||
+      state.room.seats.length < 2 ||
+      !state.room.seats.every(({ ready }) => ready) ||
+      !seed || seed.length > 96
+    ) {
+      reject(state, event, 'invalid-game-start');
+      return false;
+    }
+    state.game = createSetup(state.room, seed);
+    state.room.status = 'playing';
     return true;
   }
 
