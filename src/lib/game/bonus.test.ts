@@ -122,4 +122,18 @@ describe('Bonus card timing contract', () => {
     expect(game).toEqual(before);
     expect(state.diagnostics.map(({ reason }) => reason)).toEqual(['bonus-repeat-payment']);
   });
+
+  it('allows only direct-resource cards during the final Bonus window', () => {
+    {
+      const [state, game, card] = fixture('gain-lira'); const before = game.players[0].lira; game.phase = 'final-bonus';
+      expect(applyBonus(state, event(card, { kind: 'gain-lira' }))).toBe(true);
+      expect(game.players[0].lira).toBe(before + 5);
+    }
+    {
+      const [state, game, card] = fixture('long-move'); game.phase = 'final-bonus'; const before = structuredClone(game);
+      expect(applyBonus(state, event(card, { kind: 'long-move' }))).toBe(false);
+      expect(game).toEqual(before);
+      expect(state.diagnostics.map(({ reason }) => reason)).toEqual(['bonus-movement-unavailable']);
+    }
+  });
 });

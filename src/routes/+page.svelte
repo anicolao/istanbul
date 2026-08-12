@@ -63,11 +63,13 @@
     ready: room?.seats.map((seat) => seat.ready) ?? [],
     localSeat: localSeat?.name ?? null,
     game: game ? {
+      epoch: game.epoch,
       seed: game.seed,
       board: game.board,
       currentTurn: game.players[game.turnSeat].name,
       turnNumber: game.turnNumber,
       phase: game.phase,
+      end: game.end,
       pending: game.pending,
       lastMovement: game.lastMovement,
       lastAction: game.lastAction,
@@ -362,6 +364,22 @@
       actionPending = false;
     }
   }
+
+  async function rematch() {
+    if (!repository || !room || !isHost || game?.phase !== 'game-over' || actionPending) return;
+    actionPending = true;
+    try {
+      const requested = new URL(location.href).searchParams.get('e2eSeed');
+      const seed = import.meta.env.VITE_USE_FIREBASE_EMULATORS === 'true' && requested
+        ? `${requested.slice(0, 82)}:rematch:${game.epoch + 1}`
+        : crypto.randomUUID();
+      await repository.append('game/rematched', { seed });
+      selectedPlace = null;
+      selectedBonus = null;
+    } finally {
+      actionPending = false;
+    }
+  }
 </script>
 
 <svelte:head><title>{appTitle}</title></svelte:head>
@@ -493,6 +511,7 @@
       onUseMosqueAbility={(choice) => void useMosqueAbility(choice)}
       onPlayBonus={(cardId, choice) => void playBonus(cardId, choice)}
       onGrantE2eResources={() => void grantE2eResources()}
+      onRematch={() => void rematch()}
       onEndTurn={() => void endTurn()}
       onZoomIn={() => boardScale = Math.min(1.18, boardScale + 0.09)}
       onFit={() => boardScale = 1}

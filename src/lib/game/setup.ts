@@ -22,6 +22,7 @@ export interface SetupPlayer {
 }
 
 export interface GameSetup {
+  epoch: number;
   seed: string;
   board: number[];
   governorPlace: number;
@@ -49,7 +50,25 @@ export interface GameSetup {
   startingSeat: number;
   turnSeat: number;
   turnNumber: number;
-  phase: 'movement' | 'merchant-payment' | 'action' | 'family-action' | 'mosque-ability' | 'encounters' | 'turn-end';
+  phase: 'movement' | 'merchant-payment' | 'action' | 'family-action' | 'mosque-ability' | 'encounters' | 'turn-end' | 'final-bonus' | 'game-over';
+  end: {
+    target: number;
+    triggeredByUid: string | null;
+    triggeredTurn: number | null;
+    finalTurnSeat: number;
+    finalBonusSeatsCompleted: number[];
+    rankings: Array<{
+      uid: string;
+      name: string;
+      rank: number;
+      rubies: number;
+      lira: number;
+      goods: number;
+      bonusCards: number;
+    }>;
+    winnerUids: string[];
+    ordinaryTurnCounts: number[];
+  };
   pending: null | {
     kind: 'merchant-payment';
     recipientUids: string[];
@@ -122,7 +141,7 @@ export function createBoard(layout: LayoutKind, random: ReturnType<typeof create
   }
 }
 
-export function createSetup(room: RoomProjection, seed: string): GameSetup {
+export function createSetup(room: RoomProjection, seed: string, epoch = 1): GameSetup {
   const random = createRandom(seed);
   const board = createBoard(room.layout, random);
   const startingSeat = random.nextInt(room.seats.length);
@@ -157,6 +176,7 @@ export function createSetup(room: RoomProjection, seed: string): GameSetup {
   }));
 
   return {
+    epoch,
     seed,
     board,
     governorPlace: governorRoll[0] + governorRoll[1],
@@ -180,6 +200,16 @@ export function createSetup(room: RoomProjection, seed: string): GameSetup {
     turnSeat: startingSeat,
     turnNumber: 1,
     phase: 'movement',
+    end: {
+      target: room.seats.length === 2 ? 6 : 5,
+      triggeredByUid: null,
+      triggeredTurn: null,
+      finalTurnSeat: (startingSeat - 1 + room.seats.length) % room.seats.length,
+      finalBonusSeatsCompleted: [],
+      rankings: [],
+      winnerUids: [],
+      ordinaryTurnCounts: Array(room.seats.length).fill(0)
+    },
     pending: null,
     lastMovement: null,
     lastAction: null,
