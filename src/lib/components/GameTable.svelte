@@ -1,4 +1,5 @@
 <script lang="ts">
+  import { tick } from 'svelte';
   import { base } from '$app/paths';
   import { bonusCards, demandTiles, mosqueTiles, places, type Good } from '$lib/game/manifests';
   import { legalDestinations, requiredAssistantAction, type AssistantAction } from '$lib/game/movement';
@@ -99,6 +100,7 @@
   let bonusFamilyReward = $state<'lira' | 'bonus'>('lira');
   let bonusAssistantPlace = $state(1);
   let flexibleGoods = $state<Good[]>(['fabric']);
+  let keyboardPlace = $state(0);
   const caravanPreview = $derived(previewCaravansary(game, caravanSources) ?? []);
   const activeDemand = $derived(demandTiles.find(({ id }) => id === (actionPlace.id === 10 ? game.largeDemand[0] : game.smallDemand[0])));
   const marketSelectionLegal = $derived(isMarketSelectionLegal(activeDemand?.goods ?? [], marketSelection));
@@ -167,9 +169,28 @@
   function setFlexibleGood(index: number, good: Good) {
     flexibleGoods = flexibleGoods.map((value, slot) => slot === index ? good : value);
   }
+
+  function moveBoardFocus(index: number, key: string) {
+    const row = Math.floor(index / 4);
+    const column = index % 4;
+    const next = key === 'ArrowRight' ? row * 4 + ((column + 1) % 4)
+      : key === 'ArrowLeft' ? row * 4 + ((column + 3) % 4)
+      : key === 'ArrowDown' ? ((row + 1) % 4) * 4 + column
+      : key === 'ArrowUp' ? ((row + 3) % 4) * 4 + column
+      : index;
+    keyboardPlace = game.board[next];
+    document.querySelector<HTMLElement>(`[data-place-id="${keyboardPlace}"]`)?.focus();
+  }
+
+  async function inspectPlaceFromKeyboard(placeId: number) {
+    onInspectPlace(placeId);
+    await tick();
+    document.querySelector<HTMLElement>('[data-testid="place-inspector-title"]')?.focus();
+  }
 </script>
 
 <section class:many={game.players.length > 3} class:display-only={displayOnly} class="game-table" aria-labelledby="game-title" style={`--courtyard: url('${artUrl}')`}>
+  <p class="visually-hidden" aria-live="polite" aria-atomic="true" data-testid="turn-announcement">Turn {game.turnNumber}. {currentPlayer.name}. {game.phase.replace('-', ' ')}. {currentPlayer.uid === userUid ? 'Your action.' : 'Waiting for this merchant.'}</p>
   <header class="turn-banner">
     <div><p>{game.phase === 'game-over' ? `Game ${game.epoch} · final ranking` : game.phase === 'final-bonus' ? 'Final Bonus cards' : `Turn ${game.turnNumber} · ${game.phase.replace('-', ' ')}`}</p><h1 id="game-title">{game.phase === 'game-over' ? `${game.end.winnerUids.length > 1 ? 'The merchants share the victory.' : `${game.end.rankings[0]?.name} wins the ruby race.`}` : game.phase === 'final-bonus' ? `${currentPlayer.name} makes final trades.` : game.phase === 'movement' ? `${currentPlayer.name} surveys the bazaar.` : game.phase === 'merchant-payment' ? `${currentPlayer.name} meets another merchant.` : game.phase === 'family-action' ? `${currentPlayer.name} sends family to ${actionPlace.name}.` : game.phase === 'mosque-ability' ? `${currentPlayer.name} considers a Mosque ability.` : game.phase === 'encounters' ? `${currentPlayer.name} resolves bazaar encounters.` : game.phase === 'turn-end' ? `${currentPlayer.name} completed ${actionPlace.name}.` : `${currentPlayer.name} arrives at ${actionPlace.name}.`}</h1>{#if game.lastMovement?.paymentBlocked}<small class="turn-notice">{game.players.find((player) => player.uid === game.lastMovement?.playerUid)?.name} could not pay {game.lastMovement.paymentTotal} Lira; that turn ended immediately.</small>{/if}</div>
     <div class="turn-token"><span class={`player-dot ${currentPlayer.color}`}></span><strong>{game.phase === 'game-over' ? game.end.rankings[0]?.name : currentPlayer.name}</strong><small>{game.phase === 'game-over' ? 'Result locked' : displayOnly ? 'Public table · choices stay on phones' : currentPlayer.uid === userUid ? 'Your turn' : game.phase === 'movement' ? 'Planning route' : 'Resolving turn'}</small></div>
@@ -195,6 +216,13 @@
               style={`--row: ${Math.floor(index / 4)}; --column: ${index % 4}`}
               aria-label={`${place.id} ${place.name}. ${place.action}${reachable.includes(placeId) ? ' Reachable this turn.' : ''}${here.length ? ` Merchants: ${here.map(({ name }) => name).join(', ')}.` : ''}`}
               aria-pressed={selectedPlace === placeId}
+              data-place-id={placeId}
+              tabindex={(keyboardPlace || game.board[0]) === placeId ? 0 : -1}
+              onfocus={() => keyboardPlace = placeId}
+              onkeydown={(event) => {
+                if (event.key.startsWith('Arrow')) { event.preventDefault(); moveBoardFocus(index, event.key); }
+                else if (event.key === 'Enter' || event.key === ' ') { event.preventDefault(); void inspectPlaceFromKeyboard(placeId); }
+              }}
               onclick={() => onInspectPlace(placeId)}
             >
               <span class="place-number">{place.id}</span>
@@ -404,7 +432,7 @@
         {/if}
       {:else if selectedPlaceManifest}
         <p class="section-kicker">Place {selectedPlaceManifest.id}</p>
-        <h2>{selectedPlaceManifest.name}</h2>
+        <h2 data-testid="place-inspector-title" tabindex="-1">{selectedPlaceManifest.name}</h2>
         <div class="inspector-glyph"><PlaceGlyph glyph={selectedPlaceManifest.glyph} /></div>
         <p>{selectedPlaceManifest.action}</p>
         <dl><div><dt>Grid position</dt><dd>Row {Math.floor(game.board.indexOf(selectedPlaceManifest.id) / 4) + 1}, column {(game.board.indexOf(selectedPlaceManifest.id) % 4) + 1}</dd></div><div><dt>Merchants here</dt><dd>{occupants(selectedPlaceManifest.id).map(({ name }) => name).join(', ') || 'None'}</dd></div></dl>
@@ -443,6 +471,7 @@
 
 <style>
   .game-table { height: 100%; min-height: 0; display: flex; flex-direction: column; gap: .65rem; color: #fffaf0; }
+  .visually-hidden { position: fixed; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
   .game-table.display-only .board { width: min(100%, 92rem); }
   .game-table.display-only .play-area { grid-template-columns: minmax(0, 3fr) minmax(19rem, 1fr); }
   .game-table.display-only .player-rail article { padding: clamp(.55rem, 1vw, 1.2rem); }
@@ -477,6 +506,7 @@
   .board-viewport { flex: 1; min-height: 0; display: grid; place-items: center; overflow: hidden; padding: 2.4rem 1.2rem 1rem; }
   .board { width: min(100%, 42rem); aspect-ratio: 1.42; display: grid; grid-template-columns: repeat(4, 1fr); grid-template-rows: repeat(4, 1fr); gap: .42rem; scale: var(--board-scale); transform-origin: center; transition: scale .2s ease; }
   .place { position: relative; min-width: 0; min-height: 0; display: grid; grid-template-columns: 2rem 1fr; grid-template-rows: 1fr auto; gap: .15rem .3rem; align-items: center; overflow: hidden; padding: .42rem; border: 1px solid rgb(255 250 240 / 60%); border-radius: .55rem; color: #173f43; text-align: left; background: linear-gradient(150deg, rgb(255 252 239 / 96%), rgb(223 199 151 / 96%)); box-shadow: 0 .35rem .7rem rgb(0 0 0 / 30%); cursor: pointer; }
+  .place:focus-visible { outline: 4px solid #fff2a8; outline-offset: 2px; box-shadow: 0 0 0 7px #173f43, 0 .35rem .7rem rgb(0 0 0 / 30%); }
   .place::after { position: absolute; inset: 0; border: 3px solid transparent; border-radius: inherit; content: ''; pointer-events: none; }
   .place.selected::after { border-color: #e2574f; box-shadow: inset 0 0 0 2px #fff7d6; }
   .place.reachable { border-color: #f4cf75; box-shadow: 0 0 0 2px rgb(244 207 117 / 45%), 0 .35rem .7rem rgb(0 0 0 / 30%); }
@@ -536,11 +566,21 @@
     .turn-banner { min-height: 3.4rem; padding: .35rem .6rem; }.turn-banner h1 { font-size: 1.45rem; }.turn-token { font-size: .7rem; }.turn-token small { font-size: .55rem; }
     .play-area { grid-template-columns: 1fr; grid-template-rows: minmax(0, 1fr) auto; gap: .4rem; }
     .board-viewport { padding: 2.1rem .4rem .35rem; }.board { width: 100%; aspect-ratio: 1.18; gap: .25rem; }.game-table.many .board { aspect-ratio: 1.42; }.place { grid-template-columns: 1.35rem 1fr; padding: .24rem; border-radius: .38rem; }.place-glyph { width: 1.25rem; height: 1.25rem; }.place strong { display: -webkit-box; overflow: hidden; font-size: .52rem; line-height: .88; white-space: normal; -webkit-box-orient: vertical; -webkit-line-clamp: 2; line-clamp: 2; }.place-number { font-size: .5rem; }.occupants { min-height: .85rem; }.merchant, .assistant, .family-member { width: .8rem; height: .8rem; font-size: .4rem; }.encounter { width: .7rem; height: .7rem; font-size: .38rem; }
-    .inspector { min-height: 5.5rem; max-height: none; display: grid; grid-template-columns: auto 1fr; gap: .2rem .7rem; align-content: start; padding: .55rem .7rem; }.inspector .section-kicker, .inspector h2, .inspector > p { grid-column: 2; }.inspector h2 { margin: 0; font-size: 1.35rem; }.inspector > p:not(.section-kicker) { margin: 0; font-size: .65rem; }.inspector-glyph { grid-column: 1; grid-row: 1 / 4; width: 3rem; height: 3rem; }.inspector dl { grid-column: 1 / -1; display: flex; gap: .8rem; margin: 0; }.inspector dl div { padding: .15rem 0; border: 0; font-size: .55rem; }.inspector .turn-action, .inspector .skip-link, .inspector .wheelbarrow-track, .inspector .crate-track, .inspector .recall-list, .inspector .action-balance, .inspector .mail-track, .inspector .caravan-sources, .inspector .card-preview, .inspector .discard-choice, .inspector .demand-card, .inspector .market-revenue, .inspector .basic-good-choice, .inspector .wager-control, .inspector .dice-result, .inspector .encounter-choices, .inspector .encounter-history, .inspector .mosque-ability-card, .inspector .dice-adjustments, .inspector .mosque-offers, .inspector .yellow-recall { grid-column: 1 / -1; margin-top: .2rem; }.inspector .turn-action { min-height: 2.2rem; }.inspector .skip-link { min-height: 1.5rem; }.recall-list { grid-template-columns: 1fr 1fr; }.encounter-ledger, .supply-ledger, .large-card { display: none; }.mobile-card-text { display: block; }.encounter-choices { grid-template-columns: 1fr 1fr; }.encounter-choices section { padding: .4rem; }.encounter-choices section > div { grid-template-columns: 1fr; }.mosque-offers article > small { min-height: auto; }.dice-adjustments { grid-template-columns: 1fr 1fr; }
+    .inspector { min-height: 5.5rem; max-height: none; display: grid; grid-template-columns: auto 1fr; gap: .2rem .7rem; align-content: start; padding: .55rem .7rem; }.inspector .section-kicker, .inspector h2, .inspector > p { grid-column: 2; }.inspector h2 { margin: 0; font-size: 1.35rem; }.inspector > p:not(.section-kicker) { margin: 0; font-size: .65rem; }.inspector-glyph { grid-column: 1; grid-row: 1 / 4; width: 3rem; height: 3rem; }.inspector dl { grid-column: 1 / -1; display: flex; gap: .8rem; margin: 0; }.inspector dl div { padding: .15rem 0; border: 0; font-size: .55rem; }.inspector .turn-action, .inspector .skip-link, .inspector .wheelbarrow-track, .inspector .crate-track, .inspector .recall-list, .inspector .action-balance, .inspector .mail-track, .inspector .caravan-sources, .inspector .card-preview, .inspector .discard-choice, .inspector .demand-card, .inspector .market-revenue, .inspector .basic-good-choice, .inspector .wager-control, .inspector .dice-result, .inspector .encounter-choices, .inspector .encounter-history, .inspector .mosque-ability-card, .inspector .dice-adjustments, .inspector .mosque-offers, .inspector .yellow-recall { grid-column: 1 / -1; margin-top: .2rem; }.inspector .turn-action { min-height: 2.75rem; }.inspector .skip-link { min-height: 2.75rem; }.recall-list { grid-template-columns: 1fr 1fr; }.encounter-ledger, .supply-ledger, .large-card { display: none; }.mobile-card-text { display: block; }.encounter-choices { grid-template-columns: 1fr 1fr; }.encounter-choices section { padding: .4rem; }.encounter-choices section > div { grid-template-columns: 1fr; }.mosque-offers article > small { min-height: auto; }.dice-adjustments { grid-template-columns: 1fr 1fr; }
     .inspector.route-planner { position: relative; display: block; height: 8rem; max-height: 8rem; padding: 0; }.route-planner .section-kicker { position: absolute; top: .55rem; left: 1.4rem; margin: 0; }.route-planner h2 { position: absolute; top: 1.45rem; left: 1.4rem; margin: 0; }.route-planner > p:not(.section-kicker) { position: absolute; top: 3.15rem; right: .7rem; left: 1.4rem; margin: 0; line-height: .82rem; }.route-planner .supply-ledger { position: absolute; right: .7rem; bottom: .45rem; left: .7rem; display: flex; justify-content: space-between; margin: 0 !important; }
     .player-rail { grid-auto-flow: row; grid-template-columns: 1fr 1fr; gap: .3rem; }.player-rail article { padding: .35rem .45rem; grid-template-columns: 1fr auto; gap: .2rem; }.resources { display: none; }.goods { justify-content: end; }.hand, .masked-hand { padding-top: .2rem; }.hand { flex-wrap: wrap; }.hand > span { width: 100%; }.hand button { width: 100%; max-width: none; min-height: 1.55rem; }.player-name { font-size: .72rem; }
     .player-rail.many { gap: .18rem; }.player-rail.many article { gap: .08rem; padding: .2rem .3rem; }.player-rail.many .player-name small, .player-rail.many .masked-hand { display: none; }.player-rail.many .resources div { padding: 0 .08rem; }.player-rail.many .resources dt { font-size: .4rem; }.player-rail.many .resources dd { font-size: .68rem; }.player-rail.many .hand { flex-wrap: nowrap; padding-top: .08rem; }.player-rail.many .hand > span { width: auto; font-size: .48rem; }.player-rail.many .hand button { min-height: 1.2rem; padding: .12rem .3rem; }.player-rail.many .hand button small { display: none; }
     .inspector.finish { display: block; padding: .85rem; }.inspector.finish .section-kicker, .inspector.finish h2, .inspector.finish > p { display: block; }.inspector.finish .final-ranking { display: grid; grid-template-columns: 1fr; }.inspector.finish .final-ranking li { display: grid; grid-template-columns: 1.5rem 1fr auto; }.inspector.finish .final-ranking li > span { grid-column: auto; }.inspector.finish .final-ranking li > small { grid-column: 2 / 4; }
   }
-  @media (prefers-reduced-motion: reduce) { .board { transition: none; } }
+  @media (max-height: 500px) and (orientation: landscape) {
+    .game-table { gap: .25rem; }
+    .turn-banner { min-height: 2.8rem; padding: .25rem .6rem; }.turn-banner h1 { font-size: 1.25rem; }.turn-banner p { font-size: .5rem; }.turn-token { font-size: .62rem; }
+    .play-area { grid-template-columns: minmax(0, 1.35fr) minmax(14rem, .65fr); gap: .3rem; }
+    .board-viewport { padding: .25rem; }.board { width: min(100%, 25rem); aspect-ratio: 1.42; gap: .2rem; }.board-tools, .board-caption, .e2e-resources { display: none; }
+    .place { grid-template-columns: 1.2rem 1fr; padding: .2rem; }.place-glyph { width: 1.1rem; height: 1.1rem; }.place strong { font-size: .5rem; }.occupants { min-height: .65rem; }.merchant, .assistant, .family-member { width: .68rem; height: .68rem; font-size: .34rem; }
+    .inspector { padding: .45rem; overflow: hidden; }.inspector h2 { margin: 0; font-size: 1.15rem; }.inspector > p:not(.section-kicker) { margin: .2rem 0; font-size: .58rem; }.inspector-glyph, .encounter-ledger, .supply-ledger, .large-card { display: none; }.inspector .turn-action { min-height: 2.75rem; margin-top: .3rem; }
+    .player-rail { grid-template-columns: 1fr 1fr; gap: .25rem; }.player-rail article { grid-template-columns: 1fr auto; padding: .25rem .4rem; }.player-rail .resources, .player-rail .hand, .player-rail .masked-hand { display: none; }
+  }
+  @media (pointer: coarse) { .turn-action, .skip-link, .board-tools button, .hand button { min-height: 2.75rem; } }
+  @media (prefers-reduced-motion: reduce) { .board { transition: none; }.place.departed, .place.arrived { animation: none; } }
 </style>

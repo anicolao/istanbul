@@ -69,9 +69,10 @@ action, encounters, Mosque abilities, Bonus cards, all ruby routes, final turns,
 ranking, rematches, and reconnect recovery. Personal-screen games run from two
 to five browsers. Shared-table games add a privacy-safe public board, real
 seat-specific QR invitations, private phone controllers, and retained controller
-ownership after reload. The final MVP slice in [MVP_DESIGN.md](MVP_DESIGN.md)
-hardens keyboard, touch, screen-reader, reduced-motion, and responsive behaviour
-across the remaining target viewports.
+ownership after reload. The MVP is complete: its final slice adds roving keyboard
+navigation and focus transfer, live turn announcements, 44 px touch actions,
+safe-area insets, reduced-motion behaviour, labelled non-colour cues, and
+responsive play at every target viewport in [MVP_DESIGN.md](MVP_DESIGN.md).
 
 Each numbered directory under [`tests/e2e`](tests/e2e) is a generated,
 screenshot-by-screenshot play-by-play. Its README names the acting user, shows
