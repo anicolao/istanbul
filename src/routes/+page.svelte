@@ -12,6 +12,7 @@
   import { replayEvents } from '$lib/game/reducer';
   import type { AssistantAction } from '$lib/game/movement';
   import type { PlaceActionChoice } from '$lib/game/actions';
+  import type { EncounterChoice } from '$lib/game/encounters';
   import {
     isRoomCode,
     layoutNames,
@@ -69,6 +70,9 @@
       lastMovement: game.lastMovement,
       lastAction: game.lastAction,
       lastRoll: game.lastRoll,
+      encounterLog: game.encounterLog,
+      governorPlace: game.governorPlace,
+      smugglerPlace: game.smugglerPlace,
       postOfficeLower: game.postOfficeLower,
       largeDemand: game.largeDemand,
       smallDemand: game.smallDemand,
@@ -83,7 +87,8 @@
         goods: player.goods,
         capacity: player.capacity,
         extensions: player.extensions,
-        rubies: player.rubies
+        rubies: player.rubies,
+        familyPlace: player.familyPlace
       })),
       localHand: game.players.find(({ uid }) => uid === userUid)?.bonusHand ?? [],
       opponentHandCounts: game.players.filter(({ uid }) => uid !== userUid).map(({ bonusHand }) => bonusHand.length),
@@ -266,12 +271,13 @@
   }
 
   async function payMerchants() {
-    if (!repository || !game?.pending || actionPending) return;
+    const pending = game?.pending?.kind === 'merchant-payment' ? game.pending : null;
+    if (!repository || !pending || actionPending) return;
     actionPending = true;
     try {
       await repository.append('turn/merchant-paid', {
-        recipientUids: game.pending.recipientUids,
-        neutralMerchantIds: game.pending.neutralMerchantIds
+        recipientUids: pending.recipientUids,
+        neutralMerchantIds: pending.neutralMerchantIds
       });
     } finally {
       actionPending = false;
@@ -294,6 +300,16 @@
     actionPending = true;
     try {
       await repository.append('place/action-taken', { choice });
+    } finally {
+      actionPending = false;
+    }
+  }
+
+  async function resolveEncounter(choice: EncounterChoice) {
+    if (!repository || actionPending) return;
+    actionPending = true;
+    try {
+      await repository.append('encounter/resolved', { choice });
     } finally {
       actionPending = false;
     }
@@ -425,6 +441,7 @@
       onMove={(destination, assistantAction) => void moveTo(destination, assistantAction)}
       onPayMerchants={() => void payMerchants()}
       onTakeAction={(choice) => void takePlaceAction(choice)}
+      onResolveEncounter={(choice) => void resolveEncounter(choice)}
       onEndTurn={() => void endTurn()}
       onZoomIn={() => boardScale = Math.min(1.18, boardScale + 0.09)}
       onFit={() => boardScale = 1}

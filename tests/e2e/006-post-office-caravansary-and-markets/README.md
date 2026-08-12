@@ -332,11 +332,11 @@ Ada and Bora narrate every input from an empty private room through seven ordina
 - [x] No selection means the sale is disabled
 - [x] The active Demand is still on top
 
-## 30. Ada selects one depicted fruit for the Small Market
+## 30. Ada selects one depicted fabric for the Small Market
 
-**Ada, the first merchant** — Ada selects one depicted fruit for the Small Market
+**Ada, the first merchant** — Ada selects one depicted fabric for the Small Market
 
-![Ada selects one depicted fruit for the Small Market](./screenshots/016-host-chooses-small-sale-desktop.png)
+![Ada selects one depicted fabric for the Small Market](./screenshots/016-host-chooses-small-sale-desktop.png)
 
 **Verifications:**
 

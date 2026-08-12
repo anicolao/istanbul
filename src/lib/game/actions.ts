@@ -11,7 +11,8 @@ export type PlaceActionChoice =
   | { kind: 'caravansary-trade'; drawSources: [CardSource, CardSource]; discardCardId: string }
   | { kind: 'market-sell'; slotIndexes: number[] }
   | { kind: 'black-market-roll'; good: Exclude<Good, 'jewelry'> }
-  | { kind: 'tea-house-wager'; wager: number };
+  | { kind: 'tea-house-wager'; wager: number }
+  | { kind: 'police-send'; destination: number };
 
 export const postOfficeRows: Array<[
   { lira?: number; good?: Good },
@@ -47,11 +48,16 @@ export function isPlaceActionChoice(value: unknown): value is PlaceActionChoice 
   if (choice.kind === 'market-sell') return Array.isArray(choice.slotIndexes)
     && choice.slotIndexes.every((index) => Number.isInteger(index));
   if (choice.kind === 'black-market-roll') return ['fabric', 'spice', 'fruit'].includes(String(choice.good));
-  return choice.kind === 'tea-house-wager'
-    && typeof choice.wager === 'number'
+  if (choice.kind === 'tea-house-wager') return typeof choice.wager === 'number'
     && Number.isInteger(choice.wager)
     && choice.wager >= 3
     && choice.wager <= 12;
+  return choice.kind === 'police-send'
+    && typeof choice.destination === 'number'
+    && Number.isInteger(choice.destination)
+    && choice.destination >= 1
+    && choice.destination <= 16
+    && choice.destination !== 12;
 }
 
 export function collectPostOffice(game: GameSetup, player: SetupPlayer): string {

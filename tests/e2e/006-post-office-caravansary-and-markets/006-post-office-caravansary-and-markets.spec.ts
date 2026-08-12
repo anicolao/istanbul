@@ -8,7 +8,7 @@ const demandById = new Map(demandTiles.map((tile) => [tile.id, tile]));
 
 test('mail, private card trading, and both demand markets remain exact through replay', async ({ browser, page }, testInfo) => {
   const roomCode = testInfo.project.name === 'phone' ? 'POSTS' : 'TRADE';
-  const seed = `move-${testInfo.project.name}-4`;
+  const seed = 'economy-safe-6';
   const journal = new ScenarioJournal();
   const ada = new TestStepHelper(page, testInfo, journal, 'Ada, the first merchant');
   const boraContext = await browser.newContext({
