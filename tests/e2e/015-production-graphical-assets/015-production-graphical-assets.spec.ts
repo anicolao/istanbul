@@ -36,12 +36,22 @@ test('original production art communicates the complete tabletop', async ({ brow
           await expect(page.locator('[data-art-kind="piece"].smuggler-piece')).toHaveCount(1);
           expect((await loadedBackgrounds(page.locator('[data-art-kind="piece"]'))).every(Boolean)).toBe(true);
         } },
-        { spec: 'Both colour-keyed player mats and every resource icon are real loaded images', check: async () => {
+        { spec: 'Both colour-keyed physical trays and every resource token are real loaded images', check: async () => {
           await expect(page.locator('[data-art-kind="mat"]')).toHaveCount(2);
           expect(await page.locator('[data-art-kind="component"]').count()).toBeGreaterThan(50);
           expect((await loadedBackgrounds(page.locator('[data-art-kind="mat"], [data-art-kind="component"]'))).every(Boolean)).toBe(true);
         } },
-        { spec: 'Every Place exposes a graphical and semantic live-state indicator', check: async () => {
+        { spec: 'Each tray aligns goods, extensions, rubies, money, cards, and four power recesses', check: async () => {
+          await expect(page.locator('[data-testid^="player-tray-"]')).toHaveCount(2);
+          await expect(page.getByLabel('Ada goods').locator('[data-count]')).toHaveCount(4);
+          await expect(page.getByLabel('Ada Mosque tiles').locator('[data-power-color]')).toHaveCount(4);
+          await expect(page.getByLabel('Ada Mosque tiles').locator('[data-enabled="true"]')).toHaveCount(0);
+          await expect(page.getByLabel('Ada resources').getByLabel('0 rubies')).toBeVisible();
+          await expect(page.getByLabel('Bora resources').getByLabel('0 rubies')).toBeVisible();
+          await expect(page.getByLabel('Ada resources').getByLabel('1 Bonus cards')).toBeVisible();
+          await expect(page.getByLabel('Bora resources').getByLabel('1 Bonus cards')).toBeVisible();
+        } },
+        { spec: 'Every Place exposes a distinct physical and semantic live-state apparatus', check: async () => {
           const states = page.locator('.location-state');
           await expect(states).toHaveCount(16);
           const summaries = await states.evaluateAll((elements) => elements.map((element) => element.getAttribute('data-state-summary') ?? ''));
@@ -52,6 +62,9 @@ test('original production art communicates the complete tabletop', async ({ brow
           await expect(page.locator('[data-testid="place-state-14"]')).toHaveAttribute('data-state-summary', /required, pay 1.*ruby rewards remain/);
           await expect(page.locator('[data-testid="place-state-16"]')).toHaveAttribute('data-state-summary', /Next ruby costs \d+ Lira/);
           await expect(page.locator('[data-place-id="5"]')).toHaveAttribute('aria-label', /Current state: Exposed mail:/);
+          await expect(page.locator('[data-testid="place-state-5"] .mail-column')).toHaveCount(4);
+          await expect(page.locator('[data-testid="place-state-6"] .card-pile')).toHaveCount(2);
+          await expect(page.locator('[data-testid="place-state-14"] .mosque-power')).toHaveCount(2);
         } },
         { spec: 'The canonical setup remains unchanged by its visual treatment', check: async () => expectState(page, { screen: 'game', eventCount: 5, diagnosticCount: 0, game: { seed, phase: 'movement', turnNumber: 1, players: [{ name: 'Ada', merchantPlace: 7, assistantsCarried: 4, rubies: 0 }, { name: 'Bora', merchantPlace: 7, assistantsCarried: 4, rubies: 0 }] } }) }
       ]

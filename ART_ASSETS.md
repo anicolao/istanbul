@@ -15,7 +15,8 @@ The browser receives 73 optimized WebP assets under `static/art/game`:
   colour;
 - a neutral merchant, Governor, Smuggler, first-player marker, and dice;
 - ten Bonus-card effect faces, one card back, and one deck image;
-- five colour-keyed player mats;
+- five colour-keyed physical player trays with aligned goods tracks,
+  wheelbarrow and ruby sockets, purse and card wells, and four power recesses;
 - four goods, Lira, rubies, wheelbarrow extensions, a mail marker, Mosque tiles,
   demand tiles, ruby tracks, and public supply pieces.
 
@@ -28,18 +29,25 @@ not alter or hide canonical game information.
 
 ## Live location state
 
-Every Place scene carries a compact graphical state rail derived from the
-canonical replay projection. It shows the current Post Office mail windows;
+Every Place scene carries a location-specific physical state apparatus derived
+from the canonical replay projection. It shows the current Post Office mail windows;
 Caravansary deck size, discard size, and top discard; both Market demands;
 Mosque offers, costs, and remaining ruby rewards; Sultan and Gemstone ruby
 tracks; and each other Place's applicable capacity, payout, dice, family, or
-assistant state. The same exact state is included in the Place button's
+assistant state. These are arranged as mail boards, card piles, demand tiles,
+ruby tracks, cost wells, dice areas, and component racks rather than a shared
+status ribbon. The same exact state is included in the Place button's
 accessible name and a machine-readable `data-state-summary` attribute.
 
-The state rails compose the existing component artwork rather than baking
+The state displays compose the existing component artwork rather than baking
 changing values into location paintings. E2E journeys therefore verify both
 the visible transition after each action and the exact corresponding DOM and
 serialized game state.
+
+Mosque powers are full square punchboard assets. They begin as large visible
+offers at the two Mosques, then the acquired square appears in the matching
+recess on the player's tray. Empty recesses remain visibly empty, making
+ownership and ability availability read like physical tabletop state.
 
 ## Source and regeneration
 
@@ -51,7 +59,8 @@ briefs:
 - a strict 5×4 atlas of colour-keyed merchants, assistants, family pieces,
   neutral characters, the starting marker, and dice;
 - a strict 4×3 atlas of the ten Bonus-card effects, card back, and deck;
-- a strict 1×5 atlas of identically structured colour-keyed player mats;
+- a strict 1×5 atlas of identically structured colour-keyed physical trays;
+- a strict 2×2 atlas of the four square Mosque-power tiles;
 - a strict 5×4 atlas of goods, money, rubies, upgrades, tiles, tracks, and
   supplies.
 

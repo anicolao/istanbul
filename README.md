@@ -107,10 +107,12 @@ rulebook.
 Published illustrations, logos, tile layouts, card faces, and trade dress are
 reference material only. The browser ships an original 73-asset visual system
 for all 16 Places, every Bonus-card effect, five sets of merchants, assistants,
-family members and mats, neutral characters, goods, Mosque and demand tiles,
+family members and physical trays, neutral characters, goods, Mosque and demand tiles,
 Lira, dice, wheelbarrows, tracks, supplies, and rubies. See
 [ART_ASSETS.md](ART_ASSETS.md) for the complete inventory and source-atlas
-workflow. Every Place also overlays its current public state with those assets:
+workflow. Each tray is a functional organizer whose goods, extensions, rubies,
+money, cards, and acquired square Mosque powers sit in matching visible wells.
+Every Place also displays its current public state with physical arrangements:
 mail windows, decks and discards, demands, Mosque costs and rewards, ruby-track
 prices, and all other location-specific values update directly on the 4×4
 bazaar. Exact summaries remain semantic HTML so the visuals never replace
