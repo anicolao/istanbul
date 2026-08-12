@@ -4,7 +4,7 @@ import { ScenarioJournal, TestStepHelper } from '../helpers/test-step-helper';
 
 test('Tea House wagers and Black Market goods use seeded replayable dice', async ({ browser, page }, testInfo) => {
   const roomCode = testInfo.project.name === 'phone' ? 'DICES' : 'WAGER';
-  const seed = `move-${testInfo.project.name}-4`;
+  const seed = 'dice-safe-0';
   const journal = new ScenarioJournal();
   const ada = new TestStepHelper(page, testInfo, journal, 'Ada, the first merchant');
   const boraContext = await browser.newContext({

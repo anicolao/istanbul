@@ -21,6 +21,8 @@ import {
   tradeAtCaravansary,
   warehouseGood
 } from './actions';
+import { catchFamily, drawBonus, isEncounterChoice, relocateEncounter } from './encounters';
+import type { Good } from './manifests';
 
 const emptyProjection = (): ReplayProjection => ({
   room: null,
@@ -184,13 +186,18 @@ function applyEvent(state: ReplayProjection, event: CanonicalEvent): boolean {
     return applyPlaceAction(state, event);
   }
 
+  if (event.type === 'encounter/resolved') {
+    return applyEncounter(state, event);
+  }
+
   if (event.type === 'turn/ended') {
     const game = state.game;
     const player = game.players[game.turnSeat];
-    if ((game.phase !== 'action' && game.phase !== 'turn-end') || event.actorUid !== player.uid) {
+    if (!['action', 'family-action', 'turn-end'].includes(game.phase) || event.actorUid !== player.uid) {
       reject(state, event, 'turn-cannot-end');
       return false;
     }
+    if (game.phase === 'action' && beginEncounters(game)) return true;
     advanceTurn(game);
     return true;
   }
@@ -203,63 +210,173 @@ function applyPlaceAction(state: ReplayProjection, event: CanonicalEvent): boole
   const game = state.game!;
   const player = game.players[game.turnSeat];
   const choice = event.payload.choice;
-  if (game.phase !== 'action' || event.actorUid !== player.uid || !isPlaceActionChoice(choice)) {
+  const familyPending = game.phase === 'family-action' && game.pending?.kind === 'family-action' ? game.pending : null;
+  const familyAction = familyPending !== null;
+  if ((game.phase !== 'action' && !familyAction) || event.actorUid !== player.uid || !isPlaceActionChoice(choice)) {
     reject(state, event, 'invalid-place-action');
     return false;
   }
+  const actionPlace = familyPending?.destination ?? player.merchantPlace;
 
   let summary: string | null = null;
-  if (choice.kind === 'wainwright-buy') {
-    if (player.merchantPlace !== 1) {
+  if (choice.kind === 'police-send') {
+    if (actionPlace !== 12 || familyAction || player.familyPlace !== 12) {
+      reject(state, event, 'police-unavailable');
+      return false;
+    }
+    player.familyPlace = choice.destination;
+    game.lastAction = { playerUid: player.uid, place: 12, kind: choice.kind, summary: `Sent the family member to Place ${choice.destination}.` };
+    game.pending = { kind: 'family-action', destination: choice.destination };
+    game.phase = 'family-action';
+    return true;
+  } else if (choice.kind === 'wainwright-buy') {
+    if (actionPlace !== 1) {
       reject(state, event, 'wainwright-unavailable');
       return false;
     }
     summary = buyWheelbarrowExtension(game, player);
     if (!summary) { reject(state, event, 'wainwright-unavailable'); return false; }
   } else if (choice.kind === 'warehouse-fill') {
-    if (warehouseGood(player.merchantPlace) !== choice.good) {
+    if (warehouseGood(actionPlace) !== choice.good) {
       reject(state, event, 'wrong-warehouse');
       return false;
     }
     player.goods[choice.good] = player.capacity;
     summary = `Filled ${choice.good} to capacity ${player.capacity}.`;
   } else if (choice.kind === 'fountain-recall') {
-    if (player.merchantPlace !== 7) {
+    if (actionPlace !== 7) {
       reject(state, event, 'invalid-fountain-recall');
       return false;
     }
     summary = recallAssistants(player, choice.assistantPlaces);
     if (!summary) { reject(state, event, 'invalid-fountain-recall'); return false; }
   } else if (choice.kind === 'post-office-collect') {
-    if (player.merchantPlace !== 5) { reject(state, event, 'post-office-unavailable'); return false; }
+    if (actionPlace !== 5) { reject(state, event, 'post-office-unavailable'); return false; }
     summary = collectPostOffice(game, player);
   } else if (choice.kind === 'caravansary-trade') {
-    if (player.merchantPlace !== 6) { reject(state, event, 'caravansary-unavailable'); return false; }
+    if (actionPlace !== 6) { reject(state, event, 'caravansary-unavailable'); return false; }
     summary = tradeAtCaravansary(game, player, choice.drawSources, choice.discardCardId);
     if (!summary) { reject(state, event, 'invalid-caravansary-trade'); return false; }
   } else if (choice.kind === 'market-sell') {
-    if (player.merchantPlace !== 10 && player.merchantPlace !== 11) {
+    if (actionPlace !== 10 && actionPlace !== 11) {
       reject(state, event, 'market-unavailable');
       return false;
     }
-    summary = sellAtMarket(game, player, player.merchantPlace, choice.slotIndexes);
+    summary = sellAtMarket(game, player, actionPlace, choice.slotIndexes);
     if (!summary) { reject(state, event, 'invalid-market-sale'); return false; }
   } else if (choice.kind === 'black-market-roll') {
-    if (player.merchantPlace !== 8) { reject(state, event, 'black-market-unavailable'); return false; }
-    const dice = rollDice(createRandom(`${game.seed}:place-roll:${game.turnNumber}:8`));
+    if (actionPlace !== 8) { reject(state, event, 'black-market-unavailable'); return false; }
+    const dice = rollDice(createRandom(`${game.seed}:place-roll:${game.turnNumber}:8${familyAction ? ':family' : ''}`));
     const jewelryBefore = player.goods.jewelry;
     summary = resolveBlackMarket(player, choice.good, dice);
     game.lastRoll = { playerUid: player.uid, place: 8, dice, reward: player.goods.jewelry - jewelryBefore };
   } else {
-    if (player.merchantPlace !== 9) { reject(state, event, 'tea-house-unavailable'); return false; }
-    const dice = rollDice(createRandom(`${game.seed}:place-roll:${game.turnNumber}:9`));
+    if (actionPlace !== 9) { reject(state, event, 'tea-house-unavailable'); return false; }
+    const dice = rollDice(createRandom(`${game.seed}:place-roll:${game.turnNumber}:9${familyAction ? ':family' : ''}`));
     const liraBefore = player.lira;
     summary = resolveTeaHouse(player, choice.wager, dice);
     game.lastRoll = { playerUid: player.uid, place: 9, dice, declared: choice.wager, reward: player.lira - liraBefore };
   }
 
-  game.lastAction = { playerUid: player.uid, place: player.merchantPlace, kind: choice.kind, summary };
-  game.phase = 'turn-end';
+  game.lastAction = { playerUid: player.uid, place: actionPlace, kind: choice.kind, summary };
+  game.pending = null;
+  if (familyAction || !beginEncounters(game)) game.phase = 'turn-end';
+  return true;
+}
+
+function applyEncounter(state: ReplayProjection, event: CanonicalEvent): boolean {
+  const game = state.game!;
+  const player = game.players[game.turnSeat];
+  const pending = game.pending;
+  const choice = event.payload.choice;
+  if (game.phase !== 'encounters' || event.actorUid !== player.uid || pending?.kind !== 'encounters' || !isEncounterChoice(choice)) {
+    reject(state, event, 'invalid-encounter');
+    return false;
+  }
+  if (pending.governor === 'payment' && choice.kind !== 'governor-pay') {
+    reject(state, event, 'governor-payment-required');
+    return false;
+  }
+
+  let summary = '';
+  let dice: [number, number] | undefined;
+  let destination: number | undefined;
+  if (choice.kind === 'catch-family') {
+    if (!pending.familyUids.includes(choice.familyUid)) { reject(state, event, 'family-not-present'); return false; }
+    const result = catchFamily(game, player, choice.familyUid, choice.reward);
+    if (!result) { reject(state, event, 'invalid-family-reward'); return false; }
+    pending.familyUids = pending.familyUids.filter((uid) => uid !== choice.familyUid);
+    summary = result;
+  } else if (choice.kind === 'governor-visit') {
+    if (pending.governor !== 'available') { reject(state, event, 'governor-unavailable'); return false; }
+    if (!choice.accept) {
+      pending.governor = null;
+      summary = 'Declined the Governor; the token remained in place.';
+    } else {
+      const card = drawBonus(game, `governor:${game.turnNumber}`);
+      if (!card) { reject(state, event, 'bonus-deck-empty'); return false; }
+      player.bonusHand.push(card);
+      pending.governor = 'payment';
+      summary = 'Drew 1 Bonus card from the Governor; payment is now mandatory.';
+    }
+  } else if (choice.kind === 'governor-pay') {
+    if (pending.governor !== 'payment') { reject(state, event, 'governor-payment-unavailable'); return false; }
+    if (choice.payment === 'lira') {
+      if (player.lira < 2) { reject(state, event, 'governor-payment-shortfall'); return false; }
+      player.lira -= 2;
+      summary = 'Paid the Governor 2 Lira';
+    } else {
+      const cardIndex = player.bonusHand.indexOf(choice.discardCardId ?? '');
+      if (cardIndex < 0) { reject(state, event, 'governor-card-not-owned'); return false; }
+      game.bonusDiscard.push(player.bonusHand.splice(cardIndex, 1)[0]);
+      summary = 'Discarded 1 Bonus card for the Governor';
+    }
+    dice = relocateEncounter(game, 'governor');
+    destination = game.governorPlace;
+    pending.governor = null;
+    summary += ` and relocated the token to Place ${destination}.`;
+  } else if (!choice.accept) {
+    if (!pending.smuggler) { reject(state, event, 'smuggler-unavailable'); return false; }
+    pending.smuggler = false;
+    summary = 'Declined the Smuggler; the token remained in place.';
+  } else {
+    if (!pending.smuggler || player.goods[choice.good] >= player.capacity) { reject(state, event, 'smuggler-unavailable'); return false; }
+    player.goods[choice.good] += 1;
+    if (choice.payment === 'lira') {
+      if (player.lira < 2) { player.goods[choice.good] -= 1; reject(state, event, 'smuggler-payment-shortfall'); return false; }
+      player.lira -= 2;
+      summary = `Took 1 ${choice.good} and paid the Smuggler 2 Lira`;
+    } else {
+      const paymentGood = choice.paymentGood as Good;
+      if (player.goods[paymentGood] < 1) { player.goods[choice.good] -= 1; reject(state, event, 'smuggler-good-unavailable'); return false; }
+      player.goods[paymentGood] -= 1;
+      summary = `Took 1 ${choice.good} and paid the Smuggler 1 ${paymentGood}`;
+    }
+    dice = relocateEncounter(game, 'smuggler');
+    destination = game.smugglerPlace;
+    pending.smuggler = false;
+    summary += `; relocated the token to Place ${destination}.`;
+  }
+
+  game.encounterLog.push({ kind: choice.kind, summary, ...(dice ? { dice } : {}), ...(destination ? { destination } : {}) });
+  if (pending.familyUids.length === 0 && pending.governor === null && !pending.smuggler) {
+    game.pending = null;
+    game.phase = 'turn-end';
+  }
+  return true;
+}
+
+function beginEncounters(game: NonNullable<ReplayProjection['game']>): boolean {
+  const player = game.players[game.turnSeat];
+  const place = player.merchantPlace;
+  const familyUids = place === 12 ? [] : game.players
+    .filter((candidate) => candidate.uid !== player.uid && candidate.familyPlace === place)
+    .map(({ uid }) => uid);
+  const governor = game.governorPlace === place ? 'available' as const : null;
+  const smuggler = game.smugglerPlace === place;
+  if (familyUids.length === 0 && governor === null && !smuggler) return false;
+  game.pending = { kind: 'encounters', familyUids, governor, smuggler };
+  game.phase = 'encounters';
   return true;
 }
 
@@ -324,7 +441,7 @@ function applyMerchantPayment(state: ReplayProjection, event: CanonicalEvent): b
   const recipientUids = stringArray(event.payload.recipientUids);
   const neutralMerchantIds = stringArray(event.payload.neutralMerchantIds);
   if (
-    game.phase !== 'merchant-payment' || event.actorUid !== player.uid || !pending ||
+    game.phase !== 'merchant-payment' || event.actorUid !== player.uid || pending?.kind !== 'merchant-payment' ||
     !recipientUids || !neutralMerchantIds ||
     recipientUids.join('|') !== pending.recipientUids.join('|') ||
     neutralMerchantIds.join('|') !== pending.neutralMerchantIds.join('|') ||
@@ -351,6 +468,7 @@ function advanceTurn(game: NonNullable<ReplayProjection['game']>) {
   game.turnNumber += 1;
   game.phase = 'movement';
   game.pending = null;
+  game.encounterLog = [];
 }
 
 function stringArray(value: unknown): string[] | null {

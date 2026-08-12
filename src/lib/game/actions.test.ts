@@ -12,6 +12,7 @@ import {
 import { manifestVersions, reducerVersion, rulesEdition, schemaVersion, type CanonicalEvent, type RoomProjection } from './protocol';
 import { replayEvents } from './reducer';
 import { createSetup } from './setup';
+import { catchFamily, drawBonus } from './encounters';
 
 function event(sequence: number, actorUid: string, type: string, payload: Record<string, unknown>): CanonicalEvent {
   const clientSeq = String(sequence).padStart(6, '0');
@@ -145,5 +146,67 @@ describe('deterministic economy actions', () => {
     expect(resolveTeaHouse(player, 8, [4, 4])).toBe('Wagered 8; rolled 4 + 4 = 8 and gained 8 Lira.');
     expect(resolveTeaHouse(player, 12, [5, 6])).toBe('Wagered 12; rolled 5 + 6 = 11 and gained 2 Lira.');
     expect(player.lira).toBe(10);
+  });
+});
+
+describe('family and bazaar encounters', () => {
+  it('returns caught family members and conserves either official reward', () => {
+    const game = createSetup(room(), 'family-catch-boundaries');
+    const [ada, bora] = game.players;
+    ada.merchantPlace = 2;
+    bora.familyPlace = 2;
+    const cardsBefore = game.bonusDrawPile.length;
+    expect(catchFamily(game, ada, bora.uid, 'bonus')).toBe("Caught Bora's family and gained 1 Bonus card.");
+    expect(ada.bonusHand).toHaveLength(2);
+    expect(game.bonusDrawPile).toHaveLength(cardsBefore - 1);
+    expect(bora.familyPlace).toBe(12);
+    expect(catchFamily(game, ada, bora.uid, 'lira')).toBeNull();
+
+    bora.familyPlace = 2;
+    expect(catchFamily(game, ada, bora.uid, 'lira')).toBe("Caught Bora's family and gained 3 Lira.");
+    expect(ada.lira).toBe(5);
+  });
+
+  it('recycles a depleted Bonus deck deterministically for encounter rewards', () => {
+    const first = createSetup(room(), 'encounter-recycle');
+    const second = createSetup(room(), 'encounter-recycle');
+    for (const game of [first, second]) {
+      game.bonusDiscard = game.bonusDrawPile.splice(0);
+      expect(game.bonusDrawPile).toEqual([]);
+    }
+    expect(drawBonus(first, 'same-boundary')).toBe(drawBonus(second, 'same-boundary'));
+    expect(first.bonusDrawPile.length + first.bonusDiscard.length).toBe(23);
+  });
+
+  it('keeps Police family action and three ordered encounters replayable', () => {
+    const events = [
+      ...startedGame().slice(0, -1),
+      event(5, 'host', 'game/started', { seed: 'encounter-735' }),
+      event(6, 'host', 'turn/moved', { destination: 12, assistantAction: 'drop' }),
+      event(7, 'host', 'place/action-taken', { choice: { kind: 'police-send', destination: 2 } }),
+      event(8, 'host', 'place/action-taken', { choice: { kind: 'warehouse-fill', good: 'fabric' } }),
+      event(9, 'host', 'turn/ended', {}),
+      event(10, 'guest', 'turn/moved', { destination: 2, assistantAction: 'drop' }),
+      event(11, 'guest', 'place/action-taken', { choice: { kind: 'warehouse-fill', good: 'fabric' } }),
+      event(12, 'guest', 'encounter/resolved', { choice: { kind: 'smuggler-trade', accept: true, good: 'jewelry', payment: 'good', paymentGood: 'fabric' } }),
+      event(13, 'guest', 'encounter/resolved', { choice: { kind: 'catch-family', familyUid: 'host', reward: 'bonus' } }),
+      event(14, 'guest', 'encounter/resolved', { choice: { kind: 'governor-visit', accept: true } }),
+      event(15, 'guest', 'encounter/resolved', { choice: { kind: 'governor-pay', payment: 'lira' } })
+    ];
+    const projection = replayEvents(events);
+    expect(projection.diagnostics).toEqual([]);
+    expect(projection.game).toMatchObject({
+      phase: 'turn-end',
+      pending: null,
+      governorPlace: expect.any(Number),
+      smugglerPlace: expect.any(Number),
+      players: [
+        { familyPlace: 12, goods: { fabric: 2 } },
+        { lira: 1, familyPlace: 12, goods: { fabric: 1, jewelry: 1 }, bonusHand: expect.arrayContaining([]) }
+      ]
+    });
+    expect(projection.game?.players[1].bonusHand).toHaveLength(3);
+    expect(projection.game?.encounterLog.map(({ kind }) => kind)).toEqual(['smuggler-trade', 'catch-family', 'governor-visit', 'governor-pay']);
+    expect(projection.game?.encounterLog.filter(({ dice }) => dice)).toHaveLength(2);
   });
 });

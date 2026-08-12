@@ -42,12 +42,20 @@ export interface GameSetup {
   startingSeat: number;
   turnSeat: number;
   turnNumber: number;
-  phase: 'movement' | 'merchant-payment' | 'action' | 'turn-end';
+  phase: 'movement' | 'merchant-payment' | 'action' | 'family-action' | 'encounters' | 'turn-end';
   pending: null | {
     kind: 'merchant-payment';
     recipientUids: string[];
     neutralMerchantIds: string[];
     total: number;
+  } | {
+    kind: 'family-action';
+    destination: number;
+  } | {
+    kind: 'encounters';
+    familyUids: string[];
+    governor: 'available' | 'payment' | null;
+    smuggler: boolean;
   };
   lastMovement: null | {
     playerUid: string;
@@ -71,6 +79,12 @@ export interface GameSetup {
     declared?: number;
     reward: number;
   };
+  encounterLog: Array<{
+    kind: import('./encounters').EncounterChoice['kind'];
+    summary: string;
+    dice?: [number, number];
+    destination?: number;
+  }>;
 }
 
 function pathDistance(board: number[], first: number, second: number) {
@@ -147,6 +161,7 @@ export function createSetup(room: RoomProjection, seed: string): GameSetup {
     pending: null,
     lastMovement: null,
     lastAction: null,
-    lastRoll: null
+    lastRoll: null,
+    encounterLog: []
   };
 }

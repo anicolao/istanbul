@@ -10,6 +10,7 @@
     type CardSource,
     type PlaceActionChoice
   } from '$lib/game/actions';
+  import type { EncounterChoice } from '$lib/game/encounters';
   import type { RoomProjection } from '$lib/game/protocol';
   import type { GameSetup } from '$lib/game/setup';
   import PlaceGlyph from './PlaceGlyph.svelte';
@@ -26,6 +27,7 @@
     onMove,
     onPayMerchants,
     onTakeAction,
+    onResolveEncounter,
     onEndTurn,
     onZoomIn,
     onFit
@@ -41,6 +43,7 @@
     onMove: (destination: number, assistantAction: AssistantAction) => void;
     onPayMerchants: () => void;
     onTakeAction: (choice: PlaceActionChoice) => void;
+    onResolveEncounter: (choice: EncounterChoice) => void;
     onEndTurn: () => void;
     onZoomIn: () => void;
     onFit: () => void;
@@ -55,8 +58,13 @@
   const localIsCurrent = $derived(currentPlayer.uid === userUid);
   const reachable = $derived(localIsCurrent && game.phase === 'movement' ? legalDestinations(game, localPlayer) : []);
   const selectedAssistantAction = $derived(selectedPlace && reachable.includes(selectedPlace) ? requiredAssistantAction(localPlayer, selectedPlace) : null);
-  const actionPlace = $derived(placeById.get(currentPlayer.merchantPlace)!);
-  const paymentNames = $derived(game.pending?.recipientUids.map((uid) => game.players.find((player) => player.uid === uid)?.name ?? uid) ?? []);
+  const actionPlaceId = $derived(game.phase === 'family-action' && game.pending?.kind === 'family-action'
+    ? game.pending.destination
+    : game.phase === 'turn-end' && game.lastAction ? game.lastAction.place : currentPlayer.merchantPlace);
+  const actionPlace = $derived(placeById.get(actionPlaceId)!);
+  const merchantPending = $derived(game.pending?.kind === 'merchant-payment' ? game.pending : null);
+  const encounterPending = $derived(game.pending?.kind === 'encounters' ? game.pending : null);
+  const paymentNames = $derived(merchantPending?.recipientUids.map((uid) => game.players.find((player) => player.uid === uid)?.name ?? uid) ?? []);
   const goodNames: Record<Good, string> = { fabric: 'Fabric', spice: 'Spice', fruit: 'Fruit', jewelry: 'Jewelry' };
   const artUrl = `${base}/art/bazaar-courtyard.png`;
   let recallSelection = $state<number[]>([]);
@@ -65,9 +73,14 @@
   let marketSelection = $state<number[]>([]);
   let blackMarketGood = $state<Exclude<Good, 'jewelry'>>('fabric');
   let teaWager = $state(7);
+  let policeDestination = $state(1);
+  let governorDiscard = $state('');
+  let smugglerGood = $state<Good>('fabric');
+  let smugglerPaymentGood = $state<Good>('fabric');
   const caravanPreview = $derived(previewCaravansary(game, caravanSources) ?? []);
   const activeDemand = $derived(demandTiles.find(({ id }) => id === (actionPlace.id === 10 ? game.largeDemand[0] : game.smallDemand[0])));
   const marketSelectionLegal = $derived(isMarketSelectionLegal(activeDemand?.goods ?? [], marketSelection));
+  const smugglerGainAvailable = $derived(localPlayer.goods[smugglerGood] < localPlayer.capacity);
 
   function occupants(placeId: number) {
     return game.players.filter(({ merchantPlace }) => merchantPlace === placeId);
@@ -75,6 +88,10 @@
 
   function assistants(placeId: number) {
     return game.players.flatMap((player) => Array.from({ length: player.assistantsByPlace[placeId] ?? 0 }, () => player));
+  }
+
+  function families(placeId: number) {
+    return game.players.filter(({ familyPlace }) => familyPlace === placeId);
   }
 
   function toggleRecall(placeId: number) {
@@ -117,7 +134,7 @@
 
 <section class="game-table" aria-labelledby="game-title" style={`--courtyard: url('${artUrl}')`}>
   <header class="turn-banner">
-    <div><p>Turn {game.turnNumber} · {game.phase.replace('-', ' ')}</p><h1 id="game-title">{game.phase === 'movement' ? `${currentPlayer.name} surveys the bazaar.` : game.phase === 'merchant-payment' ? `${currentPlayer.name} meets another merchant.` : game.phase === 'turn-end' ? `${currentPlayer.name} completed ${actionPlace.name}.` : `${currentPlayer.name} arrives at ${actionPlace.name}.`}</h1>{#if game.lastMovement?.paymentBlocked}<small class="turn-notice">{game.players.find((player) => player.uid === game.lastMovement?.playerUid)?.name} could not pay {game.lastMovement.paymentTotal} Lira; that turn ended immediately.</small>{/if}</div>
+    <div><p>Turn {game.turnNumber} · {game.phase.replace('-', ' ')}</p><h1 id="game-title">{game.phase === 'movement' ? `${currentPlayer.name} surveys the bazaar.` : game.phase === 'merchant-payment' ? `${currentPlayer.name} meets another merchant.` : game.phase === 'family-action' ? `${currentPlayer.name} sends family to ${actionPlace.name}.` : game.phase === 'encounters' ? `${currentPlayer.name} resolves bazaar encounters.` : game.phase === 'turn-end' ? `${currentPlayer.name} completed ${actionPlace.name}.` : `${currentPlayer.name} arrives at ${actionPlace.name}.`}</h1>{#if game.lastMovement?.paymentBlocked}<small class="turn-notice">{game.players.find((player) => player.uid === game.lastMovement?.playerUid)?.name} could not pay {game.lastMovement.paymentTotal} Lira; that turn ended immediately.</small>{/if}</div>
     <div class="turn-token"><span class={`player-dot ${currentPlayer.color}`}></span><strong>{currentPlayer.name}</strong><small>{currentPlayer.uid === userUid ? 'Your turn' : game.phase === 'movement' ? 'Planning route' : 'Resolving turn'}</small></div>
   </header>
 
@@ -149,6 +166,7 @@
               <span class="occupants" aria-hidden="true">
                 {#each here as merchant}<span class={`merchant ${merchant.color}`}>{merchant.name.slice(0, 1)}</span>{/each}
                 {#each assistants(placeId) as assistant}<span class={`assistant ${assistant.color}`} title={`${assistant.name}'s assistant`}>a</span>{/each}
+                {#each families(placeId) as family}<span class={`family-member ${family.color}`} title={`${family.name}'s family member`}>F</span>{/each}
                 {#each game.neutralMerchants.filter(({ place: neutralPlace }) => neutralPlace === placeId) as neutral}<span class="merchant neutral">N</span>{/each}
               </span>
               {#if placeId === game.governorPlace}<span class="encounter governor" title="Governor">G</span>{/if}
@@ -169,17 +187,38 @@
       {:else if game.phase === 'merchant-payment'}
         <p class="section-kicker">Mandatory encounter</p>
         <h2>Pay the merchant toll</h2>
-        <p>{paymentNames.length ? `Pay ${paymentNames.join(', ')} 2 Lira each.` : ''}{game.pending?.neutralMerchantIds.length ? ` Pay ${game.pending.neutralMerchantIds.length * 2} Lira to the supply for the neutral merchant.` : ''}</p>
-        <dl><div><dt>Total due</dt><dd>{game.pending?.total} Lira</dd></div><div><dt>After payment</dt><dd>{localIsCurrent ? localPlayer.lira - (game.pending?.total ?? 0) : 'Hidden until resolved'}</dd></div></dl>
-        {#if localIsCurrent}<button class="turn-action" onclick={onPayMerchants}>Pay {game.pending?.total} Lira and continue</button>{:else}<p class="waiting-copy">Waiting for {currentPlayer.name} to confirm the toll.</p>{/if}
+        <p>{paymentNames.length ? `Pay ${paymentNames.join(', ')} 2 Lira each.` : ''}{merchantPending?.neutralMerchantIds.length ? ` Pay ${merchantPending.neutralMerchantIds.length * 2} Lira to the supply for the neutral merchant.` : ''}</p>
+        <dl><div><dt>Total due</dt><dd>{merchantPending?.total} Lira</dd></div><div><dt>After payment</dt><dd>{localIsCurrent ? localPlayer.lira - (merchantPending?.total ?? 0) : 'Hidden until resolved'}</dd></div></dl>
+        {#if localIsCurrent}<button class="turn-action" onclick={onPayMerchants}>Pay {merchantPending?.total} Lira and continue</button>{:else}<p class="waiting-copy">Waiting for {currentPlayer.name} to confirm the toll.</p>{/if}
+      {:else if game.phase === 'encounters'}
+        <p class="section-kicker">Encounter order</p>
+        <h2>Choose who to meet</h2>
+        <p>Catch every family member. The Governor and Smuggler are optional and may be resolved in any order.</p>
+        {#if localIsCurrent}
+          <div class="encounter-choices">
+            {#each encounterPending?.familyUids ?? [] as familyUid}
+              {@const family = game.players.find(({ uid }) => uid === familyUid)!}
+              <section aria-label={`Catch ${family.name}'s family`}><strong>{family.name}’s family</strong><span>Mandatory · return to Police</span><div><button class="turn-action" onclick={() => onResolveEncounter({ kind: 'catch-family', familyUid, reward: 'lira' })}>Catch for 3 Lira</button><button class="turn-action alternate" onclick={() => onResolveEncounter({ kind: 'catch-family', familyUid, reward: 'bonus' })}>Catch for 1 Bonus card</button></div></section>
+            {/each}
+            {#if encounterPending?.governor === 'available'}
+              <section aria-label="Governor encounter"><strong>Governor</strong><span>Draw a Bonus card, then pay</span><div><button class="turn-action" onclick={() => onResolveEncounter({ kind: 'governor-visit', accept: true })}>Visit the Governor</button><button class="skip-link" onclick={() => onResolveEncounter({ kind: 'governor-visit', accept: false })}>Decline Governor</button></div></section>
+            {:else if encounterPending?.governor === 'payment'}
+              <section aria-label="Pay the Governor"><strong>Governor payment</strong><span>The drawn card is already in your hand</span><button class="turn-action" disabled={localPlayer.lira < 2} onclick={() => onResolveEncounter({ kind: 'governor-pay', payment: 'lira' })}>Pay Governor 2 Lira</button><label>Or discard<select aria-label="Governor discard card" value={governorDiscard} onchange={(event) => governorDiscard = event.currentTarget.value}><option value="">Choose a Bonus card</option>{#each localPlayer.bonusHand as cardId}<option value={cardId}>{bonusById.get(cardId)?.title} · {cardId}</option>{/each}</select></label><button class="turn-action alternate" disabled={!governorDiscard} onclick={() => onResolveEncounter({ kind: 'governor-pay', payment: 'card', discardCardId: governorDiscard })}>Discard selected card</button></section>
+            {/if}
+            {#if encounterPending?.smuggler}
+              <section aria-label="Smuggler encounter"><strong>Smuggler</strong><span>Gain one good, then pay 2 Lira or one good</span><label>Good to gain<select aria-label="Smuggler good to gain" value={smugglerGood} onchange={(event) => smugglerGood = event.currentTarget.value as Good}>{#each Object.keys(goodNames) as good}<option value={good} disabled={localPlayer.goods[good as Good] >= localPlayer.capacity}>{goodNames[good as Good]}</option>{/each}</select></label><div><button class="turn-action" disabled={!smugglerGainAvailable || localPlayer.lira < 2} onclick={() => onResolveEncounter({ kind: 'smuggler-trade', accept: true, good: smugglerGood, payment: 'lira' })}>Take {smugglerGood}, pay 2 Lira</button><button class="skip-link" onclick={() => onResolveEncounter({ kind: 'smuggler-trade', accept: false })}>Decline Smuggler</button></div><label>Or pay a good<select aria-label="Smuggler payment good" value={smugglerPaymentGood} onchange={(event) => smugglerPaymentGood = event.currentTarget.value as Good}>{#each Object.keys(goodNames) as good}<option value={good} disabled={localPlayer.goods[good as Good] + (good === smugglerGood ? 1 : 0) < 1}>{goodNames[good as Good]}</option>{/each}</select></label><button class="turn-action alternate" disabled={!smugglerGainAvailable} onclick={() => onResolveEncounter({ kind: 'smuggler-trade', accept: true, good: smugglerGood, payment: 'good', paymentGood: smugglerPaymentGood })}>Take {smugglerGood}, pay {smugglerPaymentGood}</button></section>
+            {/if}
+          </div>
+        {:else}<p class="waiting-copy">Waiting for {currentPlayer.name} to order the encounters.</p>{/if}
       {:else if game.phase === 'turn-end'}
         <p class="section-kicker">Place action complete</p>
         <h2>{actionPlace.name}</h2>
         <div class="inspector-glyph complete-glyph"><PlaceGlyph glyph={actionPlace.glyph} /></div>
         <p>{game.lastAction?.summary}</p>
         {#if game.lastRoll?.playerUid === currentPlayer.uid && game.lastRoll.place === actionPlace.id}<div class="dice-result" aria-label={`Dice result ${game.lastRoll.dice[0]} and ${game.lastRoll.dice[1]}`}><span>{game.lastRoll.dice[0]}</span><span>{game.lastRoll.dice[1]}</span><strong>{game.lastRoll.reward} {actionPlace.id === 8 ? 'jewelry' : 'Lira'}</strong></div>{/if}
+        {#if game.encounterLog.length}<div class="encounter-history" aria-label="Resolved encounters">{#each game.encounterLog as entry}<article><strong>{entry.kind.replace('-', ' ')}</strong><span>{entry.summary}</span>{#if entry.dice}<i aria-label={`Encounter dice ${entry.dice[0]} and ${entry.dice[1]}`}>{entry.dice[0]} + {entry.dice[1]}</i>{/if}</article>{/each}</div>{/if}
         {#if localIsCurrent}<button class="turn-action" onclick={onEndTurn}>End turn and pass clockwise</button>{:else}<p class="waiting-copy">Waiting for {currentPlayer.name} to end the completed turn.</p>{/if}
-      {:else if game.phase === 'action'}
+      {:else if game.phase === 'action' || game.phase === 'family-action'}
         <p class="section-kicker">Place action ready</p>
         <h2>{actionPlace.name}</h2>
         <div class="inspector-glyph"><PlaceGlyph glyph={actionPlace.glyph} /></div>
@@ -237,6 +276,12 @@
           <p>Declare 3–12, then roll. Meet or beat the wager to earn it; otherwise receive 2 Lira.</p>
           <label class="wager-control">Declared wager<select aria-label="Tea House wager" value={teaWager} onchange={(event) => teaWager = Number(event.currentTarget.value)}>{#each Array.from({ length: 10 }, (_, index) => index + 3) as wager}<option value={wager}>{wager} Lira</option>{/each}</select></label>
           {#if localIsCurrent}<button class="turn-action" onclick={() => onTakeAction({ kind: 'tea-house-wager', wager: teaWager })}>Wager {teaWager} and roll both dice</button><button class="skip-link" onclick={onEndTurn}>Skip Tea House and end turn</button>{:else}<p class="waiting-copy">Waiting for {currentPlayer.name} to declare a wager.</p>{/if}
+        {:else if actionPlace.id === 12}
+          <p>Send your family member from Police Station to any other Place, perform that action, and leave the family member there.</p>
+          {#if localIsCurrent && localPlayer.familyPlace === 12}
+            <label class="wager-control">Family destination<select aria-label="Family destination" value={policeDestination} onchange={(event) => policeDestination = Number(event.currentTarget.value)}>{#each places.filter(({ id }) => id !== 12) as place}<option value={place.id}>{place.id} · {place.name}</option>{/each}</select></label>
+            <button class="turn-action" onclick={() => onTakeAction({ kind: 'police-send', destination: policeDestination })}>Send family to {placeById.get(policeDestination)?.name}</button><button class="skip-link" onclick={onEndTurn}>Skip Police Station and end turn</button>
+          {:else if localIsCurrent}<p class="action-balance">Your family member is already at {placeById.get(localPlayer.familyPlace)?.name}.</p><button class="skip-link" onclick={onEndTurn}>End turn</button>{:else}<p class="waiting-copy">Waiting for {currentPlayer.name} to dispatch family.</p>{/if}
         {:else}
           <p>{actionPlace.action}</p>
           {#if localIsCurrent}<button class="turn-action secondary-action" onclick={onEndTurn}>Skip this Place action and end turn</button>{:else}<p class="waiting-copy">Waiting for {currentPlayer.name} to finish the Place action.</p>{/if}
@@ -251,7 +296,7 @@
       {:else}
         <p class="section-kicker">Route planner</p>
         <h2>Inspect any Place</h2>
-        <p>Select a tile to read its action, exact grid position, and current occupants. Movement opens on the next turn slice.</p>
+        <p>Select a tile to read its action, exact grid position, and current occupants. Reachable routes are highlighted for the active merchant.</p>
         <div class="encounter-ledger"><span><i class="governor">G</i> Governor at {game.governorPlace}</span><span><i class="smuggler">S</i> Smuggler at {game.smugglerPlace}</span></div>
         <dl class="supply-ledger" aria-label="Public component supply">
           <div><dt>Bonus draw pile</dt><dd>{game.bonusDrawPile.length}</dd></div>
@@ -311,6 +356,7 @@
   .family-ruby { background: linear-gradient(150deg, #fff4df, #dfb36d); }.family-warehouse { background: linear-gradient(150deg, #fffced, #d9e4c2); }.family-chance { background: linear-gradient(150deg, #f5eee5, #d7bed1); }
   .occupants { grid-column: 1 / -1; min-height: 1.2rem; display: flex; gap: .12rem; align-items: end; }
   .merchant { width: 1.1rem; height: 1.1rem; display: grid; place-items: center; border: 1px solid #fffaf0; border-radius: 50%; color: #fff; font-size: .52rem; font-weight: 700; box-shadow: 0 .1rem .2rem #0005; }
+  .family-member { width: .95rem; height: .95rem; display: grid; place-items: center; border: 2px solid #fffaf0; border-radius: 50% 50% .25rem .25rem; color: #fff; font-size: .45rem; font-weight: 700; box-shadow: 0 .1rem .2rem #0005; }
   .assistant { width: .9rem; height: .9rem; display: grid; place-items: center; border: 1px solid #fffaf0; border-radius: .2rem; color: #fff; font-size: .48rem; font-weight: 700; text-transform: uppercase; box-shadow: 0 .1rem .2rem #0005; }
   .merchant.neutral { color: #173f43; background: #ece7d8; }
   .encounter { position: absolute; right: .25rem; bottom: .25rem; width: 1rem; height: 1rem; display: grid; place-items: center; border-radius: .2rem; color: #fff; font-size: .5rem; font-weight: 700; }
@@ -333,6 +379,8 @@
   .demand-card { display: grid; grid-template-columns: repeat(5, 1fr); gap: .3rem; margin: .7rem 0; padding: .55rem; border: 2px solid #d49d42; border-radius: .55rem; background: #ead8b8; }.demand-card label { min-width: 0; display: grid; place-items: center; gap: .15rem; color: #173f43; font-size: .52rem; }.demand-card input { position: absolute; opacity: 0; }.demand-card i { width: 1.8rem; height: 1.8rem; border: 3px solid #fffaf0; border-radius: .4rem; box-shadow: 0 .15rem .25rem #0003; }.demand-card .fabric i { background: #b7423c; }.demand-card .spice i { background: #3b8662; }.demand-card .fruit i { background: #d6a82c; }.demand-card .jewelry i { background: #4382a9; }.demand-card input:checked + i { outline: 3px solid #173f43; outline-offset: 1px; }.market-revenue { margin: .2rem 0 !important; font-weight: 700; text-align: center; }
   .basic-good-choice { display: grid; grid-template-columns: repeat(3, 1fr); gap: .4rem; margin: .7rem 0 0; padding: .45rem; border: 1px solid #d9cdb7; border-radius: .5rem; }.basic-good-choice legend { padding: 0 .25rem; font-size: .58rem; font-weight: 700; text-transform: uppercase; }.basic-good-choice label { display: grid; grid-template-columns: auto auto 1fr; gap: .25rem; align-items: center; font-size: .62rem; }.basic-good-choice input { accent-color: #173f43; }.basic-good-choice i { width: 1rem; height: 1rem; border-radius: .25rem; }.basic-good-choice .fabric i { background: #b7423c; }.basic-good-choice .spice i { background: #3b8662; }.basic-good-choice .fruit i { background: #d6a82c; }.wager-control { display: grid; gap: .25rem; margin-top: .7rem; color: #6d7c79; font-size: .62rem; font-weight: 700; text-transform: uppercase; }.wager-control select { min-height: 2.35rem; border: 1px solid #b99a6b; border-radius: .4rem; color: #173f43; background: #fffaf0; font: inherit; }.dice-result { display: flex; gap: .45rem; align-items: center; margin-top: .65rem; }.dice-result span { width: 2.4rem; height: 2.4rem; display: grid; place-items: center; border: 2px solid #173f43; border-radius: .5rem; color: #a23b36; background: #fffaf0; box-shadow: .15rem .2rem 0 #d4bd91; font: 700 1.2rem 'Cormorant Garamond', serif; }.dice-result strong { margin-left: .3rem; color: #267356; font-size: .75rem; }
   .skip-link { width: 100%; min-height: 2rem; margin-top: .35rem; border: 0; color: #8d3c37; text-decoration: underline; background: transparent; font: inherit; font-size: .68rem; font-weight: 700; }
+  .encounter-choices { display: grid; gap: .55rem; margin-top: .65rem; }.encounter-choices section { display: grid; gap: .35rem; padding: .55rem; border: 1px solid #d4bd91; border-radius: .55rem; background: #f1e5cc; }.encounter-choices section > strong { font: 700 1.1rem 'Cormorant Garamond', serif; }.encounter-choices section > span { color: #627572; font-size: .62rem; }.encounter-choices section > div { display: grid; grid-template-columns: 1fr 1fr; gap: .35rem; }.encounter-choices .turn-action, .encounter-choices .skip-link { min-height: 2.1rem; margin: 0; font-size: .62rem; }.encounter-choices .alternate { background: #744c8b; box-shadow: 0 .2rem 0 #4c315b; }.encounter-choices label { display: grid; gap: .2rem; color: #627572; font-size: .58rem; text-transform: uppercase; }.encounter-choices select { min-height: 2rem; border: 1px solid #b99a6b; border-radius: .35rem; color: #173f43; background: #fffaf0; }
+  .encounter-history { display: grid; gap: .35rem; margin-top: .5rem; }.encounter-history article { display: grid; grid-template-columns: auto 1fr auto; gap: .4rem; align-items: center; padding: .4rem; border: 1px solid #d4bd91; border-radius: .4rem; background: #f1e5cc; }.encounter-history strong { color: #744c8b; font-size: .58rem; text-transform: uppercase; }.encounter-history span { font-size: .6rem; }.encounter-history i { color: #a23b36; font-size: .7rem; font-style: normal; font-weight: 700; }
   .large-card { min-height: 13rem; display: flex; flex-direction: column; justify-content: space-between; padding: 1rem; border: 2px solid #d49d42; border-radius: .8rem; color: #fffaf0; background: radial-gradient(circle at 80% 15%, #d27a40, transparent 5rem), #a23b36; box-shadow: 0 .8rem 1.4rem #4b2c2240; }.large-card > span { font-size: .65rem; letter-spacing: .15em; text-transform: uppercase; }.large-card strong { font: 700 1.5rem/1 'Cormorant Garamond', serif; }.large-card p { margin: 0; font-size: .78rem; }
   .mobile-card-text { display: none; }
   .player-rail { display: grid; grid-template-columns: repeat(var(--players, 2), minmax(0, 1fr)); grid-auto-flow: column; gap: .5rem; }
@@ -348,8 +396,8 @@
     .game-table { gap: .4rem; }
     .turn-banner { min-height: 3.4rem; padding: .35rem .6rem; }.turn-banner h1 { font-size: 1.45rem; }.turn-token { font-size: .7rem; }.turn-token small { font-size: .55rem; }
     .play-area { grid-template-columns: 1fr; grid-template-rows: minmax(0, 1fr) auto; gap: .4rem; }
-    .board-viewport { padding: 2.1rem .4rem .35rem; }.board { width: 100%; aspect-ratio: 1.18; gap: .25rem; }.place { grid-template-columns: 1.35rem 1fr; padding: .24rem; border-radius: .38rem; }.place-glyph { width: 1.25rem; height: 1.25rem; }.place strong { display: -webkit-box; overflow: hidden; font-size: .52rem; line-height: .88; white-space: normal; -webkit-box-orient: vertical; -webkit-line-clamp: 2; line-clamp: 2; }.place-number { font-size: .5rem; }.occupants { min-height: .85rem; }.merchant, .assistant { width: .8rem; height: .8rem; font-size: .4rem; }.encounter { width: .7rem; height: .7rem; font-size: .38rem; }
-    .inspector { min-height: 5.5rem; max-height: none; display: grid; grid-template-columns: auto 1fr; gap: .2rem .7rem; align-content: start; padding: .55rem .7rem; }.inspector .section-kicker, .inspector h2, .inspector > p { grid-column: 2; }.inspector h2 { margin: 0; font-size: 1.35rem; }.inspector > p:not(.section-kicker) { margin: 0; font-size: .65rem; }.inspector-glyph { grid-column: 1; grid-row: 1 / 4; width: 3rem; height: 3rem; }.inspector dl { grid-column: 1 / -1; display: flex; gap: .8rem; margin: 0; }.inspector dl div { padding: .15rem 0; border: 0; font-size: .55rem; }.inspector .turn-action, .inspector .skip-link, .inspector .wheelbarrow-track, .inspector .crate-track, .inspector .recall-list, .inspector .action-balance, .inspector .mail-track, .inspector .caravan-sources, .inspector .card-preview, .inspector .discard-choice, .inspector .demand-card, .inspector .market-revenue, .inspector .basic-good-choice, .inspector .wager-control, .inspector .dice-result { grid-column: 1 / -1; margin-top: .2rem; }.inspector .turn-action { min-height: 2.2rem; }.inspector .skip-link { min-height: 1.5rem; }.recall-list { grid-template-columns: 1fr 1fr; }.encounter-ledger, .supply-ledger, .large-card { display: none; }.mobile-card-text { display: block; }
+    .board-viewport { padding: 2.1rem .4rem .35rem; }.board { width: 100%; aspect-ratio: 1.18; gap: .25rem; }.place { grid-template-columns: 1.35rem 1fr; padding: .24rem; border-radius: .38rem; }.place-glyph { width: 1.25rem; height: 1.25rem; }.place strong { display: -webkit-box; overflow: hidden; font-size: .52rem; line-height: .88; white-space: normal; -webkit-box-orient: vertical; -webkit-line-clamp: 2; line-clamp: 2; }.place-number { font-size: .5rem; }.occupants { min-height: .85rem; }.merchant, .assistant, .family-member { width: .8rem; height: .8rem; font-size: .4rem; }.encounter { width: .7rem; height: .7rem; font-size: .38rem; }
+    .inspector { min-height: 5.5rem; max-height: none; display: grid; grid-template-columns: auto 1fr; gap: .2rem .7rem; align-content: start; padding: .55rem .7rem; }.inspector .section-kicker, .inspector h2, .inspector > p { grid-column: 2; }.inspector h2 { margin: 0; font-size: 1.35rem; }.inspector > p:not(.section-kicker) { margin: 0; font-size: .65rem; }.inspector-glyph { grid-column: 1; grid-row: 1 / 4; width: 3rem; height: 3rem; }.inspector dl { grid-column: 1 / -1; display: flex; gap: .8rem; margin: 0; }.inspector dl div { padding: .15rem 0; border: 0; font-size: .55rem; }.inspector .turn-action, .inspector .skip-link, .inspector .wheelbarrow-track, .inspector .crate-track, .inspector .recall-list, .inspector .action-balance, .inspector .mail-track, .inspector .caravan-sources, .inspector .card-preview, .inspector .discard-choice, .inspector .demand-card, .inspector .market-revenue, .inspector .basic-good-choice, .inspector .wager-control, .inspector .dice-result, .inspector .encounter-choices, .inspector .encounter-history { grid-column: 1 / -1; margin-top: .2rem; }.inspector .turn-action { min-height: 2.2rem; }.inspector .skip-link { min-height: 1.5rem; }.recall-list { grid-template-columns: 1fr 1fr; }.encounter-ledger, .supply-ledger, .large-card { display: none; }.mobile-card-text { display: block; }.encounter-choices { grid-template-columns: 1fr 1fr; }.encounter-choices section { padding: .4rem; }.encounter-choices section > div { grid-template-columns: 1fr; }
     .inspector.route-planner { position: relative; display: block; height: 8rem; max-height: 8rem; padding: 0; }.route-planner .section-kicker { position: absolute; top: .55rem; left: 1.4rem; margin: 0; }.route-planner h2 { position: absolute; top: 1.45rem; left: 1.4rem; margin: 0; }.route-planner > p:not(.section-kicker) { position: absolute; top: 3.15rem; right: .7rem; left: 1.4rem; margin: 0; line-height: .82rem; }.route-planner .supply-ledger { position: absolute; right: .7rem; bottom: .45rem; left: .7rem; display: flex; justify-content: space-between; margin: 0 !important; }
     .player-rail { grid-auto-flow: row; grid-template-columns: 1fr 1fr; gap: .3rem; }.player-rail article { padding: .35rem .45rem; grid-template-columns: 1fr auto; gap: .2rem; }.resources { display: none; }.goods { justify-content: end; }.hand, .masked-hand { padding-top: .2rem; }.hand { flex-wrap: wrap; }.hand > span { width: 100%; }.hand button { width: 100%; max-width: none; min-height: 1.55rem; }.player-name { font-size: .72rem; }
   }
