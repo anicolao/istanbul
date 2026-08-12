@@ -146,6 +146,7 @@ Ada and Bora narrate every input from an empty private room through seven ordina
 
 - [x] The completion copy lists spice, fabric, fruit, and 1 Lira
 - [x] The leftmost indicator alone moves lower
+- [x] The Post Office tile immediately exposes its next four resources
 - [x] The action cannot be collected twice
 
 ## 14. Ada passes the completed mail turn clockwise
@@ -205,6 +206,7 @@ Ada and Bora narrate every input from an empty private room through seven ordina
 
 - [x] The completion panel reports two cards retained
 - [x] Bora privately sees two cards while Ada sees only a count
+- [x] Caravansary now shows 22 draw cards and one face-up discard
 - [x] Two draws and one discard conserve the card manifest
 
 ## 19. Bora passes after the private card trade
@@ -354,6 +356,7 @@ Ada and Bora narrate every input from an empty private room through seven ordina
 
 - [x] The completion panel reports the exact revenue
 - [x] The used Demand moves to the bottom
+- [x] Small Market tile replaces its five graphical demand goods
 - [x] Exactly the selected good was spent
 
 ## 32. Ada passes after rotating Small Market
@@ -483,6 +486,7 @@ Ada and Bora narrate every input from an empty private room through seven ordina
 
 - [x] The exact sale summary is visible
 - [x] Large Demand rotates independently
+- [x] Large Market tile exposes the newly rotated five-good demand
 - [x] Bora observes the same public market state
 
 ## 43. Ada reloads the completed Large Market turn

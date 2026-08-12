@@ -78,18 +78,18 @@ test('wheelbarrow, warehouses, and Fountain resolve as replayable actions', asyn
     await page.getByRole('button', { name: 'Move here without leaving an assistant' }).click();
     await ada.step('host-arrives-fountain', { description: 'Ada arrives at Fountain without leaving an assistant', verifications: [
       { spec: 'Wainwright appears as one available recall choice', check: async () => expect(page.getByRole('checkbox', { name: 'Wainwright · 1' })).toBeVisible() },
-      { spec: 'The action initially offers to recall zero assistants', check: async () => expect(page.getByRole('button', { name: 'Recall 0 assistants' })).toBeVisible() },
+      { spec: 'The action initially offers to recall zero assistants', check: async () => expect(page.getByRole('button', { name: 'Recall 0 assistants', exact: true })).toBeVisible() },
       { spec: 'Fountain movement preserves all assistant counts', check: async () => expectState(page, { eventCount: 11, game: { phase: 'action', players: [{ merchantPlace: 7, assistantsByPlace: { 1: 1 }, assistantsCarried: 3 }, {}] } }) }
     ] });
 
     await page.getByRole('checkbox', { name: 'Wainwright · 1' }).check();
     await ada.step('host-chooses-assistant', { description: 'Ada chooses the Wainwright assistant to recall', verifications: [
       { spec: 'The ordinary checkbox is visibly checked', check: async () => expect(page.getByRole('checkbox', { name: 'Wainwright · 1' })).toBeChecked() },
-      { spec: 'The CTA updates to exactly one assistant', check: async () => expect(page.getByRole('button', { name: 'Recall 1 assistant' })).toBeEnabled() },
+      { spec: 'The CTA updates to exactly one assistant', check: async () => expect(page.getByRole('button', { name: 'Recall 1 assistant', exact: true })).toBeEnabled() },
       { spec: 'The local choice has not yet changed canonical assistants', check: async () => expectState(page, { eventCount: 11, game: { players: [{ assistantsByPlace: { 1: 1 }, assistantsCarried: 3 }, {}] } }) }
     ] });
 
-    await page.getByRole('button', { name: 'Recall 1 assistant' }).click();
+    await page.getByRole('button', { name: 'Recall 1 assistant', exact: true }).click();
     await ada.step('host-recalls-assistant', { description: 'Ada recalls the selected assistant to her merchant stack', verifications: [
       { spec: 'The completion panel reports one recalled assistant', check: async () => expect(page.getByText('Recalled 1 assistant.', { exact: true })).toBeVisible() },
       { spec: 'The Wainwright assistant marker disappears for both observers', check: async () => { await expect(page.getByTitle("Ada's assistant")).toHaveCount(0); await expect(boraPage.getByTitle("Ada's assistant")).toHaveCount(0); } },

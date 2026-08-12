@@ -26,6 +26,21 @@ or absent from the static bundle. The browser journey in
 real seeded table while DOM and replay-state assertions prove the visuals do
 not alter or hide canonical game information.
 
+## Live location state
+
+Every Place scene carries a compact graphical state rail derived from the
+canonical replay projection. It shows the current Post Office mail windows;
+Caravansary deck size, discard size, and top discard; both Market demands;
+Mosque offers, costs, and remaining ruby rewards; Sultan and Gemstone ruby
+tracks; and each other Place's applicable capacity, payout, dice, family, or
+assistant state. The same exact state is included in the Place button's
+accessible name and a machine-readable `data-state-summary` attribute.
+
+The state rails compose the existing component artwork rather than baking
+changing values into location paintings. E2E journeys therefore verify both
+the visible transition after each action and the exact corresponding DOM and
+serialized game state.
+
 ## Source and regeneration
 
 The five lossless source atlases live in `art/source-atlases`. They were created

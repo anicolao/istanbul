@@ -110,8 +110,11 @@ for all 16 Places, every Bonus-card effect, five sets of merchants, assistants,
 family members and mats, neutral characters, goods, Mosque and demand tiles,
 Lira, dice, wheelbarrows, tracks, supplies, and rubies. See
 [ART_ASSETS.md](ART_ASSETS.md) for the complete inventory and source-atlas
-workflow. Rules text and all state remain semantic HTML so the visuals never
-replace accessible game information.
+workflow. Every Place also overlays its current public state with those assets:
+mail windows, decks and discards, demands, Mosque costs and rewards, ruby-track
+prices, and all other location-specific values update directly on the 4×4
+bazaar. Exact summaries remain semantic HTML so the visuals never replace
+accessible game information.
 
 ## License
 
