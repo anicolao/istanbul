@@ -9,7 +9,9 @@ export type PlaceActionChoice =
   | { kind: 'fountain-recall'; assistantPlaces: number[] }
   | { kind: 'post-office-collect' }
   | { kind: 'caravansary-trade'; drawSources: [CardSource, CardSource]; discardCardId: string }
-  | { kind: 'market-sell'; slotIndexes: number[] };
+  | { kind: 'market-sell'; slotIndexes: number[] }
+  | { kind: 'black-market-roll'; good: Exclude<Good, 'jewelry'> }
+  | { kind: 'tea-house-wager'; wager: number };
 
 export const postOfficeRows: Array<[
   { lira?: number; good?: Good },
@@ -42,9 +44,14 @@ export function isPlaceActionChoice(value: unknown): value is PlaceActionChoice 
     && choice.drawSources.length === 2
     && choice.drawSources.every((source) => source === 'deck' || source === 'discard')
     && typeof choice.discardCardId === 'string';
-  return choice.kind === 'market-sell'
-    && Array.isArray(choice.slotIndexes)
+  if (choice.kind === 'market-sell') return Array.isArray(choice.slotIndexes)
     && choice.slotIndexes.every((index) => Number.isInteger(index));
+  if (choice.kind === 'black-market-roll') return ['fabric', 'spice', 'fruit'].includes(String(choice.good));
+  return choice.kind === 'tea-house-wager'
+    && typeof choice.wager === 'number'
+    && Number.isInteger(choice.wager)
+    && choice.wager >= 3
+    && choice.wager <= 12;
 }
 
 export function collectPostOffice(game: GameSetup, player: SetupPlayer): string {
@@ -108,6 +115,21 @@ export function sellAtMarket(game: GameSetup, player: SetupPlayer, place: number
   player.lira += marketRevenue[sold.length];
   stack.push(stack.shift()!);
   return `Sold ${sold.length} good${sold.length === 1 ? '' : 's'} for ${marketRevenue[sold.length]} Lira.`;
+}
+
+export function resolveBlackMarket(player: SetupPlayer, good: Exclude<Good, 'jewelry'>, dice: [number, number]): string {
+  player.goods[good] = Math.min(player.capacity, player.goods[good] + 1);
+  const total = dice[0] + dice[1];
+  const jewelry = total >= 11 ? 3 : total >= 9 ? 2 : total >= 7 ? 1 : 0;
+  player.goods.jewelry = Math.min(player.capacity, player.goods.jewelry + jewelry);
+  return `Took 1 ${good}; rolled ${dice[0]} + ${dice[1]} = ${total} and gained ${jewelry} jewelry.`;
+}
+
+export function resolveTeaHouse(player: SetupPlayer, wager: number, dice: [number, number]): string {
+  const total = dice[0] + dice[1];
+  const reward = total >= wager ? wager : 2;
+  player.lira += reward;
+  return `Wagered ${wager}; rolled ${dice[0]} + ${dice[1]} = ${total} and gained ${reward} Lira.`;
 }
 
 export function buyWheelbarrowExtension(game: GameSetup, player: SetupPlayer): string | null {

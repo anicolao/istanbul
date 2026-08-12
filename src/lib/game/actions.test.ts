@@ -4,6 +4,8 @@ import {
   collectPostOffice,
   previewCaravansary,
   recallAssistants,
+  resolveBlackMarket,
+  resolveTeaHouse,
   sellAtMarket,
   tradeAtCaravansary
 } from './actions';
@@ -118,5 +120,30 @@ describe('deterministic economy actions', () => {
     expect(game.largeDemand).toEqual([nextDemand, ...game.largeDemand.slice(1, -1), 'demand-large-1']);
     expect(sellAtMarket(game, player, 10, [0])).toBeNull();
     expect(sellAtMarket(game, player, 12, [0])).toBeNull();
+  });
+
+  it('maps every Black Market roll boundary and respects wheelbarrow capacity', () => {
+    const game = createSetup(room(), 'black-market-boundaries');
+    const player = game.players[0];
+    player.capacity = 5;
+    const cases: Array<[[number, number], number]> = [[[3, 3], 0], [[3, 4], 1], [[4, 5], 2], [[5, 6], 3]];
+    for (const [dice, expectedJewelry] of cases) {
+      player.goods = { fabric: 0, spice: 0, fruit: 0, jewelry: 0 };
+      expect(resolveBlackMarket(player, 'spice', dice)).toContain(`gained ${expectedJewelry} jewelry`);
+      expect(player.goods).toMatchObject({ spice: 1, jewelry: expectedJewelry });
+    }
+    player.goods.spice = 5;
+    player.goods.jewelry = 4;
+    resolveBlackMarket(player, 'spice', [6, 6]);
+    expect(player.goods).toMatchObject({ spice: 5, jewelry: 5 });
+  });
+
+  it('pays a successful Tea House declaration or the exact two-Lira consolation', () => {
+    const game = createSetup(room(), 'tea-house-boundaries');
+    const player = game.players[0];
+    player.lira = 0;
+    expect(resolveTeaHouse(player, 8, [4, 4])).toBe('Wagered 8; rolled 4 + 4 = 8 and gained 8 Lira.');
+    expect(resolveTeaHouse(player, 12, [5, 6])).toBe('Wagered 12; rolled 5 + 6 = 11 and gained 2 Lira.');
+    expect(player.lira).toBe(10);
   });
 });

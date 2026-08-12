@@ -68,6 +68,7 @@
       pending: game.pending,
       lastMovement: game.lastMovement,
       lastAction: game.lastAction,
+      lastRoll: game.lastRoll,
       postOfficeLower: game.postOfficeLower,
       largeDemand: game.largeDemand,
       smallDemand: game.smallDemand,
