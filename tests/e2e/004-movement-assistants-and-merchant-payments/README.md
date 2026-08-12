@@ -150,11 +150,11 @@ Ada and Bora open a two-player Short Path table, then perform every visible choi
 - [x] The neutral merchant has deterministically left Place 14
 - [x] Ada has paid down to zero Lira in action phase
 
-## 14. Ada skips the not-yet-open Mosque action and ends turn
+## 14. Ada skips the unaffordable Mosque action and ends turn
 
-**Ada, the first merchant** — Ada skips the not-yet-open Mosque action and ends turn
+**Ada, the first merchant** — Ada skips the unaffordable Mosque action and ends turn
 
-![Ada skips the not-yet-open Mosque action and ends turn](./screenshots/009-host-ends-first-turn-desktop.png)
+![Ada skips the unaffordable Mosque action and ends turn](./screenshots/009-host-ends-first-turn-desktop.png)
 
 **Verifications:**
 

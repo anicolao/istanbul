@@ -13,6 +13,7 @@
   import type { AssistantAction } from '$lib/game/movement';
   import type { PlaceActionChoice } from '$lib/game/actions';
   import type { EncounterChoice } from '$lib/game/encounters';
+  import type { MosqueAbilityChoice } from '$lib/game/mosques';
   import {
     isRoomCode,
     layoutNames,
@@ -71,6 +72,7 @@
       lastAction: game.lastAction,
       lastRoll: game.lastRoll,
       encounterLog: game.encounterLog,
+      abilitiesUsedThisTurn: game.abilitiesUsedThisTurn,
       governorPlace: game.governorPlace,
       smugglerPlace: game.smugglerPlace,
       postOfficeLower: game.postOfficeLower,
@@ -88,7 +90,9 @@
         capacity: player.capacity,
         extensions: player.extensions,
         rubies: player.rubies,
-        familyPlace: player.familyPlace
+        familyPlace: player.familyPlace,
+        assistantsInSupply: player.assistantsInSupply,
+        mosqueTileIds: player.mosqueTileIds
       })),
       localHand: game.players.find(({ uid }) => uid === userUid)?.bonusHand ?? [],
       opponentHandCounts: game.players.filter(({ uid }) => uid !== userUid).map(({ bonusHand }) => bonusHand.length),
@@ -314,6 +318,16 @@
       actionPending = false;
     }
   }
+
+  async function useMosqueAbility(choice: MosqueAbilityChoice) {
+    if (!repository || actionPending) return;
+    actionPending = true;
+    try {
+      await repository.append('mosque/ability-used', { choice });
+    } finally {
+      actionPending = false;
+    }
+  }
 </script>
 
 <svelte:head><title>{appTitle}</title></svelte:head>
@@ -442,6 +456,7 @@
       onPayMerchants={() => void payMerchants()}
       onTakeAction={(choice) => void takePlaceAction(choice)}
       onResolveEncounter={(choice) => void resolveEncounter(choice)}
+      onUseMosqueAbility={(choice) => void useMosqueAbility(choice)}
       onEndTurn={() => void endTurn()}
       onZoomIn={() => boardScale = Math.min(1.18, boardScale + 0.09)}
       onFit={() => boardScale = 1}

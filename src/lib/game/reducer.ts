@@ -23,6 +23,7 @@ import {
 } from './actions';
 import { catchFamily, drawBonus, isEncounterChoice, relocateEncounter } from './encounters';
 import type { Good } from './manifests';
+import { adjustMosqueDice, buyWarehouseExtra, isMosqueAbilityChoice, ownsMosqueAbility, recallWithYellow, takeMosqueTile } from './mosques';
 
 const emptyProjection = (): ReplayProjection => ({
   room: null,
@@ -190,6 +191,10 @@ function applyEvent(state: ReplayProjection, event: CanonicalEvent): boolean {
     return applyEncounter(state, event);
   }
 
+  if (event.type === 'mosque/ability-used') {
+    return applyMosqueAbility(state, event);
+  }
+
   if (event.type === 'turn/ended') {
     const game = state.game;
     const player = game.players[game.turnSeat];
@@ -229,6 +234,10 @@ function applyPlaceAction(state: ReplayProjection, event: CanonicalEvent): boole
     game.pending = { kind: 'family-action', destination: choice.destination };
     game.phase = 'family-action';
     return true;
+  } else if (choice.kind === 'mosque-take') {
+    if (actionPlace !== 14 && actionPlace !== 15) { reject(state, event, 'mosque-unavailable'); return false; }
+    summary = takeMosqueTile(game, player, choice.tileId, actionPlace);
+    if (!summary) { reject(state, event, 'invalid-mosque-tile'); return false; }
   } else if (choice.kind === 'wainwright-buy') {
     if (actionPlace !== 1) {
       reject(state, event, 'wainwright-unavailable');
@@ -267,21 +276,102 @@ function applyPlaceAction(state: ReplayProjection, event: CanonicalEvent): boole
   } else if (choice.kind === 'black-market-roll') {
     if (actionPlace !== 8) { reject(state, event, 'black-market-unavailable'); return false; }
     const dice = rollDice(createRandom(`${game.seed}:place-roll:${game.turnNumber}:8${familyAction ? ':family' : ''}`));
+    if (ownsMosqueAbility(player, 'fabric')) {
+      game.lastAction = { playerUid: player.uid, place: actionPlace, kind: choice.kind, summary: `Rolled ${dice[0]} + ${dice[1]}; choose the red Mosque ability or keep the roll.` };
+      game.lastRoll = { playerUid: player.uid, place: 8, dice, reward: 0 };
+      game.pending = { kind: 'dice-adjust', actionPlace: 8, originalDice: dice, good: choice.good, familyAction };
+      game.phase = 'mosque-ability';
+      return true;
+    }
     const jewelryBefore = player.goods.jewelry;
     summary = resolveBlackMarket(player, choice.good, dice);
     game.lastRoll = { playerUid: player.uid, place: 8, dice, reward: player.goods.jewelry - jewelryBefore };
   } else {
     if (actionPlace !== 9) { reject(state, event, 'tea-house-unavailable'); return false; }
     const dice = rollDice(createRandom(`${game.seed}:place-roll:${game.turnNumber}:9${familyAction ? ':family' : ''}`));
+    if (ownsMosqueAbility(player, 'fabric')) {
+      game.lastAction = { playerUid: player.uid, place: actionPlace, kind: choice.kind, summary: `Wagered ${choice.wager}; rolled ${dice[0]} + ${dice[1]}. Choose the red Mosque ability or keep the roll.` };
+      game.lastRoll = { playerUid: player.uid, place: 9, dice, declared: choice.wager, reward: 0 };
+      game.pending = { kind: 'dice-adjust', actionPlace: 9, originalDice: dice, wager: choice.wager, familyAction };
+      game.phase = 'mosque-ability';
+      return true;
+    }
     const liraBefore = player.lira;
     summary = resolveTeaHouse(player, choice.wager, dice);
     game.lastRoll = { playerUid: player.uid, place: 9, dice, declared: choice.wager, reward: player.lira - liraBefore };
   }
 
   game.lastAction = { playerUid: player.uid, place: actionPlace, kind: choice.kind, summary };
+  if (choice.kind === 'warehouse-fill' && ownsMosqueAbility(player, 'spice') && player.lira >= 2 && (Object.keys(player.goods) as Good[]).some((good) => player.goods[good] < player.capacity)) {
+    game.pending = { kind: 'warehouse-extra', actionPlace, familyAction };
+    game.phase = 'mosque-ability';
+    return true;
+  }
   game.pending = null;
   if (familyAction || !beginEncounters(game)) game.phase = 'turn-end';
   return true;
+}
+
+function applyMosqueAbility(state: ReplayProjection, event: CanonicalEvent): boolean {
+  const game = state.game!;
+  const player = game.players[game.turnSeat];
+  const choice = event.payload.choice;
+  if (event.actorUid !== player.uid || !isMosqueAbilityChoice(choice)) {
+    reject(state, event, 'invalid-mosque-ability');
+    return false;
+  }
+
+  if (choice.kind === 'yellow-recall') {
+    if (game.phase !== 'movement' || !ownsMosqueAbility(player, 'fruit') || game.abilitiesUsedThisTurn.includes('fruit') || player.lira < 2 || (player.assistantsByPlace[choice.place] ?? 0) < 1) {
+      reject(state, event, 'yellow-ability-unavailable');
+      return false;
+    }
+    if (!recallWithYellow(player, choice.place)) { reject(state, event, 'yellow-ability-unavailable'); return false; }
+    game.abilitiesUsedThisTurn.push('fruit');
+    game.lastAction = { playerUid: player.uid, place: player.merchantPlace, kind: 'fountain-recall', summary: `Paid 2 Lira to recall 1 assistant from Place ${choice.place}.` };
+    return true;
+  }
+
+  const pending = game.pending;
+  if (game.phase !== 'mosque-ability' || !pending) { reject(state, event, 'mosque-ability-unavailable'); return false; }
+  if (choice.kind === 'warehouse-extra') {
+    if (pending.kind !== 'warehouse-extra' || !ownsMosqueAbility(player, 'spice')) { reject(state, event, 'green-ability-unavailable'); return false; }
+    if (choice.good !== null) {
+      if (!buyWarehouseExtra(player, choice.good)) { reject(state, event, 'green-ability-payment'); return false; }
+      game.lastAction!.summary += ` Paid 2 Lira for 1 extra ${choice.good}.`;
+      game.abilitiesUsedThisTurn.push('spice');
+    } else game.lastAction!.summary += ' Declined the green Mosque ability.';
+    finishMosqueAbility(game, pending.familyAction);
+    return true;
+  }
+
+  if (pending.kind !== 'dice-adjust' || !ownsMosqueAbility(player, 'fabric')) { reject(state, event, 'red-ability-unavailable'); return false; }
+  const dice = adjustMosqueDice(
+    pending.originalDice,
+    choice.adjustment,
+    rollDice(createRandom(`${game.seed}:mosque-reroll:${game.turnNumber}:${pending.actionPlace}`))
+  );
+  let summary: string;
+  let reward: number;
+  if (pending.actionPlace === 8) {
+    const before = player.goods.jewelry;
+    summary = resolveBlackMarket(player, pending.good!, dice);
+    reward = player.goods.jewelry - before;
+  } else {
+    const before = player.lira;
+    summary = resolveTeaHouse(player, pending.wager!, dice);
+    reward = player.lira - before;
+  }
+  game.lastRoll = { playerUid: player.uid, place: pending.actionPlace, dice, ...(pending.wager ? { declared: pending.wager } : {}), reward };
+  game.lastAction = { playerUid: player.uid, place: pending.actionPlace, kind: pending.actionPlace === 8 ? 'black-market-roll' : 'tea-house-wager', summary: `${summary}${choice.adjustment === 'none' ? ' Kept the original roll.' : ` Used the red Mosque ability: ${choice.adjustment.replaceAll('-', ' ')}.`}` };
+  game.abilitiesUsedThisTurn.push('fabric');
+  finishMosqueAbility(game, pending.familyAction);
+  return true;
+}
+
+function finishMosqueAbility(game: NonNullable<ReplayProjection['game']>, familyAction: boolean) {
+  game.pending = null;
+  if (familyAction || !beginEncounters(game)) game.phase = 'turn-end';
 }
 
 function applyEncounter(state: ReplayProjection, event: CanonicalEvent): boolean {
@@ -469,6 +559,7 @@ function advanceTurn(game: NonNullable<ReplayProjection['game']>) {
   game.phase = 'movement';
   game.pending = null;
   game.encounterLog = [];
+  game.abilitiesUsedThisTurn = [];
 }
 
 function stringArray(value: unknown): string[] | null {
