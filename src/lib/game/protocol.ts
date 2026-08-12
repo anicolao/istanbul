@@ -1,3 +1,5 @@
+import type { GameSetup } from './setup';
+
 export const schemaVersion = 1;
 export const reducerVersion = 1;
 export const rulesEdition = 'istanbul-2014-base';
@@ -33,7 +35,7 @@ export interface Seat {
 export interface RoomProjection {
   roomCode: string;
   hostUid: string;
-  status: 'lobby';
+  status: 'lobby' | 'playing';
   seats: Seat[];
   maxPlayers: number;
   layout: LayoutKind;
@@ -42,6 +44,7 @@ export interface RoomProjection {
 
 export interface ReplayProjection {
   room: RoomProjection | null;
+  game: GameSetup | null;
   acceptedEventIds: string[];
   diagnostics: Array<{ eventId: string; reason: string }>;
 }

@@ -5,6 +5,7 @@
   import { replaceState } from '$app/navigation';
   import { onMount } from 'svelte';
   import { appTitle } from '$lib/app-metadata';
+  import GameTable from '$lib/components/GameTable.svelte';
   import { initializeFirebase } from '$lib/firebase';
   import { createEventRepository, type EventRepository } from '$lib/game/repository';
   import { readReplayCache, writeReplayCache } from '$lib/game/replay-cache';
@@ -18,7 +19,7 @@
     type ReplayProjection
   } from '$lib/game/protocol';
 
-  type Screen = 'landing' | 'loading-room' | 'join-room' | 'lobby';
+  type Screen = 'landing' | 'loading-room' | 'join-room' | 'lobby' | 'game';
 
   let connectionStatus = $state<'connecting' | 'synced' | 'error'>('connecting');
   let connectionText = $state('Connecting to Firebase…');
@@ -35,9 +36,13 @@
   let selectedLayout = $state<LayoutKind>('short-path');
   let actionPending = $state(false);
   let message = $state('');
+  let selectedPlace = $state<number | null>(null);
+  let selectedBonus = $state<string | null>(null);
+  let boardScale = $state(1);
   const buildHash = (import.meta.env.VITE_GIT_HASH ?? 'local').slice(0, 7);
 
   const room = $derived(projection.room);
+  const game = $derived(projection.game);
   const localSeat = $derived(room?.seats.find((seat) => seat.uid === userUid));
   const isHost = $derived(room?.hostUid === userUid);
   const allReady = $derived(Boolean(room && room.seats.length >= 2 && room.seats.every((seat) => seat.ready)));
@@ -51,7 +56,19 @@
     maxPlayers: room?.maxPlayers ?? null,
     layout: room?.layout ?? null,
     ready: room?.seats.map((seat) => seat.ready) ?? [],
-    localSeat: localSeat?.name ?? null
+    localSeat: localSeat?.name ?? null,
+    game: game ? {
+      seed: game.seed,
+      board: game.board,
+      currentTurn: game.players[game.turnSeat].name,
+      turnNumber: game.turnNumber,
+      phase: game.phase,
+      localHand: game.players.find(({ uid }) => uid === userUid)?.bonusHand ?? [],
+      opponentHandCounts: game.players.filter(({ uid }) => uid !== userUid).map(({ bonusHand }) => bonusHand.length),
+      selectedPlace,
+      selectedBonus,
+      boardScale
+    } : null
   }));
 
   onMount(async () => {
@@ -74,8 +91,10 @@
   function makeInviteUrl(roomCode: string) {
     if (typeof location === 'undefined') return `?room=${roomCode}`;
     const url = new URL(location.href);
+    const e2eSeed = url.searchParams.get('e2eSeed');
     url.search = '';
     url.searchParams.set('room', roomCode);
+    if (import.meta.env.VITE_USE_FIREBASE_EMULATORS === 'true' && e2eSeed) url.searchParams.set('e2eSeed', e2eSeed);
     return url.toString();
   }
 
@@ -113,7 +132,8 @@
       screen = 'loading-room';
       return;
     }
-    screen = projection.room.seats.some((seat) => seat.uid === userUid) ? 'lobby' : 'join-room';
+    const seated = projection.room.seats.some((seat) => seat.uid === userUid);
+    screen = seated && projection.game ? 'game' : seated ? 'lobby' : 'join-room';
     joinCode = roomCode;
   }
 
@@ -187,11 +207,35 @@
       actionPending = false;
     }
   }
+
+  async function startGame() {
+    if (!repository || !room || !isHost || !allReady || actionPending) return;
+    actionPending = true;
+    try {
+      const requested = new URL(location.href).searchParams.get('e2eSeed');
+      const seed = import.meta.env.VITE_USE_FIREBASE_EMULATORS === 'true' && requested
+        ? requested.slice(0, 96)
+        : crypto.randomUUID();
+      await repository.append('game/started', { seed });
+    } finally {
+      actionPending = false;
+    }
+  }
+
+  function inspectPlace(placeId: number) {
+    selectedBonus = null;
+    selectedPlace = placeId;
+  }
+
+  function inspectBonus(cardId: string) {
+    selectedPlace = null;
+    selectedBonus = cardId;
+  }
 </script>
 
 <svelte:head><title>{appTitle}</title></svelte:head>
 
-<main data-e2e-layout class:lobby-screen={screen === 'lobby'}>
+<main data-e2e-layout class:lobby-screen={screen === 'lobby'} class:game-screen={screen === 'game'}>
   <header class="topbar">
     <a class="brand" href="./" aria-label="Istanbul home">
       <span class="brand-gem" aria-hidden="true"></span>
@@ -291,12 +335,29 @@
           {/if}
           <p class="layout-note">{room.layout === 'short-path' ? 'Direct trade routes make this a welcoming first table.' : room.layout === 'long-path' ? 'Ruby routes sit farther apart for a more tactical journey.' : room.layout === 'number-order' ? 'The numbered reference arrangement from the rulebook.' : 'A valid arrangement derived from the committed setup seed.'}</p>
           <div class="invite"><label>Invitation link<input readonly value={inviteUrl} aria-label="Invitation link" /></label><p>Room code <strong>{room.roomCode}</strong></p></div>
-          <button class:unready={localSeat.ready} class="primary ready-button" onclick={() => void toggleReady()} disabled={actionPending}>{localSeat.ready ? 'Keep planning' : 'I am ready'} <span aria-hidden="true">{localSeat.ready ? '↺' : '✓'}</span></button>
+          {#if allReady && isHost}
+            <button class="primary ready-button start-button" onclick={() => void startGame()} disabled={actionPending}>Open the bazaar <span aria-hidden="true">→</span></button>
+          {:else}
+            <button class:unready={localSeat.ready} class="primary ready-button" onclick={() => void toggleReady()} disabled={actionPending}>{localSeat.ready ? 'Keep planning' : 'I am ready'} <span aria-hidden="true">{localSeat.ready ? '↺' : '✓'}</span></button>
+          {/if}
         </aside>
       </div>
 
       <footer class="history"><span>Immutable history <strong data-testid="event-count">{projection.acceptedEventIds.length} events</strong></span><span>Replay <strong>{projection.diagnostics.length === 0 ? 'clean' : `${projection.diagnostics.length} diagnostics`}</strong></span><span>Mode <strong>Personal screens</strong></span></footer>
     </section>
+  {:else if screen === 'game' && room && game}
+    <GameTable
+      {game}
+      {room}
+      {userUid}
+      {selectedPlace}
+      {selectedBonus}
+      {boardScale}
+      onInspectPlace={inspectPlace}
+      onInspectBonus={inspectBonus}
+      onZoomIn={() => boardScale = Math.min(1.18, boardScale + 0.09)}
+      onFit={() => boardScale = 1}
+    />
   {/if}
 
   <span class="state-output" data-testid="projection-state" data-room-code={room?.roomCode ?? ''} data-event-count={projection.acceptedEventIds.length} data-layout={room?.layout ?? ''} data-ready-count={room?.seats.filter((seat) => seat.ready).length ?? 0} data-seat-count={room?.seats.length ?? 0}>{stateSummary}</span>
@@ -310,6 +371,7 @@
   :global(button, select) { cursor: pointer; }
   :global(button:disabled, select:disabled) { cursor: not-allowed; }
   main { min-height: 100svh; overflow: hidden; padding: clamp(4.8rem, 8vw, 6rem) clamp(1rem, 4vw, 4rem) clamp(1rem, 3vw, 2rem); background: radial-gradient(circle at 8% 8%, #fff9e9 0 0.5rem, transparent 0.55rem), linear-gradient(90deg, rgb(23 63 67 / 5%) 1px, transparent 1px) 0 0 / 4rem 4rem, linear-gradient(rgb(23 63 67 / 5%) 1px, transparent 1px) 0 0 / 4rem 4rem, linear-gradient(145deg, #f4ead6, #dfc28e); }
+  main.game-screen { height: 100svh; min-height: 0; padding: 4.75rem .7rem .6rem; background: #102f32; }
   .topbar { position: absolute; inset: 0 0 auto; height: 4.2rem; display: flex; align-items: center; justify-content: space-between; padding: 0 clamp(1rem, 4vw, 4rem); border-bottom: 1px solid rgb(23 63 67 / 18%); background: rgb(255 251 240 / 78%); backdrop-filter: blur(12px); }
   .brand { display: flex; align-items: center; gap: .8rem; color: inherit; font: 700 1.7rem/1 'Cormorant Garamond', serif; text-decoration: none; }
   .brand-gem { width: 1.15rem; height: 1.15rem; rotate: 45deg; border: 2px solid #f3aa8c; border-radius: .2rem; background: #aa303f; box-shadow: inset 0 0 0 3px #c84a51; }
@@ -392,6 +454,7 @@
   .invite p { margin: 0; padding-bottom: .65rem; color: #bdd0ca; font-size: .78rem; }
   .invite strong { display: block; color: #efca7d; font-size: 1.15rem; letter-spacing: .16em; }
   .ready-button.unready { color: #fffaf0; background: #9c3d39; box-shadow: 0 .35rem 0 #652927; }
+  .start-button { color: #fffaf0 !important; background: #267356 !important; box-shadow: 0 .35rem 0 #164a37 !important; }
   .history { display: flex; justify-content: center; gap: 1.4rem; padding-top: .85rem; color: #5c716e; font-size: .76rem; }
   .history span + span { padding-left: 1.4rem; border-left: 1px solid rgb(23 63 67 / 20%); }
   .state-output { position: fixed; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }

@@ -38,6 +38,7 @@ describe('room replay', () => {
     });
     expect(projection.acceptedEventIds).toHaveLength(5);
     expect(projection.diagnostics).toEqual([]);
+    expect(projection.game).toBeNull();
   });
 
   it('sorts canonically and contains invalid, duplicate, and unauthorized events', () => {
