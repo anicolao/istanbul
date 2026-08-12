@@ -34,6 +34,7 @@
     onUseMosqueAbility,
     onPlayBonus,
     onGrantE2eResources,
+    onRematch,
     onEndTurn,
     onZoomIn,
     onFit
@@ -53,6 +54,7 @@
     onUseMosqueAbility: (choice: MosqueAbilityChoice) => void;
     onPlayBonus: (cardId: string, choice: BonusChoice) => void;
     onGrantE2eResources: () => void;
+    onRematch: () => void;
     onEndTurn: () => void;
     onZoomIn: () => void;
     onFit: () => void;
@@ -165,14 +167,14 @@
   }
 </script>
 
-<section class="game-table" aria-labelledby="game-title" style={`--courtyard: url('${artUrl}')`}>
+<section class:many={game.players.length > 3} class="game-table" aria-labelledby="game-title" style={`--courtyard: url('${artUrl}')`}>
   <header class="turn-banner">
-    <div><p>Turn {game.turnNumber} · {game.phase.replace('-', ' ')}</p><h1 id="game-title">{game.phase === 'movement' ? `${currentPlayer.name} surveys the bazaar.` : game.phase === 'merchant-payment' ? `${currentPlayer.name} meets another merchant.` : game.phase === 'family-action' ? `${currentPlayer.name} sends family to ${actionPlace.name}.` : game.phase === 'mosque-ability' ? `${currentPlayer.name} considers a Mosque ability.` : game.phase === 'encounters' ? `${currentPlayer.name} resolves bazaar encounters.` : game.phase === 'turn-end' ? `${currentPlayer.name} completed ${actionPlace.name}.` : `${currentPlayer.name} arrives at ${actionPlace.name}.`}</h1>{#if game.lastMovement?.paymentBlocked}<small class="turn-notice">{game.players.find((player) => player.uid === game.lastMovement?.playerUid)?.name} could not pay {game.lastMovement.paymentTotal} Lira; that turn ended immediately.</small>{/if}</div>
-    <div class="turn-token"><span class={`player-dot ${currentPlayer.color}`}></span><strong>{currentPlayer.name}</strong><small>{currentPlayer.uid === userUid ? 'Your turn' : game.phase === 'movement' ? 'Planning route' : 'Resolving turn'}</small></div>
+    <div><p>{game.phase === 'game-over' ? `Game ${game.epoch} · final ranking` : game.phase === 'final-bonus' ? 'Final Bonus cards' : `Turn ${game.turnNumber} · ${game.phase.replace('-', ' ')}`}</p><h1 id="game-title">{game.phase === 'game-over' ? `${game.end.winnerUids.length > 1 ? 'The merchants share the victory.' : `${game.end.rankings[0]?.name} wins the ruby race.`}` : game.phase === 'final-bonus' ? `${currentPlayer.name} makes final trades.` : game.phase === 'movement' ? `${currentPlayer.name} surveys the bazaar.` : game.phase === 'merchant-payment' ? `${currentPlayer.name} meets another merchant.` : game.phase === 'family-action' ? `${currentPlayer.name} sends family to ${actionPlace.name}.` : game.phase === 'mosque-ability' ? `${currentPlayer.name} considers a Mosque ability.` : game.phase === 'encounters' ? `${currentPlayer.name} resolves bazaar encounters.` : game.phase === 'turn-end' ? `${currentPlayer.name} completed ${actionPlace.name}.` : `${currentPlayer.name} arrives at ${actionPlace.name}.`}</h1>{#if game.lastMovement?.paymentBlocked}<small class="turn-notice">{game.players.find((player) => player.uid === game.lastMovement?.playerUid)?.name} could not pay {game.lastMovement.paymentTotal} Lira; that turn ended immediately.</small>{/if}</div>
+    <div class="turn-token"><span class={`player-dot ${currentPlayer.color}`}></span><strong>{game.phase === 'game-over' ? game.end.rankings[0]?.name : currentPlayer.name}</strong><small>{game.phase === 'game-over' ? 'Result locked' : currentPlayer.uid === userUid ? 'Your turn' : game.phase === 'movement' ? 'Planning route' : 'Resolving turn'}</small></div>
   </header>
 
   <div class="play-area">
-    <section class="board-shell" aria-label="Istanbul bazaar board">
+    <section class:hidden-at-finish={game.phase === 'game-over'} class="board-shell" aria-label="Istanbul bazaar board">
       <div class="board-tools" aria-label="Board view controls">
         <button class="zoom-button" onclick={onZoomIn} aria-label="Zoom board in"><span aria-hidden="true"></span></button>
         <button onclick={onFit}>Fit board</button>
@@ -212,7 +214,7 @@
       {#if import.meta.env.VITE_USE_FIREBASE_EMULATORS === 'true' && localIsCurrent && game.phase === 'movement'}<button class="e2e-resources" onclick={onGrantE2eResources}>Review ruby routes with supplied resources</button>{/if}
     </section>
 
-    <aside class="inspector" class:route-planner={!selectedBonusManifest && game.phase === 'movement' && !selectedPlaceManifest} aria-live="polite">
+    <aside class:finish={game.phase === 'game-over'} class="inspector" class:route-planner={!selectedBonusManifest && game.phase === 'movement' && !selectedPlaceManifest} aria-live="polite">
       {#if selectedBonusManifest}
         <p class="section-kicker">Private Bonus card</p>
         <h2>{selectedBonusManifest.title}</h2>
@@ -221,9 +223,9 @@
         {#if localIsCurrent}
           <div class="bonus-play" aria-label={`Play ${selectedBonusManifest.title}`}>
             {#if selectedBonusManifest.effect === 'gain-good'}
-              <label class="wager-control">Good to gain<select aria-label="Bonus good to gain" value={bonusGood} onchange={(event) => bonusGood = event.currentTarget.value as Good}>{#each Object.keys(goodNames) as good}<option value={good} disabled={localPlayer.goods[good as Good] >= localPlayer.capacity}>{goodNames[good as Good]}</option>{/each}</select></label><button class="turn-action" disabled={!['action', 'family-action', 'turn-end'].includes(game.phase) || localPlayer.goods[bonusGood] >= localPlayer.capacity} onclick={() => onPlayBonus(selectedBonusManifest.id, { kind: 'gain-good', good: bonusGood })}>Play to gain 1 {bonusGood}</button>
+              <label class="wager-control">Good to gain<select aria-label="Bonus good to gain" value={bonusGood} onchange={(event) => bonusGood = event.currentTarget.value as Good}>{#each Object.keys(goodNames) as good}<option value={good} disabled={localPlayer.goods[good as Good] >= localPlayer.capacity}>{goodNames[good as Good]}</option>{/each}</select></label><button class="turn-action" disabled={!['action', 'family-action', 'turn-end', 'final-bonus'].includes(game.phase) || localPlayer.goods[bonusGood] >= localPlayer.capacity} onclick={() => onPlayBonus(selectedBonusManifest.id, { kind: 'gain-good', good: bonusGood })}>Play to gain 1 {bonusGood}</button>
             {:else if selectedBonusManifest.effect === 'gain-lira'}
-              <button class="turn-action" disabled={!['movement', 'action', 'family-action', 'turn-end'].includes(game.phase)} onclick={() => onPlayBonus(selectedBonusManifest.id, { kind: 'gain-lira' })}>Play to gain 5 Lira</button>
+              <button class="turn-action" disabled={!['movement', 'action', 'family-action', 'turn-end', 'final-bonus'].includes(game.phase)} onclick={() => onPlayBonus(selectedBonusManifest.id, { kind: 'gain-lira' })}>Play to gain 5 Lira</button>
             {:else if selectedBonusManifest.effect === 'return-family'}
               <label class="wager-control">Catch reward<select aria-label="Family pardon reward" value={bonusFamilyReward} onchange={(event) => bonusFamilyReward = event.currentTarget.value as 'lira' | 'bonus'}><option value="lira">3 Lira</option><option value="bonus">1 Bonus card</option></select></label><button class="turn-action" disabled={localPlayer.familyPlace === 12 || !['movement', 'action', 'family-action', 'turn-end'].includes(game.phase)} onclick={() => onPlayBonus(selectedBonusManifest.id, { kind: 'return-family', reward: bonusFamilyReward })}>Return family to Police</button>
             {:else if selectedBonusManifest.effect === 'return-assistant'}
@@ -243,6 +245,17 @@
             {/if}
           </div>
         {:else}<p class="waiting-copy">Bonus cards may only be played by the active merchant.</p>{/if}
+      {:else if game.phase === 'game-over'}
+        <p class="section-kicker">The bazaar closes</p>
+        <h2>Final ranking</h2>
+        <p>Rubies decide first, followed by Lira, goods, and unplayed Bonus cards. Exact ties share the win.</p>
+        <ol class="final-ranking" aria-label="Final ranking">{#each game.end.rankings as standing}<li class:winner={standing.rank === 1}><b>{standing.rank}</b><strong>{standing.name}</strong><span>{standing.rubies} rubies</span><small>{standing.lira} Lira · {standing.goods} goods · {standing.bonusCards} cards</small></li>{/each}</ol>
+        {#if room.hostUid === userUid}<button class="turn-action" onclick={onRematch}>Open a rematch</button>{:else}<p class="waiting-copy">Waiting for the host to open a rematch.</p>{/if}
+      {:else if game.phase === 'final-bonus'}
+        <p class="section-kicker">Final direct resources</p>
+        <h2>{currentPlayer.name}’s last trade</h2>
+        <p>Play any Bonus cards that directly gain goods or Lira. Other effects are closed after the final turn.</p>
+        {#if localIsCurrent}<button class="turn-action" onclick={onEndTurn}>Finish final Bonus window</button>{:else}<p class="waiting-copy">Waiting for {currentPlayer.name} to finish final Bonus cards.</p>{/if}
       {:else if game.phase === 'merchant-payment'}
         <p class="section-kicker">Mandatory encounter</p>
         <h2>Pay the merchant toll</h2>
@@ -411,7 +424,7 @@
     </aside>
   </div>
 
-  <section class="player-rail" aria-label="Player resources" style={`--players: ${game.players.length}`}>
+  <section class:hidden-at-finish={game.phase === 'game-over'} class:many={game.players.length > 3} class="player-rail" aria-label="Player resources" style={`--players: ${game.players.length}`}>
     {#each game.players as player, index}
       <article class:local={player.uid === userUid} aria-label={`${player.name} resources`}>
         <div class="player-name"><span class={`player-dot ${player.color}`}></span><strong>{player.name}{player.uid === userUid ? ' · you' : ''}</strong><small>{index === game.startingSeat ? 'Start player' : `Seat ${index + 1}`}</small></div>
@@ -441,6 +454,8 @@
   .ruby-route div { display: grid; gap: .1rem; padding: .75rem; border: 1px solid #d9bd7b; border-radius: .7rem; background: #f5e6bd; }
   .ruby-route span { color: #55706f; font-size: .66rem; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; }
   .ruby-route strong { color: #a43d43; font: 700 1.35rem/1 'Cormorant Garamond', serif; }
+  .final-ranking { display: grid; gap: .45rem; margin: .7rem 0; padding: 0; list-style: none; }.final-ranking li { display: grid; grid-template-columns: 1.5rem 1fr auto; gap: .1rem .45rem; align-items: center; padding: .5rem; border: 1px solid #d4bd91; border-radius: .5rem; background: #f1e5cc; }.final-ranking li.winner { border-color: #b27b23; background: #f4df9e; }.final-ranking b { grid-row: 1 / 3; color: #a43b32; font: 700 1.3rem 'Cormorant Garamond', serif; }.final-ranking small { grid-column: 2 / 4; color: #607371; }
+  .play-area:has(.inspector.finish) { grid-template-columns: 1fr; }.hidden-at-finish { display: none !important; }.inspector.finish { width: min(54rem, 100%); margin: auto; padding: clamp(1.2rem, 4vw, 2.5rem); background: radial-gradient(circle at 90% 10%, rgb(239 202 125 / 35%), transparent 12rem), #fffaf0; }.inspector.finish .final-ranking { grid-template-columns: repeat(5, 1fr); }.inspector.finish .final-ranking li { grid-template-columns: 1.5rem 1fr; }.inspector.finish .final-ranking li > span, .inspector.finish .final-ranking li > small { grid-column: 1 / -1; }
   .sultan-cost { display: flex; flex-wrap: wrap; gap: .35rem; margin: .75rem 0; }
   .sultan-cost .good { min-width: 4.4rem; display: flex; align-items: center; gap: .3rem; padding: .4rem .5rem; border: 1px solid #d7c49c; border-radius: .45rem; color: #173f43; background: #fffaf0; font-size: .72rem; font-weight: 700; }
   .sultan-cost .good i { width: .75rem; height: .75rem; display: inline-block; border-radius: .18rem; }
@@ -503,6 +518,7 @@
   .player-rail article { min-width: 0; display: grid; grid-template-columns: auto 1fr auto; gap: .35rem .7rem; padding: .55rem .7rem; border: 1px solid rgb(239 202 125 / 30%); border-radius: .85rem; color: #173f43; background: rgb(255 250 239 / 92%); }.player-rail article.local { outline: 2px solid #e7b64c; }
   .player-name { display: grid; grid-template-columns: 1.55rem auto; align-items: center; }.player-name .player-dot { grid-row: 1 / 3; width: 1.4rem; height: 1.4rem; margin-right: .35rem; }.player-name small { color: #6d7c79; font-size: .6rem; }
   .resources { display: flex; margin: 0; }.resources div { padding: 0 .45rem; border-left: 1px solid #d9cdb7; text-align: center; }.resources dt { color: #6d7c79; font-size: .52rem; text-transform: uppercase; }.resources dd { margin: 0; font-weight: 700; }
+  .player-rail.many article { grid-template-columns: 1fr auto; gap: .25rem; padding: .45rem; }.player-rail.many .resources { grid-column: 1 / -1; display: grid; grid-template-columns: repeat(4, 1fr); }.player-rail.many .resources div { padding: .15rem; }.player-rail.many .goods { justify-content: end; }
   .goods { display: flex; gap: .25rem; align-items: center; }.good { display: flex; gap: .15rem; align-items: center; font-size: .65rem; font-weight: 700; }.good i { width: .65rem; height: .65rem; border-radius: .16rem; }.good.fabric i { background: #b7423c; }.good.spice i { background: #3b8662; }.good.fruit i { background: #d6a82c; }.good.jewelry i { background: #4382a9; }
   .mosque-badges { grid-column: 1 / -1; display: flex; gap: .25rem; }.mosque-badges span { padding: .12rem .35rem; border: 1px solid currentColor; border-radius: .3rem; background: #fffaf0; font-size: .5rem; font-weight: 700; }
   .hand { grid-column: 1 / -1; display: flex; gap: .4rem; align-items: center; border-top: 1px solid #d9cdb7; padding-top: .35rem; font-size: .62rem; }.hand > span { color: #6d7c79; text-transform: uppercase; }.hand button { max-width: 12rem; display: grid; padding: .28rem .5rem; border: 1px solid #c98948; border-radius: .35rem; color: #fffaf0; text-align: left; background: #a23b36; }.hand button[aria-pressed='true'] { outline: 2px solid #e7b64c; }.hand button small { font-size: .48rem; text-transform: uppercase; }.hand button strong { overflow: hidden; font-size: .62rem; text-overflow: ellipsis; white-space: nowrap; }
@@ -513,10 +529,12 @@
     .game-table { gap: .4rem; }
     .turn-banner { min-height: 3.4rem; padding: .35rem .6rem; }.turn-banner h1 { font-size: 1.45rem; }.turn-token { font-size: .7rem; }.turn-token small { font-size: .55rem; }
     .play-area { grid-template-columns: 1fr; grid-template-rows: minmax(0, 1fr) auto; gap: .4rem; }
-    .board-viewport { padding: 2.1rem .4rem .35rem; }.board { width: 100%; aspect-ratio: 1.18; gap: .25rem; }.place { grid-template-columns: 1.35rem 1fr; padding: .24rem; border-radius: .38rem; }.place-glyph { width: 1.25rem; height: 1.25rem; }.place strong { display: -webkit-box; overflow: hidden; font-size: .52rem; line-height: .88; white-space: normal; -webkit-box-orient: vertical; -webkit-line-clamp: 2; line-clamp: 2; }.place-number { font-size: .5rem; }.occupants { min-height: .85rem; }.merchant, .assistant, .family-member { width: .8rem; height: .8rem; font-size: .4rem; }.encounter { width: .7rem; height: .7rem; font-size: .38rem; }
+    .board-viewport { padding: 2.1rem .4rem .35rem; }.board { width: 100%; aspect-ratio: 1.18; gap: .25rem; }.game-table.many .board { aspect-ratio: 1.42; }.place { grid-template-columns: 1.35rem 1fr; padding: .24rem; border-radius: .38rem; }.place-glyph { width: 1.25rem; height: 1.25rem; }.place strong { display: -webkit-box; overflow: hidden; font-size: .52rem; line-height: .88; white-space: normal; -webkit-box-orient: vertical; -webkit-line-clamp: 2; line-clamp: 2; }.place-number { font-size: .5rem; }.occupants { min-height: .85rem; }.merchant, .assistant, .family-member { width: .8rem; height: .8rem; font-size: .4rem; }.encounter { width: .7rem; height: .7rem; font-size: .38rem; }
     .inspector { min-height: 5.5rem; max-height: none; display: grid; grid-template-columns: auto 1fr; gap: .2rem .7rem; align-content: start; padding: .55rem .7rem; }.inspector .section-kicker, .inspector h2, .inspector > p { grid-column: 2; }.inspector h2 { margin: 0; font-size: 1.35rem; }.inspector > p:not(.section-kicker) { margin: 0; font-size: .65rem; }.inspector-glyph { grid-column: 1; grid-row: 1 / 4; width: 3rem; height: 3rem; }.inspector dl { grid-column: 1 / -1; display: flex; gap: .8rem; margin: 0; }.inspector dl div { padding: .15rem 0; border: 0; font-size: .55rem; }.inspector .turn-action, .inspector .skip-link, .inspector .wheelbarrow-track, .inspector .crate-track, .inspector .recall-list, .inspector .action-balance, .inspector .mail-track, .inspector .caravan-sources, .inspector .card-preview, .inspector .discard-choice, .inspector .demand-card, .inspector .market-revenue, .inspector .basic-good-choice, .inspector .wager-control, .inspector .dice-result, .inspector .encounter-choices, .inspector .encounter-history, .inspector .mosque-ability-card, .inspector .dice-adjustments, .inspector .mosque-offers, .inspector .yellow-recall { grid-column: 1 / -1; margin-top: .2rem; }.inspector .turn-action { min-height: 2.2rem; }.inspector .skip-link { min-height: 1.5rem; }.recall-list { grid-template-columns: 1fr 1fr; }.encounter-ledger, .supply-ledger, .large-card { display: none; }.mobile-card-text { display: block; }.encounter-choices { grid-template-columns: 1fr 1fr; }.encounter-choices section { padding: .4rem; }.encounter-choices section > div { grid-template-columns: 1fr; }.mosque-offers article > small { min-height: auto; }.dice-adjustments { grid-template-columns: 1fr 1fr; }
     .inspector.route-planner { position: relative; display: block; height: 8rem; max-height: 8rem; padding: 0; }.route-planner .section-kicker { position: absolute; top: .55rem; left: 1.4rem; margin: 0; }.route-planner h2 { position: absolute; top: 1.45rem; left: 1.4rem; margin: 0; }.route-planner > p:not(.section-kicker) { position: absolute; top: 3.15rem; right: .7rem; left: 1.4rem; margin: 0; line-height: .82rem; }.route-planner .supply-ledger { position: absolute; right: .7rem; bottom: .45rem; left: .7rem; display: flex; justify-content: space-between; margin: 0 !important; }
     .player-rail { grid-auto-flow: row; grid-template-columns: 1fr 1fr; gap: .3rem; }.player-rail article { padding: .35rem .45rem; grid-template-columns: 1fr auto; gap: .2rem; }.resources { display: none; }.goods { justify-content: end; }.hand, .masked-hand { padding-top: .2rem; }.hand { flex-wrap: wrap; }.hand > span { width: 100%; }.hand button { width: 100%; max-width: none; min-height: 1.55rem; }.player-name { font-size: .72rem; }
+    .player-rail.many { gap: .18rem; }.player-rail.many article { gap: .08rem; padding: .2rem .3rem; }.player-rail.many .player-name small, .player-rail.many .masked-hand { display: none; }.player-rail.many .resources div { padding: 0 .08rem; }.player-rail.many .resources dt { font-size: .4rem; }.player-rail.many .resources dd { font-size: .68rem; }.player-rail.many .hand { flex-wrap: nowrap; padding-top: .08rem; }.player-rail.many .hand > span { width: auto; font-size: .48rem; }.player-rail.many .hand button { min-height: 1.2rem; padding: .12rem .3rem; }.player-rail.many .hand button small { display: none; }
+    .inspector.finish { display: block; padding: .85rem; }.inspector.finish .section-kicker, .inspector.finish h2, .inspector.finish > p { display: block; }.inspector.finish .final-ranking { display: grid; grid-template-columns: 1fr; }.inspector.finish .final-ranking li { display: grid; grid-template-columns: 1.5rem 1fr auto; }.inspector.finish .final-ranking li > span { grid-column: auto; }.inspector.finish .final-ranking li > small { grid-column: 2 / 4; }
   }
   @media (prefers-reduced-motion: reduce) { .board { transition: none; } }
 </style>

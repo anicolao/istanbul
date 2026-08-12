@@ -26,6 +26,7 @@ import type { Good } from './manifests';
 import { adjustMosqueDice, buyWarehouseExtra, isMosqueAbilityChoice, ownsMosqueAbility, recallWithYellow, takeMosqueTile } from './mosques';
 import { buyGemstoneRuby, buySultanRuby } from './ruby-routes';
 import { activateBonus, bonusEffect, discardPlayedBonus, isBonusChoice } from './bonus';
+import { finishFinalBonusSeat, markEndTrigger } from './endgame';
 
 const emptyProjection = (): ReplayProjection => ({
   room: null,
@@ -177,6 +178,16 @@ function applyEvent(state: ReplayProjection, event: CanonicalEvent): boolean {
     return false;
   }
 
+  if (event.type === 'game/rematched') {
+    const seed = stringField(event.payload, 'seed');
+    if (state.game.phase !== 'game-over' || event.actorUid !== state.room.hostUid || !seed || seed.length > 96) {
+      reject(state, event, 'invalid-rematch');
+      return false;
+    }
+    state.game = createSetup(state.room, seed, state.game.epoch + 1);
+    return true;
+  }
+
   if (event.type === 'turn/moved') {
     return applyMovement(state, event);
   }
@@ -231,6 +242,13 @@ function applyEvent(state: ReplayProjection, event: CanonicalEvent): boolean {
   if (event.type === 'turn/ended') {
     const game = state.game;
     const player = game.players[game.turnSeat];
+    if (game.phase === 'final-bonus') {
+      if (event.actorUid !== player.uid || !finishFinalBonusSeat(game)) {
+        reject(state, event, 'final-bonus-cannot-end');
+        return false;
+      }
+      return true;
+    }
     if (!['action', 'family-action', 'turn-end'].includes(game.phase) || event.actorUid !== player.uid) {
       reject(state, event, 'turn-cannot-end');
       return false;
@@ -366,11 +384,11 @@ export function applyBonus(state: ReplayProjection, event: CanonicalEvent): bool
   let summary: string | null = null;
 
   if (effect === 'gain-good' && choice.kind === 'gain-good') {
-    if (!['action', 'family-action', 'turn-end'].includes(game.phase) || player.goods[choice.good] >= player.capacity) return rejectBonus(state, event, 'bonus-timing');
+    if (!['action', 'family-action', 'turn-end', 'final-bonus'].includes(game.phase) || player.goods[choice.good] >= player.capacity) return rejectBonus(state, event, 'bonus-timing');
     player.goods[choice.good] += 1;
     summary = `Played a Bonus card to gain 1 ${choice.good}.`;
   } else if (effect === 'gain-lira' && choice.kind === 'gain-lira') {
-    if (!['movement', 'action', 'family-action', 'turn-end'].includes(game.phase)) return rejectBonus(state, event, 'bonus-timing');
+    if (!['movement', 'action', 'family-action', 'turn-end', 'final-bonus'].includes(game.phase)) return rejectBonus(state, event, 'bonus-timing');
     player.lira += 5;
     summary = 'Played a Bonus card to gain 5 Lira.';
   } else if (effect === 'return-family' && choice.kind === 'return-family') {
@@ -675,6 +693,18 @@ function applyMerchantPayment(state: ReplayProjection, event: CanonicalEvent): b
 }
 
 function advanceTurn(game: NonNullable<ReplayProjection['game']>) {
+  game.end.ordinaryTurnCounts[game.turnSeat] += 1;
+  markEndTrigger(game);
+  if (game.end.triggeredByUid && game.turnSeat === game.end.finalTurnSeat) {
+    game.phase = 'final-bonus';
+    game.turnSeat = game.startingSeat;
+    game.pending = null;
+    game.encounterLog = [];
+    game.abilitiesUsedThisTurn = [];
+    game.activeBonusEffects = [];
+    game.bonusLog = [];
+    return;
+  }
   game.turnSeat = (game.turnSeat + 1) % game.players.length;
   game.turnNumber += 1;
   game.phase = 'movement';

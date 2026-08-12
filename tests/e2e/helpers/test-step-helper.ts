@@ -47,8 +47,10 @@ export class TestStepHelper {
       'data-status',
       options.status ?? 'synced'
     );
+    await this.page.bringToFront();
     await this.page.mouse.move(0, 0);
-    await this.page.evaluate(() => {
+    await this.page.evaluate(async () => {
+      await new Promise<void>((resolve) => requestAnimationFrame(() => requestAnimationFrame(() => resolve())));
       const root = document.documentElement;
       if (root.scrollWidth > window.innerWidth + 1 || root.scrollHeight > window.innerHeight + 1) {
         throw new Error(
