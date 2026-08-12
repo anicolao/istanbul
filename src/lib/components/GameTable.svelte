@@ -12,6 +12,8 @@
   } from '$lib/game/actions';
   import type { EncounterChoice } from '$lib/game/encounters';
   import { ownsMosqueAbility, type MosqueAbilityChoice } from '$lib/game/mosques';
+  import { currentSultanCost } from '$lib/game/ruby-routes';
+  import type { BonusChoice } from '$lib/game/bonus';
   import type { RoomProjection } from '$lib/game/protocol';
   import type { GameSetup } from '$lib/game/setup';
   import PlaceGlyph from './PlaceGlyph.svelte';
@@ -30,6 +32,8 @@
     onTakeAction,
     onResolveEncounter,
     onUseMosqueAbility,
+    onPlayBonus,
+    onGrantE2eResources,
     onEndTurn,
     onZoomIn,
     onFit
@@ -47,6 +51,8 @@
     onTakeAction: (choice: PlaceActionChoice) => void;
     onResolveEncounter: (choice: EncounterChoice) => void;
     onUseMosqueAbility: (choice: MosqueAbilityChoice) => void;
+    onPlayBonus: (cardId: string, choice: BonusChoice) => void;
+    onGrantE2eResources: () => void;
     onEndTurn: () => void;
     onZoomIn: () => void;
     onFit: () => void;
@@ -84,10 +90,22 @@
   let smugglerGood = $state<Good>('fabric');
   let smugglerPaymentGood = $state<Good>('fabric');
   let warehouseExtraGood = $state<Good>('jewelry');
+  let sultanWildGoods = $state<Good[]>([]);
+  let bonusGood = $state<Good>('jewelry');
+  let bonusFamilyReward = $state<'lira' | 'bonus'>('lira');
+  let bonusAssistantPlace = $state(1);
+  let flexibleGoods = $state<Good[]>(['fabric']);
   const caravanPreview = $derived(previewCaravansary(game, caravanSources) ?? []);
   const activeDemand = $derived(demandTiles.find(({ id }) => id === (actionPlace.id === 10 ? game.largeDemand[0] : game.smallDemand[0])));
   const marketSelectionLegal = $derived(isMarketSelectionLegal(activeDemand?.goods ?? [], marketSelection));
   const smugglerGainAvailable = $derived(localPlayer.goods[smugglerGood] < localPlayer.capacity);
+  const sultanCost = $derived(currentSultanCost(game));
+  const sultanWildCount = $derived(sultanCost.filter((good) => good === 'any').length);
+  const sultanPayment = $derived((Object.keys(goodNames) as Good[]).reduce<Record<Good, number>>((totals, good) => ({
+    ...totals,
+    [good]: sultanCost.filter((required) => required === good).length + sultanWildGoods.filter((wild) => wild === good).length
+  }), { fabric: 0, spice: 0, fruit: 0, jewelry: 0 }));
+  const sultanAffordable = $derived(sultanWildGoods.length === sultanWildCount && (Object.keys(goodNames) as Good[]).every((good) => localPlayer.goods[good] >= sultanPayment[good]));
 
   function occupants(placeId: number) {
     return game.players.filter(({ merchantPlace }) => merchantPlace === placeId);
@@ -137,6 +155,14 @@
     onTakeAction({ kind: 'market-sell', slotIndexes: marketSelection });
     marketSelection = [];
   }
+
+  function setSultanWild(index: number, good: Good) {
+    sultanWildGoods = Array.from({ length: sultanWildCount }, (_, slot) => slot === index ? good : sultanWildGoods[slot] ?? 'fabric');
+  }
+
+  function setFlexibleGood(index: number, good: Good) {
+    flexibleGoods = flexibleGoods.map((value, slot) => slot === index ? good : value);
+  }
 </script>
 
 <section class="game-table" aria-labelledby="game-title" style={`--courtyard: url('${artUrl}')`}>
@@ -183,6 +209,7 @@
         </div>
       </div>
       <p class="board-caption">{room.layout.replace('-', ' ')} · setup seed {game.seed}</p>
+      {#if import.meta.env.VITE_USE_FIREBASE_EMULATORS === 'true' && localIsCurrent && game.phase === 'movement'}<button class="e2e-resources" onclick={onGrantE2eResources}>Review ruby routes with supplied resources</button>{/if}
     </section>
 
     <aside class="inspector" class:route-planner={!selectedBonusManifest && game.phase === 'movement' && !selectedPlaceManifest} aria-live="polite">
@@ -191,6 +218,31 @@
         <h2>{selectedBonusManifest.title}</h2>
         <p class="mobile-card-text">{selectedBonusManifest.text}</p>
         <div class="large-card"><span>Bonus</span><strong>{selectedBonusManifest.title}</strong><p>{selectedBonusManifest.text}</p></div>
+        {#if localIsCurrent}
+          <div class="bonus-play" aria-label={`Play ${selectedBonusManifest.title}`}>
+            {#if selectedBonusManifest.effect === 'gain-good'}
+              <label class="wager-control">Good to gain<select aria-label="Bonus good to gain" value={bonusGood} onchange={(event) => bonusGood = event.currentTarget.value as Good}>{#each Object.keys(goodNames) as good}<option value={good} disabled={localPlayer.goods[good as Good] >= localPlayer.capacity}>{goodNames[good as Good]}</option>{/each}</select></label><button class="turn-action" disabled={!['action', 'family-action', 'turn-end'].includes(game.phase) || localPlayer.goods[bonusGood] >= localPlayer.capacity} onclick={() => onPlayBonus(selectedBonusManifest.id, { kind: 'gain-good', good: bonusGood })}>Play to gain 1 {bonusGood}</button>
+            {:else if selectedBonusManifest.effect === 'gain-lira'}
+              <button class="turn-action" disabled={!['movement', 'action', 'family-action', 'turn-end'].includes(game.phase)} onclick={() => onPlayBonus(selectedBonusManifest.id, { kind: 'gain-lira' })}>Play to gain 5 Lira</button>
+            {:else if selectedBonusManifest.effect === 'return-family'}
+              <label class="wager-control">Catch reward<select aria-label="Family pardon reward" value={bonusFamilyReward} onchange={(event) => bonusFamilyReward = event.currentTarget.value as 'lira' | 'bonus'}><option value="lira">3 Lira</option><option value="bonus">1 Bonus card</option></select></label><button class="turn-action" disabled={localPlayer.familyPlace === 12 || !['movement', 'action', 'family-action', 'turn-end'].includes(game.phase)} onclick={() => onPlayBonus(selectedBonusManifest.id, { kind: 'return-family', reward: bonusFamilyReward })}>Return family to Police</button>
+            {:else if selectedBonusManifest.effect === 'return-assistant'}
+              <label class="wager-control">Assistant<select aria-label="Bonus assistant to return" value={bonusAssistantPlace} onchange={(event) => bonusAssistantPlace = Number(event.currentTarget.value)}>{#each Object.keys(localPlayer.assistantsByPlace) as placeId}<option value={placeId}>{placeById.get(Number(placeId))?.name}</option>{/each}</select></label><button class="turn-action" disabled={game.phase !== 'movement' || !Object.keys(localPlayer.assistantsByPlace).length} onclick={() => onPlayBonus(selectedBonusManifest.id, { kind: 'return-assistant', place: bonusAssistantPlace })}>Return selected assistant</button>
+            {:else if selectedBonusManifest.effect === 'long-move'}
+              <button class="turn-action" disabled={game.phase !== 'movement' || game.activeBonusEffects.includes('long-move')} onclick={() => onPlayBonus(selectedBonusManifest.id, { kind: 'long-move' })}>Play for a 3–4 space move</button>
+            {:else if selectedBonusManifest.effect === 'stay'}
+              <button class="turn-action" disabled={game.phase !== 'movement' || localPlayer.merchantPlace === 7 || !(localPlayer.assistantsByPlace[localPlayer.merchantPlace] ?? 0)} onclick={() => onPlayBonus(selectedBonusManifest.id, { kind: 'stay' })}>Stay and use this Place</button>
+            {:else if selectedBonusManifest.effect === 'wild-small-market'}
+              <button class="turn-action" disabled={game.phase !== 'action' || localPlayer.merchantPlace !== 11} onclick={() => onPlayBonus(selectedBonusManifest.id, { kind: 'wild-small-market' })}>Use flexible Small Market demand</button>
+            {:else if selectedBonusManifest.effect === 'repeat-post'}
+              <button class="turn-action" disabled={game.phase !== 'turn-end' || game.lastAction?.place !== 5} onclick={() => onPlayBonus(selectedBonusManifest.id, { kind: 'repeat-action' })}>Repeat Post Office action</button>
+            {:else if selectedBonusManifest.effect === 'repeat-gemstone'}
+              <button class="turn-action" disabled={game.phase !== 'turn-end' || game.lastAction?.place !== 16 || localPlayer.lira < game.rubyTracks.gemstonePrice} onclick={() => onPlayBonus(selectedBonusManifest.id, { kind: 'repeat-action' })}>Repeat at {game.rubyTracks.gemstonePrice} Lira</button>
+            {:else if selectedBonusManifest.effect === 'repeat-sultan'}
+              <button class="turn-action" disabled={game.phase !== 'turn-end' || game.lastAction?.place !== 13 || !sultanAffordable} onclick={() => onPlayBonus(selectedBonusManifest.id, { kind: 'repeat-action', wildGoods: sultanWildGoods })}>Repeat for {sultanCost.length} goods</button>
+            {/if}
+          </div>
+        {:else}<p class="waiting-copy">Bonus cards may only be played by the active merchant.</p>{/if}
       {:else if game.phase === 'merchant-payment'}
         <p class="section-kicker">Mandatory encounter</p>
         <h2>Pay the merchant toll</h2>
@@ -286,8 +338,15 @@
           <div class="demand-card" aria-label={`${actionPlace.name} demand ${activeDemand?.id}`}>
             {#each activeDemand?.goods ?? [] as good, index}<label class={good}><input type="checkbox" aria-label={`Sell demand slot ${index + 1}: ${good}`} checked={marketSelection.includes(index)} onchange={() => toggleMarketSlot(index)} /><i></i><span>{goodNames[good]}</span></label>{/each}
           </div>
-          <p class="market-revenue">{marketSelection.length ? `${marketSelection.length} selected · ${marketRevenue[marketSelection.length]} Lira` : 'Select goods to sell'}</p>
-          {#if localIsCurrent}<button class="turn-action" disabled={!marketSelectionLegal} onclick={sellMarket}>Sell selected goods for {marketRevenue[marketSelection.length]} Lira</button><button class="skip-link" onclick={onEndTurn}>Skip market and end turn</button>{:else}<p class="waiting-copy">Waiting for {currentPlayer.name} to choose a sale.</p>{/if}
+          {#if actionPlace.id === 11 && game.activeBonusEffects.includes('wild-small-market')}
+            <label class="wager-control">Flexible sale size<select aria-label="Flexible sale size" value={flexibleGoods.length} onchange={(event) => flexibleGoods = Array.from({ length: Number(event.currentTarget.value) }, (_, index) => flexibleGoods[index] ?? 'fabric')}>{#each [1, 2, 3, 4, 5] as count}<option value={count}>{count} good{count === 1 ? '' : 's'} · {marketRevenue[count]} Lira</option>{/each}</select></label>
+            {#each flexibleGoods as good, index}<label class="wager-control">Flexible good {index + 1}<select aria-label={`Flexible good ${index + 1}`} value={good} onchange={(event) => setFlexibleGood(index, event.currentTarget.value as Good)}>{#each Object.keys(goodNames) as option}<option value={option}>{goodNames[option as Good]}</option>{/each}</select></label>{/each}
+            {#if localIsCurrent}<button class="turn-action" disabled={!((Object.keys(goodNames) as Good[]).every((good) => flexibleGoods.filter((value) => value === good).length <= localPlayer.goods[good]))} onclick={() => onTakeAction({ kind: 'market-sell', slotIndexes: [], wildGoods: flexibleGoods })}>Sell any {flexibleGoods.length} goods for {marketRevenue[flexibleGoods.length]} Lira</button>{/if}
+          {:else}
+            <p class="market-revenue">{marketSelection.length ? `${marketSelection.length} selected · ${marketRevenue[marketSelection.length]} Lira` : 'Select goods to sell'}</p>
+            {#if localIsCurrent}<button class="turn-action" disabled={!marketSelectionLegal} onclick={sellMarket}>Sell selected goods for {marketRevenue[marketSelection.length]} Lira</button>{/if}
+          {/if}
+          {#if localIsCurrent}<button class="skip-link" onclick={onEndTurn}>Skip market and end turn</button>{:else}<p class="waiting-copy">Waiting for {currentPlayer.name} to choose a sale.</p>{/if}
         {:else if actionPlace.id === 8}
           <p>Choose one basic good, then roll two deterministic dice for zero to three jewelry.</p>
           <fieldset class="basic-good-choice"><legend>Basic good</legend>{#each ['fabric', 'spice', 'fruit'] as good}<label class={good}><input type="radio" name="black-market-good" value={good} checked={blackMarketGood === good} onchange={() => blackMarketGood = good as Exclude<Good, 'jewelry'>} /><i></i><span>{goodNames[good as Good]}</span></label>{/each}</fieldset>
@@ -312,6 +371,18 @@
             {/each}
           </div>
           {#if localIsCurrent}<button class="skip-link" onclick={onEndTurn}>Skip Mosque and end turn</button>{:else}<p class="waiting-copy">Waiting for {currentPlayer.name} to choose a Mosque tile.</p>{/if}
+        {:else if actionPlace.id === 13}
+          <p>Deliver every uncovered good to claim the next Palace ruby. Each purchase reveals one additional requirement.</p>
+          <div class="ruby-route" aria-label="Sultan's Palace ruby track"><div><span>Ruby available</span><strong>{game.rubyTracks.sultanRubies}</strong></div><div><span>Goods due</span><strong>{sultanCost.length}</strong></div></div>
+          <div class="sultan-cost" aria-label="Current Sultan goods cost">{#each sultanCost as good}<span class={`good ${good === 'any' ? 'any' : good}`} title={good === 'any' ? 'Any good' : goodNames[good]}><i></i>{good === 'any' ? 'Any' : goodNames[good]}</span>{/each}</div>
+          {#if localIsCurrent}
+            {#each Array.from({ length: sultanWildCount }) as _, index}<label class="wager-control">Wild good {index + 1}<select aria-label={`Sultan wild good ${index + 1}`} value={sultanWildGoods[index] ?? 'fabric'} onchange={(event) => setSultanWild(index, event.currentTarget.value as Good)}>{#each Object.keys(goodNames) as good}<option value={good}>{goodNames[good as Good]}</option>{/each}</select></label>{/each}
+            <button class="turn-action" disabled={!sultanAffordable || game.rubyTracks.sultanRubies < 1} onclick={() => onTakeAction({ kind: 'sultan-buy', wildGoods: sultanWildGoods })}>Deliver {sultanCost.length} goods for 1 ruby</button><button class="skip-link" onclick={onEndTurn}>Skip Sultan's Palace and end turn</button>
+          {:else}<p class="waiting-copy">Waiting for {currentPlayer.name} to deliver goods.</p>{/if}
+        {:else if actionPlace.id === 16}
+          <p>Pay the greatest uncovered price to claim the next Dealer ruby. The price rises by one after every purchase.</p>
+          <div class="ruby-route" aria-label="Gemstone Dealer ruby track"><div><span>Current price</span><strong>{game.rubyTracks.gemstonePrice} Lira</strong></div><div><span>Rubies available</span><strong>{game.rubyTracks.gemstoneRubies}</strong></div></div>
+          {#if localIsCurrent}<button class="turn-action" disabled={localPlayer.lira < game.rubyTracks.gemstonePrice || game.rubyTracks.gemstoneRubies < 1} onclick={() => onTakeAction({ kind: 'gemstone-buy' })}>Pay {game.rubyTracks.gemstonePrice} Lira for 1 ruby</button><button class="skip-link" onclick={onEndTurn}>Skip Gemstone Dealer and end turn</button>{:else}<p class="waiting-copy">Waiting for {currentPlayer.name} to buy or pass.</p>{/if}
         {:else}
           <p>{actionPlace.action}</p>
           {#if localIsCurrent}<button class="turn-action secondary-action" onclick={onEndTurn}>Skip this Place action and end turn</button>{:else}<p class="waiting-copy">Waiting for {currentPlayer.name} to finish the Place action.</p>{/if}
@@ -334,7 +405,7 @@
           <div><dt>Mosque tiles</dt><dd>{Object.values(game.mosqueStacks).flat().length}</dd></div>
           <div><dt>Market demands</dt><dd>{game.largeDemand.length + game.smallDemand.length}</dd></div>
           <div><dt>Wheelbarrow extensions</dt><dd>{game.supplies.wheelbarrowExtensions}</dd></div>
-          <div><dt>Ruby supply</dt><dd>{game.supplies.wainwrightRubies + game.supplies.smallMosqueRubies + game.supplies.greatMosqueRubies}</dd></div>
+          <div><dt>Ruby supply</dt><dd>{game.supplies.wainwrightRubies + game.supplies.smallMosqueRubies + game.supplies.greatMosqueRubies + game.rubyTracks.sultanRubies + game.rubyTracks.gemstoneRubies}</dd></div>
         </dl>
       {/if}
     </aside>
@@ -366,11 +437,20 @@
   .turn-token small { color: #bdd0ca; }
   .player-dot { width: 1.7rem; height: 1.7rem; display: inline-block; border: 3px solid #f0cd80; border-radius: 50%; box-shadow: inset 0 0 0 2px #fffaf0; }
   .ruby { background: #a63e3a; }.saffron { background: #c98c28; }.teal { background: #28796f; }.indigo { background: #43588f; }.plum { background: #73466e; }
+  .ruby-route { display: grid; grid-template-columns: repeat(2, 1fr); gap: .5rem; margin: .9rem 0; }
+  .ruby-route div { display: grid; gap: .1rem; padding: .75rem; border: 1px solid #d9bd7b; border-radius: .7rem; background: #f5e6bd; }
+  .ruby-route span { color: #55706f; font-size: .66rem; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; }
+  .ruby-route strong { color: #a43d43; font: 700 1.35rem/1 'Cormorant Garamond', serif; }
+  .sultan-cost { display: flex; flex-wrap: wrap; gap: .35rem; margin: .75rem 0; }
+  .sultan-cost .good { min-width: 4.4rem; display: flex; align-items: center; gap: .3rem; padding: .4rem .5rem; border: 1px solid #d7c49c; border-radius: .45rem; color: #173f43; background: #fffaf0; font-size: .72rem; font-weight: 700; }
+  .sultan-cost .good i { width: .75rem; height: .75rem; display: inline-block; border-radius: .18rem; }
+  .sultan-cost .fabric i { background: #b23d43; }.sultan-cost .spice i { background: #27806e; }.sultan-cost .fruit i { background: #e1aa35; }.sultan-cost .jewelry i { background: #3e7da0; }.sultan-cost .any i { background: conic-gradient(#b23d43 0 25%, #27806e 0 50%, #e1aa35 0 75%, #3e7da0 0); }
   .play-area { flex: 1; min-height: 0; display: grid; grid-template-columns: minmax(0, 1fr) minmax(15rem, .3fr); gap: .65rem; }
   .board-shell { position: relative; min-height: 0; display: flex; flex-direction: column; overflow: hidden; border: 1px solid rgb(239 202 125 / 35%); border-radius: 1rem; background: linear-gradient(rgb(7 31 34 / 47%), rgb(7 31 34 / 68%)), var(--courtyard) center / cover; box-shadow: inset 0 0 5rem rgb(0 0 0 / 38%); }
   .board-tools { position: absolute; z-index: 5; top: .5rem; right: .5rem; display: flex; gap: .3rem; }
   .board-tools button { min-height: 2rem; padding: .3rem .65rem; border: 1px solid rgb(255 255 255 / 32%); border-radius: 2rem; color: #fffaf0; background: rgb(10 44 47 / 80%); font: inherit; font-size: .72rem; font-weight: 700; }
   .board-tools .zoom-button { width: 2rem; padding: 0; display: grid; place-items: center; }
+  .e2e-resources { position: absolute; z-index: 5; left: .45rem; bottom: .35rem; max-width: 12rem; min-height: 1.8rem; padding: .25rem .5rem; border: 1px solid rgb(255 255 255 / 28%); border-radius: .45rem; color: #fffaf0; background: rgb(10 44 47 / 88%); font: inherit; font-size: .58rem; font-weight: 700; }
   .zoom-button span { position: relative; width: .7rem; height: .7rem; display: block; }
   .zoom-button span::before, .zoom-button span::after { position: absolute; inset: calc(50% - 1px) 0 auto; height: 2px; border-radius: 1px; background: currentColor; content: ''; }
   .zoom-button span::after { rotate: 90deg; }

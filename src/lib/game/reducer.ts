@@ -24,6 +24,8 @@ import {
 import { catchFamily, drawBonus, isEncounterChoice, relocateEncounter } from './encounters';
 import type { Good } from './manifests';
 import { adjustMosqueDice, buyWarehouseExtra, isMosqueAbilityChoice, ownsMosqueAbility, recallWithYellow, takeMosqueTile } from './mosques';
+import { buyGemstoneRuby, buySultanRuby } from './ruby-routes';
+import { activateBonus, bonusEffect, discardPlayedBonus, isBonusChoice } from './bonus';
 
 const emptyProjection = (): ReplayProjection => ({
   room: null,
@@ -195,6 +197,37 @@ function applyEvent(state: ReplayProjection, event: CanonicalEvent): boolean {
     return applyMosqueAbility(state, event);
   }
 
+  if (event.type === 'bonus/played') {
+    return applyBonus(state, event);
+  }
+
+  if (event.type === 'e2e/resources-granted' && import.meta.env.VITE_USE_FIREBASE_EMULATORS === 'true') {
+    const game = state.game;
+    const player = game.players[game.turnSeat];
+    const lira = event.payload.lira;
+    const capacity = event.payload.capacity;
+    const goods = event.payload.goods;
+    const bonusCards = event.payload.bonusCards;
+    if (event.actorUid !== player.uid || game.phase !== 'movement' || typeof lira !== 'number' || !Number.isInteger(lira) || lira < 0 || typeof capacity !== 'number' || !Number.isInteger(capacity) || capacity < 2 || capacity > 5 || !goods || typeof goods !== 'object' || !Array.isArray(bonusCards) || !bonusCards.every((card) => typeof card === 'string')) {
+      reject(state, event, 'invalid-e2e-resources');
+      return false;
+    }
+    const supplied = goods as Record<string, unknown>;
+    if ((['fabric', 'spice', 'fruit', 'jewelry'] as Good[]).some((good) => typeof supplied[good] !== 'number' || !Number.isInteger(supplied[good]) || (supplied[good] as number) < 0 || (supplied[good] as number) > capacity)) {
+      reject(state, event, 'invalid-e2e-resources');
+      return false;
+    }
+    player.lira = lira;
+    player.capacity = capacity;
+    player.extensions = capacity - 2;
+    player.goods = supplied as Record<Good, number>;
+    for (const card of bonusCards) {
+      const deckIndex = game.bonusDrawPile.indexOf(card);
+      if (deckIndex >= 0) player.bonusHand.push(game.bonusDrawPile.splice(deckIndex, 1)[0]);
+    }
+    return true;
+  }
+
   if (event.type === 'turn/ended') {
     const game = state.game;
     const player = game.players[game.turnSeat];
@@ -234,6 +267,14 @@ function applyPlaceAction(state: ReplayProjection, event: CanonicalEvent): boole
     game.pending = { kind: 'family-action', destination: choice.destination };
     game.phase = 'family-action';
     return true;
+  } else if (choice.kind === 'sultan-buy') {
+    if (actionPlace !== 13) { reject(state, event, 'sultan-unavailable'); return false; }
+    summary = buySultanRuby(game, player, choice.wildGoods);
+    if (!summary) { reject(state, event, 'sultan-payment-unavailable'); return false; }
+  } else if (choice.kind === 'gemstone-buy') {
+    if (actionPlace !== 16) { reject(state, event, 'gemstone-unavailable'); return false; }
+    summary = buyGemstoneRuby(game, player);
+    if (!summary) { reject(state, event, 'gemstone-payment-unavailable'); return false; }
   } else if (choice.kind === 'mosque-take') {
     if (actionPlace !== 14 && actionPlace !== 15) { reject(state, event, 'mosque-unavailable'); return false; }
     summary = takeMosqueTile(game, player, choice.tileId, actionPlace);
@@ -271,7 +312,7 @@ function applyPlaceAction(state: ReplayProjection, event: CanonicalEvent): boole
       reject(state, event, 'market-unavailable');
       return false;
     }
-    summary = sellAtMarket(game, player, actionPlace, choice.slotIndexes);
+    summary = sellAtMarket(game, player, actionPlace, choice.slotIndexes, choice.wildGoods);
     if (!summary) { reject(state, event, 'invalid-market-sale'); return false; }
   } else if (choice.kind === 'black-market-roll') {
     if (actionPlace !== 8) { reject(state, event, 'black-market-unavailable'); return false; }
@@ -310,6 +351,84 @@ function applyPlaceAction(state: ReplayProjection, event: CanonicalEvent): boole
   game.pending = null;
   if (familyAction || !beginEncounters(game)) game.phase = 'turn-end';
   return true;
+}
+
+export function applyBonus(state: ReplayProjection, event: CanonicalEvent): boolean {
+  const game = state.game!;
+  const player = game.players[game.turnSeat];
+  const cardId = stringField(event.payload, 'cardId');
+  const choice = event.payload.choice;
+  if (!cardId || event.actorUid !== player.uid || !isBonusChoice(choice) || !player.bonusHand.includes(cardId)) {
+    reject(state, event, 'invalid-bonus-play');
+    return false;
+  }
+  const effect = bonusEffect(cardId);
+  let summary: string | null = null;
+
+  if (effect === 'gain-good' && choice.kind === 'gain-good') {
+    if (!['action', 'family-action', 'turn-end'].includes(game.phase) || player.goods[choice.good] >= player.capacity) return rejectBonus(state, event, 'bonus-timing');
+    player.goods[choice.good] += 1;
+    summary = `Played a Bonus card to gain 1 ${choice.good}.`;
+  } else if (effect === 'gain-lira' && choice.kind === 'gain-lira') {
+    if (!['movement', 'action', 'family-action', 'turn-end'].includes(game.phase)) return rejectBonus(state, event, 'bonus-timing');
+    player.lira += 5;
+    summary = 'Played a Bonus card to gain 5 Lira.';
+  } else if (effect === 'return-family' && choice.kind === 'return-family') {
+    if (!['movement', 'action', 'family-action', 'turn-end'].includes(game.phase) || player.familyPlace === 12) return rejectBonus(state, event, 'bonus-family-unavailable');
+    if (choice.reward === 'bonus' && game.bonusDrawPile.length === 0 && game.bonusDiscard.length === 0) return rejectBonus(state, event, 'bonus-deck-empty');
+    player.familyPlace = 12;
+    if (choice.reward === 'lira') player.lira += 3;
+    else {
+      const drawn = drawBonus(game, `bonus-family:${game.turnNumber}`);
+      if (!drawn) return rejectBonus(state, event, 'bonus-deck-empty');
+      player.bonusHand.push(drawn);
+    }
+    summary = `Returned the family member to Police and gained ${choice.reward === 'lira' ? '3 Lira' : '1 Bonus card'}.`;
+  } else if (effect === 'return-assistant' && choice.kind === 'return-assistant') {
+    if (game.phase !== 'movement' || (player.assistantsByPlace[choice.place] ?? 0) < 1) return rejectBonus(state, event, 'bonus-assistant-unavailable');
+    const remaining = player.assistantsByPlace[choice.place] - 1;
+    if (remaining === 0) delete player.assistantsByPlace[choice.place]; else player.assistantsByPlace[choice.place] = remaining;
+    player.assistantsCarried += 1;
+    summary = `Played a Bonus card to return 1 assistant from Place ${choice.place}.`;
+  } else if (effect === 'long-move' && choice.kind === 'long-move') {
+    if (game.phase !== 'movement' || game.activeBonusEffects.includes('long-move')) return rejectBonus(state, event, 'bonus-movement-unavailable');
+    activateBonus(game, 'long-move');
+    summary = 'Played a Bonus card to move exactly 3 or 4 Places.';
+  } else if (effect === 'stay' && choice.kind === 'stay') {
+    if (game.phase !== 'movement' || player.merchantPlace === 7 || (player.assistantsByPlace[player.merchantPlace] ?? 0) < 1) return rejectBonus(state, event, 'bonus-stay-unavailable');
+    game.lastMovement = { playerUid: player.uid, from: player.merchantPlace, to: player.merchantPlace, distance: 0, assistantAction: 'stay', paymentTotal: 0, paymentBlocked: false };
+    game.phase = 'action';
+    summary = `Stayed at Place ${player.merchantPlace} and used the assistant already there.`;
+  } else if (effect === 'wild-small-market' && choice.kind === 'wild-small-market') {
+    if (game.phase !== 'action' || player.merchantPlace !== 11 || game.activeBonusEffects.includes('wild-small-market')) return rejectBonus(state, event, 'bonus-market-unavailable');
+    activateBonus(game, 'wild-small-market');
+    summary = 'Played Flexible demand; the next Small Market sale may use any goods.';
+  } else if (effect === 'repeat-post' && choice.kind === 'repeat-action') {
+    if (game.phase !== 'turn-end' || game.lastAction?.place !== 5 || game.lastAction.playerUid !== player.uid) return rejectBonus(state, event, 'bonus-repeat-unavailable');
+    summary = `Repeated Post Office. ${collectPostOffice(game, player)}`;
+    game.lastAction.summary += ` ${summary}`;
+  } else if (effect === 'repeat-sultan' && choice.kind === 'repeat-action') {
+    if (game.phase !== 'turn-end' || game.lastAction?.place !== 13 || game.lastAction.playerUid !== player.uid) return rejectBonus(state, event, 'bonus-repeat-unavailable');
+    const repeated = buySultanRuby(game, player, choice.wildGoods ?? []);
+    if (!repeated) return rejectBonus(state, event, 'bonus-repeat-payment');
+    summary = `Repeated Sultan's Palace. ${repeated}`;
+    game.lastAction.summary += ` ${summary}`;
+  } else if (effect === 'repeat-gemstone' && choice.kind === 'repeat-action') {
+    if (game.phase !== 'turn-end' || game.lastAction?.place !== 16 || game.lastAction.playerUid !== player.uid) return rejectBonus(state, event, 'bonus-repeat-unavailable');
+    const repeated = buyGemstoneRuby(game, player);
+    if (!repeated) return rejectBonus(state, event, 'bonus-repeat-payment');
+    summary = `Repeated Gemstone Dealer. ${repeated}`;
+    game.lastAction.summary += ` ${summary}`;
+  } else return rejectBonus(state, event, 'bonus-effect-mismatch');
+
+  if (!discardPlayedBonus(game, player, cardId)) return rejectBonus(state, event, 'bonus-card-not-owned');
+  game.bonusLog.push({ cardId, summary });
+  return true;
+}
+
+function rejectBonus(state: ReplayProjection, event: CanonicalEvent, reason: string): false {
+  reject(state, event, reason);
+  return false;
 }
 
 function applyMosqueAbility(state: ReplayProjection, event: CanonicalEvent): boolean {
@@ -485,7 +604,8 @@ function applyMovement(state: ReplayProjection, event: CanonicalEvent): boolean 
   }
   const distance = gridDistance(game.board, player.merchantPlace, destination);
   const requiredAction = requiredAssistantAction(player, destination);
-  if (distance < 1 || distance > 2 || !requiredAction || assistantAction !== requiredAction) {
+  const longMove = game.activeBonusEffects.includes('long-move');
+  if (distance < (longMove ? 3 : 1) || distance > (longMove ? 4 : 2) || !requiredAction || assistantAction !== requiredAction) {
     reject(state, event, 'illegal-destination');
     return false;
   }
@@ -512,6 +632,7 @@ function applyMovement(state: ReplayProjection, event: CanonicalEvent): boolean 
 
   const paymentBlocked = player.lira < paymentTotal;
   game.lastMovement = { playerUid: player.uid, from, to: destination, distance, assistantAction, paymentTotal, paymentBlocked };
+  game.activeBonusEffects = game.activeBonusEffects.filter((effect) => effect !== 'long-move');
   if (paymentBlocked) {
     advanceTurn(game);
   } else if (paymentTotal > 0) {
@@ -560,6 +681,8 @@ function advanceTurn(game: NonNullable<ReplayProjection['game']>) {
   game.pending = null;
   game.encounterLog = [];
   game.abilitiesUsedThisTurn = [];
+  game.activeBonusEffects = [];
+  game.bonusLog = [];
 }
 
 function stringArray(value: unknown): string[] | null {

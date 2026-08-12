@@ -14,6 +14,7 @@
   import type { PlaceActionChoice } from '$lib/game/actions';
   import type { EncounterChoice } from '$lib/game/encounters';
   import type { MosqueAbilityChoice } from '$lib/game/mosques';
+  import type { BonusChoice } from '$lib/game/bonus';
   import {
     isRoomCode,
     layoutNames,
@@ -73,6 +74,9 @@
       lastRoll: game.lastRoll,
       encounterLog: game.encounterLog,
       abilitiesUsedThisTurn: game.abilitiesUsedThisTurn,
+      activeBonusEffects: game.activeBonusEffects,
+      bonusLog: game.bonusLog,
+      rubyTracks: game.rubyTracks,
       governorPlace: game.governorPlace,
       smugglerPlace: game.smugglerPlace,
       postOfficeLower: game.postOfficeLower,
@@ -328,6 +332,36 @@
       actionPending = false;
     }
   }
+
+  async function playBonus(cardId: string, choice: BonusChoice) {
+    if (!repository || actionPending) return;
+    actionPending = true;
+    try {
+      await repository.append('bonus/played', { cardId, choice });
+      selectedBonus = null;
+    } finally {
+      actionPending = false;
+    }
+  }
+
+  async function grantE2eResources() {
+    if (!repository || actionPending || import.meta.env.VITE_USE_FIREBASE_EMULATORS !== 'true') return;
+    actionPending = true;
+    try {
+      await repository.append('e2e/resources-granted', {
+        lira: 35,
+        capacity: 3,
+        goods: { fabric: 3, spice: 3, fruit: 3, jewelry: 3 },
+        bonusCards: [
+          'bonus-gain-lira-2', 'bonus-repeat-sultan-1',
+          'bonus-long-move-4', 'bonus-long-move-2',
+          'bonus-gain-good-1', 'bonus-gain-good-2', 'bonus-gain-good-3', 'bonus-gain-good-4'
+        ]
+      });
+    } finally {
+      actionPending = false;
+    }
+  }
 </script>
 
 <svelte:head><title>{appTitle}</title></svelte:head>
@@ -457,6 +491,8 @@
       onTakeAction={(choice) => void takePlaceAction(choice)}
       onResolveEncounter={(choice) => void resolveEncounter(choice)}
       onUseMosqueAbility={(choice) => void useMosqueAbility(choice)}
+      onPlayBonus={(cardId, choice) => void playBonus(cardId, choice)}
+      onGrantE2eResources={() => void grantE2eResources()}
       onEndTurn={() => void endTurn()}
       onZoomIn={() => boardScale = Math.min(1.18, boardScale + 0.09)}
       onFit={() => boardScale = 1}
