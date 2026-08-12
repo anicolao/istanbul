@@ -42,7 +42,7 @@ export interface GameSetup {
   startingSeat: number;
   turnSeat: number;
   turnNumber: number;
-  phase: 'movement' | 'merchant-payment' | 'action' | 'family-action' | 'encounters' | 'turn-end';
+  phase: 'movement' | 'merchant-payment' | 'action' | 'family-action' | 'mosque-ability' | 'encounters' | 'turn-end';
   pending: null | {
     kind: 'merchant-payment';
     recipientUids: string[];
@@ -56,6 +56,17 @@ export interface GameSetup {
     familyUids: string[];
     governor: 'available' | 'payment' | null;
     smuggler: boolean;
+  } | {
+    kind: 'warehouse-extra';
+    actionPlace: number;
+    familyAction: boolean;
+  } | {
+    kind: 'dice-adjust';
+    actionPlace: 8 | 9;
+    originalDice: [number, number];
+    good?: Exclude<Good, 'jewelry'>;
+    wager?: number;
+    familyAction: boolean;
   };
   lastMovement: null | {
     playerUid: string;
@@ -85,6 +96,7 @@ export interface GameSetup {
     dice?: [number, number];
     destination?: number;
   }>;
+  abilitiesUsedThisTurn: Good[];
 }
 
 function pathDistance(board: number[], first: number, second: number) {
@@ -162,6 +174,7 @@ export function createSetup(room: RoomProjection, seed: string): GameSetup {
     lastMovement: null,
     lastAction: null,
     lastRoll: null,
-    encounterLog: []
+    encounterLog: [],
+    abilitiesUsedThisTurn: []
   };
 }

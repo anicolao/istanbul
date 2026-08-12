@@ -114,8 +114,8 @@ test('merchants move with assistants, settle tolls, and advance safely', async (
       { spec: 'Ada has paid down to zero Lira in action phase', check: async () => expectState(page, { eventCount: 7, game: { phase: 'action', players: [{ merchantPlace: 14, lira: 0 }, {}] } }) }
     ] });
 
-    await page.getByRole('button', { name: 'Skip this Place action and end turn' }).click();
-    await ada.step('host-ends-first-turn', { description: 'Ada skips the not-yet-open Mosque action and ends turn', verifications: [
+    await page.getByRole('button', { name: 'Skip Mosque and end turn' }).click();
+    await ada.step('host-ends-first-turn', { description: 'Ada skips the unaffordable Mosque action and ends turn', verifications: [
       { spec: 'Bora becomes the visible route planner', check: async () => expect(page.getByRole('heading', { name: 'Bora surveys the bazaar.' })).toBeVisible() },
       { spec: 'The clockwise turn advances to turn two movement', check: async () => expectState(page, { eventCount: 8, game: { currentTurn: 'Bora', turnNumber: 2, phase: 'movement' } }) }
     ] });
@@ -140,7 +140,7 @@ test('merchants move with assistants, settle tolls, and advance safely', async (
       { spec: 'Public resources show Ada at 2 and Bora at 1 Lira', check: async () => expectState(boraPage, { eventCount: 10, game: { phase: 'action', players: [{ name: 'Ada', lira: 2 }, { name: 'Bora', lira: 1 }] } }) }
     ] });
 
-    await boraPage.getByRole('button', { name: 'Skip this Place action and end turn' }).click();
+    await boraPage.getByRole('button', { name: 'Skip Mosque and end turn' }).click();
     await bora.step('guest-ends-second-turn', { description: 'Bora ends turn after the settled encounter', verifications: [
       { spec: 'Ada becomes current for turn three', check: async () => expect(boraPage.getByRole('heading', { name: 'Ada surveys the bazaar.' })).toBeVisible() },
       { spec: 'Both Place-14 assistants remain on the public board', check: async () => { await expect(boraPage.getByTitle("Ada's assistant")).toBeVisible(); await expect(boraPage.getByTitle("Bora's assistant")).toBeVisible(); } },
