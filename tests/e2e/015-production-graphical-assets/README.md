@@ -122,8 +122,9 @@ Ada and Bora create a real two-player game through the ordinary room controls. W
 
 - [x] All sixteen Place buttons contain loaded location artwork
 - [x] The board uses graphical merchant, assistant, Governor, and Smuggler pieces
-- [x] Both colour-keyed player mats and every resource icon are real loaded images
-- [x] Every Place exposes a graphical and semantic live-state indicator
+- [x] Both colour-keyed physical trays and every resource token are real loaded images
+- [x] Each tray aligns goods, extensions, rubies, money, cards, and four power recesses
+- [x] Every Place exposes a distinct physical and semantic live-state apparatus
 - [x] The canonical setup remains unchanged by its visual treatment
 
 ## 12. Bora opens his illustrated private Bonus card

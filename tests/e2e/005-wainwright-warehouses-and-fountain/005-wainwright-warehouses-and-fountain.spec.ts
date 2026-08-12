@@ -30,7 +30,7 @@ test('wheelbarrow, warehouses, and Fountain resolve as replayable actions', asyn
 
     await page.getByRole('button', { name: 'Move here and leave an assistant' }).click();
     await ada.step('host-arrives-wainwright', { description: 'Ada arrives at Wainwright and leaves an assistant', verifications: [
-      { spec: 'The production action panel explains all three extensions and the ruby', check: async () => { await expect(page.getByRole('heading', { name: 'Wainwright', exact: true })).toBeVisible(); await expect(page.getByLabel('0 of 3 wheelbarrow extensions')).toBeVisible(); } },
+      { spec: 'The production action panel explains all three extensions and Ada’s tray shows its empty sockets', check: async () => { await expect(page.getByRole('heading', { name: 'Wainwright', exact: true })).toBeVisible(); await expect(page.getByTestId(/^player-tray-/).first().getByLabel('0 of 3 wheelbarrow extensions')).toBeVisible(); } },
       { spec: 'The 7-Lira purchase is truthfully disabled while skip remains available', check: async () => { await expect(page.getByRole('button', { name: 'Buy extension for 7 Lira' })).toBeDisabled(); await expect(page.getByRole('button', { name: 'Skip Wainwright and end turn' })).toBeEnabled(); } },
       { spec: 'Ada has 2 Lira, carries three assistants, and has one at Wainwright', check: async () => expectState(page, { eventCount: 6, game: { phase: 'action', players: [{ merchantPlace: 1, lira: 2, capacity: 2, extensions: 0, assistantsCarried: 3, assistantsByPlace: { 1: 1 } }, {}] } }) }
     ] });

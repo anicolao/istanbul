@@ -247,7 +247,7 @@ Ada fills spice, buys the exposed Green tile at Small Mosque, later fills fabric
 
 **Verifications:**
 
-- [x] Both official Small Mosque colors are presented
+- [x] Both official Small Mosque powers are presented as large square offers
 - [x] Green is affordable and Red is disabled
 - [x] Payment spends Lira but no goods
 
@@ -259,7 +259,7 @@ Ada fills spice, buys the exposed Green tile at Small Mosque, later fills fabric
 
 **Verifications:**
 
-- [x] The Green permanent-ability badge appears
+- [x] The full Green power tile settles into Ada’s tray
 - [x] One spice is paid before the mandatory family catch
 - [x] Small Mosque replaces Green’s cost with the next exposed requirement
 - [x] The acquisition summary identifies the paid color
@@ -433,7 +433,7 @@ Ada fills spice, buys the exposed Green tile at Small Mosque, later fills fabric
 
 **Verifications:**
 
-- [x] Red is affordable while Green is marked owned
+- [x] Red is affordable while Green is enabled in the tray
 - [x] Assistant pickup and action state are exact
 
 ## 39. Ada buys Red and completes the Small Mosque pair
@@ -447,7 +447,7 @@ Ada fills spice, buys the exposed Green tile at Small Mosque, later fills fabric
 - [x] The action announces the paired ruby
 - [x] Both tile IDs and one ruby are conserved
 - [x] The paired-ruby stock on Small Mosque decreases to one
-- [x] Red and Green badges are both visible
+- [x] Red and Green square powers are both enabled in the tray
 
 ## 40. Ada passes with the Small Mosque ruby
 
@@ -563,7 +563,7 @@ Ada fills spice, buys the exposed Green tile at Small Mosque, later fills fabric
 
 - [x] The adjusted dice and reward return exactly
 - [x] No adjustment controls can be repeated
-- [x] Both permanent tiles and the paired ruby remain visible
+- [x] Both permanent powers and the paired ruby remain visible
 
 ## 50. Ada ends the adjusted Tea House turn
 

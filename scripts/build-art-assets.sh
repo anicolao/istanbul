@@ -44,8 +44,13 @@ split_atlas bonus-cards.png 4x3 cards \
 
 split_atlas player-mats.png 1x5 mats ruby saffron teal indigo plum
 
+split_atlas mosque-powers.png 2x2 components \
+  mosque-fabric mosque-spice mosque-fruit mosque-jewelry
+
 split_atlas components.png 5x4 components \
   fabric spice fruit jewelry lira \
   ruby wheelbarrow-extension die mail-marker bonus-deck \
-  mosque-fabric mosque-spice mosque-fruit mosque-jewelry sultan-track \
+  legacy-mosque-fabric legacy-mosque-spice legacy-mosque-fruit legacy-mosque-jewelry sultan-track \
   demand-large demand-small gemstone-track ruby-supply goods-supply
+
+rm "$output_dir"/components/legacy-mosque-{fabric,spice,fruit,jewelry}.webp
