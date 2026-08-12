@@ -63,12 +63,22 @@ information a player could see at the table.
 
 ## Development status
 
-The first implementation slice provides the static application shell, anonymous
-Firebase initialization, local Auth and Firestore emulators, default-deny
-Security Rules, locked development environment, repository verifier, and the
-first deterministic phone/desktop browser walkthrough. Room creation and the
-append-only replay model begin in the next vertical slice described in
-[MVP_DESIGN.md](MVP_DESIGN.md).
+The implementation now supports complete base-game play: immutable multiplayer
+rooms, deterministic setup and replay, movement and assistant rules, every Place
+action, encounters, Mosque abilities, Bonus cards, all ruby routes, final turns,
+ranking, rematches, and reconnect recovery. Personal-screen games run from two
+to five browsers. Shared-table games add a privacy-safe public board, real
+seat-specific QR invitations, private phone controllers, and retained controller
+ownership after reload. The final MVP slice in [MVP_DESIGN.md](MVP_DESIGN.md)
+hardens keyboard, touch, screen-reader, reduced-motion, and responsive behaviour
+across the remaining target viewports.
+
+Each numbered directory under [`tests/e2e`](tests/e2e) is a generated,
+screenshot-by-screenshot play-by-play. Its README names the acting user, shows
+the exact UI after every action, and lists the DOM and serialized projection
+facts checked before that image was accepted. For example, scenario 013 follows
+Ada’s phone, Bora’s phone, and the public display from room creation through a
+move and reconnect without omitting an interaction.
 
 The local verification entry point is:
 
