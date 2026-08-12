@@ -18,9 +18,10 @@ export async function openTwoPlayerGame(options: {
   guest: TestStepHelper;
   roomCode: string;
   seed: string;
+  extraQuery?: string;
 }) {
-  const { hostPage, guestPage, host, guest, roomCode, seed } = options;
-  await hostPage.goto(`/?e2eRoom=${roomCode}&e2eSeed=${seed}`);
+  const { hostPage, guestPage, host, guest, roomCode, seed, extraQuery = '' } = options;
+  await hostPage.goto(`/?e2eRoom=${roomCode}&e2eSeed=${seed}${extraQuery}`);
   await host.step('host-opens-creator', { description: 'Ada opens the private-table creator', verifications: [
     { spec: 'Firebase reports ready before setup begins', check: async () => expect(hostPage.getByRole('status')).toHaveText('Firebase emulator ready') },
     { spec: 'The landing projection is empty', check: async () => expectState(hostPage, { screen: 'landing', eventCount: 0, game: null }) }

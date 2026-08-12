@@ -8,7 +8,7 @@
   import GameTable from '$lib/components/GameTable.svelte';
   import { initializeFirebase } from '$lib/firebase';
   import { createEventRepository, type EventRepository } from '$lib/game/repository';
-  import { readReplayCache, writeReplayCache } from '$lib/game/replay-cache';
+  import { mergeReplayEvents, readReplayCache, replayCacheKey, writeReplayCache } from '$lib/game/replay-cache';
   import { replayEvents } from '$lib/game/reducer';
   import type { AssistantAction } from '$lib/game/movement';
   import type { PlaceActionChoice } from '$lib/game/actions';
@@ -19,6 +19,7 @@
     isRoomCode,
     layoutNames,
     normalizeRoomCode,
+    schemaVersion,
     type CanonicalEvent,
     type LayoutKind,
     type ReplayProjection
@@ -41,6 +42,10 @@
   let selectedLayout = $state<LayoutKind>('short-path');
   let actionPending = $state(false);
   let message = $state('');
+  let recoveryNotice = $state('');
+  let pendingRetryId = $state<string | null>(null);
+  let recoveryReview = $state(false);
+  let catchUpRoomCode = $state('');
   let selectedPlace = $state<number | null>(null);
   let selectedBonus = $state<string | null>(null);
   let boardScale = $state(1);
@@ -57,6 +62,7 @@
     roomCode: room?.roomCode ?? null,
     eventCount: projection.acceptedEventIds.length,
     diagnosticCount: projection.diagnostics.length,
+    recovery: { notice: recoveryNotice, pendingRetryId, incompatible: projection.diagnostics.some(({ reason }) => reason === 'invalid-envelope') },
     seatCount: room?.seats.length ?? 0,
     maxPlayers: room?.maxPlayers ?? null,
     layout: room?.layout ?? null,
@@ -111,6 +117,13 @@
   onMount(async () => {
     try {
       const services = await initializeFirebase();
+      recoveryReview = import.meta.env.VITE_USE_FIREBASE_EMULATORS === 'true' && new URL(location.href).searchParams.get('e2eRecovery') === '1';
+      const reviewedCacheCount = Number(new URL(location.href).searchParams.get('e2eCacheCount') ?? '0');
+      const reviewedRoom = normalizeRoomCode(new URL(location.href).searchParams.get('room') ?? '');
+      if (recoveryReview && reviewedCacheCount > 0 && isRoomCode(reviewedRoom)) {
+        const cached = readReplayCache(reviewedRoom).slice(0, reviewedCacheCount);
+        localStorage.setItem(replayCacheKey(reviewedRoom), JSON.stringify({ version: 1, events: cached }));
+      }
       userUid = services.user.uid;
       connectionStatus = 'synced';
       connectionText = import.meta.env.VITE_USE_FIREBASE_EMULATORS === 'true'
@@ -150,12 +163,29 @@
     repository = createEventRepository(firestore, roomCode, userUid);
     unsubscribe?.();
     events = readReplayCache(roomCode);
-    if (events.length > 0) updateProjection(roomCode);
+    if (events.length > 0) {
+      recoveryNotice = `Restored ${events.length} cached events · catching up`;
+      updateProjection(roomCode);
+    } else recoveryNotice = 'Opening live history';
+    pendingRetryId = repository.pendingId();
+    if (recoveryReview && events.length > 0) {
+      catchUpRoomCode = roomCode;
+      return;
+    }
+    subscribeLive(roomCode);
+  }
+
+  function subscribeLive(roomCode = catchUpRoomCode) {
+    if (!repository || !roomCode) return;
+    catchUpRoomCode = '';
+    unsubscribe?.();
     unsubscribe = repository.subscribe(
       (remoteEvents) => {
-        events = remoteEvents;
+        events = mergeReplayEvents(events, remoteEvents);
         updateProjection(roomCode);
         writeReplayCache(roomCode, events);
+        recoveryNotice = events.length > 0 ? `Live history synced · ${events.length} events verified` : 'Live history synced';
+        pendingRetryId = repository?.pendingId() ?? null;
       },
       (error) => {
         message = `Room connection failed: ${error.message}`;
@@ -270,7 +300,7 @@
   }
 
   async function moveTo(destination: number, assistantAction: AssistantAction) {
-    if (!repository || actionPending) return;
+    if (!repository) return;
     actionPending = true;
     try {
       await repository.append('turn/moved', { destination, assistantAction });
@@ -282,7 +312,7 @@
 
   async function payMerchants() {
     const pending = game?.pending?.kind === 'merchant-payment' ? game.pending : null;
-    if (!repository || !pending || actionPending) return;
+    if (!repository || !pending) return;
     actionPending = true;
     try {
       await repository.append('turn/merchant-paid', {
@@ -295,7 +325,7 @@
   }
 
   async function endTurn() {
-    if (!repository || actionPending) return;
+    if (!repository) return;
     actionPending = true;
     try {
       await repository.append('turn/ended', {});
@@ -306,17 +336,17 @@
   }
 
   async function takePlaceAction(choice: PlaceActionChoice) {
-    if (!repository || actionPending) return;
+    if (!repository) return;
     actionPending = true;
     try {
-      await repository.append('place/action-taken', { choice });
+      await repository.append('place/action-taken', { choice: JSON.parse(JSON.stringify(choice)) as PlaceActionChoice });
     } finally {
       actionPending = false;
     }
   }
 
   async function resolveEncounter(choice: EncounterChoice) {
-    if (!repository || actionPending) return;
+    if (!repository) return;
     actionPending = true;
     try {
       await repository.append('encounter/resolved', { choice });
@@ -326,7 +356,7 @@
   }
 
   async function useMosqueAbility(choice: MosqueAbilityChoice) {
-    if (!repository || actionPending) return;
+    if (!repository) return;
     actionPending = true;
     try {
       await repository.append('mosque/ability-used', { choice });
@@ -336,7 +366,7 @@
   }
 
   async function playBonus(cardId: string, choice: BonusChoice) {
-    if (!repository || actionPending) return;
+    if (!repository) return;
     actionPending = true;
     try {
       await repository.append('bonus/played', { cardId, choice });
@@ -380,6 +410,44 @@
       actionPending = false;
     }
   }
+
+  async function retryPending() {
+    if (!repository || actionPending || !pendingRetryId) return;
+    actionPending = true;
+    try {
+      const retried = await repository.retryPending();
+      if (retried) recoveryNotice = `Retried ${retried.slice(-6)} with its original event ID`;
+      pendingRetryId = repository.pendingId();
+    } catch (error) {
+      message = error instanceof Error ? error.message : 'Retry failed';
+    } finally { actionPending = false; }
+  }
+
+  function injectIncompatibleHistoryForE2e() {
+    if (import.meta.env.VITE_USE_FIREBASE_EMULATORS !== 'true' || !room) return;
+    const base = events[0];
+    if (!base) return;
+    events = [...events, { ...base, id: 'future-000001', actorUid: 'future', clientSeq: '000001', schemaVersion: schemaVersion + 1 }];
+    updateProjection(room.roomCode);
+  }
+
+  function stageCommittedRetryForE2e() {
+    if (!recoveryReview || !room) return;
+    const source = [...events].reverse().find(({ actorUid }) => actorUid === userUid);
+    if (!source) return;
+    const { id, createdAt: _, ...data } = source;
+    localStorage.setItem(`istanbul:pending:${room.roomCode}:${userUid}`, JSON.stringify({ id, data }));
+    pendingRetryId = id;
+    recoveryNotice = `Write ${id.slice(-6)} awaits same-ID confirmation`;
+  }
+
+  function injectStaleConcurrentForE2e() {
+    if (!recoveryReview || !room || events.length === 0) return;
+    const source = events.at(-1)!;
+    events = [...events, { ...source, id: 'stale-000001', actorUid: 'stale', clientSeq: '000001', createdAt: (source.createdAt ?? 0) + 1, type: 'turn/ended', payload: {} }];
+    updateProjection(room.roomCode);
+    recoveryNotice = 'Stale concurrent event contained · live projection unchanged';
+  }
 </script>
 
 <svelte:head><title>{appTitle}</title></svelte:head>
@@ -396,6 +464,15 @@
       <span class="build" data-testid="build-marker">Build {buildHash}</span>
     </div>
   </header>
+
+  {#if projection.diagnostics.some(({ reason }) => reason === 'invalid-envelope')}
+    <section class="compatibility-block" role="alert" aria-labelledby="compatibility-title">
+      <p class="section-kicker">Replay protection</p><h1 id="compatibility-title">This table needs a newer Istanbul build.</h1>
+      <p>History was not guessed or partially applied. Update the app, then reopen the same room code.</p>
+      <strong>{projection.diagnostics.filter(({ reason }) => reason === 'invalid-envelope').length} incompatible event blocked</strong>
+    </section>
+  {:else}
+    {#if recoveryNotice.includes('Restored') || pendingRetryId || recoveryReview}<aside class="recovery-strip" aria-label="History recovery status"><span>{recoveryNotice}</span>{#if catchUpRoomCode}<button onclick={() => subscribeLive()}>Catch up live history</button>{/if}{#if pendingRetryId}<button onclick={() => void retryPending()}>Retry pending event {pendingRetryId.slice(-6)}</button>{/if}{#if room && recoveryReview && !pendingRetryId}<button class="e2e-compatibility" onclick={stageCommittedRetryForE2e}>Review same-ID retry</button><button class="e2e-compatibility" onclick={injectStaleConcurrentForE2e}>Review stale concurrent event</button><button class="e2e-compatibility" onclick={injectIncompatibleHistoryForE2e}>Review incompatible history</button>{/if}</aside>{/if}
 
   {#if screen === 'landing'}
     <section class="landing" aria-labelledby="title">
@@ -517,6 +594,7 @@
       onFit={() => boardScale = 1}
     />
   {/if}
+  {/if}
 
   <span class="state-output" data-testid="projection-state" data-room-code={room?.roomCode ?? ''} data-event-count={projection.acceptedEventIds.length} data-layout={room?.layout ?? ''} data-ready-count={room?.seats.filter((seat) => seat.ready).length ?? 0} data-seat-count={room?.seats.length ?? 0}>{stateSummary}</span>
 </main>
@@ -538,6 +616,7 @@
   .connection-mark { width: .55rem; height: .55rem; border: 2px solid #173f43; border-radius: 50%; background: #e7c882; }
   .connection:has([data-status='synced']) .connection-mark { border-color: #23664d; background: #58a575; }
   .connection:has([data-status='error']) .connection-mark { border-color: #8b2528; background: #ce4c4f; }
+  .recovery-strip { position: absolute; z-index: 8; top: 4.2rem; right: clamp(1rem, 4vw, 4rem); display: flex; gap: .45rem; align-items: center; padding: .3rem .55rem; border-radius: 0 0 .65rem .65rem; color: #173f43; background: #efca7d; font-size: .64rem; font-weight: 700; box-shadow: 0 .25rem .8rem #34210d2b; }.recovery-strip button { min-height: 1.65rem; padding: .2rem .45rem; border: 1px solid #173f43; border-radius: .35rem; color: #fffaf0; background: #173f43; font-size: .58rem; }.recovery-strip .e2e-compatibility { border: 0; color: #704329; background: transparent; text-decoration: underline; }.compatibility-block { width: min(48rem, calc(100% - 2rem)); margin: 6rem auto 0; padding: clamp(2rem, 6vw, 5rem); border: 2px solid #a43b32; border-radius: 1.5rem; background: radial-gradient(circle at 90% 10%, #efca7d66, transparent 12rem), #fffaf0; box-shadow: 0 2rem 5rem #4c30162b; }.compatibility-block h1 { font-size: clamp(2.5rem, 6vw, 5rem); }.compatibility-block p:not(.section-kicker) { max-width: 35rem; color: #496665; font-size: 1.05rem; line-height: 1.5; }.compatibility-block strong { color: #a43b32; }
   .build { padding-left: .55rem; border-left: 1px solid rgb(23 63 67 / 22%); color: #617574; }
   .landing, .join-room { width: min(72rem, 100%); min-height: calc(100svh - 9rem); margin: 0 auto; display: grid; grid-template-columns: 1.02fr .98fr; overflow: hidden; border: 1px solid rgb(23 63 67 / 26%); border-radius: 2rem; background: rgb(255 251 240 / 92%); box-shadow: 0 2rem 5rem rgb(76 48 22 / 16%); }
   .welcome { display: flex; flex-direction: column; justify-content: center; padding: clamp(2.3rem, 5vw, 5.2rem); background: radial-gradient(circle at 90% 10%, rgb(236 188 100 / 28%), transparent 17rem); }
@@ -619,6 +698,7 @@
   @media (max-width: 720px) {
     main { padding: 4.35rem .6rem .6rem; }
     .topbar { height: 3.8rem; padding: 0 .8rem; }
+    .recovery-strip { top: 3.8rem; right: .6rem; max-width: calc(100% - 1.2rem); }.recovery-strip span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }.compatibility-block { margin-top: 4rem; padding: 1.4rem; }.compatibility-block h1 { font-size: 2.7rem; }
     .brand { font-size: 1.35rem; }
     .connection { gap: .4rem; font-size: .7rem; }
     .connection p { max-width: 6.8rem; }

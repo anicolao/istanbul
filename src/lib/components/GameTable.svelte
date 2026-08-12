@@ -390,7 +390,7 @@
           <div class="sultan-cost" aria-label="Current Sultan goods cost">{#each sultanCost as good}<span class={`good ${good === 'any' ? 'any' : good}`} title={good === 'any' ? 'Any good' : goodNames[good]}><i></i>{good === 'any' ? 'Any' : goodNames[good]}</span>{/each}</div>
           {#if localIsCurrent}
             {#each Array.from({ length: sultanWildCount }) as _, index}<label class="wager-control">Wild good {index + 1}<select aria-label={`Sultan wild good ${index + 1}`} value={sultanWildGoods[index] ?? 'fabric'} onchange={(event) => setSultanWild(index, event.currentTarget.value as Good)}>{#each Object.keys(goodNames) as good}<option value={good}>{goodNames[good as Good]}</option>{/each}</select></label>{/each}
-            <button class="turn-action" disabled={!sultanAffordable || game.rubyTracks.sultanRubies < 1} onclick={() => onTakeAction({ kind: 'sultan-buy', wildGoods: sultanWildGoods })}>Deliver {sultanCost.length} goods for 1 ruby</button><button class="skip-link" onclick={onEndTurn}>Skip Sultan's Palace and end turn</button>
+            <button class="turn-action" disabled={!sultanAffordable || game.rubyTracks.sultanRubies < 1} onclick={() => onTakeAction({ kind: 'sultan-buy', wildGoods: [...sultanWildGoods] })}>Deliver {sultanCost.length} goods for 1 ruby</button><button class="skip-link" onclick={onEndTurn}>Skip Sultan's Palace and end turn</button>
           {:else}<p class="waiting-copy">Waiting for {currentPlayer.name} to deliver goods.</p>{/if}
         {:else if actionPlace.id === 16}
           <p>Pay the greatest uncovered price to claim the next Dealer ruby. The price rises by one after every purchase.</p>
