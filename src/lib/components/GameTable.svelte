@@ -1,8 +1,15 @@
 <script lang="ts">
   import { base } from '$app/paths';
-  import { bonusCards, places, type Good } from '$lib/game/manifests';
+  import { bonusCards, demandTiles, places, type Good } from '$lib/game/manifests';
   import { legalDestinations, requiredAssistantAction, type AssistantAction } from '$lib/game/movement';
-  import { warehouseGood, type PlaceActionChoice } from '$lib/game/actions';
+  import {
+    marketRevenue,
+    postOfficeRows,
+    previewCaravansary,
+    warehouseGood,
+    type CardSource,
+    type PlaceActionChoice
+  } from '$lib/game/actions';
   import type { RoomProjection } from '$lib/game/protocol';
   import type { GameSetup } from '$lib/game/setup';
   import PlaceGlyph from './PlaceGlyph.svelte';
@@ -53,6 +60,12 @@
   const goodNames: Record<Good, string> = { fabric: 'Fabric', spice: 'Spice', fruit: 'Fruit', jewelry: 'Jewelry' };
   const artUrl = `${base}/art/bazaar-courtyard.png`;
   let recallSelection = $state<number[]>([]);
+  let caravanSources = $state<[CardSource, CardSource]>(['deck', 'deck']);
+  let caravanDiscardSelection = $state('');
+  let marketSelection = $state<number[]>([]);
+  const caravanPreview = $derived(previewCaravansary(game, caravanSources) ?? []);
+  const activeDemand = $derived(demandTiles.find(({ id }) => id === (actionPlace.id === 10 ? game.largeDemand[0] : game.smallDemand[0])));
+  const marketSelectionLegal = $derived(isMarketSelectionLegal(activeDemand?.goods ?? [], marketSelection));
 
   function occupants(placeId: number) {
     return game.players.filter(({ merchantPlace }) => merchantPlace === placeId);
@@ -71,6 +84,32 @@
   function recallAssistants() {
     onTakeAction({ kind: 'fountain-recall', assistantPlaces: recallSelection });
     recallSelection = [];
+  }
+
+  function setCaravanSource(index: 0 | 1, source: CardSource) {
+    caravanSources = index === 0 ? [source, caravanSources[1]] : [caravanSources[0], source];
+  }
+
+  function toggleMarketSlot(index: number) {
+    marketSelection = marketSelection.includes(index)
+      ? marketSelection.filter((slot) => slot !== index)
+      : [...marketSelection, index];
+  }
+
+  function isMarketSelectionLegal(goods: Good[], indexes: number[]) {
+    if (indexes.length < 1 || indexes.length > 5 || new Set(indexes).size !== indexes.length) return false;
+    const used: Record<Good, number> = { fabric: 0, spice: 0, fruit: 0, jewelry: 0 };
+    for (const index of indexes) {
+      const good = goods[index];
+      if (!good) return false;
+      used[good] += 1;
+    }
+    return (Object.keys(used) as Good[]).every((good) => used[good] <= localPlayer.goods[good]);
+  }
+
+  function sellMarket() {
+    onTakeAction({ kind: 'market-sell', slotIndexes: marketSelection });
+    marketSelection = [];
   }
 </script>
 
@@ -156,6 +195,37 @@
             <div class="recall-list" aria-label="Assistants available to recall">{#each Object.entries(localPlayer.assistantsByPlace) as [placeId, count]}<label><input type="checkbox" checked={recallSelection.includes(Number(placeId))} onchange={() => toggleRecall(Number(placeId))} /><span>{placeById.get(Number(placeId))?.name} · {count}</span></label>{/each}</div>
             <button class="turn-action" onclick={recallAssistants}>Recall {recallSelection.length} assistant{recallSelection.length === 1 ? '' : 's'}</button><button class="skip-link" onclick={onEndTurn}>Skip Fountain and end turn</button>
           {:else if localIsCurrent}<p class="action-balance">Every assistant is already with your merchant.</p><button class="skip-link" onclick={onEndTurn}>End turn</button>{:else}<p class="waiting-copy">Waiting for {currentPlayer.name} to choose assistants.</p>{/if}
+        {:else if actionPlace.id === 5}
+          <p>Collect the four resources not covered by the mail indicators, then advance the leftmost upper indicator.</p>
+          <div class="mail-track" aria-label={`Post Office indicators ${game.postOfficeLower.map((lower) => lower ? 'lower' : 'upper').join(', ')}`}>
+            {#each postOfficeRows as rows, index}
+              <span class="mail-column">
+                <i class:covered={!game.postOfficeLower[index]}>{rows[0].lira ? `${rows[0].lira}₺` : goodNames[rows[0].good!].slice(0, 1)}</i>
+                <b aria-hidden="true" class:lower={game.postOfficeLower[index]}></b>
+                <i class:covered={game.postOfficeLower[index]}>{rows[1].lira ? `${rows[1].lira}₺` : goodNames[rows[1].good!].slice(0, 1)}</i>
+              </span>
+            {/each}
+          </div>
+          {#if localIsCurrent}<button class="turn-action" onclick={() => onTakeAction({ kind: 'post-office-collect' })}>Collect uncovered mail resources</button><button class="skip-link" onclick={onEndTurn}>Skip Post Office and end turn</button>{:else}<p class="waiting-copy">Waiting for {currentPlayer.name} to collect the mail route.</p>{/if}
+        {:else if actionPlace.id === 6}
+          <p>Take two Bonus cards from the deck or the face-up discard pile, then discard any one card from your hand.</p>
+          {#if localIsCurrent}
+            <div class="caravan-sources">
+              {#each [0, 1] as index}
+                <label>Card {index + 1}<select aria-label={`${index === 0 ? 'First' : 'Second'} card source`} value={caravanSources[index]} onchange={(event) => setCaravanSource(index as 0 | 1, event.currentTarget.value as CardSource)}><option value="deck">Draw pile</option><option value="discard" disabled={game.bonusDiscard.length < (caravanSources.slice(0, index).filter((source) => source === 'discard').length + 1)}>Discard pile</option></select></label>
+              {/each}
+            </div>
+            <p class="card-preview" aria-live="polite">Preview: {caravanPreview.map((id) => bonusById.get(id)?.title).join(' · ') || 'That source is empty'}</p>
+            <fieldset class="discard-choice"><legend>Discard one</legend>{#each [...localPlayer.bonusHand, ...caravanPreview] as cardId}<label><input type="radio" name="caravan-discard" value={cardId} aria-label={`${bonusById.get(cardId)?.title} · ${cardId}`} checked={caravanDiscardSelection === cardId} onchange={() => caravanDiscardSelection = cardId} /><span>{bonusById.get(cardId)?.title}</span></label>{/each}</fieldset>
+            <button class="turn-action" disabled={caravanPreview.length !== 2 || !caravanDiscardSelection} onclick={() => onTakeAction({ kind: 'caravansary-trade', drawSources: caravanSources, discardCardId: caravanDiscardSelection })}>Keep two cards and discard selected</button><button class="skip-link" onclick={onEndTurn}>Skip Caravansary and end turn</button>
+          {:else}<p class="waiting-copy">Waiting for {currentPlayer.name} to manage a private Bonus hand.</p>{/if}
+        {:else if actionPlace.id === 10 || actionPlace.id === 11}
+          <p>Select one to five depicted goods you own. Revenue rises from 2 to 20 Lira, then this Demand rotates.</p>
+          <div class="demand-card" aria-label={`${actionPlace.name} demand ${activeDemand?.id}`}>
+            {#each activeDemand?.goods ?? [] as good, index}<label class={good}><input type="checkbox" aria-label={`Sell demand slot ${index + 1}: ${good}`} checked={marketSelection.includes(index)} onchange={() => toggleMarketSlot(index)} /><i></i><span>{goodNames[good]}</span></label>{/each}
+          </div>
+          <p class="market-revenue">{marketSelection.length ? `${marketSelection.length} selected · ${marketRevenue[marketSelection.length]} Lira` : 'Select goods to sell'}</p>
+          {#if localIsCurrent}<button class="turn-action" disabled={!marketSelectionLegal} onclick={sellMarket}>Sell selected goods for {marketRevenue[marketSelection.length]} Lira</button><button class="skip-link" onclick={onEndTurn}>Skip market and end turn</button>{:else}<p class="waiting-copy">Waiting for {currentPlayer.name} to choose a sale.</p>{/if}
         {:else}
           <p>{actionPlace.action}</p>
           {#if localIsCurrent}<button class="turn-action secondary-action" onclick={onEndTurn}>Skip this Place action and end turn</button>{:else}<p class="waiting-copy">Waiting for {currentPlayer.name} to finish the Place action.</p>{/if}
@@ -191,7 +261,7 @@
         <div class="goods" aria-label={`${player.name} goods`}>{#each Object.entries(player.goods) as [good, count]}<span class={`good ${good}`} title={goodNames[good as Good]}><i></i>{count}</span>{/each}</div>
         {#if player.uid === userUid}
           <div class="hand"><span>Private hand</span>{#each player.bonusHand as cardId}<button aria-label={`Inspect Bonus card: ${bonusById.get(cardId)?.title}`} aria-pressed={selectedBonus === cardId} onclick={() => onInspectBonus(cardId)}><small>Bonus</small><strong>{bonusById.get(cardId)?.title}</strong></button>{/each}</div>
-        {:else}<p class="masked-hand">Bonus hand · {player.bonusHand.length} hidden card</p>{/if}
+        {:else}<p class="masked-hand">Bonus hand · {player.bonusHand.length} hidden card{player.bonusHand.length === 1 ? '' : 's'}</p>{/if}
       </article>
     {/each}
   </section>
@@ -247,6 +317,9 @@
   .turn-action:disabled { opacity: .45; box-shadow: none; cursor: not-allowed; }.complete-glyph { color: #267356; }.action-balance { margin: .45rem 0 0 !important; font-size: .68rem !important; text-align: center; }
   .wheelbarrow-track, .crate-track { display: flex; gap: .35rem; margin: .8rem 0; }.wheelbarrow-track span, .crate-track span { width: 2rem; height: 1.6rem; border: 2px solid #9e7145; border-radius: .3rem; background: #e8dbc1; }.wheelbarrow-track span.filled { border-color: #267356; background: linear-gradient(135deg, #efca7d 45%, #267356 46% 55%, #efca7d 56%); }.crate-track span.filled { background: currentColor; }.crate-track.fabric { color: #b7423c; }.crate-track.spice { color: #3b8662; }.crate-track.fruit { color: #d6a82c; }
   .recall-list { display: grid; gap: .35rem; margin-top: .65rem; }.recall-list label { grid-template-columns: auto 1fr; align-items: center; padding: .4rem .5rem; border: 1px solid #d9cdb7; border-radius: .45rem; font-size: .7rem; }.recall-list input { width: 1.2rem; min-height: 1.2rem; accent-color: #267356; }
+  .mail-track { display: flex; gap: .45rem; margin: .7rem 0; }.mail-column { position: relative; width: 2.5rem; display: grid; gap: .25rem; }.mail-column i { min-height: 1.6rem; display: grid; place-items: center; border: 1px solid #b99a6b; border-radius: .3rem; color: #173f43; background: #f0d28f; font-size: .68rem; font-style: normal; font-weight: 700; }.mail-column i.covered { opacity: .38; }.mail-column b { position: absolute; top: .15rem; right: .15rem; width: .65rem; height: .65rem; border: 2px solid #fffaf0; border-radius: .15rem; background: #a23b36; box-shadow: 0 .1rem .2rem #0004; transition: top .18s ease; }.mail-column b.lower { top: 2rem; }
+  .caravan-sources { display: flex; gap: .5rem; margin-top: .55rem; }.caravan-sources label { flex: 1; color: #6d7c79; font-size: .58rem; text-transform: uppercase; }.caravan-sources select { width: 100%; min-height: 2rem; margin-top: .15rem; border: 1px solid #b99a6b; border-radius: .35rem; color: #173f43; background: #fffaf0; }.card-preview { margin: .35rem 0 !important; font-size: .62rem !important; font-weight: 700; }.discard-choice { display: grid; grid-template-columns: repeat(3, 1fr); gap: .3rem; margin: 0; padding: .35rem; border: 1px solid #d9cdb7; border-radius: .45rem; }.discard-choice legend { padding: 0 .25rem; font-size: .58rem; font-weight: 700; text-transform: uppercase; }.discard-choice label { min-width: 0; display: grid; grid-template-columns: auto 1fr; gap: .2rem; align-items: center; font-size: .55rem; }.discard-choice span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }.discard-choice input { width: .9rem; min-height: .9rem; accent-color: #a23b36; }
+  .demand-card { display: grid; grid-template-columns: repeat(5, 1fr); gap: .3rem; margin: .7rem 0; padding: .55rem; border: 2px solid #d49d42; border-radius: .55rem; background: #ead8b8; }.demand-card label { min-width: 0; display: grid; place-items: center; gap: .15rem; color: #173f43; font-size: .52rem; }.demand-card input { position: absolute; opacity: 0; }.demand-card i { width: 1.8rem; height: 1.8rem; border: 3px solid #fffaf0; border-radius: .4rem; box-shadow: 0 .15rem .25rem #0003; }.demand-card .fabric i { background: #b7423c; }.demand-card .spice i { background: #3b8662; }.demand-card .fruit i { background: #d6a82c; }.demand-card .jewelry i { background: #4382a9; }.demand-card input:checked + i { outline: 3px solid #173f43; outline-offset: 1px; }.market-revenue { margin: .2rem 0 !important; font-weight: 700; text-align: center; }
   .skip-link { width: 100%; min-height: 2rem; margin-top: .35rem; border: 0; color: #8d3c37; text-decoration: underline; background: transparent; font: inherit; font-size: .68rem; font-weight: 700; }
   .large-card { min-height: 13rem; display: flex; flex-direction: column; justify-content: space-between; padding: 1rem; border: 2px solid #d49d42; border-radius: .8rem; color: #fffaf0; background: radial-gradient(circle at 80% 15%, #d27a40, transparent 5rem), #a23b36; box-shadow: 0 .8rem 1.4rem #4b2c2240; }.large-card > span { font-size: .65rem; letter-spacing: .15em; text-transform: uppercase; }.large-card strong { font: 700 1.5rem/1 'Cormorant Garamond', serif; }.large-card p { margin: 0; font-size: .78rem; }
   .mobile-card-text { display: none; }
@@ -264,9 +337,9 @@
     .turn-banner { min-height: 3.4rem; padding: .35rem .6rem; }.turn-banner h1 { font-size: 1.45rem; }.turn-token { font-size: .7rem; }.turn-token small { font-size: .55rem; }
     .play-area { grid-template-columns: 1fr; grid-template-rows: minmax(0, 1fr) auto; gap: .4rem; }
     .board-viewport { padding: 2.1rem .4rem .35rem; }.board { width: 100%; aspect-ratio: 1.18; gap: .25rem; }.place { grid-template-columns: 1.35rem 1fr; padding: .24rem; border-radius: .38rem; }.place-glyph { width: 1.25rem; height: 1.25rem; }.place strong { display: -webkit-box; overflow: hidden; font-size: .52rem; line-height: .88; white-space: normal; -webkit-box-orient: vertical; -webkit-line-clamp: 2; line-clamp: 2; }.place-number { font-size: .5rem; }.occupants { min-height: .85rem; }.merchant, .assistant { width: .8rem; height: .8rem; font-size: .4rem; }.encounter { width: .7rem; height: .7rem; font-size: .38rem; }
-    .inspector { min-height: 5.5rem; max-height: none; display: grid; grid-template-columns: auto 1fr; gap: .2rem .7rem; align-content: start; padding: .55rem .7rem; }.inspector .section-kicker, .inspector h2, .inspector > p { grid-column: 2; }.inspector h2 { margin: 0; font-size: 1.35rem; }.inspector > p:not(.section-kicker) { margin: 0; font-size: .65rem; }.inspector-glyph { grid-column: 1; grid-row: 1 / 4; width: 3rem; height: 3rem; }.inspector dl { grid-column: 1 / -1; display: flex; gap: .8rem; margin: 0; }.inspector dl div { padding: .15rem 0; border: 0; font-size: .55rem; }.inspector .turn-action, .inspector .skip-link, .inspector .wheelbarrow-track, .inspector .crate-track, .inspector .recall-list, .inspector .action-balance { grid-column: 1 / -1; margin-top: .2rem; }.inspector .turn-action { min-height: 2.2rem; }.inspector .skip-link { min-height: 1.5rem; }.recall-list { grid-template-columns: 1fr 1fr; }.encounter-ledger, .supply-ledger, .large-card { display: none; }.mobile-card-text { display: block; }
+    .inspector { min-height: 5.5rem; max-height: none; display: grid; grid-template-columns: auto 1fr; gap: .2rem .7rem; align-content: start; padding: .55rem .7rem; }.inspector .section-kicker, .inspector h2, .inspector > p { grid-column: 2; }.inspector h2 { margin: 0; font-size: 1.35rem; }.inspector > p:not(.section-kicker) { margin: 0; font-size: .65rem; }.inspector-glyph { grid-column: 1; grid-row: 1 / 4; width: 3rem; height: 3rem; }.inspector dl { grid-column: 1 / -1; display: flex; gap: .8rem; margin: 0; }.inspector dl div { padding: .15rem 0; border: 0; font-size: .55rem; }.inspector .turn-action, .inspector .skip-link, .inspector .wheelbarrow-track, .inspector .crate-track, .inspector .recall-list, .inspector .action-balance, .inspector .mail-track, .inspector .caravan-sources, .inspector .card-preview, .inspector .discard-choice, .inspector .demand-card, .inspector .market-revenue { grid-column: 1 / -1; margin-top: .2rem; }.inspector .turn-action { min-height: 2.2rem; }.inspector .skip-link { min-height: 1.5rem; }.recall-list { grid-template-columns: 1fr 1fr; }.encounter-ledger, .supply-ledger, .large-card { display: none; }.mobile-card-text { display: block; }
     .inspector.route-planner { position: relative; display: block; height: 8rem; max-height: 8rem; padding: 0; }.route-planner .section-kicker { position: absolute; top: .55rem; left: 1.4rem; margin: 0; }.route-planner h2 { position: absolute; top: 1.45rem; left: 1.4rem; margin: 0; }.route-planner > p:not(.section-kicker) { position: absolute; top: 3.15rem; right: .7rem; left: 1.4rem; margin: 0; line-height: .82rem; }.route-planner .supply-ledger { position: absolute; right: .7rem; bottom: .45rem; left: .7rem; display: flex; justify-content: space-between; margin: 0 !important; }
-    .player-rail { grid-auto-flow: row; grid-template-columns: 1fr 1fr; gap: .3rem; }.player-rail article { padding: .35rem .45rem; grid-template-columns: 1fr auto; gap: .2rem; }.resources { display: none; }.goods { justify-content: end; }.hand, .masked-hand { padding-top: .2rem; }.hand button { max-width: 8rem; }.player-name { font-size: .72rem; }
+    .player-rail { grid-auto-flow: row; grid-template-columns: 1fr 1fr; gap: .3rem; }.player-rail article { padding: .35rem .45rem; grid-template-columns: 1fr auto; gap: .2rem; }.resources { display: none; }.goods { justify-content: end; }.hand, .masked-hand { padding-top: .2rem; }.hand { flex-wrap: wrap; }.hand > span { width: 100%; }.hand button { width: 100%; max-width: none; min-height: 1.55rem; }.player-name { font-size: .72rem; }
   }
   @media (prefers-reduced-motion: reduce) { .board { transition: none; } }
 </style>
