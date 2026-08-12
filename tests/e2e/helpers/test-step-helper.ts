@@ -11,22 +11,31 @@ interface DocStep {
   title: string;
   image: string;
   specs: string[];
+  actor: string;
+}
+
+export class ScenarioJournal {
+  steps: DocStep[] = [];
+  title = '';
+  description = '';
 }
 
 export class TestStepHelper {
   private count = 0;
-  private steps: DocStep[] = [];
-  private title = '';
-  private description = '';
+  private journal: ScenarioJournal;
 
   constructor(
     private page: Page,
-    private testInfo: TestInfo
-  ) {}
+    private testInfo: TestInfo,
+    journal?: ScenarioJournal,
+    private actor = 'Player'
+  ) {
+    this.journal = journal ?? new ScenarioJournal();
+  }
 
   setMetadata(title: string, description: string) {
-    this.title = title;
-    this.description = description;
+    this.journal.title = title;
+    this.journal.description = description;
   }
 
   async step(
@@ -73,18 +82,21 @@ export class TestStepHelper {
     const platform = process.platform === 'linux' ? '-linux' : '';
     const filename = `${index}-${id}-${this.testInfo.project.name}${platform}.png`;
     await expect(this.page).toHaveScreenshot(filename);
-    this.steps.push({
+    this.journal.steps.push({
       title: options.description,
       image: `./screenshots/${filename}`,
-      specs: options.verifications.map(({ spec }) => spec)
+      specs: options.verifications.map(({ spec }) => spec),
+      actor: this.actor
     });
   }
 
   generateDocs() {
     if (this.testInfo.project.name !== 'desktop' || process.platform === 'linux') return;
-    let content = `# ${this.title}\n\n${this.description}\n\n`;
-    for (const step of this.steps) {
-      content += `## ${step.title}\n\n![${step.title}](${step.image})\n\n`;
+    let content = `# ${this.journal.title}\n\n${this.journal.description}\n\n`;
+    for (const [index, step] of this.journal.steps.entries()) {
+      content += `## ${index + 1}. ${step.title}\n\n`;
+      content += `**${step.actor}** — ${step.title}\n\n`;
+      content += `![${step.title}](${step.image})\n\n`;
       content += `**Verifications:**\n\n${this.stepsForDocs(step)}\n\n`;
     }
     fs.writeFileSync(

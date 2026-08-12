@@ -18,13 +18,14 @@ test('application shell reaches Firebase and renders deterministically', async (
           expect(page).toHaveTitle('Istanbul — Race through the bazaar')
       },
       {
-        spec: 'The landing page introduces the four-step route to a ruby',
+        spec: 'The landing page presents creation, joining, and the four-part route',
         check: async () => {
           await expect(page.getByRole('heading', { level: 1 })).toHaveText(
-            'Build your route through the bazaar.'
+            'Meet beneath the bazaar lamps.'
           );
           await expect(page.getByRole('listitem')).toHaveCount(4);
-          await expect(page.getByRole('heading', { name: 'Four steps to a ruby' })).toBeVisible();
+          await expect(page.getByRole('heading', { name: 'Open the bazaar' })).toBeVisible();
+          await expect(page.getByRole('heading', { name: 'Join with a room code' })).toBeVisible();
         }
       },
       {
