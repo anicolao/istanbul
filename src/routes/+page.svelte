@@ -6,6 +6,8 @@
   import { onMount } from 'svelte';
   import { appTitle } from '$lib/app-metadata';
   import GameTable from '$lib/components/GameTable.svelte';
+  import SeatQr from '$lib/components/SeatQr.svelte';
+  import SharedTableLobby from '$lib/components/SharedTableLobby.svelte';
   import { initializeFirebase } from '$lib/firebase';
   import { createEventRepository, type EventRepository } from '$lib/game/repository';
   import { mergeReplayEvents, readReplayCache, replayCacheKey, writeReplayCache } from '$lib/game/replay-cache';
@@ -18,14 +20,16 @@
   import {
     isRoomCode,
     layoutNames,
+    modeNames,
     normalizeRoomCode,
     schemaVersion,
     type CanonicalEvent,
     type LayoutKind,
-    type ReplayProjection
+    type ReplayProjection,
+    type RoomMode
   } from '$lib/game/protocol';
 
-  type Screen = 'landing' | 'loading-room' | 'join-room' | 'lobby' | 'game';
+  type Screen = 'landing' | 'loading-room' | 'join-room' | 'lobby' | 'game' | 'shared-display';
 
   let connectionStatus = $state<'connecting' | 'synced' | 'error'>('connecting');
   let connectionText = $state('Connecting to Firebase…');
@@ -40,6 +44,9 @@
   let joinCode = $state('');
   let playerCount = $state(3);
   let selectedLayout = $state<LayoutKind>('short-path');
+  let selectedMode = $state<RoomMode>('personal-screens');
+  let sharedDisplay = $state(false);
+  let requestedSeat = $state<number | null>(null);
   let actionPending = $state(false);
   let message = $state('');
   let recoveryNotice = $state('');
@@ -66,6 +73,8 @@
     seatCount: room?.seats.length ?? 0,
     maxPlayers: room?.maxPlayers ?? null,
     layout: room?.layout ?? null,
+    mode: room?.mode ?? null,
+    sharedDisplay,
     ready: room?.seats.map((seat) => seat.ready) ?? [],
     localSeat: localSeat?.name ?? null,
     game: game ? {
@@ -120,6 +129,9 @@
       recoveryReview = import.meta.env.VITE_USE_FIREBASE_EMULATORS === 'true' && new URL(location.href).searchParams.get('e2eRecovery') === '1';
       const reviewedCacheCount = Number(new URL(location.href).searchParams.get('e2eCacheCount') ?? '0');
       const reviewedRoom = normalizeRoomCode(new URL(location.href).searchParams.get('room') ?? '');
+      sharedDisplay = new URL(location.href).searchParams.get('display') === 'table';
+      const seatParameter = Number(new URL(location.href).searchParams.get('seat'));
+      requestedSeat = Number.isInteger(seatParameter) && seatParameter > 0 ? seatParameter : null;
       if (recoveryReview && reviewedCacheCount > 0 && isRoomCode(reviewedRoom)) {
         const cached = readReplayCache(reviewedRoom).slice(0, reviewedCacheCount);
         localStorage.setItem(replayCacheKey(reviewedRoom), JSON.stringify({ version: 1, events: cached }));
@@ -138,12 +150,14 @@
     }
   });
 
-  function makeInviteUrl(roomCode: string) {
+  function makeInviteUrl(roomCode: string, options: { seat?: number; display?: boolean } = {}) {
     if (typeof location === 'undefined') return `?room=${roomCode}`;
     const url = new URL(location.href);
     const e2eSeed = url.searchParams.get('e2eSeed');
     url.search = '';
     url.searchParams.set('room', roomCode);
+    if (options.seat) url.searchParams.set('seat', String(options.seat));
+    if (options.display) url.searchParams.set('display', 'table');
     if (import.meta.env.VITE_USE_FIREBASE_EMULATORS === 'true' && e2eSeed) url.searchParams.set('e2eSeed', e2eSeed);
     return url.toString();
   }
@@ -200,7 +214,9 @@
       return;
     }
     const seated = projection.room.seats.some((seat) => seat.uid === userUid);
-    screen = seated && projection.game ? 'game' : seated ? 'lobby' : 'join-room';
+    screen = sharedDisplay && projection.room.mode === 'shared-table'
+      ? 'shared-display'
+      : seated && projection.game ? 'game' : seated ? 'lobby' : 'join-room';
     joinCode = roomCode;
   }
 
@@ -217,7 +233,7 @@
         hostName: hostName.trim(),
         maxPlayers: playerCount,
         layout: selectedLayout,
-        mode: 'personal-screens'
+        mode: selectedMode
       });
       replaceState(makeInviteUrl(roomCode), {});
       await openRoom(roomCode, db);
@@ -227,6 +243,13 @@
     } finally {
       actionPending = false;
     }
+  }
+
+  function useAsSharedDisplay() {
+    if (!room || room.mode !== 'shared-table') return;
+    sharedDisplay = true;
+    replaceState(makeInviteUrl(room.roomCode, { display: true }), {});
+    screen = 'shared-display';
   }
 
   async function findRoom() {
@@ -452,7 +475,7 @@
 
 <svelte:head><title>{appTitle}</title></svelte:head>
 
-<main data-e2e-layout class:lobby-screen={screen === 'lobby'} class:game-screen={screen === 'game'}>
+<main data-e2e-layout class:lobby-screen={screen === 'lobby'} class:game-screen={screen === 'game' || screen === 'shared-display'} class:shared-screen={screen === 'shared-display'}>
   <header class="topbar">
     <a class="brand" href="./" aria-label="Istanbul home">
       <span class="brand-gem" aria-hidden="true"></span>
@@ -498,7 +521,8 @@
               <label>Seats<select bind:value={playerCount}><option value={2}>2 players</option><option value={3}>3 players</option><option value={4}>4 players</option><option value={5}>5 players</option></select></label>
               <label>Layout<select bind:value={selectedLayout}><option value="short-path">Short Path</option><option value="long-path">Long Path</option><option value="number-order">Number Order</option><option value="random">Seeded Random</option></select></label>
             </div>
-            <button class="primary" type="submit" disabled={!hostName.trim() || actionPending}>Create private room <span aria-hidden="true">→</span></button>
+            <label>Play surface<select bind:value={selectedMode}><option value="personal-screens">Personal screens</option><option value="shared-table">Shared table + private phones</option></select></label>
+            <button class="primary" type="submit" disabled={!hostName.trim() || actionPending}>Create {selectedMode === 'shared-table' ? 'shared table' : 'private room'} <span aria-hidden="true">→</span></button>
           </form>
         </section>
         <div class="divider"><span>or</span></div>
@@ -517,11 +541,12 @@
     <section class="loading" aria-live="polite"><span class="lantern" aria-hidden="true"></span><h1>Finding the table…</h1><p>Replaying its immutable history.</p></section>
   {:else if screen === 'join-room' && room}
     <section class="join-room" aria-labelledby="join-room-title">
-      <div class="room-ticket"><span>Private room</span><strong>{room.roomCode}</strong><small>{room.seats.length} of {room.maxPlayers} seats claimed</small></div>
+      <div class="room-ticket"><span>{modeNames[room.mode]}</span><strong>{room.roomCode}</strong><small>{room.seats.length} of {room.maxPlayers} seats claimed</small></div>
       <div class="join-panel">
         <p class="section-kicker">You were invited</p>
         <h1 id="join-room-title">Take a seat at {room.seats[0].name}’s table.</h1>
-        <p>The table is using the <strong>{layoutNames[room.layout]}</strong> layout. Your merchant name is public; Bonus cards stay private once play begins.</p>
+        <p>The table is using the <strong>{layoutNames[room.layout]}</strong> layout.{requestedSeat ? ` This invitation is for controller seat ${requestedSeat}.` : ''} Your merchant name is public; Bonus cards stay private once play begins.</p>
+        {#if room.mode === 'shared-table'}<button class="display-selector" onclick={useAsSharedDisplay}>Use this screen as the public table</button><div class="divider"><span>or claim a private controller</span></div>{/if}
         <form onsubmit={(event) => { event.preventDefault(); void joinRoom(); }}>
           <label>Your merchant name<input bind:value={guestName} maxlength="24" autocomplete="nickname" required /></label>
           <button class="primary" type="submit" disabled={!guestName.trim() || actionPending || room.seats.length >= room.maxPlayers}>Join the room <span aria-hidden="true">→</span></button>
@@ -561,6 +586,9 @@
           {/if}
           <p class="layout-note">{room.layout === 'short-path' ? 'Direct trade routes make this a welcoming first table.' : room.layout === 'long-path' ? 'Ruby routes sit farther apart for a more tactical journey.' : room.layout === 'number-order' ? 'The numbered reference arrangement from the rulebook.' : 'A valid arrangement derived from the committed setup seed.'}</p>
           <div class="invite"><label>Invitation link<input readonly value={inviteUrl} aria-label="Invitation link" /></label><p>Room code <strong>{room.roomCode}</strong></p></div>
+          {#if room.mode === 'shared-table'}
+            <div class="shared-invite"><SeatQr compact url={makeInviteUrl(room.roomCode, { seat: room.seats.length + 1 })} label={`Seat ${room.seats.length + 1} invitation`} /><a href={makeInviteUrl(room.roomCode, { display: true })} target="_blank" rel="noreferrer">Open public table display</a></div>
+          {/if}
           {#if allReady && isHost}
             <button class="primary ready-button start-button" onclick={() => void startGame()} disabled={actionPending}>Open the bazaar <span aria-hidden="true">→</span></button>
           {:else}
@@ -569,8 +597,18 @@
         </aside>
       </div>
 
-      <footer class="history"><span>Immutable history <strong data-testid="event-count">{projection.acceptedEventIds.length} events</strong></span><span>Replay <strong>{projection.diagnostics.length === 0 ? 'clean' : `${projection.diagnostics.length} diagnostics`}</strong></span><span>Mode <strong>Personal screens</strong></span></footer>
+      <footer class="history"><span>Immutable history <strong data-testid="event-count">{projection.acceptedEventIds.length} events</strong></span><span>Replay <strong>{projection.diagnostics.length === 0 ? 'clean' : `${projection.diagnostics.length} diagnostics`}</strong></span><span>Mode <strong>{modeNames[room.mode]}</strong></span></footer>
     </section>
+  {:else if screen === 'shared-display' && room}
+    {#if game}
+      <GameTable
+        {game} {room} userUid="" selectedPlace={null} selectedBonus={null} {boardScale} displayOnly
+        onInspectPlace={() => {}} onInspectBonus={() => {}} onMove={() => {}} onPayMerchants={() => {}}
+        onTakeAction={() => {}} onResolveEncounter={() => {}} onUseMosqueAbility={() => {}} onPlayBonus={() => {}}
+        onGrantE2eResources={() => {}} onRematch={() => {}} onEndTurn={() => {}}
+        onZoomIn={() => boardScale = Math.min(1.18, boardScale + 0.09)} onFit={() => boardScale = 1}
+      />
+    {:else}<SharedTableLobby {room} invitationFor={(seat) => makeInviteUrl(room.roomCode, { seat })} />{/if}
   {:else if screen === 'game' && room && game}
     <GameTable
       {game}
@@ -642,6 +680,7 @@
   .divider::before, .divider::after { height: 1px; flex: 1; content: ''; background: rgb(255 250 240 / 18%); }
   .join-form { grid-template-columns: 1fr auto; align-items: end; }
   .secondary { padding: .6rem 1rem; border: 1px solid rgb(255 250 240 / 40%); color: #fffaf0; background: transparent; }
+  .display-selector { width: 100%; padding: .65rem 1rem; border: 1px solid #efca7d; color: #173f43; background: #efca7d; }
   .code-input { font-weight: 700; letter-spacing: .22em; text-transform: uppercase; }
   .error { margin: .7rem 0 0; color: #ffc1b6; }
   .loading { min-height: calc(100svh - 9rem); display: grid; place-content: center; text-align: center; }
@@ -690,6 +729,8 @@
   .invite { display: grid; grid-template-columns: 1fr auto; gap: .7rem; align-items: end; }
   .invite p { margin: 0; padding-bottom: .65rem; color: #bdd0ca; font-size: .78rem; }
   .invite strong { display: block; color: #efca7d; font-size: 1.15rem; letter-spacing: .16em; }
+  .shared-invite { display: grid; grid-template-columns: 1fr auto; gap: .7rem; align-items: center; margin-top: .65rem; padding: .55rem; border: 1px solid rgb(255 255 255 / 17%); border-radius: .7rem; }
+  .shared-invite a { padding: .65rem; border: 1px solid #efca7d; border-radius: .55rem; color: #efca7d; font-size: .7rem; font-weight: 700; text-align: center; text-decoration: none; }
   .ready-button.unready { color: #fffaf0; background: #9c3d39; box-shadow: 0 .35rem 0 #652927; }
   .start-button { color: #fffaf0 !important; background: #267356 !important; box-shadow: 0 .35rem 0 #164a37 !important; }
   .history { display: flex; justify-content: center; gap: 1.4rem; padding-top: .85rem; color: #5c716e; font-size: .76rem; }
@@ -740,6 +781,7 @@
     .invite { grid-column: 1 / -1; grid-template-columns: 1fr auto; }
     .invite input { min-height: 2.1rem; font-size: .68rem; }
     .invite p { padding-bottom: .35rem; }
+    .shared-invite { grid-column: 1 / -1; }
     .ready-button { grid-column: 1 / -1; margin-top: .2rem !important; }
     .history { gap: .55rem; padding-top: .45rem; font-size: .62rem; }
     .history span + span { padding-left: .55rem; }

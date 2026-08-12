@@ -37,7 +37,8 @@
     onRematch,
     onEndTurn,
     onZoomIn,
-    onFit
+    onFit,
+    displayOnly = false
   }: {
     game: GameSetup;
     room: RoomProjection;
@@ -58,12 +59,13 @@
     onEndTurn: () => void;
     onZoomIn: () => void;
     onFit: () => void;
+    displayOnly?: boolean;
   } = $props();
 
   const placeById = new Map(places.map((place) => [place.id, place]));
   const bonusById = new Map(bonusCards.map((card) => [card.id, card]));
-  const localPlayer = $derived(game.players.find((player) => player.uid === userUid)!);
   const currentPlayer = $derived(game.players[game.turnSeat]);
+  const localPlayer = $derived(game.players.find((player) => player.uid === userUid) ?? currentPlayer);
   const selectedPlaceManifest = $derived(selectedPlace ? placeById.get(selectedPlace) : null);
   const selectedBonusManifest = $derived(selectedBonus ? bonusById.get(selectedBonus) : null);
   const localIsCurrent = $derived(currentPlayer.uid === userUid);
@@ -167,10 +169,10 @@
   }
 </script>
 
-<section class:many={game.players.length > 3} class="game-table" aria-labelledby="game-title" style={`--courtyard: url('${artUrl}')`}>
+<section class:many={game.players.length > 3} class:display-only={displayOnly} class="game-table" aria-labelledby="game-title" style={`--courtyard: url('${artUrl}')`}>
   <header class="turn-banner">
     <div><p>{game.phase === 'game-over' ? `Game ${game.epoch} · final ranking` : game.phase === 'final-bonus' ? 'Final Bonus cards' : `Turn ${game.turnNumber} · ${game.phase.replace('-', ' ')}`}</p><h1 id="game-title">{game.phase === 'game-over' ? `${game.end.winnerUids.length > 1 ? 'The merchants share the victory.' : `${game.end.rankings[0]?.name} wins the ruby race.`}` : game.phase === 'final-bonus' ? `${currentPlayer.name} makes final trades.` : game.phase === 'movement' ? `${currentPlayer.name} surveys the bazaar.` : game.phase === 'merchant-payment' ? `${currentPlayer.name} meets another merchant.` : game.phase === 'family-action' ? `${currentPlayer.name} sends family to ${actionPlace.name}.` : game.phase === 'mosque-ability' ? `${currentPlayer.name} considers a Mosque ability.` : game.phase === 'encounters' ? `${currentPlayer.name} resolves bazaar encounters.` : game.phase === 'turn-end' ? `${currentPlayer.name} completed ${actionPlace.name}.` : `${currentPlayer.name} arrives at ${actionPlace.name}.`}</h1>{#if game.lastMovement?.paymentBlocked}<small class="turn-notice">{game.players.find((player) => player.uid === game.lastMovement?.playerUid)?.name} could not pay {game.lastMovement.paymentTotal} Lira; that turn ended immediately.</small>{/if}</div>
-    <div class="turn-token"><span class={`player-dot ${currentPlayer.color}`}></span><strong>{game.phase === 'game-over' ? game.end.rankings[0]?.name : currentPlayer.name}</strong><small>{game.phase === 'game-over' ? 'Result locked' : currentPlayer.uid === userUid ? 'Your turn' : game.phase === 'movement' ? 'Planning route' : 'Resolving turn'}</small></div>
+    <div class="turn-token"><span class={`player-dot ${currentPlayer.color}`}></span><strong>{game.phase === 'game-over' ? game.end.rankings[0]?.name : currentPlayer.name}</strong><small>{game.phase === 'game-over' ? 'Result locked' : displayOnly ? 'Public table · choices stay on phones' : currentPlayer.uid === userUid ? 'Your turn' : game.phase === 'movement' ? 'Planning route' : 'Resolving turn'}</small></div>
   </header>
 
   <div class="play-area">
@@ -441,6 +443,9 @@
 
 <style>
   .game-table { height: 100%; min-height: 0; display: flex; flex-direction: column; gap: .65rem; color: #fffaf0; }
+  .game-table.display-only .board { width: min(100%, 92rem); }
+  .game-table.display-only .play-area { grid-template-columns: minmax(0, 3fr) minmax(19rem, 1fr); }
+  .game-table.display-only .player-rail article { padding: clamp(.55rem, 1vw, 1.2rem); }
   .turn-banner { min-height: 4.4rem; display: flex; align-items: center; justify-content: space-between; gap: 1rem; padding: .55rem 1.1rem; border: 1px solid rgb(239 202 125 / 35%); border-radius: 1rem; background: linear-gradient(100deg, rgb(13 48 51 / 96%), rgb(28 76 75 / 92%)); box-shadow: 0 .8rem 2rem rgb(35 21 9 / 22%); }
   .turn-banner p, .section-kicker { margin: 0; color: #efca7d; font-size: .68rem; font-weight: 700; letter-spacing: .14em; text-transform: uppercase; }
   .turn-banner h1 { margin: .1rem 0 0; font: 700 clamp(1.65rem, 3vw, 2.5rem)/.95 'Cormorant Garamond', serif; }
@@ -527,6 +532,7 @@
   @keyframes arrival-pulse { 0% { translate: 0 -.25rem; filter: brightness(1.7); } 100% { translate: 0; filter: none; } }
   @media (max-width: 720px) {
     .game-table { gap: .4rem; }
+    .game-table.display-only .play-area { grid-template-columns: 1fr; }
     .turn-banner { min-height: 3.4rem; padding: .35rem .6rem; }.turn-banner h1 { font-size: 1.45rem; }.turn-token { font-size: .7rem; }.turn-token small { font-size: .55rem; }
     .play-area { grid-template-columns: 1fr; grid-template-rows: minmax(0, 1fr) auto; gap: .4rem; }
     .board-viewport { padding: 2.1rem .4rem .35rem; }.board { width: 100%; aspect-ratio: 1.18; gap: .25rem; }.game-table.many .board { aspect-ratio: 1.42; }.place { grid-template-columns: 1.35rem 1fr; padding: .24rem; border-radius: .38rem; }.place-glyph { width: 1.25rem; height: 1.25rem; }.place strong { display: -webkit-box; overflow: hidden; font-size: .52rem; line-height: .88; white-space: normal; -webkit-box-orient: vertical; -webkit-line-clamp: 2; line-clamp: 2; }.place-number { font-size: .5rem; }.occupants { min-height: .85rem; }.merchant, .assistant, .family-member { width: .8rem; height: .8rem; font-size: .4rem; }.encounter { width: .7rem; height: .7rem; font-size: .38rem; }

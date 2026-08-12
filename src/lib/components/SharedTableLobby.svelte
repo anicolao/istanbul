@@ -1,0 +1,56 @@
+<script lang="ts">
+  import type { RoomProjection } from '$lib/game/protocol';
+  import SeatQr from './SeatQr.svelte';
+
+  let { room, invitationFor }: { room: RoomProjection; invitationFor: (seat: number) => string } = $props();
+</script>
+
+<section class="table-lobby" aria-labelledby="shared-table-title">
+  <header>
+    <div><p>Shared table · room {room.roomCode}</p><h1 id="shared-table-title">Gather around the bazaar.</h1></div>
+    <div class="room-code"><span>Join code</span><strong>{room.roomCode}</strong></div>
+  </header>
+  <div class="invitation-grid" style={`--seats: ${room.maxPlayers}`}>
+    {#each Array(room.maxPlayers) as _, index}
+      {@const seat = room.seats[index]}
+      <article class:claimed={seat}>
+        <span class="seat-number">Seat {index + 1}</span>
+        {#if seat}
+          <div class="claimed-token">{seat.name.slice(0, 1).toUpperCase()}</div>
+          <h2>{seat.name}</h2><p>{seat.ready ? 'Ready at their private controller' : 'Planning on their private controller'}</p>
+        {:else}
+          <SeatQr url={invitationFor(index + 1)} label={`Seat ${index + 1} invitation`} />
+        {/if}
+      </article>
+    {/each}
+  </div>
+  <footer><strong>{room.seats.filter(({ ready }) => ready).length}/{room.seats.length} ready</strong><span>Bonus cards and choices remain on each player’s phone.</span></footer>
+</section>
+
+<style>
+  .table-lobby { height: 100%; display: flex; flex-direction: column; gap: clamp(1rem, 2vw, 2.2rem); padding: clamp(1.2rem, 3vw, 4rem); color: #fffaf0; background: radial-gradient(circle at 50% 0, #3a6e69 0, transparent 34rem), linear-gradient(145deg, #173f43, #0c292c); }
+  header { display: flex; align-items: center; justify-content: space-between; gap: 2rem; }
+  header p { margin: 0; color: #efca7d; font-size: clamp(.7rem, 1vw, 1rem); font-weight: 700; letter-spacing: .14em; text-transform: uppercase; }
+  h1 { margin: .25rem 0 0; font: 700 clamp(2.8rem, 5vw, 7rem)/.9 'Cormorant Garamond', serif; }
+  .room-code { min-width: 11rem; padding: .8rem 1.2rem; border: 1px solid #efca7d; border-radius: 1rem; text-align: center; background: #0e3033cc; }
+  .room-code span { display: block; color: #bdd0ca; font-size: .65rem; text-transform: uppercase; }
+  .room-code strong { color: #efca7d; font: 700 clamp(2rem, 3vw, 4rem) 'Cormorant Garamond', serif; letter-spacing: .13em; }
+  .invitation-grid { min-height: 0; flex: 1; display: grid; grid-template-columns: repeat(var(--seats), minmax(0, 1fr)); gap: clamp(.7rem, 1.5vw, 1.5rem); }
+  article { position: relative; min-width: 0; display: grid; place-content: center; justify-items: center; padding: clamp(.7rem, 1.5vw, 1.5rem); border: 1px solid #efca7d66; border-radius: 1.4rem; color: #173f43; text-align: center; background: linear-gradient(145deg, #fffaf0, #ead5aa); box-shadow: 0 1.5rem 4rem #0005; }
+  article.claimed { color: #fffaf0; background: radial-gradient(circle, #bd514d 0 4rem, transparent 4.1rem), linear-gradient(145deg, #214f50, #153638); }
+  .seat-number { position: absolute; top: .8rem; left: .9rem; color: #a43b32; font-size: .7rem; font-weight: 700; letter-spacing: .12em; text-transform: uppercase; }
+  .claimed .seat-number { color: #efca7d; }
+  .claimed-token { width: clamp(5rem, 9vw, 10rem); aspect-ratio: 1; display: grid; place-items: center; border: .45rem solid #efca7d; border-radius: 50%; color: #fffaf0; background: #a43b32; box-shadow: inset 0 0 0 .3rem #fffaf0, 0 1rem 2rem #0005; font: 700 clamp(2.5rem, 5vw, 6rem) 'Cormorant Garamond', serif; }
+  article h2 { margin: 1rem 0 0; font: 700 clamp(1.5rem, 2.5vw, 3rem) 'Cormorant Garamond', serif; }
+  article p { max-width: 15rem; margin: .2rem 0; color: #bdd0ca; font-size: clamp(.65rem, .9vw, 1rem); }
+  footer { display: flex; justify-content: space-between; gap: 1rem; color: #bdd0ca; }
+  footer strong { color: #efca7d; }
+  @media (max-width: 720px) {
+    .table-lobby { gap: .6rem; padding: .8rem; }
+    header { gap: .5rem; } h1 { font-size: 2.2rem; }.room-code { min-width: 6.8rem; padding: .35rem; }.room-code strong { font-size: 1.5rem; }
+    .invitation-grid { grid-template-columns: repeat(2, 1fr); gap: .45rem; }
+    article { padding: .5rem; border-radius: .7rem; }.seat-number { top: .35rem; left: .4rem; font-size: .5rem; }.claimed-token { width: 3.4rem; border-width: .2rem; box-shadow: inset 0 0 0 .15rem #fffaf0; }.claimed h2 { margin-top: .25rem; font-size: 1rem; }.claimed p { font-size: .5rem; }
+    article :global(figure) { grid-template-columns: 3.4rem 1fr; gap: .3rem; text-align: left; } article :global(.qr) { width: 3.4rem; } article :global(figcaption small) { display: none; }
+    footer { font-size: .6rem; }
+  }
+</style>
