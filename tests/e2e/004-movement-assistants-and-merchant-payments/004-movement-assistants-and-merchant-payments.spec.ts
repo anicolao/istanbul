@@ -160,7 +160,7 @@ test('merchants move with assistants, settle tolls, and advance safely', async (
       { spec: 'Ada now carries two assistants and has one at Places 14 and 2', check: async () => expectState(page, { eventCount: 12, game: { phase: 'action', players: [{ merchantPlace: 2, assistantsCarried: 2, assistantsByPlace: { 2: 1, 14: 1 }, lira: 2 }, {}] } }) }
     ] });
 
-    await page.getByRole('button', { name: 'Skip this Place action and end turn' }).click();
+    await page.getByRole('button', { name: 'Skip warehouse and end turn' }).click();
     await ada.step('host-ends-third-turn', { description: 'Ada ends the Fabric Warehouse turn', verifications: [
       { spec: 'Bora becomes current on turn four', check: async () => expect(page.getByRole('heading', { name: 'Bora surveys the bazaar.' })).toBeVisible() },
       { spec: 'The projection advances without changing public resources', check: async () => expectState(page, { eventCount: 13, game: { currentTurn: 'Bora', turnNumber: 4, phase: 'movement', players: [{ lira: 2 }, { lira: 1 }] } }) }
@@ -176,7 +176,7 @@ test('merchants move with assistants, settle tolls, and advance safely', async (
     await boraPage.getByRole('button', { name: 'Move here and leave an assistant' }).click();
     await bora.step('guest-cannot-pay', { description: 'Bora arrives but cannot pay, ending the turn immediately', verifications: [
       { spec: 'The turn banner explains the exact unaffordable 2-Lira barrier', check: async () => expect(boraPage.getByText('Bora could not pay 2 Lira; that turn ended immediately.')).toBeVisible() },
-      { spec: 'No payment or Place-action control can be used after the early ending', check: async () => { await expect(boraPage.getByRole('button', { name: /Pay 2 Lira/ })).toHaveCount(0); await expect(boraPage.getByRole('button', { name: /Skip this Place action/ })).toHaveCount(0); } },
+      { spec: 'No payment or Place-action control can be used after the early ending', check: async () => { await expect(boraPage.getByRole('button', { name: /Pay 2 Lira/ })).toHaveCount(0); await expect(boraPage.getByRole('button', { name: /Skip warehouse/ })).toHaveCount(0); } },
       { spec: 'Bora still moves and drops, but no Lira transfers and turn five belongs to Ada', check: async () => expectState(boraPage, { eventCount: 14, game: { currentTurn: 'Ada', turnNumber: 5, phase: 'movement', pending: null, lastMovement: { playerUid: expect.any(String), to: 2, paymentTotal: 2, paymentBlocked: true }, players: [{ merchantPlace: 2, lira: 2 }, { merchantPlace: 2, assistantsCarried: 2, assistantsByPlace: { 2: 1, 14: 1 }, lira: 1 }] } }) }
     ] });
 
@@ -193,7 +193,7 @@ test('merchants move with assistants, settle tolls, and advance safely', async (
       { spec: 'Ada’s two carried and two placed assistants remain unchanged', check: async () => expectState(page, { eventCount: 15, game: { phase: 'action', players: [{ merchantPlace: 7, assistantsCarried: 2, assistantsByPlace: { 2: 1, 14: 1 } }, {}] } }) }
     ] });
 
-    await page.getByRole('button', { name: 'Skip this Place action and end turn' }).click();
+    await page.getByRole('button', { name: 'Skip Fountain and end turn' }).click();
     await ada.step('host-ends-fountain-turn', { description: 'Ada ends the Fountain turn', verifications: [
       { spec: 'Bora becomes current on turn six', check: async () => expect(page.getByRole('heading', { name: 'Bora surveys the bazaar.' })).toBeVisible() },
       { spec: 'Turn six is a new movement boundary', check: async () => expectState(page, { eventCount: 16, game: { currentTurn: 'Bora', turnNumber: 6, phase: 'movement' } }) }
@@ -212,7 +212,7 @@ test('merchants move with assistants, settle tolls, and advance safely', async (
       { spec: 'Bora’s assistant counts are unchanged in action phase', check: async () => expectState(boraPage, { eventCount: 17, game: { phase: 'action', players: [{ merchantPlace: 7 }, { merchantPlace: 7, assistantsCarried: 2, assistantsByPlace: { 2: 1, 14: 1 } }] } }) }
     ] });
 
-    await boraPage.getByRole('button', { name: 'Skip this Place action and end turn' }).click();
+    await boraPage.getByRole('button', { name: 'Skip Fountain and end turn' }).click();
     await bora.step('guest-ends-fountain-turn', { description: 'Bora ends the Fountain turn', verifications: [
       { spec: 'Ada starts turn seven at Fountain', check: async () => expect(boraPage.getByRole('heading', { name: 'Ada surveys the bazaar.' })).toBeVisible() },
       { spec: 'The prior unaffordable notice no longer changes the active phase', check: async () => expectState(boraPage, { eventCount: 18, game: { currentTurn: 'Ada', turnNumber: 7, phase: 'movement' } }) }
@@ -234,7 +234,7 @@ test('merchants move with assistants, settle tolls, and advance safely', async (
 
     await page.reload();
     await ada.step('host-reloads-pending-action', { description: 'Ada reloads while the Fabric Warehouse action is pending', verifications: [
-      { spec: 'The exact Place-action panel returns after fresh replay', check: async () => { await expect(page.getByRole('heading', { name: 'Fabric Warehouse', exact: true })).toBeVisible(); await expect(page.getByRole('button', { name: 'Skip this Place action and end turn' })).toBeVisible(); } },
+      { spec: 'The exact Place-action panel returns after fresh replay', check: async () => { await expect(page.getByRole('heading', { name: 'Fabric Warehouse', exact: true })).toBeVisible(); await expect(page.getByRole('button', { name: 'Skip warehouse and end turn' })).toBeVisible(); } },
       { spec: 'No local route selection is falsely restored', check: async () => expectState(page, { screen: 'game', eventCount: 19, diagnosticCount: 0, game: { currentTurn: 'Ada', turnNumber: 7, phase: 'action', selectedPlace: null, pending: null, players: [{ merchantPlace: 2, assistantsCarried: 3, assistantsByPlace: { 14: 1 } }, {}] } }) },
       { spec: 'The immutable payment, early-end, Fountain, and pick-up history remains clean', check: async () => { const state = await readState(page); expect(state.game.lastMovement).toMatchObject({ from: 7, to: 2, assistantAction: 'pick-up' }); expect(state.diagnosticCount).toBe(0); } }
     ] });

@@ -11,6 +11,7 @@
   import { readReplayCache, writeReplayCache } from '$lib/game/replay-cache';
   import { replayEvents } from '$lib/game/reducer';
   import type { AssistantAction } from '$lib/game/movement';
+  import type { PlaceActionChoice } from '$lib/game/actions';
   import {
     isRoomCode,
     layoutNames,
@@ -66,12 +67,17 @@
       phase: game.phase,
       pending: game.pending,
       lastMovement: game.lastMovement,
+      lastAction: game.lastAction,
       players: game.players.map((player) => ({
         name: player.name,
         merchantPlace: player.merchantPlace,
         assistantsCarried: player.assistantsCarried,
         assistantsByPlace: player.assistantsByPlace,
-        lira: player.lira
+        lira: player.lira,
+        goods: player.goods,
+        capacity: player.capacity,
+        extensions: player.extensions,
+        rubies: player.rubies
       })),
       localHand: game.players.find(({ uid }) => uid === userUid)?.bonusHand ?? [],
       opponentHandCounts: game.players.filter(({ uid }) => uid !== userUid).map(({ bonusHand }) => bonusHand.length),
@@ -276,6 +282,16 @@
       actionPending = false;
     }
   }
+
+  async function takePlaceAction(choice: PlaceActionChoice) {
+    if (!repository || actionPending) return;
+    actionPending = true;
+    try {
+      await repository.append('place/action-taken', { choice });
+    } finally {
+      actionPending = false;
+    }
+  }
 </script>
 
 <svelte:head><title>{appTitle}</title></svelte:head>
@@ -402,6 +418,7 @@
       onInspectBonus={inspectBonus}
       onMove={(destination, assistantAction) => void moveTo(destination, assistantAction)}
       onPayMerchants={() => void payMerchants()}
+      onTakeAction={(choice) => void takePlaceAction(choice)}
       onEndTurn={() => void endTurn()}
       onZoomIn={() => boardScale = Math.min(1.18, boardScale + 0.09)}
       onFit={() => boardScale = 1}
