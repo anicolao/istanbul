@@ -43,6 +43,7 @@ test('mail, private card trading, and both demand markets remain exact through r
     await ada.step('host-collects-first-mail', { description: 'Ada collects the first four uncovered resources', verifications: [
       { spec: 'The completion copy lists spice, fabric, fruit, and 1 Lira', check: async () => expect(page.getByText('Collected 1 spice, 1 fabric, 1 fruit, 1 Lira.', { exact: true })).toBeVisible() },
       { spec: 'The leftmost indicator alone moves lower', check: async () => expectState(page, { eventCount: 7, game: { phase: 'turn-end', postOfficeLower: [true, false, false, false], players: [{ lira: 3, goods: { fabric: 1, spice: 1, fruit: 1, jewelry: 0 } }, {}] } }) },
+      { spec: 'The Post Office tile immediately exposes its next four resources', check: async () => expect(page.getByTestId('place-state-5')).toHaveAttribute('data-state-summary', 'Exposed mail: 1 fabric, 1 fabric, 1 fruit, 1 Lira') },
       { spec: 'The action cannot be collected twice', check: async () => expect(page.getByRole('button', { name: 'Collect uncovered mail resources' })).toHaveCount(0) }
     ] });
 
@@ -79,6 +80,7 @@ test('mail, private card trading, and both demand markets remain exact through r
     await bora.step('guest-trades-deck-cards', { description: 'Bora takes two deck cards and discards the original', verifications: [
       { spec: 'The completion panel reports two cards retained', check: async () => expect(boraPage.getByText('Took 2 Bonus cards and discarded 1; 2 remain in hand.', { exact: true })).toBeVisible() },
       { spec: 'Bora privately sees two cards while Ada sees only a count', check: async () => { await expect(boraPage.getByLabel('Bora resources').getByRole('button', { name: /Inspect Bonus card/ })).toHaveCount(2); await expect(page.getByText('Bonus hand · 2 hidden cards')).toBeVisible(); } },
+      { spec: 'Caravansary now shows 22 draw cards and one face-up discard', check: async () => expect(boraPage.getByTestId('place-state-6')).toHaveAttribute('data-state-summary', /22 Bonus cards in draw pile; 1 in discard, topped by/) },
       { spec: 'Two draws and one discard conserve the card manifest', check: async () => expectState(boraPage, { eventCount: 10, game: { phase: 'turn-end', bonusDrawCount: 22, bonusDiscard: [originalBoraCard], localHand: [expect.any(String), expect.any(String)], opponentHandCounts: [1] } }) }
     ] });
 
@@ -154,6 +156,7 @@ test('mail, private card trading, and both demand markets remain exact through r
 
     const smallState = await readState(page);
     const smallId = smallState.game.smallDemand[0] as string;
+    const nextSmallDemand = demandById.get(smallState.game.smallDemand[1] as string)!;
     const adaGoods = smallState.game.players[0].goods as Record<Good, number>;
     const smallSlot = demandById.get(smallId)!.goods.findIndex((good) => adaGoods[good] > 0);
     const smallGood = demandById.get(smallId)!.goods[smallSlot];
@@ -168,6 +171,7 @@ test('mail, private card trading, and both demand markets remain exact through r
     await ada.step('host-sells-small-market', { description: 'Ada completes the one-good Small Market sale', verifications: [
       { spec: 'The completion panel reports the exact revenue', check: async () => expect(page.getByText('Sold 1 good for 2 Lira.', { exact: true })).toBeVisible() },
       { spec: 'The used Demand moves to the bottom', check: async () => expectState(page, { eventCount: 19, game: { phase: 'turn-end', smallDemand: [...smallState.game.smallDemand.slice(1), smallId], players: [{ lira: 5 }, {}] } }) },
+      { spec: 'Small Market tile replaces its five graphical demand goods', check: async () => expect(page.getByTestId('place-state-11')).toHaveAttribute('data-state-summary', `Current Small Market demand: ${nextSmallDemand.goods.join(', ')}`) },
       { spec: 'Exactly the selected good was spent', check: async () => { const after = await readState(page); expect(after.game.players[0].goods[smallGood]).toBe(adaGoods[smallGood] - 1); } }
     ] });
 
@@ -235,6 +239,7 @@ test('mail, private card trading, and both demand markets remain exact through r
 
     const largeState = await readState(page);
     const largeId = largeState.game.largeDemand[0] as string;
+    const nextLargeDemand = demandById.get(largeState.game.largeDemand[1] as string)!;
     const remainingGoods = largeState.game.players[0].goods as Record<Good, number>;
     const largeSlot = demandById.get(largeId)!.goods.findIndex((good) => remainingGoods[good] > 0);
     const largeGood = demandById.get(largeId)!.goods[largeSlot];
@@ -249,6 +254,7 @@ test('mail, private card trading, and both demand markets remain exact through r
     await ada.step('host-sells-large-market', { description: 'Ada completes the Large Market sale', verifications: [
       { spec: 'The exact sale summary is visible', check: async () => expect(page.getByText('Sold 1 good for 2 Lira.', { exact: true })).toBeVisible() },
       { spec: 'Large Demand rotates independently', check: async () => expectState(page, { eventCount: 25, game: { phase: 'turn-end', largeDemand: [...largeState.game.largeDemand.slice(1), largeId], smallDemand: [...smallState.game.smallDemand.slice(1), smallId], players: [{ lira: 7 }, {}] } }) },
+      { spec: 'Large Market tile exposes the newly rotated five-good demand', check: async () => expect(page.getByTestId('place-state-10')).toHaveAttribute('data-state-summary', `Current Large Market demand: ${nextLargeDemand.goods.join(', ')}`) },
       { spec: 'Bora observes the same public market state', check: async () => { const host = await readState(page); const guest = await readState(boraPage); expect(guest.game.largeDemand).toEqual(host.game.largeDemand); expect(guest.game.players).toEqual(host.game.players); } }
     ] });
 

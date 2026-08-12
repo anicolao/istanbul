@@ -38,8 +38,20 @@ test('original production art communicates the complete tabletop', async ({ brow
         } },
         { spec: 'Both colour-keyed player mats and every resource icon are real loaded images', check: async () => {
           await expect(page.locator('[data-art-kind="mat"]')).toHaveCount(2);
-          await expect(page.locator('[data-art-kind="component"]')).toHaveCount(14);
+          expect(await page.locator('[data-art-kind="component"]').count()).toBeGreaterThan(50);
           expect((await loadedBackgrounds(page.locator('[data-art-kind="mat"], [data-art-kind="component"]'))).every(Boolean)).toBe(true);
+        } },
+        { spec: 'Every Place exposes a graphical and semantic live-state indicator', check: async () => {
+          const states = page.locator('.location-state');
+          await expect(states).toHaveCount(16);
+          const summaries = await states.evaluateAll((elements) => elements.map((element) => element.getAttribute('data-state-summary') ?? ''));
+          expect(summaries.every((summary) => summary.length > 12)).toBe(true);
+          expect(new Set(summaries).size).toBe(16);
+          await expect(page.locator('[data-testid="place-state-5"]')).toHaveAttribute('data-state-summary', /Exposed mail:/);
+          await expect(page.locator('[data-testid="place-state-6"]')).toHaveAttribute('data-state-summary', /Bonus cards in draw pile; 0 in discard/);
+          await expect(page.locator('[data-testid="place-state-14"]')).toHaveAttribute('data-state-summary', /required, pay 1.*ruby rewards remain/);
+          await expect(page.locator('[data-testid="place-state-16"]')).toHaveAttribute('data-state-summary', /Next ruby costs \d+ Lira/);
+          await expect(page.locator('[data-place-id="5"]')).toHaveAttribute('aria-label', /Current state: Exposed mail:/);
         } },
         { spec: 'The canonical setup remains unchanged by its visual treatment', check: async () => expectState(page, { screen: 'game', eventCount: 5, diagnosticCount: 0, game: { seed, phase: 'movement', turnNumber: 1, players: [{ name: 'Ada', merchantPlace: 7, assistantsCarried: 4, rubies: 0 }, { name: 'Bora', merchantPlace: 7, assistantsCarried: 4, rubies: 0 }] } }) }
       ]
@@ -62,7 +74,7 @@ test('original production art communicates the complete tabletop', async ({ brow
           await expect(cardButton).toHaveAttribute('aria-pressed', 'true');
         } },
         { spec: 'Ada’s hand remains a graphical card back with no private face exposed', check: async () => {
-          await expect(boraPage.locator('[data-art-kind="card-back"]')).toHaveCount(1);
+          await expect(boraPage.locator('.masked-hand [data-art-kind="card-back"]')).toHaveCount(1);
           await expect(boraPage.getByText('Bonus hand · 1 hidden card')).toBeVisible();
         } },
         { spec: 'Card inspection is local view state and adds no immutable event', check: async () => expectState(boraPage, { eventCount: 5, diagnosticCount: 0, game: { phase: 'movement', selectedBonus: expect.any(String), opponentHandCounts: [1] } }) }

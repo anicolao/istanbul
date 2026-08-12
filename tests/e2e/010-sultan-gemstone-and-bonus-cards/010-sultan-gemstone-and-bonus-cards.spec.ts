@@ -79,6 +79,7 @@ test('ruby routes escalate and Bonus cards resolve at reviewed timing windows', 
     await page.getByRole('button', { name: 'Pay 15 Lira for 1 ruby' }).click();
     await ada.step('host-buys-first-dealer-ruby', { description: 'Ada buys the 15-Lira Dealer ruby', verifications: [
       { spec: 'The public track advances immediately to 16', check: async () => expectState(page, { eventCount: 10, game: { phase: 'turn-end', rubyTracks: { gemstonePrice: 16, gemstoneRubies: 9 }, players: [{ lira: 18, rubies: 1 }, {}] } }) },
+      { spec: 'Dealer tile now shows the 16-Lira price and nine remaining rubies', check: async () => expect(page.getByTestId('place-state-16')).toHaveAttribute('data-state-summary', 'Next ruby costs 16 Lira; 9 rubies remain') },
       { spec: 'The completion panel names the exact payment', check: async () => expect(page.getByRole('complementary').getByText('Paid 15 Lira to the Gemstone Dealer and claimed 1 ruby.', { exact: true })).toBeVisible() }
     ] });
     await page.getByRole('button', { name: /Inspect Bonus card: A second ruby offer/ }).click();
@@ -118,6 +119,7 @@ test('ruby routes escalate and Bonus cards resolve at reviewed timing windows', 
     await page.getByRole('button', { name: 'Deliver 6 goods for 1 ruby' }).click();
     await ada.step('host-buys-first-palace-ruby', { description: 'Ada delivers six goods for the Palace ruby', verifications: [
       { spec: 'The first delivery conserves the extended goods', check: async () => expectState(page, { eventCount: 18, game: { phase: 'turn-end', rubyTracks: { sultanIndex: 7, sultanRubies: 3 }, players: [{ goods: { fabric: 2, spice: 1, fruit: 2, jewelry: 1 }, rubies: 3 }, {}] } }) },
+      { spec: 'Palace tile advances to the seven-good cost and three rubies', check: async () => expect(page.getByTestId('place-state-13')).toHaveAttribute('data-state-summary', /Next ruby costs .+, .+, .+, .+, .+, .+, .+; 3 rubies remain/) },
       { spec: 'The completion panel reports the exact six-good delivery', check: async () => expect(page.getByRole('complementary').getByText('Delivered 6 goods to the Sultan and claimed 1 ruby.', { exact: true })).toBeVisible() }
     ] });
     await inspectAndPlayBonus(ada, page, /Inspect Bonus card: A useful connection/, /Play to gain 1 jewelry/, 'gain-jewelry', 'A useful connection for jewelry', 18, 19);
