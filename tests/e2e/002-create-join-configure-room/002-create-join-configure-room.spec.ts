@@ -46,7 +46,7 @@ test('two merchants create, join, configure, ready, and replay a room', async ({
       description: 'Ada arrives at the private-room creator',
       verifications: [
         { spec: 'Firebase authentication is ready before any room action', check: async () => expect(page.getByRole('status')).toHaveText('Firebase emulator ready') },
-        { spec: 'The host form offers two-to-five seats and reviewed layouts', check: async () => { await expect(page.getByLabel('Seats')).toHaveValue('3'); await expect(page.getByLabel('Layout')).toHaveValue('short-path'); } },
+        { spec: 'The host chooses a reviewed layout without predicting attendance', check: async () => { await expect(page.getByLabel('Seats')).toHaveCount(0); await expect(page.getByLabel('Layout')).toHaveValue('short-path'); } },
         { spec: 'No room events exist before Ada creates one', check: async () => expectProjection(page, { screen: 'landing', roomCode: null, eventCount: 0 }) }
       ]
     });
@@ -67,7 +67,7 @@ test('two merchants create, join, configure, ready, and replay a room', async ({
       verifications: [
         { spec: `The lobby exposes the stable five-letter room code ${roomCode}`, check: async () => expect(page.getByText(`Private room · ${roomCode}`)).toBeVisible() },
         { spec: 'Ada is visibly identified as host and current user', check: async () => expect(page.getByText('Ada · you')).toBeVisible() },
-        { spec: 'The immutable projection contains one creation event and one seat', check: async () => expectProjection(page, { screen: 'lobby', roomCode, eventCount: 1, diagnosticCount: 0, seatCount: 1, maxPlayers: 3, layout: 'short-path', ready: [false], localSeat: 'Ada' }) }
+        { spec: 'The immutable projection contains one creation event and one joined merchant', check: async () => expectProjection(page, { screen: 'lobby', roomCode, eventCount: 1, diagnosticCount: 0, seatCount: 1, maxPlayers: 5, layout: 'short-path', ready: [false], localSeat: 'Ada' }) }
       ]
     });
 
@@ -76,7 +76,7 @@ test('two merchants create, join, configure, ready, and replay a room', async ({
       description: `Bora follows Ada’s invitation to room ${roomCode}`,
       verifications: [
         { spec: 'The invitation names Ada as the host', check: async () => expect(boraPage.getByRole('heading', { name: 'Take a seat at Ada’s table.' })).toBeVisible() },
-        { spec: 'The public ticket shows one of three seats claimed', check: async () => expect(boraPage.getByText('1 of 3 seats claimed')).toBeVisible() },
+        { spec: 'The public ticket shows one merchant present and room to join', check: async () => expect(boraPage.getByText('1 merchant here · 4 open')).toBeVisible() },
         { spec: 'Bora replays the creation event but has no local seat', check: async () => expectProjection(boraPage, { screen: 'join-room', roomCode, eventCount: 1, seatCount: 1, localSeat: null }) }
       ]
     });
@@ -174,7 +174,7 @@ test('two merchants create, join, configure, ready, and replay a room', async ({
       verifications: [
         { spec: 'The reloaded browser returns directly to Bora’s claimed seat', check: async () => expect(boraPage.getByText('Bora · you')).toBeVisible() },
         { spec: 'Long Path and both ready markers survive reload', check: async () => { await expect(boraPage.getByText('Long Path', { exact: true })).toBeVisible(); await expect(boraPage.getByText('Ready', { exact: true })).toHaveCount(2); } },
-        { spec: 'Cache-plus-subscription replay is byte-equivalent at six clean events', check: async () => expectProjection(boraPage, { screen: 'lobby', roomCode, eventCount: 6, diagnosticCount: 0, seatCount: 2, maxPlayers: 3, layout: 'long-path', ready: [true, true], localSeat: 'Bora' }) }
+        { spec: 'Cache-plus-subscription replay is byte-equivalent at six clean events', check: async () => expectProjection(boraPage, { screen: 'lobby', roomCode, eventCount: 6, diagnosticCount: 0, seatCount: 2, maxPlayers: 5, layout: 'long-path', ready: [true, true], localSeat: 'Bora' }) }
       ]
     });
 

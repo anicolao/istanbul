@@ -11,7 +11,7 @@ Ada and Bora prepare an ordinary two-player room entirely through visible contro
 **Verifications:**
 
 - [x] The production room form is ready through Firebase
-- [x] Short Path and three seats are the visible defaults
+- [x] Short Path is visible and attendance is not requested
 - [x] The projection is an empty landing state
 
 ## 2. Ada enters the name that will appear on the board
@@ -35,7 +35,7 @@ Ada and Bora prepare an ordinary two-player room entirely through visible contro
 **Verifications:**
 
 - [x] Ada owns clockwise seat one
-- [x] The room exposes three seats and Short Path
+- [x] The room remains open and exposes Short Path
 - [x] Exactly one creation event exists
 
 ## 4. Ada chooses the reviewed Long Path board
@@ -59,7 +59,7 @@ Ada and Bora prepare an ordinary two-player room entirely through visible contro
 **Verifications:**
 
 - [x] Ada’s invitation and Long Path are visible
-- [x] Only Ada’s seat is claimed
+- [x] Only Ada is present and the room is still open
 - [x] Bora replays two public events but has no private game state
 
 ## 6. Bora enters his public merchant name

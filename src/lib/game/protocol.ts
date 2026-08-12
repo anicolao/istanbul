@@ -3,6 +3,7 @@ import type { GameSetup } from './setup';
 export const schemaVersion = 1;
 export const reducerVersion = 1;
 export const rulesEdition = 'istanbul-2014-base';
+export const maxRoomPlayers = 5;
 export const manifestVersions = {
   places: 'istanbul-2014-base-v1',
   cards: 'istanbul-2014-base-v1',

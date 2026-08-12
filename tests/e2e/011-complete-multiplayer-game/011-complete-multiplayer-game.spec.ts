@@ -77,16 +77,15 @@ test('five merchants complete an ordinary game, final cards, ranking, and rematc
 
   try {
     await page.goto(`/?e2eRoom=${roomCode}&e2eSeed=${seed}`);
-    await step(0, 'host-opens-five-seat-creator', 'Ada opens the five-seat table creator', [
+    await step(0, 'host-opens-room-creator', 'Ada opens the table creator', [
       { spec: 'Firebase is ready before setup', check: async () => expect(page.getByRole('status')).toHaveText('Firebase emulator ready') },
       { spec: 'The landing projection is empty', check: async () => expectState(page, { screen: 'landing', eventCount: 0, game: null }) }
     ]);
     await page.getByLabel('Your merchant name').fill('Ada');
     await step(0, 'host-enters-name', 'Ada enters her merchant name', [{ spec: 'The typed name is visible', check: async () => expect(page.getByLabel('Your merchant name')).toHaveValue('Ada') }, { spec: 'Typing writes no event', check: async () => expectState(page, { eventCount: 0 }) }]);
-    await page.getByLabel('Seats').selectOption('5');
-    await step(0, 'host-selects-five-seats', 'Ada chooses five seats', [{ spec: 'The selector shows five players', check: async () => expect(page.getByLabel('Seats')).toHaveValue('5') }, { spec: 'The creator remains local', check: async () => expectState(page, { eventCount: 0 }) }]);
+    await step(0, 'host-reviews-open-room', 'Ada reviews the open-room setup', [{ spec: 'No player count is requested', check: async () => expect(page.getByLabel('Seats')).toHaveCount(0) }, { spec: 'The creator remains local', check: async () => expectState(page, { eventCount: 0 }) }]);
     await page.getByRole('button', { name: /Create private room/ }).click();
-    await step(0, 'host-creates-five-seat-room', 'Ada creates the private five-seat room', [{ spec: 'Room FIVES or RACES is visible', check: async () => expect(page.getByText(roomCode, { exact: true }).first()).toBeVisible() }, { spec: 'One canonical creation event opens five seats', check: async () => expectState(page, { eventCount: 1, seatCount: 1, maxPlayers: 5 }) }]);
+    await step(0, 'host-creates-open-room', 'Ada creates a private room that stays open for the group', [{ spec: 'Room FIVES or RACES is visible', check: async () => expect(page.getByText(roomCode, { exact: true }).first()).toBeVisible() }, { spec: 'One canonical creation event starts with Ada and capacity for the full group', check: async () => expectState(page, { eventCount: 1, seatCount: 1, maxPlayers: 5 }) }]);
 
     for (let index = 1; index < names.length; index += 1) {
       await pages[index].goto(`/?room=${roomCode}&e2eSeed=${seed}`);

@@ -71,7 +71,10 @@ action, encounters, Mosque abilities, Bonus cards, all ruby routes, final turns,
 ranking, rematches, and reconnect recovery. Personal-screen games run from two
 to five browsers. Shared-table games add a privacy-safe public board, real
 seat-specific QR invitations, private phone controllers, and retained controller
-ownership after reload. The MVP is complete: its final slice adds roving keyboard
+ownership after reload. Rooms do not ask the creator to predict attendance:
+merchants join, mark themselves ready, and the creator starts with everyone who
+is present. On a shared tabletop every open position shows a join QR until play
+begins, when all unclaimed positions disappear. The MVP is complete: its final slice adds roving keyboard
 navigation and focus transfer, live turn announcements, 44 px touch actions,
 safe-area insets, reduced-motion behaviour, labelled non-colour cues, and
 responsive play at every target viewport in [MVP_DESIGN.md](MVP_DESIGN.md).

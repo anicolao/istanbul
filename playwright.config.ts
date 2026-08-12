@@ -9,7 +9,7 @@ export default defineConfig({
   reporter: [['html', { open: 'never' }]],
   use: {
     baseURL: 'http://127.0.0.1:5189',
-    trace: 'retain-on-failure',
+    trace: process.env.CI ? 'retain-on-failure' : 'off',
     serviceWorkers: 'block',
     deviceScaleFactor: 1,
     timezoneId: 'America/Toronto',

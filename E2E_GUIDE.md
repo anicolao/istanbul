@@ -321,7 +321,11 @@ secrecy.
 Shared-table tests use one public tabletop page plus one isolated phone context
 per occupied seat. They verify:
 
-- each QR code and invite URL claims only its intended open seat;
+- every open tabletop position exposes a real QR for the same open-room invite;
+- a scanned invitation claims the next clockwise position only when its player
+  submits a name, without reserving attendance in advance;
+- joining replaces one QR, and starting replaces every remaining invitation
+  with the public game surface;
 - the table displays public state and no Bonus-card identities;
 - phones display only their owner's private cards and choices;
 - an action initiated on a phone is attributed to that seat and converges on

@@ -15,7 +15,7 @@ test('a public table and private phone controllers share one safe game', async (
   const ada = new TestStepHelper(adaPage, testInfo, journal, 'Ada, seat-one phone');
   const bora = new TestStepHelper(boraPage, testInfo, journal, 'Bora, seat-two phone');
   const table = new TestStepHelper(page, testInfo, journal, 'The public table display');
-  ada.setMetadata('A shared Istanbul table with private phone controllers', 'Ada creates a shared-table room on her phone, the central screen deliberately enters public-display mode, and its real seat-two QR resolves to Bora’s private controller invitation. The two merchants ready and start from their phones; the public board follows the immutable game without revealing either Bonus hand. Ada inspects and commits a move from her controller, the large display mirrors only public movement, and a controller reload proves anonymous-auth seat ownership survives reconnect. Every user action is followed immediately by DOM and serialized-state checks plus an exact screenshot—including the 3840×2160 tabletop surface.');
+  ada.setMetadata('A shared Istanbul table with private phone controllers', 'Ada creates an open shared-table room without predicting attendance. The public tabletop shows a real QR at every open position; Bora follows one on his private phone, joins, and readies. Once everyone present is ready, Ada starts the game and every invitation disappears in favour of the public bazaar. The public board follows the immutable game without revealing either Bonus hand; a controller action and reload prove convergence and retained ownership. Every user action is followed immediately by DOM and serialized-state checks plus an exact screenshot—including the 3840×2160 tabletop surface.');
 
   try {
     await adaPage.goto(`/?e2eRoom=${roomCode}&e2eSeed=${seed}`);
@@ -27,10 +27,9 @@ test('a public table and private phone controllers share one safe game', async (
     await ada.step('ada-enters-name', { description: 'Ada enters her public merchant name', verifications: [
       { spec: 'The creator retains Ada’s name without writing history', check: async () => { await expect(adaPage.getByLabel('Your merchant name')).toHaveValue('Ada'); await expectState(adaPage, { eventCount: 0 }); } }
     ] });
-    await adaPage.getByLabel('Seats').selectOption('2');
-    await ada.step('ada-chooses-two-seats', { description: 'Ada chooses a two-seat table', verifications: [
-      { spec: 'Two seats and Short Path are visible draft values', check: async () => { await expect(adaPage.getByLabel('Seats')).toHaveValue('2'); await expect(adaPage.getByLabel('Layout')).toHaveValue('short-path'); } },
-      { spec: 'Draft configuration is still local', check: async () => expectState(adaPage, { eventCount: 0 }) }
+    await ada.step('ada-reviews-open-room', { description: 'Ada reviews an open shared-table room', verifications: [
+      { spec: 'Short Path is visible and no player count is requested', check: async () => { await expect(adaPage.getByLabel('Seats')).toHaveCount(0); await expect(adaPage.getByLabel('Layout')).toHaveValue('short-path'); } },
+      { spec: 'Reviewing the open-room form is still local', check: async () => expectState(adaPage, { eventCount: 0 }) }
     ] });
     await adaPage.getByLabel('Play surface').selectOption('shared-table');
     await ada.step('ada-selects-shared-table', { description: 'Ada selects a shared table with private phones', verifications: [
@@ -39,24 +38,24 @@ test('a public table and private phone controllers share one safe game', async (
     ] });
     await adaPage.getByRole('button', { name: /Create shared table/ }).click();
     await ada.step('ada-creates-shared-table', { description: `Ada creates shared table ${roomCode}`, verifications: [
-      { spec: 'Ada owns seat one and sees a real seat-two QR invitation', check: async () => { await expect(adaPage.getByText('Ada · you')).toBeVisible(); await expect(adaPage.getByLabel('Seat 2 invitation scannable invitation')).toBeVisible(); await expect(adaPage.getByTestId('seat-qr').locator('svg')).toBeVisible(); } },
-      { spec: 'The first canonical event records shared-table mode', check: async () => expectState(adaPage, { screen: 'lobby', roomCode, eventCount: 1, seatCount: 1, maxPlayers: 2, mode: 'shared-table' }) }
+      { spec: 'Ada owns the first position and sees a real general invitation', check: async () => { await expect(adaPage.getByText('Ada · you')).toBeVisible(); await expect(adaPage.getByLabel('Merchant invitation scannable invitation')).toBeVisible(); await expect(adaPage.getByTestId('seat-qr').locator('svg')).toBeVisible(); } },
+      { spec: 'The first canonical event records shared-table mode and open capacity', check: async () => expectState(adaPage, { screen: 'lobby', roomCode, eventCount: 1, seatCount: 1, maxPlayers: 5, mode: 'shared-table' }) }
     ] });
 
-    await page.goto(`/?room=${roomCode}`);
-    await table.step('display-opens-room-invitation', { description: 'The central screen opens the room invitation', verifications: [
-      { spec: 'The screen offers public-table mode before asking for a private name', check: async () => expect(page.getByRole('button', { name: 'Use this screen as the public table' })).toBeVisible() },
-      { spec: 'An unseated display sees one event and no local seat', check: async () => expectState(page, { screen: 'join-room', eventCount: 1, localSeat: null, mode: 'shared-table' }) }
-    ] });
-    await page.getByRole('button', { name: 'Use this screen as the public table' }).click();
-    await table.step('display-enters-public-table-mode', { description: 'The central screen becomes the public table', verifications: [
-      { spec: 'The tabletop shows the room code and an unclaimed seat-two QR', check: async () => { await expect(page.getByRole('heading', { name: 'Gather around the bazaar.' })).toBeVisible(); await expect(page.getByText(roomCode, { exact: true })).toBeVisible(); await expect(page.getByLabel('Seat 2 invitation scannable invitation')).toBeVisible(); } },
-      { spec: 'The QR carries a seat-two invitation and display identity remains absent', check: async () => { const qr = page.getByLabel('Seat 2 invitation scannable invitation'); await expect(qr).toHaveAttribute('data-invitation-url', new RegExp(`room=${roomCode}.*seat=2`)); await expect(qr.locator('svg')).toBeVisible(); await expectState(page, { screen: 'shared-display', sharedDisplay: true, localSeat: null, eventCount: 1 }); } }
+    const tabletopUrl = await adaPage.getByRole('link', { name: 'Open public table display' }).getAttribute('href');
+    expect(tabletopUrl).toBeTruthy();
+    await page.goto(tabletopUrl!);
+    await table.step('display-opens-tabletop-route', { description: 'The central screen opens the public tabletop route', verifications: [
+      { spec: 'The tabletop shows the room code and a QR in every open position', check: async () => { await expect(page.getByRole('heading', { name: 'Scan. Join. Ready.' })).toBeVisible(); await expect(page.getByText(roomCode, { exact: true })).toBeVisible(); await expect(page.getByTestId('seat-qr')).toHaveCount(4); } },
+      { spec: 'The dedicated URL enters display mode without claiming a player identity', check: async () => { expect(new URL(page.url()).searchParams.get('display')).toBe('table'); await expectState(page, { screen: 'shared-display', sharedDisplay: true, localSeat: null, eventCount: 1, maxPlayers: 5 }); } },
+      { spec: 'Every QR carries the same open-room invitation', check: async () => { const qrs = page.getByTestId('seat-qr'); for (let index = 0; index < 4; index += 1) { await expect(qrs.nth(index)).toHaveAttribute('data-invitation-url', new RegExp(`room=${roomCode}`)); await expect(qrs.nth(index)).not.toHaveAttribute('data-invitation-url', /seat=/); await expect(qrs.nth(index).locator('svg')).toBeVisible(); } } }
     ] });
 
-    await boraPage.goto(`/?room=${roomCode}&seat=2`);
-    await bora.step('bora-opens-seat-two-invitation', { description: 'Bora follows the seat-two QR invitation on his phone', verifications: [
-      { spec: 'The invitation identifies controller seat two and Ada’s table', check: async () => { await expect(boraPage.getByText('This invitation is for controller seat 2.')).toBeVisible(); await expect(boraPage.getByRole('heading', { name: 'Take a seat at Ada’s table.' })).toBeVisible(); } },
+    const qrInvitation = await page.getByTestId('seat-qr').first().getAttribute('data-invitation-url');
+    expect(qrInvitation).toBeTruthy();
+    await boraPage.goto(qrInvitation!);
+    await bora.step('bora-scans-table-invitation', { description: 'Bora scans a tabletop QR invitation on his phone', verifications: [
+      { spec: 'The open invitation identifies Ada’s table without reserving a numbered seat', check: async () => { await expect(boraPage.getByText(/This invitation is for controller seat/)).toHaveCount(0); await expect(boraPage.getByRole('heading', { name: 'Take a seat at Ada’s table.' })).toBeVisible(); } },
       { spec: 'Bora is unseated while the creation event replays', check: async () => expectState(boraPage, { screen: 'join-room', eventCount: 1, localSeat: null }) }
     ] });
     await boraPage.getByLabel('Your merchant name').fill('Bora');
@@ -70,7 +69,7 @@ test('a public table and private phone controllers share one safe game', async (
       { spec: 'The join is the second canonical event', check: async () => expectState(boraPage, { screen: 'lobby', eventCount: 2, seatCount: 2, localSeat: 'Bora', mode: 'shared-table' }) }
     ] });
     await table.step('display-shows-both-controllers', { description: 'The public table mirrors both claimed controllers', verifications: [
-      { spec: 'Ada and Bora replace the QR invitations on the public display', check: async () => { await expect(page.getByRole('heading', { name: 'Ada' })).toBeVisible(); await expect(page.getByRole('heading', { name: 'Bora' })).toBeVisible(); await expect(page.getByTestId('seat-qr')).toHaveCount(0); } },
+      { spec: 'Ada and Bora occupy two positions while three QR invitations remain', check: async () => { await expect(page.getByRole('heading', { name: 'Ada' })).toBeVisible(); await expect(page.getByRole('heading', { name: 'Bora' })).toBeVisible(); await expect(page.getByTestId('seat-qr')).toHaveCount(3); } },
       { spec: 'The public display replays the same two events without claiming a seat', check: async () => expectState(page, { screen: 'shared-display', eventCount: 2, seatCount: 2, localSeat: null }) }
     ] });
 
@@ -91,6 +90,7 @@ test('a public table and private phone controllers share one safe game', async (
     ] });
     await table.step('display-mirrors-public-bazaar', { description: 'The tabletop opens the public bazaar projection', verifications: [
       { spec: 'The large surface shows sixteen Places and identifies itself as public', check: async () => { await expect(page.getByTestId('bazaar-board').getByRole('button')).toHaveCount(16); await expect(page.getByText('Public table · choices stay on phones')).toBeVisible(); } },
+      { spec: 'Starting play removes every empty position and QR invitation', check: async () => { await expect(page.getByTestId('seat-qr')).toHaveCount(0); await expect(page.getByText(/invitations open/)).toHaveCount(0); } },
       { spec: 'No private hand or Bonus title is exposed in public DOM or state', check: async () => { await expect(page.locator('.hand')).toHaveCount(0); await expect(page.locator('.masked-hand')).toHaveCount(2); const publicState = await readState(page); expect(publicState.game.localHand).toEqual([]); expect(publicState).toMatchObject({ screen: 'shared-display', eventCount: 5, localSeat: null }); } }
     ] });
 

@@ -55,4 +55,19 @@ describe('room replay', () => {
     expect(projection.acceptedEventIds).toHaveLength(2);
     expect(projection.diagnostics.map(({ reason }) => reason)).toEqual(['host-only', 'room-full']);
   });
+
+  it('starts with every currently joined merchant when the open room is ready', () => {
+    const projection = replayEvents([
+      event(1, 'host', 'game/created', { roomCode: 'OPENR', hostName: 'Ada', maxPlayers: 5, layout: 'short-path', mode: 'shared-table' }),
+      event(2, 'guest', 'player/joined', { name: 'Bora' }),
+      event(3, 'host', 'player/ready', { ready: true }),
+      event(4, 'guest', 'player/ready', { ready: true }),
+      event(5, 'host', 'game/started', { seed: 'everyone-here' })
+    ]);
+
+    expect(projection.room).toMatchObject({ status: 'playing', maxPlayers: 5 });
+    expect(projection.game?.players.map(({ name }) => name)).toEqual(['Ada', 'Bora']);
+    expect(projection.acceptedEventIds).toHaveLength(5);
+    expect(projection.diagnostics).toEqual([]);
+  });
 });

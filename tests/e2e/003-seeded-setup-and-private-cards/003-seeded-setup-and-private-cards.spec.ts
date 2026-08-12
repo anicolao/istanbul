@@ -34,7 +34,7 @@ test('a ready room becomes an exact seeded board with private hands', async ({ b
       description: 'Ada opens a new seeded-room creator',
       verifications: [
         { spec: 'The production room form is ready through Firebase', check: async () => expect(page.getByRole('status')).toHaveText('Firebase emulator ready') },
-        { spec: 'Short Path and three seats are the visible defaults', check: async () => { await expect(page.getByLabel('Layout')).toHaveValue('short-path'); await expect(page.getByLabel('Seats')).toHaveValue('3'); } },
+        { spec: 'Short Path is visible and attendance is not requested', check: async () => { await expect(page.getByLabel('Layout')).toHaveValue('short-path'); await expect(page.getByLabel('Seats')).toHaveCount(0); } },
         { spec: 'The projection is an empty landing state', check: async () => expectState(page, { screen: 'landing', eventCount: 0, game: null }) }
       ]
     });
@@ -54,7 +54,7 @@ test('a ready room becomes an exact seeded board with private hands', async ({ b
       description: `Ada creates room ${roomCode} before choosing its final route`,
       verifications: [
         { spec: 'Ada owns clockwise seat one', check: async () => expect(page.getByText('Ada · you')).toBeVisible() },
-        { spec: 'The room exposes three seats and Short Path', check: async () => { await expect(page.getByText('1/3')).toBeVisible(); await expect(page.getByLabel('Reviewed layout')).toHaveValue('short-path'); } },
+        { spec: 'The room remains open and exposes Short Path', check: async () => { await expect(page.getByText('Room is open')).toBeVisible(); await expect(page.getByLabel('Reviewed layout')).toHaveValue('short-path'); } },
         { spec: 'Exactly one creation event exists', check: async () => expectState(page, { screen: 'lobby', roomCode, eventCount: 1, seatCount: 1, layout: 'short-path', game: null }) }
       ]
     });
@@ -74,7 +74,7 @@ test('a ready room becomes an exact seeded board with private hands', async ({ b
       description: 'Bora follows the invitation and reviews the chosen table',
       verifications: [
         { spec: 'Ada’s invitation and Long Path are visible', check: async () => { await expect(boraPage.getByRole('heading', { name: 'Take a seat at Ada’s table.' })).toBeVisible(); await expect(boraPage.getByText('Long Path', { exact: true })).toBeVisible(); } },
-        { spec: 'Only Ada’s seat is claimed', check: async () => expect(boraPage.getByText('1 of 3 seats claimed')).toBeVisible() },
+        { spec: 'Only Ada is present and the room is still open', check: async () => expect(boraPage.getByText('1 merchant here · 4 open')).toBeVisible() },
         { spec: 'Bora replays two public events but has no private game state', check: async () => expectState(boraPage, { screen: 'join-room', eventCount: 2, localSeat: null, game: null }) }
       ]
     });
