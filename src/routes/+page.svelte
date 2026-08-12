@@ -10,6 +10,7 @@
   import { createEventRepository, type EventRepository } from '$lib/game/repository';
   import { readReplayCache, writeReplayCache } from '$lib/game/replay-cache';
   import { replayEvents } from '$lib/game/reducer';
+  import type { AssistantAction } from '$lib/game/movement';
   import {
     isRoomCode,
     layoutNames,
@@ -63,6 +64,15 @@
       currentTurn: game.players[game.turnSeat].name,
       turnNumber: game.turnNumber,
       phase: game.phase,
+      pending: game.pending,
+      lastMovement: game.lastMovement,
+      players: game.players.map((player) => ({
+        name: player.name,
+        merchantPlace: player.merchantPlace,
+        assistantsCarried: player.assistantsCarried,
+        assistantsByPlace: player.assistantsByPlace,
+        lira: player.lira
+      })),
       localHand: game.players.find(({ uid }) => uid === userUid)?.bonusHand ?? [],
       opponentHandCounts: game.players.filter(({ uid }) => uid !== userUid).map(({ bonusHand }) => bonusHand.length),
       selectedPlace,
@@ -231,6 +241,41 @@
     selectedPlace = null;
     selectedBonus = cardId;
   }
+
+  async function moveTo(destination: number, assistantAction: AssistantAction) {
+    if (!repository || actionPending) return;
+    actionPending = true;
+    try {
+      await repository.append('turn/moved', { destination, assistantAction });
+      selectedPlace = null;
+    } finally {
+      actionPending = false;
+    }
+  }
+
+  async function payMerchants() {
+    if (!repository || !game?.pending || actionPending) return;
+    actionPending = true;
+    try {
+      await repository.append('turn/merchant-paid', {
+        recipientUids: game.pending.recipientUids,
+        neutralMerchantIds: game.pending.neutralMerchantIds
+      });
+    } finally {
+      actionPending = false;
+    }
+  }
+
+  async function endTurn() {
+    if (!repository || actionPending) return;
+    actionPending = true;
+    try {
+      await repository.append('turn/ended', {});
+      selectedPlace = null;
+    } finally {
+      actionPending = false;
+    }
+  }
 </script>
 
 <svelte:head><title>{appTitle}</title></svelte:head>
@@ -355,6 +400,9 @@
       {boardScale}
       onInspectPlace={inspectPlace}
       onInspectBonus={inspectBonus}
+      onMove={(destination, assistantAction) => void moveTo(destination, assistantAction)}
+      onPayMerchants={() => void payMerchants()}
+      onEndTurn={() => void endTurn()}
       onZoomIn={() => boardScale = Math.min(1.18, boardScale + 0.09)}
       onFit={() => boardScale = 1}
     />

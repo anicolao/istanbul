@@ -42,7 +42,22 @@ export interface GameSetup {
   startingSeat: number;
   turnSeat: number;
   turnNumber: number;
-  phase: 'movement';
+  phase: 'movement' | 'merchant-payment' | 'action';
+  pending: null | {
+    kind: 'merchant-payment';
+    recipientUids: string[];
+    neutralMerchantIds: string[];
+    total: number;
+  };
+  lastMovement: null | {
+    playerUid: string;
+    from: number;
+    to: number;
+    distance: number;
+    assistantAction: import('./movement').AssistantAction;
+    paymentTotal: number;
+    paymentBlocked: boolean;
+  };
 }
 
 function pathDistance(board: number[], first: number, second: number) {
@@ -115,6 +130,8 @@ export function createSetup(room: RoomProjection, seed: string): GameSetup {
     startingSeat,
     turnSeat: startingSeat,
     turnNumber: 1,
-    phase: 'movement'
+    phase: 'movement',
+    pending: null,
+    lastMovement: null
   };
 }
