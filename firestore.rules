@@ -1,0 +1,58 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+    function signedIn() {
+      return request.auth != null;
+    }
+
+    function validEvent(eventId) {
+      let event = request.resource.data;
+      return event.keys().hasAll([
+          'actorUid',
+          'clientSeq',
+          'createdAt',
+          'manifestVersions',
+          'payload',
+          'reducerVersion',
+          'rulesEdition',
+          'schemaVersion',
+          'type'
+        ])
+        && event.keys().hasOnly([
+          'actorUid',
+          'clientSeq',
+          'createdAt',
+          'manifestVersions',
+          'payload',
+          'reducerVersion',
+          'rulesEdition',
+          'schemaVersion',
+          'type'
+        ])
+        && event.actorUid == request.auth.uid
+        && eventId == request.auth.uid + '-' + event.clientSeq
+        && event.clientSeq is string
+        && event.clientSeq.matches('^[0-9]{6}$')
+        && event.type is string
+        && event.type.size() > 0
+        && event.type.size() <= 64
+        && event.payload is map
+        && event.createdAt == request.time
+        && event.schemaVersion == 1
+        && event.reducerVersion == 1
+        && event.rulesEdition == 'istanbul-2014-base'
+        && event.manifestVersions is map;
+    }
+
+    match /games/{gameId}/events/{eventId} {
+      allow read: if signedIn();
+      allow create: if signedIn() && validEvent(eventId);
+      allow update, delete: if false;
+    }
+
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}
