@@ -1,6 +1,7 @@
 <script lang="ts">
   import { base } from '$app/paths';
   import { bonusCards, places, type Good } from '$lib/game/manifests';
+  import { legalDestinations, requiredAssistantAction, type AssistantAction } from '$lib/game/movement';
   import type { RoomProjection } from '$lib/game/protocol';
   import type { GameSetup } from '$lib/game/setup';
   import PlaceGlyph from './PlaceGlyph.svelte';
@@ -14,6 +15,9 @@
     boardScale,
     onInspectPlace,
     onInspectBonus,
+    onMove,
+    onPayMerchants,
+    onEndTurn,
     onZoomIn,
     onFit
   }: {
@@ -25,6 +29,9 @@
     boardScale: number;
     onInspectPlace: (place: number) => void;
     onInspectBonus: (cardId: string) => void;
+    onMove: (destination: number, assistantAction: AssistantAction) => void;
+    onPayMerchants: () => void;
+    onEndTurn: () => void;
     onZoomIn: () => void;
     onFit: () => void;
   } = $props();
@@ -35,18 +42,27 @@
   const currentPlayer = $derived(game.players[game.turnSeat]);
   const selectedPlaceManifest = $derived(selectedPlace ? placeById.get(selectedPlace) : null);
   const selectedBonusManifest = $derived(selectedBonus ? bonusById.get(selectedBonus) : null);
+  const localIsCurrent = $derived(currentPlayer.uid === userUid);
+  const reachable = $derived(localIsCurrent && game.phase === 'movement' ? legalDestinations(game, localPlayer) : []);
+  const selectedAssistantAction = $derived(selectedPlace && reachable.includes(selectedPlace) ? requiredAssistantAction(localPlayer, selectedPlace) : null);
+  const actionPlace = $derived(placeById.get(currentPlayer.merchantPlace)!);
+  const paymentNames = $derived(game.pending?.recipientUids.map((uid) => game.players.find((player) => player.uid === uid)?.name ?? uid) ?? []);
   const goodNames: Record<Good, string> = { fabric: 'Fabric', spice: 'Spice', fruit: 'Fruit', jewelry: 'Jewelry' };
   const artUrl = `${base}/art/bazaar-courtyard.png`;
 
   function occupants(placeId: number) {
     return game.players.filter(({ merchantPlace }) => merchantPlace === placeId);
   }
+
+  function assistants(placeId: number) {
+    return game.players.flatMap((player) => Array.from({ length: player.assistantsByPlace[placeId] ?? 0 }, () => player));
+  }
 </script>
 
 <section class="game-table" aria-labelledby="game-title" style={`--courtyard: url('${artUrl}')`}>
   <header class="turn-banner">
-    <div><p>Turn {game.turnNumber} · Movement</p><h1 id="game-title">{currentPlayer.name} surveys the bazaar.</h1></div>
-    <div class="turn-token"><span class={`player-dot ${currentPlayer.color}`}></span><strong>{currentPlayer.name}</strong><small>{currentPlayer.uid === userUid ? 'Your turn' : 'Planning route'}</small></div>
+    <div><p>Turn {game.turnNumber} · {game.phase.replace('-', ' ')}</p><h1 id="game-title">{game.phase === 'movement' ? `${currentPlayer.name} surveys the bazaar.` : game.phase === 'merchant-payment' ? `${currentPlayer.name} meets another merchant.` : `${currentPlayer.name} arrives at ${actionPlace.name}.`}</h1>{#if game.lastMovement?.paymentBlocked}<small class="turn-notice">{game.players.find((player) => player.uid === game.lastMovement?.playerUid)?.name} could not pay {game.lastMovement.paymentTotal} Lira; that turn ended immediately.</small>{/if}</div>
+    <div class="turn-token"><span class={`player-dot ${currentPlayer.color}`}></span><strong>{currentPlayer.name}</strong><small>{currentPlayer.uid === userUid ? 'Your turn' : game.phase === 'movement' ? 'Planning route' : 'Resolving turn'}</small></div>
   </header>
 
   <div class="play-area">
@@ -62,9 +78,12 @@
             {@const here = occupants(placeId)}
             <button
               class:selected={selectedPlace === placeId}
+              class:reachable={reachable.includes(placeId)}
+              class:departed={game.lastMovement?.from === placeId}
+              class:arrived={game.lastMovement?.to === placeId}
               class={`place family-${place.family}`}
               style={`--row: ${Math.floor(index / 4)}; --column: ${index % 4}`}
-              aria-label={`${place.id} ${place.name}. ${place.action}${here.length ? ` Merchants: ${here.map(({ name }) => name).join(', ')}.` : ''}`}
+              aria-label={`${place.id} ${place.name}. ${place.action}${reachable.includes(placeId) ? ' Reachable this turn.' : ''}${here.length ? ` Merchants: ${here.map(({ name }) => name).join(', ')}.` : ''}`}
               aria-pressed={selectedPlace === placeId}
               onclick={() => onInspectPlace(placeId)}
             >
@@ -73,6 +92,7 @@
               <strong>{place.shortName}</strong>
               <span class="occupants" aria-hidden="true">
                 {#each here as merchant}<span class={`merchant ${merchant.color}`}>{merchant.name.slice(0, 1)}</span>{/each}
+                {#each assistants(placeId) as assistant}<span class={`assistant ${assistant.color}`} title={`${assistant.name}'s assistant`}>a</span>{/each}
                 {#each game.neutralMerchants.filter(({ place: neutralPlace }) => neutralPlace === placeId) as neutral}<span class="merchant neutral">N</span>{/each}
               </span>
               {#if placeId === game.governorPlace}<span class="encounter governor" title="Governor">G</span>{/if}
@@ -84,18 +104,31 @@
       <p class="board-caption">{room.layout.replace('-', ' ')} · setup seed {game.seed}</p>
     </section>
 
-    <aside class="inspector" aria-live="polite">
+    <aside class="inspector" class:route-planner={!selectedBonusManifest && game.phase === 'movement' && !selectedPlaceManifest} aria-live="polite">
       {#if selectedBonusManifest}
         <p class="section-kicker">Private Bonus card</p>
         <h2>{selectedBonusManifest.title}</h2>
         <p class="mobile-card-text">{selectedBonusManifest.text}</p>
         <div class="large-card"><span>Bonus</span><strong>{selectedBonusManifest.title}</strong><p>{selectedBonusManifest.text}</p></div>
+      {:else if game.phase === 'merchant-payment'}
+        <p class="section-kicker">Mandatory encounter</p>
+        <h2>Pay the merchant toll</h2>
+        <p>{paymentNames.length ? `Pay ${paymentNames.join(', ')} 2 Lira each.` : ''}{game.pending?.neutralMerchantIds.length ? ` Pay ${game.pending.neutralMerchantIds.length * 2} Lira to the supply for the neutral merchant.` : ''}</p>
+        <dl><div><dt>Total due</dt><dd>{game.pending?.total} Lira</dd></div><div><dt>After payment</dt><dd>{localIsCurrent ? localPlayer.lira - (game.pending?.total ?? 0) : 'Hidden until resolved'}</dd></div></dl>
+        {#if localIsCurrent}<button class="turn-action" onclick={onPayMerchants}>Pay {game.pending?.total} Lira and continue</button>{:else}<p class="waiting-copy">Waiting for {currentPlayer.name} to confirm the toll.</p>{/if}
+      {:else if game.phase === 'action'}
+        <p class="section-kicker">Place action ready</p>
+        <h2>{actionPlace.name}</h2>
+        <div class="inspector-glyph"><PlaceGlyph glyph={actionPlace.glyph} /></div>
+        <p>{actionPlace.action}</p>
+        {#if localIsCurrent}<button class="turn-action secondary-action" onclick={onEndTurn}>Skip this Place action and end turn</button>{:else}<p class="waiting-copy">Waiting for {currentPlayer.name} to finish the Place action.</p>{/if}
       {:else if selectedPlaceManifest}
         <p class="section-kicker">Place {selectedPlaceManifest.id}</p>
         <h2>{selectedPlaceManifest.name}</h2>
         <div class="inspector-glyph"><PlaceGlyph glyph={selectedPlaceManifest.glyph} /></div>
         <p>{selectedPlaceManifest.action}</p>
         <dl><div><dt>Grid position</dt><dd>Row {Math.floor(game.board.indexOf(selectedPlaceManifest.id) / 4) + 1}, column {(game.board.indexOf(selectedPlaceManifest.id) % 4) + 1}</dd></div><div><dt>Merchants here</dt><dd>{occupants(selectedPlaceManifest.id).map(({ name }) => name).join(', ') || 'None'}</dd></div></dl>
+        {#if selectedAssistantAction}<button class="turn-action" onclick={() => onMove(selectedPlaceManifest.id, selectedAssistantAction)}>{selectedAssistantAction === 'pick-up' ? 'Move here and pick up assistant' : selectedAssistantAction === 'fountain' ? 'Move here without leaving an assistant' : 'Move here and leave an assistant'}</button>{:else if localIsCurrent}<p class="route-warning">This Place is not one or two orthogonal spaces away.</p>{/if}
       {:else}
         <p class="section-kicker">Route planner</p>
         <h2>Inspect any Place</h2>
@@ -131,6 +164,7 @@
   .turn-banner { min-height: 4.4rem; display: flex; align-items: center; justify-content: space-between; gap: 1rem; padding: .55rem 1.1rem; border: 1px solid rgb(239 202 125 / 35%); border-radius: 1rem; background: linear-gradient(100deg, rgb(13 48 51 / 96%), rgb(28 76 75 / 92%)); box-shadow: 0 .8rem 2rem rgb(35 21 9 / 22%); }
   .turn-banner p, .section-kicker { margin: 0; color: #efca7d; font-size: .68rem; font-weight: 700; letter-spacing: .14em; text-transform: uppercase; }
   .turn-banner h1 { margin: .1rem 0 0; font: 700 clamp(1.65rem, 3vw, 2.5rem)/.95 'Cormorant Garamond', serif; }
+  .turn-notice { display: block; margin-top: .2rem; color: #ffd2a4; font-size: .68rem; }
   .turn-token { display: grid; grid-template-columns: 1.8rem auto; gap: 0 .55rem; align-items: center; }
   .turn-token .player-dot { grid-row: 1 / 3; }
   .turn-token small { color: #bdd0ca; }
@@ -149,12 +183,16 @@
   .place { position: relative; min-width: 0; min-height: 0; display: grid; grid-template-columns: 2rem 1fr; grid-template-rows: 1fr auto; gap: .15rem .3rem; align-items: center; overflow: hidden; padding: .42rem; border: 1px solid rgb(255 250 240 / 60%); border-radius: .55rem; color: #173f43; text-align: left; background: linear-gradient(150deg, rgb(255 252 239 / 96%), rgb(223 199 151 / 96%)); box-shadow: 0 .35rem .7rem rgb(0 0 0 / 30%); cursor: pointer; }
   .place::after { position: absolute; inset: 0; border: 3px solid transparent; border-radius: inherit; content: ''; pointer-events: none; }
   .place.selected::after { border-color: #e2574f; box-shadow: inset 0 0 0 2px #fff7d6; }
+  .place.reachable { border-color: #f4cf75; box-shadow: 0 0 0 2px rgb(244 207 117 / 45%), 0 .35rem .7rem rgb(0 0 0 / 30%); }
+  .place.reachable::before { position: absolute; inset: .2rem; border: 1px dashed #a56823; border-radius: .35rem; content: ''; pointer-events: none; }
+  .place.departed { animation: departure-pulse .45s ease-out; }.place.arrived { animation: arrival-pulse .6s ease-out; }
   .place-number { position: absolute; top: .25rem; right: .3rem; color: #a43b32; font-size: .7rem; font-weight: 700; }
   .place-glyph { width: 1.9rem; height: 1.9rem; color: #426c68; }
   .place strong { align-self: end; overflow: hidden; font-size: clamp(.58rem, 1vw, .78rem); line-height: 1; text-overflow: ellipsis; white-space: nowrap; }
   .family-ruby { background: linear-gradient(150deg, #fff4df, #dfb36d); }.family-warehouse { background: linear-gradient(150deg, #fffced, #d9e4c2); }.family-chance { background: linear-gradient(150deg, #f5eee5, #d7bed1); }
   .occupants { grid-column: 1 / -1; min-height: 1.2rem; display: flex; gap: .12rem; align-items: end; }
   .merchant { width: 1.1rem; height: 1.1rem; display: grid; place-items: center; border: 1px solid #fffaf0; border-radius: 50%; color: #fff; font-size: .52rem; font-weight: 700; box-shadow: 0 .1rem .2rem #0005; }
+  .assistant { width: .9rem; height: .9rem; display: grid; place-items: center; border: 1px solid #fffaf0; border-radius: .2rem; color: #fff; font-size: .48rem; font-weight: 700; text-transform: uppercase; box-shadow: 0 .1rem .2rem #0005; }
   .merchant.neutral { color: #173f43; background: #ece7d8; }
   .encounter { position: absolute; right: .25rem; bottom: .25rem; width: 1rem; height: 1rem; display: grid; place-items: center; border-radius: .2rem; color: #fff; font-size: .5rem; font-weight: 700; }
   .governor { background: #744c8b; }.smuggler { background: #263235; }
@@ -167,6 +205,7 @@
   .inspector dl div { display: grid; gap: .1rem; padding: .5rem 0; border-top: 1px solid #d9cdb7; }.inspector dt { color: #73817e; }.inspector dd { margin: 0; font-weight: 700; }
   .encounter-ledger { display: grid; gap: .5rem; margin-top: 1rem; }.encounter-ledger span { display: flex; align-items: center; gap: .5rem; font-size: .75rem; font-weight: 700; }.encounter-ledger i { width: 1.5rem; height: 1.5rem; display: grid; place-items: center; border-radius: .3rem; color: #fff; font-style: normal; }
   .supply-ledger { display: grid; grid-template-columns: 1fr 1fr; gap: 0 .7rem; margin-top: .8rem !important; }.supply-ledger div { grid-template-columns: 1fr auto; align-items: baseline; }.supply-ledger dd { color: #a43b32; font-size: .9rem; }
+  .turn-action { width: 100%; min-height: 2.8rem; margin-top: .8rem; padding: .6rem .7rem; border: 0; border-radius: .6rem; color: #fffaf0; background: #267356; box-shadow: 0 .25rem 0 #164a37; font: inherit; font-size: .75rem; font-weight: 700; }.turn-action.secondary-action { background: #a23b36; box-shadow: 0 .25rem 0 #6d2523; }.route-warning, .waiting-copy { color: #9a5046 !important; font-weight: 700; }
   .large-card { min-height: 13rem; display: flex; flex-direction: column; justify-content: space-between; padding: 1rem; border: 2px solid #d49d42; border-radius: .8rem; color: #fffaf0; background: radial-gradient(circle at 80% 15%, #d27a40, transparent 5rem), #a23b36; box-shadow: 0 .8rem 1.4rem #4b2c2240; }.large-card > span { font-size: .65rem; letter-spacing: .15em; text-transform: uppercase; }.large-card strong { font: 700 1.5rem/1 'Cormorant Garamond', serif; }.large-card p { margin: 0; font-size: .78rem; }
   .mobile-card-text { display: none; }
   .player-rail { display: grid; grid-template-columns: repeat(var(--players, 2), minmax(0, 1fr)); grid-auto-flow: column; gap: .5rem; }
@@ -176,12 +215,15 @@
   .goods { display: flex; gap: .25rem; align-items: center; }.good { display: flex; gap: .15rem; align-items: center; font-size: .65rem; font-weight: 700; }.good i { width: .65rem; height: .65rem; border-radius: .16rem; }.good.fabric i { background: #b7423c; }.good.spice i { background: #3b8662; }.good.fruit i { background: #d6a82c; }.good.jewelry i { background: #4382a9; }
   .hand { grid-column: 1 / -1; display: flex; gap: .4rem; align-items: center; border-top: 1px solid #d9cdb7; padding-top: .35rem; font-size: .62rem; }.hand > span { color: #6d7c79; text-transform: uppercase; }.hand button { max-width: 12rem; display: grid; padding: .28rem .5rem; border: 1px solid #c98948; border-radius: .35rem; color: #fffaf0; text-align: left; background: #a23b36; }.hand button[aria-pressed='true'] { outline: 2px solid #e7b64c; }.hand button small { font-size: .48rem; text-transform: uppercase; }.hand button strong { overflow: hidden; font-size: .62rem; text-overflow: ellipsis; white-space: nowrap; }
   .masked-hand { grid-column: 1 / -1; margin: 0; padding-top: .35rem; border-top: 1px solid #d9cdb7; color: #6d7c79; font-size: .62rem; }
+  @keyframes departure-pulse { from { filter: brightness(1.45); } to { filter: none; } }
+  @keyframes arrival-pulse { 0% { translate: 0 -.25rem; filter: brightness(1.7); } 100% { translate: 0; filter: none; } }
   @media (max-width: 720px) {
     .game-table { gap: .4rem; }
     .turn-banner { min-height: 3.4rem; padding: .35rem .6rem; }.turn-banner h1 { font-size: 1.45rem; }.turn-token { font-size: .7rem; }.turn-token small { font-size: .55rem; }
     .play-area { grid-template-columns: 1fr; grid-template-rows: minmax(0, 1fr) auto; gap: .4rem; }
-    .board-viewport { padding: 2.1rem .4rem .35rem; }.board { width: 100%; aspect-ratio: 1.18; gap: .25rem; }.place { grid-template-columns: 1.35rem 1fr; padding: .24rem; border-radius: .38rem; }.place-glyph { width: 1.25rem; height: 1.25rem; }.place strong { display: -webkit-box; overflow: hidden; font-size: .52rem; line-height: .88; white-space: normal; -webkit-box-orient: vertical; -webkit-line-clamp: 2; line-clamp: 2; }.place-number { font-size: .5rem; }.occupants { min-height: .85rem; }.merchant { width: .8rem; height: .8rem; font-size: .4rem; }.encounter { width: .7rem; height: .7rem; font-size: .38rem; }
-    .inspector { min-height: 5.5rem; max-height: 8rem; display: grid; grid-template-columns: auto 1fr; gap: .2rem .7rem; align-content: center; padding: .55rem .7rem; }.inspector .section-kicker, .inspector h2, .inspector > p { grid-column: 2; }.inspector h2 { margin: 0; font-size: 1.35rem; }.inspector > p:not(.section-kicker) { margin: 0; font-size: .65rem; }.inspector-glyph { grid-column: 1; grid-row: 1 / 4; width: 3rem; height: 3rem; }.inspector dl { grid-column: 1 / -1; display: flex; gap: .8rem; margin: 0; }.inspector dl div { padding: .15rem 0; border: 0; font-size: .55rem; }.encounter-ledger, .supply-ledger, .large-card { display: none; }.mobile-card-text { display: block; }
+    .board-viewport { padding: 2.1rem .4rem .35rem; }.board { width: 100%; aspect-ratio: 1.18; gap: .25rem; }.place { grid-template-columns: 1.35rem 1fr; padding: .24rem; border-radius: .38rem; }.place-glyph { width: 1.25rem; height: 1.25rem; }.place strong { display: -webkit-box; overflow: hidden; font-size: .52rem; line-height: .88; white-space: normal; -webkit-box-orient: vertical; -webkit-line-clamp: 2; line-clamp: 2; }.place-number { font-size: .5rem; }.occupants { min-height: .85rem; }.merchant, .assistant { width: .8rem; height: .8rem; font-size: .4rem; }.encounter { width: .7rem; height: .7rem; font-size: .38rem; }
+    .inspector { min-height: 5.5rem; max-height: 8rem; display: grid; grid-template-columns: auto 1fr; gap: .2rem .7rem; align-content: start; padding: .55rem .7rem; }.inspector .section-kicker, .inspector h2, .inspector > p { grid-column: 2; }.inspector h2 { margin: 0; font-size: 1.35rem; }.inspector > p:not(.section-kicker) { margin: 0; font-size: .65rem; }.inspector-glyph { grid-column: 1; grid-row: 1 / 4; width: 3rem; height: 3rem; }.inspector dl { grid-column: 1 / -1; display: flex; gap: .8rem; margin: 0; }.inspector dl div { padding: .15rem 0; border: 0; font-size: .55rem; }.encounter-ledger, .supply-ledger, .large-card { display: none; }.mobile-card-text { display: block; }
+    .inspector.route-planner { position: relative; display: block; height: 8rem; padding: 0; }.route-planner .section-kicker { position: absolute; top: .55rem; left: 1.4rem; margin: 0; }.route-planner h2 { position: absolute; top: 1.45rem; left: 1.4rem; margin: 0; }.route-planner > p:not(.section-kicker) { position: absolute; top: 3.15rem; right: .7rem; left: 1.4rem; margin: 0; line-height: .82rem; }.route-planner .supply-ledger { position: absolute; right: .7rem; bottom: .45rem; left: .7rem; display: flex; justify-content: space-between; margin: 0 !important; }
     .player-rail { grid-auto-flow: row; grid-template-columns: 1fr 1fr; gap: .3rem; }.player-rail article { padding: .35rem .45rem; grid-template-columns: 1fr auto; gap: .2rem; }.resources { display: none; }.goods { justify-content: end; }.hand, .masked-hand { padding-top: .2rem; }.hand button { max-width: 8rem; }.player-name { font-size: .72rem; }
   }
   @media (prefers-reduced-motion: reduce) { .board { transition: none; } }
