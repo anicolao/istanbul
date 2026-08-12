@@ -17,6 +17,8 @@ browser-level tracer bullets verified with Playwright.
   contract, and vertical-slice sequence.
 - [E2E_GUIDE.md](E2E_GUIDE.md) defines the mandatory browser tracer,
   screenshot, emulator, accessibility, and review contract.
+- [ART_ASSETS.md](ART_ASSETS.md) inventories the original location, card,
+  component, piece, and player-mat artwork and explains its reproducible build.
 
 ## Product scope
 
@@ -103,9 +105,13 @@ rulebook](https://cdn.pegasus.de/public/media/c5/22/4d/1717757333/4250231715532_
 rulebook.
 
 Published illustrations, logos, tile layouts, card faces, and trade dress are
-reference material only. Browser assets must be original or appropriately
-licensed while preserving the rule-relevant distinctions and information
-hierarchy.
+reference material only. The browser ships an original 73-asset visual system
+for all 16 Places, every Bonus-card effect, five sets of merchants, assistants,
+family members and mats, neutral characters, goods, Mosque and demand tiles,
+Lira, dice, wheelbarrows, tracks, supplies, and rubies. See
+[ART_ASSETS.md](ART_ASSETS.md) for the complete inventory and source-atlas
+workflow. Rules text and all state remain semantic HTML so the visuals never
+replace accessible game information.
 
 ## License
 
