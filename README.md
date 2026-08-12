@@ -63,17 +63,20 @@ information a player could see at the table.
 
 ## Development status
 
-The repository currently contains the rules, vision, and MVP delivery contract.
-Implementation begins with the application shell and repository verifier in the
-first vertical slice described in [MVP_DESIGN.md](MVP_DESIGN.md).
+The first implementation slice provides the static application shell, anonymous
+Firebase initialization, local Auth and Firestore emulators, default-deny
+Security Rules, locked development environment, repository verifier, and the
+first deterministic phone/desktop browser walkthrough. Room creation and the
+append-only replay model begin in the next vertical slice described in
+[MVP_DESIGN.md](MVP_DESIGN.md).
 
-Once scaffolded, the expected local verification entry point will be:
+The local verification entry point is:
 
 ```sh
 nix develop --command bun run verify:change
 ```
 
-That verifier will run static checks, unit tests, Firestore Rules tests,
+That verifier runs static checks, unit tests, Firestore Rules tests,
 emulator-backed Playwright scenarios, the production build, and whitespace
 checks. Each gameplay slice must include its rules/reducer fixtures, accessible
 UI, browser proof, and reviewed screenshots in the same change.
@@ -97,3 +100,18 @@ hierarchy.
 
 Copyright (C) 2026 Alex Nicolaou. Licensed under the GNU General Public License,
 version 3 only. See [LICENSE](LICENSE).
+
+## Firebase
+
+- Project: `istanbul-20260812`
+- Web app: `Istanbul Web`
+- Authentication: anonymous sign-in
+- Database: Cloud Firestore in `nam5`
+- Production rules: authenticated reads plus attributed, versioned,
+  append-only event creates; all other paths denied
+
+Firebase browser configuration is public configuration, not a secret.
+Authentication and Firestore Security Rules provide attribution and immutable
+history, not server-side game-action validation or cheating prevention. Never
+commit service-account credentials, private keys, Firebase CLI tokens, or
+production data.
