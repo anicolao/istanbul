@@ -15,6 +15,8 @@ import {
   collectPostOffice,
   isPlaceActionChoice,
   recallAssistants,
+  resolveBlackMarket,
+  resolveTeaHouse,
   sellAtMarket,
   tradeAtCaravansary,
   warehouseGood
@@ -235,13 +237,25 @@ function applyPlaceAction(state: ReplayProjection, event: CanonicalEvent): boole
     if (player.merchantPlace !== 6) { reject(state, event, 'caravansary-unavailable'); return false; }
     summary = tradeAtCaravansary(game, player, choice.drawSources, choice.discardCardId);
     if (!summary) { reject(state, event, 'invalid-caravansary-trade'); return false; }
-  } else {
+  } else if (choice.kind === 'market-sell') {
     if (player.merchantPlace !== 10 && player.merchantPlace !== 11) {
       reject(state, event, 'market-unavailable');
       return false;
     }
     summary = sellAtMarket(game, player, player.merchantPlace, choice.slotIndexes);
     if (!summary) { reject(state, event, 'invalid-market-sale'); return false; }
+  } else if (choice.kind === 'black-market-roll') {
+    if (player.merchantPlace !== 8) { reject(state, event, 'black-market-unavailable'); return false; }
+    const dice = rollDice(createRandom(`${game.seed}:place-roll:${game.turnNumber}:8`));
+    const jewelryBefore = player.goods.jewelry;
+    summary = resolveBlackMarket(player, choice.good, dice);
+    game.lastRoll = { playerUid: player.uid, place: 8, dice, reward: player.goods.jewelry - jewelryBefore };
+  } else {
+    if (player.merchantPlace !== 9) { reject(state, event, 'tea-house-unavailable'); return false; }
+    const dice = rollDice(createRandom(`${game.seed}:place-roll:${game.turnNumber}:9`));
+    const liraBefore = player.lira;
+    summary = resolveTeaHouse(player, choice.wager, dice);
+    game.lastRoll = { playerUid: player.uid, place: 9, dice, declared: choice.wager, reward: player.lira - liraBefore };
   }
 
   game.lastAction = { playerUid: player.uid, place: player.merchantPlace, kind: choice.kind, summary };

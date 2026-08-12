@@ -64,6 +64,13 @@ export interface GameSetup {
     kind: import('./actions').PlaceActionChoice['kind'];
     summary: string;
   };
+  lastRoll: null | {
+    playerUid: string;
+    place: 8 | 9;
+    dice: [number, number];
+    declared?: number;
+    reward: number;
+  };
 }
 
 function pathDistance(board: number[], first: number, second: number) {
@@ -139,6 +146,7 @@ export function createSetup(room: RoomProjection, seed: string): GameSetup {
     phase: 'movement',
     pending: null,
     lastMovement: null,
-    lastAction: null
+    lastAction: null,
+    lastRoll: null
   };
 }
