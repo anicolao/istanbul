@@ -42,7 +42,7 @@ export interface GameSetup {
   startingSeat: number;
   turnSeat: number;
   turnNumber: number;
-  phase: 'movement' | 'merchant-payment' | 'action';
+  phase: 'movement' | 'merchant-payment' | 'action' | 'turn-end';
   pending: null | {
     kind: 'merchant-payment';
     recipientUids: string[];
@@ -57,6 +57,12 @@ export interface GameSetup {
     assistantAction: import('./movement').AssistantAction;
     paymentTotal: number;
     paymentBlocked: boolean;
+  };
+  lastAction: null | {
+    playerUid: string;
+    place: number;
+    kind: import('./actions').PlaceActionChoice['kind'];
+    summary: string;
   };
 }
 
@@ -132,6 +138,7 @@ export function createSetup(room: RoomProjection, seed: string): GameSetup {
     turnNumber: 1,
     phase: 'movement',
     pending: null,
-    lastMovement: null
+    lastMovement: null,
+    lastAction: null
   };
 }

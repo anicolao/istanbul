@@ -2,6 +2,7 @@
   import { base } from '$app/paths';
   import { bonusCards, places, type Good } from '$lib/game/manifests';
   import { legalDestinations, requiredAssistantAction, type AssistantAction } from '$lib/game/movement';
+  import { warehouseGood, type PlaceActionChoice } from '$lib/game/actions';
   import type { RoomProjection } from '$lib/game/protocol';
   import type { GameSetup } from '$lib/game/setup';
   import PlaceGlyph from './PlaceGlyph.svelte';
@@ -17,6 +18,7 @@
     onInspectBonus,
     onMove,
     onPayMerchants,
+    onTakeAction,
     onEndTurn,
     onZoomIn,
     onFit
@@ -31,6 +33,7 @@
     onInspectBonus: (cardId: string) => void;
     onMove: (destination: number, assistantAction: AssistantAction) => void;
     onPayMerchants: () => void;
+    onTakeAction: (choice: PlaceActionChoice) => void;
     onEndTurn: () => void;
     onZoomIn: () => void;
     onFit: () => void;
@@ -49,6 +52,7 @@
   const paymentNames = $derived(game.pending?.recipientUids.map((uid) => game.players.find((player) => player.uid === uid)?.name ?? uid) ?? []);
   const goodNames: Record<Good, string> = { fabric: 'Fabric', spice: 'Spice', fruit: 'Fruit', jewelry: 'Jewelry' };
   const artUrl = `${base}/art/bazaar-courtyard.png`;
+  let recallSelection = $state<number[]>([]);
 
   function occupants(placeId: number) {
     return game.players.filter(({ merchantPlace }) => merchantPlace === placeId);
@@ -57,11 +61,22 @@
   function assistants(placeId: number) {
     return game.players.flatMap((player) => Array.from({ length: player.assistantsByPlace[placeId] ?? 0 }, () => player));
   }
+
+  function toggleRecall(placeId: number) {
+    recallSelection = recallSelection.includes(placeId)
+      ? recallSelection.filter((place) => place !== placeId)
+      : [...recallSelection, placeId];
+  }
+
+  function recallAssistants() {
+    onTakeAction({ kind: 'fountain-recall', assistantPlaces: recallSelection });
+    recallSelection = [];
+  }
 </script>
 
 <section class="game-table" aria-labelledby="game-title" style={`--courtyard: url('${artUrl}')`}>
   <header class="turn-banner">
-    <div><p>Turn {game.turnNumber} · {game.phase.replace('-', ' ')}</p><h1 id="game-title">{game.phase === 'movement' ? `${currentPlayer.name} surveys the bazaar.` : game.phase === 'merchant-payment' ? `${currentPlayer.name} meets another merchant.` : `${currentPlayer.name} arrives at ${actionPlace.name}.`}</h1>{#if game.lastMovement?.paymentBlocked}<small class="turn-notice">{game.players.find((player) => player.uid === game.lastMovement?.playerUid)?.name} could not pay {game.lastMovement.paymentTotal} Lira; that turn ended immediately.</small>{/if}</div>
+    <div><p>Turn {game.turnNumber} · {game.phase.replace('-', ' ')}</p><h1 id="game-title">{game.phase === 'movement' ? `${currentPlayer.name} surveys the bazaar.` : game.phase === 'merchant-payment' ? `${currentPlayer.name} meets another merchant.` : game.phase === 'turn-end' ? `${currentPlayer.name} completed ${actionPlace.name}.` : `${currentPlayer.name} arrives at ${actionPlace.name}.`}</h1>{#if game.lastMovement?.paymentBlocked}<small class="turn-notice">{game.players.find((player) => player.uid === game.lastMovement?.playerUid)?.name} could not pay {game.lastMovement.paymentTotal} Lira; that turn ended immediately.</small>{/if}</div>
     <div class="turn-token"><span class={`player-dot ${currentPlayer.color}`}></span><strong>{currentPlayer.name}</strong><small>{currentPlayer.uid === userUid ? 'Your turn' : game.phase === 'movement' ? 'Planning route' : 'Resolving turn'}</small></div>
   </header>
 
@@ -116,12 +131,35 @@
         <p>{paymentNames.length ? `Pay ${paymentNames.join(', ')} 2 Lira each.` : ''}{game.pending?.neutralMerchantIds.length ? ` Pay ${game.pending.neutralMerchantIds.length * 2} Lira to the supply for the neutral merchant.` : ''}</p>
         <dl><div><dt>Total due</dt><dd>{game.pending?.total} Lira</dd></div><div><dt>After payment</dt><dd>{localIsCurrent ? localPlayer.lira - (game.pending?.total ?? 0) : 'Hidden until resolved'}</dd></div></dl>
         {#if localIsCurrent}<button class="turn-action" onclick={onPayMerchants}>Pay {game.pending?.total} Lira and continue</button>{:else}<p class="waiting-copy">Waiting for {currentPlayer.name} to confirm the toll.</p>{/if}
+      {:else if game.phase === 'turn-end'}
+        <p class="section-kicker">Place action complete</p>
+        <h2>{actionPlace.name}</h2>
+        <div class="inspector-glyph complete-glyph"><PlaceGlyph glyph={actionPlace.glyph} /></div>
+        <p>{game.lastAction?.summary}</p>
+        {#if localIsCurrent}<button class="turn-action" onclick={onEndTurn}>End turn and pass clockwise</button>{:else}<p class="waiting-copy">Waiting for {currentPlayer.name} to end the completed turn.</p>{/if}
       {:else if game.phase === 'action'}
         <p class="section-kicker">Place action ready</p>
         <h2>{actionPlace.name}</h2>
         <div class="inspector-glyph"><PlaceGlyph glyph={actionPlace.glyph} /></div>
-        <p>{actionPlace.action}</p>
-        {#if localIsCurrent}<button class="turn-action secondary-action" onclick={onEndTurn}>Skip this Place action and end turn</button>{:else}<p class="waiting-copy">Waiting for {currentPlayer.name} to finish the Place action.</p>{/if}
+        {#if actionPlace.id === 1}
+          <p>Pay 7 Lira to expand every goods track by one space. Completing all three extensions also claims a ruby.</p>
+          <div class="wheelbarrow-track" aria-label={`${currentPlayer.extensions} of 3 wheelbarrow extensions`}><span class:filled={currentPlayer.extensions >= 1}></span><span class:filled={currentPlayer.extensions >= 2}></span><span class:filled={currentPlayer.extensions >= 3}></span></div>
+          {#if localIsCurrent}<button class="turn-action" disabled={localPlayer.lira < 7 || localPlayer.extensions >= 3 || game.supplies.wheelbarrowExtensions < 1} onclick={() => onTakeAction({ kind: 'wainwright-buy' })}>Buy extension for 7 Lira</button><p class="action-balance">You have {localPlayer.lira} Lira · {game.supplies.wheelbarrowExtensions} extensions remain</p><button class="skip-link" onclick={onEndTurn}>Skip Wainwright and end turn</button>{:else}<p class="waiting-copy">Waiting for {currentPlayer.name} to choose.</p>{/if}
+        {:else if warehouseGood(actionPlace.id)}
+          {@const good = warehouseGood(actionPlace.id)!}
+          <p>Fill {good} from {currentPlayer.goods[good]} to wheelbarrow capacity {currentPlayer.capacity}.</p>
+          <div class={`crate-track ${good}`} aria-label={`${currentPlayer.goods[good]} of ${currentPlayer.capacity} ${good}`}>{#each Array(currentPlayer.capacity) as _, index}<span class:filled={index < currentPlayer.goods[good]}></span>{/each}</div>
+          {#if localIsCurrent}<button class="turn-action" onclick={() => onTakeAction({ kind: 'warehouse-fill', good })}>Fill {good} to {localPlayer.capacity}</button><button class="skip-link" onclick={onEndTurn}>Skip warehouse and end turn</button>{:else}<p class="waiting-copy">Waiting for {currentPlayer.name} to fill the warehouse good.</p>{/if}
+        {:else if actionPlace.id === 7}
+          <p>Choose any of your assistants on the board and return them to the merchant stack.</p>
+          {#if localIsCurrent && Object.keys(localPlayer.assistantsByPlace).length}
+            <div class="recall-list" aria-label="Assistants available to recall">{#each Object.entries(localPlayer.assistantsByPlace) as [placeId, count]}<label><input type="checkbox" checked={recallSelection.includes(Number(placeId))} onchange={() => toggleRecall(Number(placeId))} /><span>{placeById.get(Number(placeId))?.name} · {count}</span></label>{/each}</div>
+            <button class="turn-action" onclick={recallAssistants}>Recall {recallSelection.length} assistant{recallSelection.length === 1 ? '' : 's'}</button><button class="skip-link" onclick={onEndTurn}>Skip Fountain and end turn</button>
+          {:else if localIsCurrent}<p class="action-balance">Every assistant is already with your merchant.</p><button class="skip-link" onclick={onEndTurn}>End turn</button>{:else}<p class="waiting-copy">Waiting for {currentPlayer.name} to choose assistants.</p>{/if}
+        {:else}
+          <p>{actionPlace.action}</p>
+          {#if localIsCurrent}<button class="turn-action secondary-action" onclick={onEndTurn}>Skip this Place action and end turn</button>{:else}<p class="waiting-copy">Waiting for {currentPlayer.name} to finish the Place action.</p>{/if}
+        {/if}
       {:else if selectedPlaceManifest}
         <p class="section-kicker">Place {selectedPlaceManifest.id}</p>
         <h2>{selectedPlaceManifest.name}</h2>
@@ -206,6 +244,10 @@
   .encounter-ledger { display: grid; gap: .5rem; margin-top: 1rem; }.encounter-ledger span { display: flex; align-items: center; gap: .5rem; font-size: .75rem; font-weight: 700; }.encounter-ledger i { width: 1.5rem; height: 1.5rem; display: grid; place-items: center; border-radius: .3rem; color: #fff; font-style: normal; }
   .supply-ledger { display: grid; grid-template-columns: 1fr 1fr; gap: 0 .7rem; margin-top: .8rem !important; }.supply-ledger div { grid-template-columns: 1fr auto; align-items: baseline; }.supply-ledger dd { color: #a43b32; font-size: .9rem; }
   .turn-action { width: 100%; min-height: 2.8rem; margin-top: .8rem; padding: .6rem .7rem; border: 0; border-radius: .6rem; color: #fffaf0; background: #267356; box-shadow: 0 .25rem 0 #164a37; font: inherit; font-size: .75rem; font-weight: 700; }.turn-action.secondary-action { background: #a23b36; box-shadow: 0 .25rem 0 #6d2523; }.route-warning, .waiting-copy { color: #9a5046 !important; font-weight: 700; }
+  .turn-action:disabled { opacity: .45; box-shadow: none; cursor: not-allowed; }.complete-glyph { color: #267356; }.action-balance { margin: .45rem 0 0 !important; font-size: .68rem !important; text-align: center; }
+  .wheelbarrow-track, .crate-track { display: flex; gap: .35rem; margin: .8rem 0; }.wheelbarrow-track span, .crate-track span { width: 2rem; height: 1.6rem; border: 2px solid #9e7145; border-radius: .3rem; background: #e8dbc1; }.wheelbarrow-track span.filled { border-color: #267356; background: linear-gradient(135deg, #efca7d 45%, #267356 46% 55%, #efca7d 56%); }.crate-track span.filled { background: currentColor; }.crate-track.fabric { color: #b7423c; }.crate-track.spice { color: #3b8662; }.crate-track.fruit { color: #d6a82c; }
+  .recall-list { display: grid; gap: .35rem; margin-top: .65rem; }.recall-list label { grid-template-columns: auto 1fr; align-items: center; padding: .4rem .5rem; border: 1px solid #d9cdb7; border-radius: .45rem; font-size: .7rem; }.recall-list input { width: 1.2rem; min-height: 1.2rem; accent-color: #267356; }
+  .skip-link { width: 100%; min-height: 2rem; margin-top: .35rem; border: 0; color: #8d3c37; text-decoration: underline; background: transparent; font: inherit; font-size: .68rem; font-weight: 700; }
   .large-card { min-height: 13rem; display: flex; flex-direction: column; justify-content: space-between; padding: 1rem; border: 2px solid #d49d42; border-radius: .8rem; color: #fffaf0; background: radial-gradient(circle at 80% 15%, #d27a40, transparent 5rem), #a23b36; box-shadow: 0 .8rem 1.4rem #4b2c2240; }.large-card > span { font-size: .65rem; letter-spacing: .15em; text-transform: uppercase; }.large-card strong { font: 700 1.5rem/1 'Cormorant Garamond', serif; }.large-card p { margin: 0; font-size: .78rem; }
   .mobile-card-text { display: none; }
   .player-rail { display: grid; grid-template-columns: repeat(var(--players, 2), minmax(0, 1fr)); grid-auto-flow: column; gap: .5rem; }
@@ -222,8 +264,8 @@
     .turn-banner { min-height: 3.4rem; padding: .35rem .6rem; }.turn-banner h1 { font-size: 1.45rem; }.turn-token { font-size: .7rem; }.turn-token small { font-size: .55rem; }
     .play-area { grid-template-columns: 1fr; grid-template-rows: minmax(0, 1fr) auto; gap: .4rem; }
     .board-viewport { padding: 2.1rem .4rem .35rem; }.board { width: 100%; aspect-ratio: 1.18; gap: .25rem; }.place { grid-template-columns: 1.35rem 1fr; padding: .24rem; border-radius: .38rem; }.place-glyph { width: 1.25rem; height: 1.25rem; }.place strong { display: -webkit-box; overflow: hidden; font-size: .52rem; line-height: .88; white-space: normal; -webkit-box-orient: vertical; -webkit-line-clamp: 2; line-clamp: 2; }.place-number { font-size: .5rem; }.occupants { min-height: .85rem; }.merchant, .assistant { width: .8rem; height: .8rem; font-size: .4rem; }.encounter { width: .7rem; height: .7rem; font-size: .38rem; }
-    .inspector { min-height: 5.5rem; max-height: 8rem; display: grid; grid-template-columns: auto 1fr; gap: .2rem .7rem; align-content: start; padding: .55rem .7rem; }.inspector .section-kicker, .inspector h2, .inspector > p { grid-column: 2; }.inspector h2 { margin: 0; font-size: 1.35rem; }.inspector > p:not(.section-kicker) { margin: 0; font-size: .65rem; }.inspector-glyph { grid-column: 1; grid-row: 1 / 4; width: 3rem; height: 3rem; }.inspector dl { grid-column: 1 / -1; display: flex; gap: .8rem; margin: 0; }.inspector dl div { padding: .15rem 0; border: 0; font-size: .55rem; }.encounter-ledger, .supply-ledger, .large-card { display: none; }.mobile-card-text { display: block; }
-    .inspector.route-planner { position: relative; display: block; height: 8rem; padding: 0; }.route-planner .section-kicker { position: absolute; top: .55rem; left: 1.4rem; margin: 0; }.route-planner h2 { position: absolute; top: 1.45rem; left: 1.4rem; margin: 0; }.route-planner > p:not(.section-kicker) { position: absolute; top: 3.15rem; right: .7rem; left: 1.4rem; margin: 0; line-height: .82rem; }.route-planner .supply-ledger { position: absolute; right: .7rem; bottom: .45rem; left: .7rem; display: flex; justify-content: space-between; margin: 0 !important; }
+    .inspector { min-height: 5.5rem; max-height: none; display: grid; grid-template-columns: auto 1fr; gap: .2rem .7rem; align-content: start; padding: .55rem .7rem; }.inspector .section-kicker, .inspector h2, .inspector > p { grid-column: 2; }.inspector h2 { margin: 0; font-size: 1.35rem; }.inspector > p:not(.section-kicker) { margin: 0; font-size: .65rem; }.inspector-glyph { grid-column: 1; grid-row: 1 / 4; width: 3rem; height: 3rem; }.inspector dl { grid-column: 1 / -1; display: flex; gap: .8rem; margin: 0; }.inspector dl div { padding: .15rem 0; border: 0; font-size: .55rem; }.inspector .turn-action, .inspector .skip-link, .inspector .wheelbarrow-track, .inspector .crate-track, .inspector .recall-list, .inspector .action-balance { grid-column: 1 / -1; margin-top: .2rem; }.inspector .turn-action { min-height: 2.2rem; }.inspector .skip-link { min-height: 1.5rem; }.recall-list { grid-template-columns: 1fr 1fr; }.encounter-ledger, .supply-ledger, .large-card { display: none; }.mobile-card-text { display: block; }
+    .inspector.route-planner { position: relative; display: block; height: 8rem; max-height: 8rem; padding: 0; }.route-planner .section-kicker { position: absolute; top: .55rem; left: 1.4rem; margin: 0; }.route-planner h2 { position: absolute; top: 1.45rem; left: 1.4rem; margin: 0; }.route-planner > p:not(.section-kicker) { position: absolute; top: 3.15rem; right: .7rem; left: 1.4rem; margin: 0; line-height: .82rem; }.route-planner .supply-ledger { position: absolute; right: .7rem; bottom: .45rem; left: .7rem; display: flex; justify-content: space-between; margin: 0 !important; }
     .player-rail { grid-auto-flow: row; grid-template-columns: 1fr 1fr; gap: .3rem; }.player-rail article { padding: .35rem .45rem; grid-template-columns: 1fr auto; gap: .2rem; }.resources { display: none; }.goods { justify-content: end; }.hand, .masked-hand { padding-top: .2rem; }.hand button { max-width: 8rem; }.player-name { font-size: .72rem; }
   }
   @media (prefers-reduced-motion: reduce) { .board { transition: none; } }

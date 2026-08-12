@@ -10,6 +10,7 @@ import {
 import { createSetup } from './setup';
 import { createRandom, rollDice } from './random';
 import { gridDistance, requiredAssistantAction, type AssistantAction } from './movement';
+import { buyWheelbarrowExtension, isPlaceActionChoice, recallAssistants, warehouseGood } from './actions';
 
 const emptyProjection = (): ReplayProjection => ({
   room: null,
@@ -169,10 +170,14 @@ function applyEvent(state: ReplayProjection, event: CanonicalEvent): boolean {
     return applyMerchantPayment(state, event);
   }
 
+  if (event.type === 'place/action-taken') {
+    return applyPlaceAction(state, event);
+  }
+
   if (event.type === 'turn/ended') {
     const game = state.game;
     const player = game.players[game.turnSeat];
-    if (game.phase !== 'action' || event.actorUid !== player.uid) {
+    if ((game.phase !== 'action' && game.phase !== 'turn-end') || event.actorUid !== player.uid) {
       reject(state, event, 'turn-cannot-end');
       return false;
     }
@@ -182,6 +187,44 @@ function applyEvent(state: ReplayProjection, event: CanonicalEvent): boolean {
 
   reject(state, event, 'unknown-event-type');
   return false;
+}
+
+function applyPlaceAction(state: ReplayProjection, event: CanonicalEvent): boolean {
+  const game = state.game!;
+  const player = game.players[game.turnSeat];
+  const choice = event.payload.choice;
+  if (game.phase !== 'action' || event.actorUid !== player.uid || !isPlaceActionChoice(choice)) {
+    reject(state, event, 'invalid-place-action');
+    return false;
+  }
+
+  let summary: string | null = null;
+  if (choice.kind === 'wainwright-buy') {
+    if (player.merchantPlace !== 1) {
+      reject(state, event, 'wainwright-unavailable');
+      return false;
+    }
+    summary = buyWheelbarrowExtension(game, player);
+    if (!summary) { reject(state, event, 'wainwright-unavailable'); return false; }
+  } else if (choice.kind === 'warehouse-fill') {
+    if (warehouseGood(player.merchantPlace) !== choice.good) {
+      reject(state, event, 'wrong-warehouse');
+      return false;
+    }
+    player.goods[choice.good] = player.capacity;
+    summary = `Filled ${choice.good} to capacity ${player.capacity}.`;
+  } else {
+    if (player.merchantPlace !== 7) {
+      reject(state, event, 'invalid-fountain-recall');
+      return false;
+    }
+    summary = recallAssistants(player, choice.assistantPlaces);
+    if (!summary) { reject(state, event, 'invalid-fountain-recall'); return false; }
+  }
+
+  game.lastAction = { playerUid: player.uid, place: player.merchantPlace, kind: choice.kind, summary };
+  game.phase = 'turn-end';
+  return true;
 }
 
 function applyMovement(state: ReplayProjection, event: CanonicalEvent): boolean {
