@@ -1,6 +1,7 @@
 import { bonusCards, demandTiles, mosqueTiles, playerColors, printedLayouts, type Good } from './manifests';
 import { createRandom, rollDice, shuffle } from './random';
 import type { LayoutKind, RoomProjection } from './protocol';
+import { createRubyTracks } from './ruby-routes';
 
 export interface SetupPlayer {
   uid: string;
@@ -30,6 +31,12 @@ export interface GameSetup {
   largeDemand: string[];
   smallDemand: string[];
   mosqueStacks: Record<Good, string[]>;
+  rubyTracks: {
+    sultanIndex: number;
+    sultanRubies: number;
+    gemstonePrice: number;
+    gemstoneRubies: number;
+  };
   bonusDrawPile: string[];
   bonusDiscard: string[];
   supplies: {
@@ -97,6 +104,8 @@ export interface GameSetup {
     destination?: number;
   }>;
   abilitiesUsedThisTurn: Good[];
+  activeBonusEffects: Array<'long-move' | 'wild-small-market'>;
+  bonusLog: Array<{ cardId: string; summary: string }>;
 }
 
 function pathDistance(board: number[], first: number, second: number) {
@@ -157,6 +166,7 @@ export function createSetup(room: RoomProjection, seed: string): GameSetup {
     largeDemand,
     smallDemand,
     mosqueStacks,
+    rubyTracks: createRubyTracks(room.seats.length),
     bonusDrawPile: remainingCards,
     bonusDiscard: [],
     supplies: {
@@ -175,6 +185,8 @@ export function createSetup(room: RoomProjection, seed: string): GameSetup {
     lastAction: null,
     lastRoll: null,
     encounterLog: [],
-    abilitiesUsedThisTurn: []
+    abilitiesUsedThisTurn: [],
+    activeBonusEffects: [],
+    bonusLog: []
   };
 }

@@ -9,11 +9,13 @@ export type PlaceActionChoice =
   | { kind: 'fountain-recall'; assistantPlaces: number[] }
   | { kind: 'post-office-collect' }
   | { kind: 'caravansary-trade'; drawSources: [CardSource, CardSource]; discardCardId: string }
-  | { kind: 'market-sell'; slotIndexes: number[] }
+  | { kind: 'market-sell'; slotIndexes: number[]; wildGoods?: Good[] }
   | { kind: 'black-market-roll'; good: Exclude<Good, 'jewelry'> }
   | { kind: 'tea-house-wager'; wager: number }
   | { kind: 'police-send'; destination: number }
-  | { kind: 'mosque-take'; tileId: string };
+  | { kind: 'mosque-take'; tileId: string }
+  | { kind: 'sultan-buy'; wildGoods: Good[] }
+  | { kind: 'gemstone-buy' };
 
 export const postOfficeRows: Array<[
   { lira?: number; good?: Good },
@@ -47,7 +49,8 @@ export function isPlaceActionChoice(value: unknown): value is PlaceActionChoice 
     && choice.drawSources.every((source) => source === 'deck' || source === 'discard')
     && typeof choice.discardCardId === 'string';
   if (choice.kind === 'market-sell') return Array.isArray(choice.slotIndexes)
-    && choice.slotIndexes.every((index) => Number.isInteger(index));
+    && choice.slotIndexes.every((index) => Number.isInteger(index))
+    && (choice.wildGoods === undefined || (Array.isArray(choice.wildGoods) && choice.wildGoods.every((good) => ['fabric', 'spice', 'fruit', 'jewelry'].includes(good))));
   if (choice.kind === 'black-market-roll') return ['fabric', 'spice', 'fruit'].includes(String(choice.good));
   if (choice.kind === 'tea-house-wager') return typeof choice.wager === 'number'
     && Number.isInteger(choice.wager)
@@ -58,7 +61,9 @@ export function isPlaceActionChoice(value: unknown): value is PlaceActionChoice 
     && choice.destination >= 1
     && choice.destination <= 16
     && choice.destination !== 12;
-  return choice.kind === 'mosque-take' && typeof choice.tileId === 'string';
+  if (choice.kind === 'mosque-take') return typeof choice.tileId === 'string';
+  if (choice.kind === 'sultan-buy') return Array.isArray(choice.wildGoods) && choice.wildGoods.every((good) => ['fabric', 'spice', 'fruit', 'jewelry'].includes(good));
+  return choice.kind === 'gemstone-buy';
 }
 
 export function collectPostOffice(game: GameSetup, player: SetupPlayer): string {
@@ -106,9 +111,20 @@ export function tradeAtCaravansary(
   return `Took 2 Bonus cards and discarded 1; ${player.bonusHand.length} remain in hand.`;
 }
 
-export function sellAtMarket(game: GameSetup, player: SetupPlayer, place: number, slotIndexes: number[]): string | null {
+export function sellAtMarket(game: GameSetup, player: SetupPlayer, place: number, slotIndexes: number[], wildGoods?: Good[]): string | null {
   const stack = place === 10 ? game.largeDemand : place === 11 ? game.smallDemand : null;
-  if (!stack || slotIndexes.length < 1 || slotIndexes.length > 5) return null;
+  if (!stack) return null;
+  if (wildGoods) {
+    if (place !== 11 || !game.activeBonusEffects.includes('wild-small-market') || wildGoods.length < 1 || wildGoods.length > 5) return null;
+    const counts = wildGoods.reduce<Record<Good, number>>((totals, good) => ({ ...totals, [good]: totals[good] + 1 }), { fabric: 0, spice: 0, fruit: 0, jewelry: 0 });
+    if ((Object.keys(counts) as Good[]).some((good) => counts[good] > player.goods[good])) return null;
+    for (const good of Object.keys(counts) as Good[]) player.goods[good] -= counts[good];
+    player.lira += marketRevenue[wildGoods.length];
+    stack.push(stack.shift()!);
+    game.activeBonusEffects = game.activeBonusEffects.filter((effect) => effect !== 'wild-small-market');
+    return `Used flexible demand to sell ${wildGoods.length} good${wildGoods.length === 1 ? '' : 's'} for ${marketRevenue[wildGoods.length]} Lira.`;
+  }
+  if (slotIndexes.length < 1 || slotIndexes.length > 5) return null;
   const unique = [...new Set(slotIndexes)].sort((a, b) => a - b);
   if (unique.length !== slotIndexes.length || unique.some((index) => index < 0 || index > 4)) return null;
   const demand = demandTiles.find(({ id }) => id === stack[0]);

@@ -1,6 +1,6 @@
 import type { GameSetup, SetupPlayer } from './setup';
 
-export type AssistantAction = 'drop' | 'pick-up' | 'fountain';
+export type AssistantAction = 'drop' | 'pick-up' | 'fountain' | 'stay';
 
 export function gridDistance(board: number[], fromPlace: number, toPlace: number): number {
   const from = board.indexOf(fromPlace);
@@ -18,6 +18,7 @@ export function requiredAssistantAction(player: SetupPlayer, destination: number
 export function legalDestinations(game: GameSetup, player: SetupPlayer): number[] {
   return game.board.filter((destination) => {
     const distance = gridDistance(game.board, player.merchantPlace, destination);
-    return distance >= 1 && distance <= 2 && requiredAssistantAction(player, destination) !== null;
+    const longMove = game.activeBonusEffects.includes('long-move');
+    return distance >= (longMove ? 3 : 1) && distance <= (longMove ? 4 : 2) && requiredAssistantAction(player, destination) !== null;
   });
 }
