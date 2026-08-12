@@ -20,6 +20,7 @@
   import {
     isRoomCode,
     layoutNames,
+    maxRoomPlayers,
     modeNames,
     normalizeRoomCode,
     schemaVersion,
@@ -42,7 +43,6 @@
   let hostName = $state('');
   let guestName = $state('');
   let joinCode = $state('');
-  let playerCount = $state(3);
   let selectedLayout = $state<LayoutKind>('short-path');
   let selectedMode = $state<RoomMode>('personal-screens');
   let sharedDisplay = $state(false);
@@ -231,7 +231,7 @@
       await repository.append('game/created', {
         roomCode,
         hostName: hostName.trim(),
-        maxPlayers: playerCount,
+        maxPlayers: maxRoomPlayers,
         layout: selectedLayout,
         mode: selectedMode
       });
@@ -274,13 +274,13 @@
     }
   }
 
-  async function configureRoom(field: 'layout' | 'maxPlayers', value: string | number) {
+  async function configureRoom(layout: string) {
     if (!room || !repository || !isHost || actionPending) return;
     actionPending = true;
     try {
       await repository.append('game/configured', {
-        maxPlayers: field === 'maxPlayers' ? Number(value) : room.maxPlayers,
-        layout: field === 'layout' ? value : room.layout,
+        maxPlayers: room.maxPlayers,
+        layout,
         mode: room.mode
       });
     } finally {
@@ -517,10 +517,7 @@
           <h2 id="create-title">Open the bazaar</h2>
           <form onsubmit={(event) => { event.preventDefault(); void createRoom(); }}>
             <label>Your merchant name<input bind:value={hostName} maxlength="24" autocomplete="nickname" required /></label>
-            <div class="field-row">
-              <label>Seats<select bind:value={playerCount}><option value={2}>2 players</option><option value={3}>3 players</option><option value={4}>4 players</option><option value={5}>5 players</option></select></label>
-              <label>Layout<select bind:value={selectedLayout}><option value="short-path">Short Path</option><option value="long-path">Long Path</option><option value="number-order">Number Order</option><option value="random">Seeded Random</option></select></label>
-            </div>
+            <label>Layout<select bind:value={selectedLayout}><option value="short-path">Short Path</option><option value="long-path">Long Path</option><option value="number-order">Number Order</option><option value="random">Seeded Random</option></select></label>
             <label>Play surface<select bind:value={selectedMode}><option value="personal-screens">Personal screens</option><option value="shared-table">Shared table + private phones</option></select></label>
             <button class="primary" type="submit" disabled={!hostName.trim() || actionPending}>Create {selectedMode === 'shared-table' ? 'shared table' : 'private room'} <span aria-hidden="true">→</span></button>
           </form>
@@ -541,7 +538,7 @@
     <section class="loading" aria-live="polite"><span class="lantern" aria-hidden="true"></span><h1>Finding the table…</h1><p>Replaying its immutable history.</p></section>
   {:else if screen === 'join-room' && room}
     <section class="join-room" aria-labelledby="join-room-title">
-      <div class="room-ticket"><span>{modeNames[room.mode]}</span><strong>{room.roomCode}</strong><small>{room.seats.length} of {room.maxPlayers} seats claimed</small></div>
+      <div class="room-ticket"><span>{modeNames[room.mode]}</span><strong>{room.roomCode}</strong><small>{room.seats.length} {room.seats.length === 1 ? 'merchant' : 'merchants'} here · {room.maxPlayers - room.seats.length} open</small></div>
       <div class="join-panel">
         <p class="section-kicker">You were invited</p>
         <h1 id="join-room-title">Take a seat at {room.seats[0].name}’s table.</h1>
@@ -557,37 +554,37 @@
   {:else if screen === 'lobby' && room && localSeat}
     <section class="lobby" aria-labelledby="lobby-title">
       <div class="lobby-heading">
-        <div><p class="eyebrow">Private room · {room.roomCode}</p><h1 id="lobby-title">Gather your merchants.</h1><p>{allReady ? 'Every merchant is ready. The bazaar can open.' : 'Share the invitation, choose a route, and ready your table.'}</p></div>
+        <div><p class="eyebrow">Private room · {room.roomCode}</p><h1 id="lobby-title">Gather your merchants.</h1><p>{allReady ? 'Everyone here is ready. The room creator can open the bazaar.' : 'Invite everyone who is playing, then each merchant marks themselves ready.'}</p></div>
         <div class:ready-seal={allReady} class="room-state" aria-live="polite"><span>{allReady ? 'Table ready' : 'Waiting'}</span><strong>{room.seats.filter((seat) => seat.ready).length}/{room.seats.length}</strong><small>merchants ready</small></div>
       </div>
 
       <div class="lobby-grid">
         <section class="seats-card" aria-labelledby="seats-title">
-          <div class="card-heading"><div><p class="section-kicker">Ordered clockwise</p><h2 id="seats-title">Merchant seats</h2></div><span>{room.seats.length}/{room.maxPlayers}</span></div>
+          <div class="card-heading"><div><p class="section-kicker">Ordered clockwise</p><h2 id="seats-title">Merchants at the table</h2></div><span>{room.seats.length} joined</span></div>
           <ol class="seats">
-            {#each Array(room.maxPlayers) as _, index}
-              {@const seat = room.seats[index]}
-              <li class:open={!seat}>
+            {#each room.seats as seat, index}
+              <li>
                 <span class="seat-number">{index + 1}</span>
-                {#if seat}<span class="merchant-token" aria-hidden="true">{seat.name.slice(0, 1).toUpperCase()}</span><span class="seat-copy"><strong>{seat.name}{seat.uid === userUid ? ' · you' : ''}</strong><small>{seat.uid === room.hostUid ? 'Host merchant' : 'Guest merchant'}</small></span><span class:ready={seat.ready} class="readiness">{seat.ready ? 'Ready' : 'Planning'}</span>
-                {:else}<span class="empty-token" aria-hidden="true">+</span><span class="seat-copy"><strong>Open seat</strong><small>Waiting for an invitation</small></span><span class="readiness">Open</span>{/if}
+                <span class="merchant-token" aria-hidden="true">{seat.name.slice(0, 1).toUpperCase()}</span><span class="seat-copy"><strong>{seat.name}{seat.uid === userUid ? ' · you' : ''}</strong><small>{seat.uid === room.hostUid ? 'Room creator' : 'Guest merchant'}</small></span><span class:ready={seat.ready} class="readiness">{seat.ready ? 'Ready' : 'Planning'}</span>
               </li>
             {/each}
+            {#if room.seats.length < room.maxPlayers}
+              <li class="open"><span class="seat-number">+</span><span class="empty-token" aria-hidden="true">+</span><span class="seat-copy"><strong>Room is open</strong><small>Another merchant may still join</small></span><span class="readiness">Inviting</span></li>
+            {/if}
           </ol>
         </section>
 
         <aside class="table-card" aria-labelledby="table-title">
           <div class="card-heading"><div><p class="section-kicker">Table settings</p><h2 id="table-title">The opening route</h2></div><span class="route-medallion" aria-hidden="true">16</span></div>
           {#if isHost}
-            <label>Reviewed layout<select value={room.layout} onchange={(event) => void configureRoom('layout', event.currentTarget.value)} disabled={actionPending}><option value="short-path">Short Path</option><option value="long-path">Long Path</option><option value="number-order">Number Order</option><option value="random">Seeded Random</option></select></label>
-            <label>Maximum seats<select value={room.maxPlayers} onchange={(event) => void configureRoom('maxPlayers', event.currentTarget.value)} disabled={actionPending}><option value={2} disabled={room.seats.length > 2}>2 players</option><option value={3} disabled={room.seats.length > 3}>3 players</option><option value={4}>4 players</option><option value={5}>5 players</option></select></label>
+            <label>Reviewed layout<select value={room.layout} onchange={(event) => void configureRoom(event.currentTarget.value)} disabled={actionPending}><option value="short-path">Short Path</option><option value="long-path">Long Path</option><option value="number-order">Number Order</option><option value="random">Seeded Random</option></select></label>
           {:else}
-            <dl><div><dt>Layout</dt><dd>{layoutNames[room.layout]}</dd></div><div><dt>Seats</dt><dd>{room.maxPlayers}</dd></div></dl>
+            <dl><div><dt>Layout</dt><dd>{layoutNames[room.layout]}</dd></div><div><dt>Room</dt><dd>Open until start</dd></div></dl>
           {/if}
           <p class="layout-note">{room.layout === 'short-path' ? 'Direct trade routes make this a welcoming first table.' : room.layout === 'long-path' ? 'Ruby routes sit farther apart for a more tactical journey.' : room.layout === 'number-order' ? 'The numbered reference arrangement from the rulebook.' : 'A valid arrangement derived from the committed setup seed.'}</p>
           <div class="invite"><label>Invitation link<input readonly value={inviteUrl} aria-label="Invitation link" /></label><p>Room code <strong>{room.roomCode}</strong></p></div>
           {#if room.mode === 'shared-table'}
-            <div class="shared-invite"><SeatQr compact url={makeInviteUrl(room.roomCode, { seat: room.seats.length + 1 })} label={`Seat ${room.seats.length + 1} invitation`} /><a href={makeInviteUrl(room.roomCode, { display: true })} target="_blank" rel="noreferrer">Open public table display</a></div>
+            <div class="shared-invite"><SeatQr compact url={makeInviteUrl(room.roomCode)} label="Merchant invitation" /><a href={makeInviteUrl(room.roomCode, { display: true })} target="_blank" rel="noreferrer">Open public table display</a></div>
           {/if}
           {#if allReady && isHost}
             <button class="primary ready-button start-button" onclick={() => void startGame()} disabled={actionPending}>Open the bazaar <span aria-hidden="true">→</span></button>
@@ -608,7 +605,7 @@
         onGrantE2eResources={() => {}} onRematch={() => {}} onEndTurn={() => {}}
         onZoomIn={() => boardScale = Math.min(1.18, boardScale + 0.09)} onFit={() => boardScale = 1}
       />
-    {:else}<SharedTableLobby {room} invitationFor={(seat) => makeInviteUrl(room.roomCode, { seat })} />{/if}
+    {:else}<SharedTableLobby {room} invitationFor={() => makeInviteUrl(room.roomCode)} />{/if}
   {:else if screen === 'game' && room && game}
     <GameTable
       {game}
@@ -671,7 +668,6 @@
   input, select { width: 100%; min-height: 2.8rem; padding: .65rem .8rem; border: 1px solid rgb(255 250 240 / 34%); border-radius: .7rem; color: inherit; background: rgb(255 255 255 / 9%); outline: none; }
   input:focus, select:focus, button:focus-visible { outline: 3px solid #efca7d; outline-offset: 2px; }
   select option { color: #173f43; background: #fffaf0; }
-  .field-row { display: grid; grid-template-columns: .7fr 1.3fr; gap: .8rem; }
   button { min-height: 2.9rem; border: 0; border-radius: .75rem; font-weight: 700; }
   button.primary { display: flex; align-items: center; justify-content: space-between; margin-top: .65rem; padding: .72rem 1rem; color: #173f43; background: #efca7d; box-shadow: 0 .35rem 0 #bd8b39; }
   button.primary:active { translate: 0 .2rem; box-shadow: 0 .15rem 0 #bd8b39; }

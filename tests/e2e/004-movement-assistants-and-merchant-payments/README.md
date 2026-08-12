@@ -24,17 +24,17 @@ Ada and Bora open a two-player Short Path table, then perform every visible choi
 - [x] The name field contains Ada exactly
 - [x] No immutable event exists before confirmation
 
-## 3. Ada chooses a two-player table
+## 3. Ada reviews the open-room setup
 
-**Ada, the first merchant** — Ada chooses a two-player table
+**Ada, the first merchant** — Ada reviews the open-room setup
 
-![Ada chooses a two-player table](./screenshots/002-host-chooses-two-seats-desktop.png)
+![Ada reviews the open-room setup](./screenshots/002-host-reviews-open-room-desktop.png)
 
 **Verifications:**
 
-- [x] The visible seat selector now reads 2 players
+- [x] The creator does not ask Ada to predict attendance
 - [x] Short Path remains the selected route
-- [x] Changing the draft form still writes no event
+- [x] Reviewing the draft form still writes no event
 
 ## 4. Ada creates private room MOVES
 
@@ -44,7 +44,7 @@ Ada and Bora open a two-player Short Path table, then perform every visible choi
 
 **Verifications:**
 
-- [x] Ada occupies seat one of exactly two
+- [x] Ada occupies the first joined position in an open room
 - [x] One creation event projects the lobby
 
 ## 5. Bora opens Ada’s invitation

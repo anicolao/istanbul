@@ -40,17 +40,16 @@ test('merchants move with assistants, settle tolls, and advance safely', async (
       { spec: 'No immutable event exists before confirmation', check: async () => expectState(page, { eventCount: 0 }) }
     ] });
 
-    await page.getByLabel('Seats').selectOption('2');
-    await ada.step('host-chooses-two-seats', { description: 'Ada chooses a two-player table', verifications: [
-      { spec: 'The visible seat selector now reads 2 players', check: async () => expect(page.getByLabel('Seats')).toHaveValue('2') },
+    await ada.step('host-reviews-open-room', { description: 'Ada reviews the open-room setup', verifications: [
+      { spec: 'The creator does not ask Ada to predict attendance', check: async () => expect(page.getByLabel('Seats')).toHaveCount(0) },
       { spec: 'Short Path remains the selected route', check: async () => expect(page.getByLabel('Layout')).toHaveValue('short-path') },
-      { spec: 'Changing the draft form still writes no event', check: async () => expectState(page, { eventCount: 0 }) }
+      { spec: 'Reviewing the draft form still writes no event', check: async () => expectState(page, { eventCount: 0 }) }
     ] });
 
     await page.getByRole('button', { name: /Create private room/ }).click();
     await ada.step('host-creates-room', { description: `Ada creates private room ${roomCode}`, verifications: [
-      { spec: 'Ada occupies seat one of exactly two', check: async () => { await expect(page.getByText('Ada · you')).toBeVisible(); await expect(page.getByText('1/2')).toBeVisible(); } },
-      { spec: 'One creation event projects the lobby', check: async () => expectState(page, { screen: 'lobby', roomCode, eventCount: 1, seatCount: 1, maxPlayers: 2 }) }
+      { spec: 'Ada occupies the first joined position in an open room', check: async () => { await expect(page.getByText('Ada · you')).toBeVisible(); await expect(page.getByText('Room is open')).toBeVisible(); } },
+      { spec: 'One creation event projects the lobby', check: async () => expectState(page, { screen: 'lobby', roomCode, eventCount: 1, seatCount: 1, maxPlayers: 5 }) }
     ] });
 
     await boraPage.goto(`/?room=${roomCode}`);

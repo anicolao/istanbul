@@ -24,16 +24,16 @@ Ada opens a two-player table with the reviewed 15-Lira Dealer and six-good Palac
 - [x] Ada remains visible in the public-name field
 - [x] Typing has not appended an event
 
-## 3. Ada chooses a two-player Short Path table
+## 3. Ada reviews the open-room setup
 
-**Ada, the first merchant** — Ada chooses a two-player Short Path table
+**Ada, the first merchant** — Ada reviews the open-room setup
 
-![Ada chooses a two-player Short Path table](./screenshots/002-host-chooses-two-seats-desktop.png)
+![Ada reviews the open-room setup](./screenshots/002-host-reviews-open-room-desktop.png)
 
 **Verifications:**
 
-- [x] Two players and Short Path are the visible form values
-- [x] Draft configuration still has no immutable history
+- [x] Short Path is visible and no player count is requested
+- [x] Reviewing the open-room setup still has no immutable history
 
 ## 4. Ada creates private room RUBYS
 
@@ -43,8 +43,8 @@ Ada opens a two-player table with the reviewed 15-Lira Dealer and six-good Palac
 
 **Verifications:**
 
-- [x] Ada owns seat one of two
-- [x] One creation event projects the lobby
+- [x] Ada is the room creator and the room remains open
+- [x] One creation event projects a five-player-capacity lobby
 
 ## 5. Bora follows Ada’s room invitation
 

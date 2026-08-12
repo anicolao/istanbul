@@ -2,12 +2,12 @@
   import type { RoomProjection } from '$lib/game/protocol';
   import SeatQr from './SeatQr.svelte';
 
-  let { room, invitationFor }: { room: RoomProjection; invitationFor: (seat: number) => string } = $props();
+  let { room, invitationFor }: { room: RoomProjection; invitationFor: () => string } = $props();
 </script>
 
 <section class="table-lobby" aria-labelledby="shared-table-title">
   <header>
-    <div><p>Shared table · room {room.roomCode}</p><h1 id="shared-table-title">Gather around the bazaar.</h1></div>
+    <div><p>Shared table · room {room.roomCode}</p><h1 id="shared-table-title">Scan. Join. Ready.</h1><span class="table-instruction">The room creator starts when everyone at the table is ready.</span></div>
     <div class="room-code"><span>Join code</span><strong>{room.roomCode}</strong></div>
   </header>
   <div class="invitation-grid" style={`--seats: ${room.maxPlayers}`}>
@@ -19,12 +19,12 @@
           <div class="claimed-token">{seat.name.slice(0, 1).toUpperCase()}</div>
           <h2>{seat.name}</h2><p>{seat.ready ? 'Ready at their private controller' : 'Planning on their private controller'}</p>
         {:else}
-          <SeatQr url={invitationFor(index + 1)} label={`Seat ${index + 1} invitation`} />
+          <SeatQr url={invitationFor()} label={`Join from position ${index + 1}`} />
         {/if}
       </article>
     {/each}
   </div>
-  <footer><strong>{room.seats.filter(({ ready }) => ready).length}/{room.seats.length} ready</strong><span>Bonus cards and choices remain on each player’s phone.</span></footer>
+  <footer><strong>{room.seats.filter(({ ready }) => ready).length}/{room.seats.length} ready · {room.maxPlayers - room.seats.length} invitations open</strong><span>Bonus cards and choices remain on each player’s phone.</span></footer>
 </section>
 
 <style>
@@ -32,6 +32,7 @@
   header { display: flex; align-items: center; justify-content: space-between; gap: 2rem; }
   header p { margin: 0; color: #efca7d; font-size: clamp(.7rem, 1vw, 1rem); font-weight: 700; letter-spacing: .14em; text-transform: uppercase; }
   h1 { margin: .25rem 0 0; font: 700 clamp(2.8rem, 5vw, 7rem)/.9 'Cormorant Garamond', serif; }
+  .table-instruction { display: block; margin-top: .65rem; color: #bdd0ca; font-size: clamp(.75rem, 1vw, 1.1rem); }
   .room-code { min-width: 11rem; padding: .8rem 1.2rem; border: 1px solid #efca7d; border-radius: 1rem; text-align: center; background: #0e3033cc; }
   .room-code span { display: block; color: #bdd0ca; font-size: .65rem; text-transform: uppercase; }
   .room-code strong { color: #efca7d; font: 700 clamp(2rem, 3vw, 4rem) 'Cormorant Garamond', serif; letter-spacing: .13em; }

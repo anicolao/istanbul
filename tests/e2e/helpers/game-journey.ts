@@ -33,16 +33,15 @@ export async function openTwoPlayerGame(options: {
     { spec: 'Typing has not appended an event', check: async () => expectState(hostPage, { eventCount: 0 }) }
   ] });
 
-  await hostPage.getByLabel('Seats').selectOption('2');
-  await host.step('host-chooses-two-seats', { description: 'Ada chooses a two-player Short Path table', verifications: [
-    { spec: 'Two players and Short Path are the visible form values', check: async () => { await expect(hostPage.getByLabel('Seats')).toHaveValue('2'); await expect(hostPage.getByLabel('Layout')).toHaveValue('short-path'); } },
-    { spec: 'Draft configuration still has no immutable history', check: async () => expectState(hostPage, { eventCount: 0 }) }
+  await host.step('host-reviews-open-room', { description: 'Ada reviews the open-room setup', verifications: [
+    { spec: 'Short Path is visible and no player count is requested', check: async () => { await expect(hostPage.getByLabel('Layout')).toHaveValue('short-path'); await expect(hostPage.getByLabel('Seats')).toHaveCount(0); } },
+    { spec: 'Reviewing the open-room setup still has no immutable history', check: async () => expectState(hostPage, { eventCount: 0 }) }
   ] });
 
   await hostPage.getByRole('button', { name: /Create private room/ }).click();
   await host.step('host-creates-room', { description: `Ada creates private room ${roomCode}`, verifications: [
-    { spec: 'Ada owns seat one of two', check: async () => { await expect(hostPage.getByText('Ada · you')).toBeVisible(); await expect(hostPage.getByText('1/2')).toBeVisible(); } },
-    { spec: 'One creation event projects the lobby', check: async () => expectState(hostPage, { screen: 'lobby', roomCode, eventCount: 1, seatCount: 1, maxPlayers: 2 }) }
+    { spec: 'Ada is the room creator and the room remains open', check: async () => { await expect(hostPage.getByText('Ada · you')).toBeVisible(); await expect(hostPage.getByText('Room is open')).toBeVisible(); } },
+    { spec: 'One creation event projects a five-player-capacity lobby', check: async () => expectState(hostPage, { screen: 'lobby', roomCode, eventCount: 1, seatCount: 1, maxPlayers: 5 }) }
   ] });
 
   await guestPage.goto(`/?room=${roomCode}`);

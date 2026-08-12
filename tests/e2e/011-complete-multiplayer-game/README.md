@@ -2,11 +2,11 @@
 
 Five isolated browsers join one immutable table. Ada alternates Tea House earnings with the Gemstone Dealer while every other merchant takes and closes each intervening ordinary turn. The journey records every route selection, movement, wager, ruby purchase, pass, final direct-resource choice, shared ranking projection, reload, and seeded rematch. No projected state is injected: every canonical event originates in visible game controls.
 
-## 1. Ada opens the five-seat table creator
+## 1. Ada opens the table creator
 
-**Ada, merchant 1** — Ada opens the five-seat table creator
+**Ada, merchant 1** — Ada opens the table creator
 
-![Ada opens the five-seat table creator](./screenshots/000-ada-host-opens-five-seat-creator-desktop.png)
+![Ada opens the table creator](./screenshots/000-ada-host-opens-room-creator-desktop.png)
 
 **Verifications:**
 
@@ -24,27 +24,27 @@ Five isolated browsers join one immutable table. Ada alternates Tea House earnin
 - [x] The typed name is visible
 - [x] Typing writes no event
 
-## 3. Ada chooses five seats
+## 3. Ada reviews the open-room setup
 
-**Ada, merchant 1** — Ada chooses five seats
+**Ada, merchant 1** — Ada reviews the open-room setup
 
-![Ada chooses five seats](./screenshots/002-ada-host-selects-five-seats-desktop.png)
+![Ada reviews the open-room setup](./screenshots/002-ada-host-reviews-open-room-desktop.png)
 
 **Verifications:**
 
-- [x] The selector shows five players
+- [x] No player count is requested
 - [x] The creator remains local
 
-## 4. Ada creates the private five-seat room
+## 4. Ada creates a private room that stays open for the group
 
-**Ada, merchant 1** — Ada creates the private five-seat room
+**Ada, merchant 1** — Ada creates a private room that stays open for the group
 
-![Ada creates the private five-seat room](./screenshots/003-ada-host-creates-five-seat-room-desktop.png)
+![Ada creates a private room that stays open for the group](./screenshots/003-ada-host-creates-open-room-desktop.png)
 
 **Verifications:**
 
 - [x] Room FIVES or RACES is visible
-- [x] One canonical creation event opens five seats
+- [x] One canonical creation event starts with Ada and capacity for the full group
 
 ## 5. Bora opens the invitation
 

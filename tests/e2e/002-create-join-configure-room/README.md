@@ -11,7 +11,7 @@ Ada opens a private table, Bora follows the invitation in an isolated browser, a
 **Verifications:**
 
 - [x] Firebase authentication is ready before any room action
-- [x] The host form offers two-to-five seats and reviewed layouts
+- [x] The host chooses a reviewed layout without predicting attendance
 - [x] No room events exist before Ada creates one
 
 ## 2. Ada writes her public merchant name
@@ -36,7 +36,7 @@ Ada opens a private table, Bora follows the invitation in an isolated browser, a
 
 - [x] The lobby exposes the stable five-letter room code MARKT
 - [x] Ada is visibly identified as host and current user
-- [x] The immutable projection contains one creation event and one seat
+- [x] The immutable projection contains one creation event and one joined merchant
 
 ## 4. Bora follows Ada’s invitation to room MARKT
 
@@ -47,7 +47,7 @@ Ada opens a private table, Bora follows the invitation in an isolated browser, a
 **Verifications:**
 
 - [x] The invitation names Ada as the host
-- [x] The public ticket shows one of three seats claimed
+- [x] The public ticket shows one merchant present and room to join
 - [x] Bora replays the creation event but has no local seat
 
 ## 5. Bora writes his merchant name before claiming a seat

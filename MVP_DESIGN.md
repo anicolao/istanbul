@@ -209,8 +209,10 @@ least one representative browser path.
 
 ### 2. Rooms and immutable replay
 
-- Add anonymous identity, five-letter room codes, invite URLs, two-to-five
-  ordered seats, names, configuration, and readiness.
+- Add anonymous identity, five-letter room codes, invite URLs, open rooms for
+  two-to-five ordered merchants, names, configuration, and readiness. Room
+  creators start once every merchant who actually joined is ready; attendance
+  is not selected in advance.
 - Implement append, subscribe, canonical sort, replay from scratch, envelope
   validation, diagnostics, and a versioned local replay cache.
 - Complete scenario 002 with several isolated browser contexts and reload.
@@ -268,8 +270,10 @@ least one representative browser path.
 
 ### 9. Shared table, responsiveness, and accessibility
 
-- Add shared-table creation, seat-specific QR codes, public display selector,
-  private phone controllers, and reconnect ownership.
+- Add shared-table creation, a join QR at every open tabletop position, public
+  display selector, private phone controllers, and reconnect ownership. Joined
+  merchants replace invitations in the lobby; starting play removes all open
+  positions and presents only the public game.
 - Finish keyboard board navigation, focus transfer, live announcements, touch
   targets, safe areas, contrast, non-color labels, and reduced motion.
 - Complete scenarios 013 and 014 across phone portrait, phone landscape,
