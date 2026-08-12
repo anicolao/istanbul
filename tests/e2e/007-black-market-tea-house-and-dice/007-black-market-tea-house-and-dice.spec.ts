@@ -54,7 +54,7 @@ test('Tea House wagers and Black Market goods use seeded replayable dice', async
     await ada.step('host-reloads-tea-result', { description: 'Ada reloads the completed Tea House result', verifications: [
       { spec: 'The exact two dice return after replay', check: async () => expect(page.getByLabel(`Dice result ${teaState.game.lastRoll.dice[0]} and ${teaState.game.lastRoll.dice[1]}`)).toBeVisible() },
       { spec: 'The declared wager and reward are unchanged', check: async () => expectState(page, { eventCount: 7, diagnosticCount: 0, game: { phase: 'turn-end', lastRoll: teaState.game.lastRoll, players: [{ lira: teaState.game.players[0].lira }, {}] } }) },
-      { spec: 'Roll cannot be repeated after hydration', check: async () => expect(page.getByRole('button', { name: /Wager .* roll/ })).toHaveCount(0) }
+      { spec: 'Roll cannot be repeated after hydration', check: async () => expect(page.locator('button.turn-action').filter({ hasText: /^Wager .* roll/ })).toHaveCount(0) }
     ] });
 
     await page.getByRole('button', { name: 'End turn and pass clockwise' }).click();

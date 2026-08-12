@@ -14,11 +14,13 @@
   import type { EncounterChoice } from '$lib/game/encounters';
   import { ownsMosqueAbility, type MosqueAbilityChoice } from '$lib/game/mosques';
   import { currentSultanCost } from '$lib/game/ruby-routes';
+  import { locationStateSummary } from '$lib/game/location-state';
   import type { BonusChoice } from '$lib/game/bonus';
   import type { RoomProjection } from '$lib/game/protocol';
   import type { GameSetup } from '$lib/game/setup';
   import type { PlayerColorName } from '$lib/game/art';
   import GameArt from './GameArt.svelte';
+  import LocationState from './LocationState.svelte';
 
   let {
     game,
@@ -208,6 +210,7 @@
           {#each game.board as placeId, index}
             {@const place = placeById.get(placeId)!}
             {@const here = occupants(placeId)}
+            {@const stateSummary = locationStateSummary(game, placeId)}
             <button
               class:selected={selectedPlace === placeId}
               class:reachable={reachable.includes(placeId)}
@@ -216,7 +219,7 @@
               class:has-encounter={placeId === game.governorPlace || placeId === game.smugglerPlace}
               class={`place family-${place.family}`}
               style={`--row: ${Math.floor(index / 4)}; --column: ${index % 4}`}
-              aria-label={`${place.id} ${place.name}. ${place.action}${reachable.includes(placeId) ? ' Reachable this turn.' : ''}${here.length ? ` Merchants: ${here.map(({ name }) => name).join(', ')}.` : ''}`}
+              aria-label={`${place.id} ${place.name}. ${place.action} Current state: ${stateSummary}.${reachable.includes(placeId) ? ' Reachable this turn.' : ''}${here.length ? ` Merchants: ${here.map(({ name }) => name).join(', ')}.` : ''}`}
               aria-pressed={selectedPlace === placeId}
               data-place-id={placeId}
               tabindex={(keyboardPlace || game.board[0]) === placeId ? 0 : -1}
@@ -229,6 +232,7 @@
             >
               <GameArt kind="location" place={place.id} class="place-art" />
               <span class="place-shade"></span>
+              <LocationState {game} placeId={place.id} />
               <span class="place-number">{place.id}</span>
               <strong>{place.shortName}</strong>
               <span class="occupants" aria-hidden="true">

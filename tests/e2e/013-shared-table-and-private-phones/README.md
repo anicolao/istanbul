@@ -198,7 +198,7 @@ Ada creates a shared-table room on her phone, the central screen deliberately en
 
 - [x] Ada’s token has left Fountain on the large board
 - [x] Public and controller cursors agree while private state stays masked
-- [x] The route originated from the phone selection: 5 Post Office. Take the four uncovered mail-track resources. Reachable this turn.
+- [x] The route originated from the phone selection: 5 Post Office. Take the four uncovered mail-track resources. Current state: Exposed mail: 1 spice, 1 fabric, 1 fruit, 1 Lira. Reachable this turn.
 
 ## 19. Ada reloads and reclaims her owned controller
 
