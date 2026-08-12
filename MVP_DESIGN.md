@@ -1,5 +1,8 @@
 # MVP design
 
+> Implementation status: complete. Scenarios 001–014 exercise every slice
+> below, culminating in shared-table and accessible responsive play.
+
 ## Outcome
 
 Deliver a faithful, complete, realtime implementation of the 2014 Istanbul base

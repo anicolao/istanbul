@@ -644,8 +644,8 @@
   :global(button, input, select) { font: inherit; }
   :global(button, select) { cursor: pointer; }
   :global(button:disabled, select:disabled) { cursor: not-allowed; }
-  main { min-height: 100svh; overflow: hidden; padding: clamp(4.8rem, 8vw, 6rem) clamp(1rem, 4vw, 4rem) clamp(1rem, 3vw, 2rem); background: radial-gradient(circle at 8% 8%, #fff9e9 0 0.5rem, transparent 0.55rem), linear-gradient(90deg, rgb(23 63 67 / 5%) 1px, transparent 1px) 0 0 / 4rem 4rem, linear-gradient(rgb(23 63 67 / 5%) 1px, transparent 1px) 0 0 / 4rem 4rem, linear-gradient(145deg, #f4ead6, #dfc28e); }
-  main.game-screen { height: 100svh; min-height: 0; padding: 4.75rem .7rem .6rem; background: #102f32; }
+  main { min-height: 100svh; overflow: hidden; padding: max(clamp(4.8rem, 8vw, 6rem), env(safe-area-inset-top)) max(clamp(1rem, 4vw, 4rem), env(safe-area-inset-right)) max(clamp(1rem, 3vw, 2rem), env(safe-area-inset-bottom)) max(clamp(1rem, 4vw, 4rem), env(safe-area-inset-left)); background: radial-gradient(circle at 8% 8%, #fff9e9 0 0.5rem, transparent 0.55rem), linear-gradient(90deg, rgb(23 63 67 / 5%) 1px, transparent 1px) 0 0 / 4rem 4rem, linear-gradient(rgb(23 63 67 / 5%) 1px, transparent 1px) 0 0 / 4rem 4rem, linear-gradient(145deg, #f4ead6, #dfc28e); }
+  main.game-screen { height: 100svh; min-height: 0; padding: max(4.75rem, env(safe-area-inset-top)) max(.7rem, env(safe-area-inset-right)) max(.6rem, env(safe-area-inset-bottom)) max(.7rem, env(safe-area-inset-left)); background: #102f32; }
   .topbar { position: absolute; inset: 0 0 auto; height: 4.2rem; display: flex; align-items: center; justify-content: space-between; padding: 0 clamp(1rem, 4vw, 4rem); border-bottom: 1px solid rgb(23 63 67 / 18%); background: rgb(255 251 240 / 78%); backdrop-filter: blur(12px); }
   .brand { display: flex; align-items: center; gap: .8rem; color: inherit; font: 700 1.7rem/1 'Cormorant Garamond', serif; text-decoration: none; }
   .brand-gem { width: 1.15rem; height: 1.15rem; rotate: 45deg; border: 2px solid #f3aa8c; border-radius: .2rem; background: #aa303f; box-shadow: inset 0 0 0 3px #c84a51; }
@@ -737,7 +737,7 @@
   .history span + span { padding-left: 1.4rem; border-left: 1px solid rgb(23 63 67 / 20%); }
   .state-output { position: fixed; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
   @media (max-width: 720px) {
-    main { padding: 4.35rem .6rem .6rem; }
+    main { padding: max(4.35rem, env(safe-area-inset-top)) max(.6rem, env(safe-area-inset-right)) max(.6rem, env(safe-area-inset-bottom)) max(.6rem, env(safe-area-inset-left)); }
     .topbar { height: 3.8rem; padding: 0 .8rem; }
     .recovery-strip { top: 3.8rem; right: .6rem; max-width: calc(100% - 1.2rem); }.recovery-strip span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }.compatibility-block { margin-top: 4rem; padding: 1.4rem; }.compatibility-block h1 { font-size: 2.7rem; }
     .brand { font-size: 1.35rem; }
@@ -785,6 +785,20 @@
     .ready-button { grid-column: 1 / -1; margin-top: .2rem !important; }
     .history { gap: .55rem; padding-top: .45rem; font-size: .62rem; }
     .history span + span { padding-left: .55rem; }
+  }
+  @media (max-height: 500px) and (orientation: landscape) {
+    :global(html), :global(body) { height: 100%; overflow: hidden; }
+    main { padding: max(3.35rem, env(safe-area-inset-top)) max(.5rem, env(safe-area-inset-right)) max(.4rem, env(safe-area-inset-bottom)) max(.5rem, env(safe-area-inset-left)); }
+    main.game-screen { padding-top: max(3.25rem, env(safe-area-inset-top)); }
+    .topbar { height: 3rem; padding: 0 max(.7rem, env(safe-area-inset-right)) 0 max(.7rem, env(safe-area-inset-left)); }
+    .brand { font-size: 1.2rem; }.connection { font-size: .62rem; }.build { display: none; }
+    .landing, .join-room { min-height: 0; height: calc(100svh - 3.75rem); border-radius: 1rem; }
+    .welcome { padding: 1rem; }.welcome h1 { font-size: 2.2rem; }.welcome .lede, .route-notes { display: none; }
+    .entry-card, .join-panel { padding: .75rem 1rem; }.entry-card h2 { margin-bottom: .35rem; }.landing .entry-card > .divider, .landing .entry-card > section:last-of-type { display: none; }
+    input, select { min-height: 2.2rem; padding: .35rem .55rem; }.entry-card button { min-height: 2.25rem; }
+    .join-room { grid-template-columns: .72fr 1.28fr; }.room-ticket strong { font-size: 3.5rem; }.join-panel h1 { font-size: 2.25rem; }.join-panel > p:not(.section-kicker,.error) { margin: .2rem 0 .5rem; font-size: .72rem; }.join-panel .divider { margin: .3rem 0; }
+    .lobby { min-height: calc(100svh - 3.7rem); }.lobby-heading { margin: 0 0 .3rem; }.lobby-heading h1 { margin: 0; font-size: 1.8rem; }.lobby-heading > div:first-child > p:last-child { display: none; }.room-state { min-width: 5rem; padding: .25rem .5rem; }.room-state small { display: none; }.room-state span { font-size: .5rem; }.room-state strong { font-size: 1.2rem; }
+    .lobby-grid { grid-template-columns: .8fr 1.2fr; gap: .4rem; }.seats-card, .table-card { padding: .5rem; border-radius: .7rem; }.card-heading { padding-bottom: .25rem; }.card-heading h2 { margin: 0; font-size: 1.05rem; }.seats { gap: .2rem; margin-top: .25rem; }.seats li { min-height: 2rem; padding: .2rem .35rem; }.merchant-token, .empty-token { width: 1.5rem; height: 1.5rem; border-width: 2px; }.table-card { display: grid; grid-template-columns: 1fr 1fr; gap: .2rem .4rem; }.table-card .card-heading, .layout-note, .invite, .shared-invite, .ready-button { grid-column: 1 / -1; }.table-card label { margin-top: 0; }.layout-note { min-height: 0; margin: 0; font-size: .55rem; }.invite input { min-height: 1.8rem; font-size: .55rem; }.shared-invite { display: none; }.ready-button { min-height: 2.2rem; margin-top: 0 !important; }.history { display: none; }
   }
   @media (prefers-reduced-motion: reduce) { *, *::before, *::after { scroll-behavior: auto !important; transition: none !important; animation: none !important; } }
 </style>
