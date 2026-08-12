@@ -10,7 +10,15 @@ import {
 import { createSetup } from './setup';
 import { createRandom, rollDice } from './random';
 import { gridDistance, requiredAssistantAction, type AssistantAction } from './movement';
-import { buyWheelbarrowExtension, isPlaceActionChoice, recallAssistants, warehouseGood } from './actions';
+import {
+  buyWheelbarrowExtension,
+  collectPostOffice,
+  isPlaceActionChoice,
+  recallAssistants,
+  sellAtMarket,
+  tradeAtCaravansary,
+  warehouseGood
+} from './actions';
 
 const emptyProjection = (): ReplayProjection => ({
   room: null,
@@ -213,13 +221,27 @@ function applyPlaceAction(state: ReplayProjection, event: CanonicalEvent): boole
     }
     player.goods[choice.good] = player.capacity;
     summary = `Filled ${choice.good} to capacity ${player.capacity}.`;
-  } else {
+  } else if (choice.kind === 'fountain-recall') {
     if (player.merchantPlace !== 7) {
       reject(state, event, 'invalid-fountain-recall');
       return false;
     }
     summary = recallAssistants(player, choice.assistantPlaces);
     if (!summary) { reject(state, event, 'invalid-fountain-recall'); return false; }
+  } else if (choice.kind === 'post-office-collect') {
+    if (player.merchantPlace !== 5) { reject(state, event, 'post-office-unavailable'); return false; }
+    summary = collectPostOffice(game, player);
+  } else if (choice.kind === 'caravansary-trade') {
+    if (player.merchantPlace !== 6) { reject(state, event, 'caravansary-unavailable'); return false; }
+    summary = tradeAtCaravansary(game, player, choice.drawSources, choice.discardCardId);
+    if (!summary) { reject(state, event, 'invalid-caravansary-trade'); return false; }
+  } else {
+    if (player.merchantPlace !== 10 && player.merchantPlace !== 11) {
+      reject(state, event, 'market-unavailable');
+      return false;
+    }
+    summary = sellAtMarket(game, player, player.merchantPlace, choice.slotIndexes);
+    if (!summary) { reject(state, event, 'invalid-market-sale'); return false; }
   }
 
   game.lastAction = { playerUid: player.uid, place: player.merchantPlace, kind: choice.kind, summary };

@@ -1,5 +1,12 @@
 import { describe, expect, it } from 'vitest';
-import { buyWheelbarrowExtension, recallAssistants } from './actions';
+import {
+  buyWheelbarrowExtension,
+  collectPostOffice,
+  previewCaravansary,
+  recallAssistants,
+  sellAtMarket,
+  tradeAtCaravansary
+} from './actions';
 import { manifestVersions, reducerVersion, rulesEdition, schemaVersion, type CanonicalEvent, type RoomProjection } from './protocol';
 import { replayEvents } from './reducer';
 import { createSetup } from './setup';
@@ -63,5 +70,53 @@ describe('deterministic economy actions', () => {
     ]);
     expect(projection.game).toMatchObject({ phase: 'turn-end', lastAction: { kind: 'warehouse-fill', place: 2 }, players: [{ goods: { fabric: 2 } }, {}] });
     expect(projection.diagnostics.map(({ reason }) => reason)).toEqual(['invalid-place-action']);
+  });
+
+  it('advances all five Post Office states and resets only after the fifth collection', () => {
+    const game = createSetup(room(), 'post-office-cycle');
+    const player = game.players[0];
+    player.lira = 0;
+    player.capacity = 10;
+    const states = [
+      [true, false, false, false],
+      [true, true, false, false],
+      [true, true, true, false],
+      [true, true, true, true],
+      [false, false, false, false]
+    ];
+    for (const lower of states) {
+      expect(collectPostOffice(game, player)).toMatch(/^Collected/);
+      expect(game.postOfficeLower).toEqual(lower);
+    }
+    expect(player).toMatchObject({ lira: 10, goods: { fabric: 6, spice: 2, fruit: 3, jewelry: 2 } });
+  });
+
+  it('previews and resolves ordered Caravansary sources while conserving all 26 cards', () => {
+    const game = createSetup(room(), 'caravansary-sources');
+    const player = game.players[0];
+    const discardedBefore = player.bonusHand[0];
+    const discardOffer = game.bonusDrawPile.shift()!;
+    game.bonusDiscard.push(discardOffer);
+    const preview = previewCaravansary(game, ['discard', 'deck'])!;
+    expect(preview[0]).toBe(discardOffer);
+    expect(tradeAtCaravansary(game, player, ['discard', 'deck'], discardedBefore)).toBe('Took 2 Bonus cards and discarded 1; 2 remain in hand.');
+    expect(player.bonusHand).toEqual(preview);
+    expect(game.bonusDiscard.at(-1)).toBe(discardedBefore);
+    expect(game.bonusDrawPile.length + game.bonusDiscard.length + game.players.reduce((sum, candidate) => sum + candidate.bonusHand.length, 0)).toBe(26);
+    expect(previewCaravansary({ ...game, bonusDiscard: [] }, ['discard', 'deck'])).toBeNull();
+  });
+
+  it('sells only owned depicted Demand slots, pays the exact table, and rotates the stack', () => {
+    const game = createSetup(room(), 'market-sale');
+    const player = game.players[0];
+    game.largeDemand = ['demand-large-1', ...game.largeDemand.filter((id) => id !== 'demand-large-1')];
+    player.goods = { fabric: 2, spice: 1, fruit: 1, jewelry: 0 };
+    player.lira = 0;
+    const nextDemand = game.largeDemand[1];
+    expect(sellAtMarket(game, player, 10, [0, 1, 2, 3])).toBe('Sold 4 goods for 14 Lira.');
+    expect(player).toMatchObject({ lira: 14, goods: { fabric: 0, spice: 0, fruit: 0, jewelry: 0 } });
+    expect(game.largeDemand).toEqual([nextDemand, ...game.largeDemand.slice(1, -1), 'demand-large-1']);
+    expect(sellAtMarket(game, player, 10, [0])).toBeNull();
+    expect(sellAtMarket(game, player, 12, [0])).toBeNull();
   });
 });

@@ -68,6 +68,11 @@
       pending: game.pending,
       lastMovement: game.lastMovement,
       lastAction: game.lastAction,
+      postOfficeLower: game.postOfficeLower,
+      largeDemand: game.largeDemand,
+      smallDemand: game.smallDemand,
+      bonusDrawCount: game.bonusDrawPile.length,
+      bonusDiscard: game.bonusDiscard,
       players: game.players.map((player) => ({
         name: player.name,
         merchantPlace: player.merchantPlace,
