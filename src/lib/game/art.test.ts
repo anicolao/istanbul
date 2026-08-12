@@ -19,6 +19,7 @@ describe('production art manifest', () => {
     expect(Object.keys(pieceArt.family)).toEqual(playerColorNames);
     expect(Object.keys(playerMatArt)).toEqual(playerColorNames);
     expect(Object.keys(bonusCardArt)).toHaveLength(12);
+    expect(Object.keys(componentArt.mosque)).toEqual(['fabric', 'spice', 'fruit', 'jewelry']);
     expect(new Set(assets).size).toBe(assets.length);
   });
 

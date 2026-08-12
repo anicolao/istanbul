@@ -132,7 +132,7 @@ Ada and Bora narrate every action from an empty room through five complete turns
 
 **Verifications:**
 
-- [x] The production action panel explains all three extensions and the ruby
+- [x] The production action panel explains all three extensions and Ada’s tray shows its empty sockets
 - [x] The 7-Lira purchase is truthfully disabled while skip remains available
 - [x] Ada has 2 Lira, carries three assistants, and has one at Wainwright
 
