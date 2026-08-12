@@ -157,6 +157,8 @@ Playwright runs against local Auth and Firestore emulators with isolated browser
 contexts for each player. Use pinned Chromium, no retries, stable fonts, locale
 `en-CA`, timezone `America/Toronto`, device scale factor 1, blocked service
 workers, deterministic build metadata, and animations disabled for screenshots.
+The complete scenario structure, determinism, emulator, accessibility, and
+review contract is defined in [E2E_GUIDE.md](E2E_GUIDE.md).
 
 Begin with one worker, as Jaipur does. Shard scenarios in CI only when measured
 runtime justifies RoboRally's reusable-workflow approach.

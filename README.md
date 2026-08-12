@@ -15,6 +15,8 @@ browser-level tracer bullets verified with Playwright.
   boundaries.
 - [MVP_DESIGN.md](MVP_DESIGN.md) defines the initial architecture, testing
   contract, and vertical-slice sequence.
+- [E2E_GUIDE.md](E2E_GUIDE.md) defines the mandatory browser tracer,
+  screenshot, emulator, accessibility, and review contract.
 
 ## Product scope
 
