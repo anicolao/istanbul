@@ -14,8 +14,8 @@ function setup(count: number) {
 
 describe('escalating ruby routes', () => {
   it('transcribes every printed player-count start position', () => {
-    expect(createRubyTracks(2)).toEqual({ sultanIndex: 6, sultanRubies: 4, gemstonePrice: 15, gemstoneRubies: 10 });
-    expect(createRubyTracks(3)).toEqual(createRubyTracks(2));
+    expect(createRubyTracks(2)).toEqual({ sultanIndex: 7, sultanRubies: 3, gemstonePrice: 15, gemstoneRubies: 10 });
+    expect(createRubyTracks(3)).toEqual({ sultanIndex: 6, sultanRubies: 4, gemstonePrice: 15, gemstoneRubies: 10 });
     expect(createRubyTracks(4)).toEqual({ sultanIndex: 4, sultanRubies: 6, gemstonePrice: 12, gemstoneRubies: 13 });
     expect(createRubyTracks(5)).toEqual(createRubyTracks(4));
     expect(sultanCostSequence).toEqual(['jewelry', 'fabric', 'spice', 'fruit', 'any', 'jewelry', 'fabric', 'spice', 'fruit', 'any']);
@@ -24,13 +24,13 @@ describe('escalating ruby routes', () => {
   it('charges the exact Sultan goods, including explicit wild choices', () => {
     const game = setup(2);
     const player = game.players[0];
-    player.goods = { fabric: 2, spice: 1, fruit: 1, jewelry: 2 };
-    expect(currentSultanCost(game)).toEqual(['jewelry', 'fabric', 'spice', 'fruit', 'any', 'jewelry']);
+    player.goods = { fabric: 2, spice: 2, fruit: 1, jewelry: 2 };
+    expect(currentSultanCost(game)).toEqual(['jewelry', 'fabric', 'spice', 'fruit', 'any', 'jewelry', 'fabric']);
     expect(buySultanRuby(game, player, [])).toBeNull();
-    expect(buySultanRuby(game, player, ['fabric'])).toBe('Delivered 6 goods to the Sultan and claimed 1 ruby.');
+    expect(buySultanRuby(game, player, ['spice'])).toBe('Delivered 7 goods to the Sultan and claimed 1 ruby.');
     expect(player.goods).toEqual({ fabric: 0, spice: 0, fruit: 0, jewelry: 0 });
     expect(player.rubies).toBe(1);
-    expect(game.rubyTracks).toMatchObject({ sultanIndex: 7, sultanRubies: 3 });
+    expect(game.rubyTracks).toMatchObject({ sultanIndex: 8, sultanRubies: 2 });
   });
 
   it('rejects short payment and advances the Gemstone price once per ruby', () => {
