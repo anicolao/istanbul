@@ -261,7 +261,7 @@ Ada fills spice, buys the exposed Green tile at Small Mosque, later fills fabric
 
 - [x] The full Green power tile settles into Ada’s tray
 - [x] One spice is paid before the mandatory family catch
-- [x] Small Mosque replaces Green’s cost with the next exposed requirement
+- [x] Small Mosque replaces Green’s cost with the next exposed requirement and devotes the display to both tiles
 - [x] The acquisition summary identifies the paid color
 
 ## 24. Ada catches Bora’s family for three Lira
@@ -446,7 +446,7 @@ Ada fills spice, buys the exposed Green tile at Small Mosque, later fills fabric
 
 - [x] The action announces the paired ruby
 - [x] Both tile IDs and one ruby are conserved
-- [x] The paired-ruby stock on Small Mosque decreases to one
+- [x] The paired-ruby reward is recorded on Ada while the tile display remains uncluttered
 - [x] Red and Green square powers are both enabled in the tray
 
 ## 40. Ada passes with the Small Mosque ruby
