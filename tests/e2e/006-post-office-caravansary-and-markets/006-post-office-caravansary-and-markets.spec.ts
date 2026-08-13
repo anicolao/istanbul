@@ -246,14 +246,14 @@ test('mail, private card trading, and both demand markets remain exact through r
     await page.getByRole('checkbox', { name: `Sell demand slot ${largeSlot + 1}: ${largeGood}` }).check();
     await ada.step('host-chooses-large-sale', { description: `Ada selects one depicted ${largeGood} for Large Market`, verifications: [
       { spec: 'The Large Market slot is checked', check: async () => expect(page.getByRole('checkbox', { name: `Sell demand slot ${largeSlot + 1}: ${largeGood}` })).toBeChecked() },
-      { spec: 'One good again displays the 2-Lira tier', check: async () => expect(page.getByText('1 selected · 2 Lira')).toBeVisible() },
+      { spec: 'One good displays the distinct 3-Lira Large Market tier', check: async () => expect(page.getByText('1 selected · 3 Lira')).toBeVisible() },
       { spec: 'The local selection has not spent stock', check: async () => expectState(page, { eventCount: 24, game: { largeDemand: [largeId, ...largeState.game.largeDemand.slice(1)] } }) }
     ] });
 
-    await page.getByRole('button', { name: 'Sell selected goods for 2 Lira' }).click();
+    await page.getByRole('button', { name: 'Sell selected goods for 3 Lira' }).click();
     await ada.step('host-sells-large-market', { description: 'Ada completes the Large Market sale', verifications: [
-      { spec: 'The exact sale summary is visible', check: async () => expect(page.getByText('Sold 1 good for 2 Lira.', { exact: true })).toBeVisible() },
-      { spec: 'Large Demand rotates independently', check: async () => expectState(page, { eventCount: 25, game: { phase: 'turn-end', largeDemand: [...largeState.game.largeDemand.slice(1), largeId], smallDemand: [...smallState.game.smallDemand.slice(1), smallId], players: [{ lira: 7 }, {}] } }) },
+      { spec: 'The exact distinct Large Market sale summary is visible', check: async () => expect(page.getByText('Sold 1 good for 3 Lira.', { exact: true })).toBeVisible() },
+      { spec: 'Large Demand rotates independently', check: async () => expectState(page, { eventCount: 25, game: { phase: 'turn-end', largeDemand: [...largeState.game.largeDemand.slice(1), largeId], smallDemand: [...smallState.game.smallDemand.slice(1), smallId], players: [{ lira: 8 }, {}] } }) },
       { spec: 'Large Market tile exposes the newly rotated five-good demand', check: async () => expect(page.getByTestId('place-state-10')).toHaveAttribute('data-state-summary', `Current Large Market demand: ${nextLargeDemand.goods.join(', ')}`) },
       { spec: 'Bora observes the same public market state', check: async () => { const host = await readState(page); const guest = await readState(boraPage); expect(guest.game.largeDemand).toEqual(host.game.largeDemand); expect(guest.game.players).toEqual(host.game.players); } }
     ] });

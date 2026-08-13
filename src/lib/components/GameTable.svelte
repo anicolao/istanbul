@@ -4,7 +4,7 @@
   import { bonusCards, demandTiles, mosqueTiles, places, type Good } from '$lib/game/manifests';
   import { legalDestinations, requiredAssistantAction, type AssistantAction } from '$lib/game/movement';
   import {
-    marketRevenue,
+    marketRevenueFor,
     postOfficeRows,
     previewCaravansary,
     warehouseGood,
@@ -394,17 +394,17 @@
             <button class="turn-action" disabled={caravanPreview.length !== 2 || !caravanDiscardSelection} onclick={() => onTakeAction({ kind: 'caravansary-trade', drawSources: caravanSources, discardCardId: caravanDiscardSelection })}>Keep two cards and discard selected</button><button class="skip-link" onclick={onEndTurn}>Skip Caravansary and end turn</button>
           {:else}<p class="waiting-copy">Waiting for {currentPlayer.name} to manage a private Bonus hand.</p>{/if}
         {:else if actionPlace.id === 10 || actionPlace.id === 11}
-          <p>Select one to five depicted goods you own. Revenue rises from 2 to 20 Lira, then this Demand rotates.</p>
+          <p>Select one to five depicted goods you own. {actionPlace.id === 10 ? 'Large Market revenue rises from 3 to 25 Lira.' : 'Small Market revenue rises from 2 to 20 Lira.'} Then this Demand rotates.</p>
           <div class="demand-card" aria-label={`${actionPlace.name} demand ${activeDemand?.id}`}><GameArt kind="component" component={actionPlace.id === 10 ? 'demand-large' : 'demand-small'} class="demand-art" />
             {#each activeDemand?.goods ?? [] as good, index}<label class={good}><input type="checkbox" aria-label={`Sell demand slot ${index + 1}: ${good}`} checked={marketSelection.includes(index)} onchange={() => toggleMarketSlot(index)} /><i></i><span>{goodNames[good]}</span></label>{/each}
           </div>
           {#if actionPlace.id === 11 && game.activeBonusEffects.includes('wild-small-market')}
-            <label class="wager-control">Flexible sale size<select aria-label="Flexible sale size" value={flexibleGoods.length} onchange={(event) => flexibleGoods = Array.from({ length: Number(event.currentTarget.value) }, (_, index) => flexibleGoods[index] ?? 'fabric')}>{#each [1, 2, 3, 4, 5] as count}<option value={count}>{count} good{count === 1 ? '' : 's'} · {marketRevenue[count]} Lira</option>{/each}</select></label>
+            <label class="wager-control">Flexible sale size<select aria-label="Flexible sale size" value={flexibleGoods.length} onchange={(event) => flexibleGoods = Array.from({ length: Number(event.currentTarget.value) }, (_, index) => flexibleGoods[index] ?? 'fabric')}>{#each [1, 2, 3, 4, 5] as count}<option value={count}>{count} good{count === 1 ? '' : 's'} · {marketRevenueFor(11, count)} Lira</option>{/each}</select></label>
             {#each flexibleGoods as good, index}<label class="wager-control">Flexible good {index + 1}<select aria-label={`Flexible good ${index + 1}`} value={good} onchange={(event) => setFlexibleGood(index, event.currentTarget.value as Good)}>{#each Object.keys(goodNames) as option}<option value={option}>{goodNames[option as Good]}</option>{/each}</select></label>{/each}
-            {#if localIsCurrent}<button class="turn-action" disabled={!((Object.keys(goodNames) as Good[]).every((good) => flexibleGoods.filter((value) => value === good).length <= localPlayer.goods[good]))} onclick={() => onTakeAction({ kind: 'market-sell', slotIndexes: [], wildGoods: flexibleGoods })}>Sell any {flexibleGoods.length} goods for {marketRevenue[flexibleGoods.length]} Lira</button>{/if}
+            {#if localIsCurrent}<button class="turn-action" disabled={!((Object.keys(goodNames) as Good[]).every((good) => flexibleGoods.filter((value) => value === good).length <= localPlayer.goods[good]))} onclick={() => onTakeAction({ kind: 'market-sell', slotIndexes: [], wildGoods: flexibleGoods })}>Sell any {flexibleGoods.length} goods for {marketRevenueFor(11, flexibleGoods.length)} Lira</button>{/if}
           {:else}
-            <p class="market-revenue">{marketSelection.length ? `${marketSelection.length} selected · ${marketRevenue[marketSelection.length]} Lira` : 'Select goods to sell'}</p>
-            {#if localIsCurrent}<button class="turn-action" disabled={!marketSelectionLegal} onclick={sellMarket}>Sell selected goods for {marketRevenue[marketSelection.length]} Lira</button>{/if}
+            <p class="market-revenue">{marketSelection.length ? `${marketSelection.length} selected · ${marketRevenueFor(actionPlace.id, marketSelection.length)} Lira` : 'Select goods to sell'}</p>
+            {#if localIsCurrent}<button class="turn-action" disabled={!marketSelectionLegal} onclick={sellMarket}>Sell selected goods for {marketRevenueFor(actionPlace.id, marketSelection.length)} Lira</button>{/if}
           {/if}
           {#if localIsCurrent}<button class="skip-link" onclick={onEndTurn}>Skip market and end turn</button>{:else}<p class="waiting-copy">Waiting for {currentPlayer.name} to choose a sale.</p>{/if}
         {:else if actionPlace.id === 8}

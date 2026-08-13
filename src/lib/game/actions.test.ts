@@ -116,11 +116,19 @@ describe('deterministic economy actions', () => {
     player.goods = { fabric: 2, spice: 1, fruit: 1, jewelry: 0 };
     player.lira = 0;
     const nextDemand = game.largeDemand[1];
-    expect(sellAtMarket(game, player, 10, [0, 1, 2, 3])).toBe('Sold 4 goods for 14 Lira.');
-    expect(player).toMatchObject({ lira: 14, goods: { fabric: 0, spice: 0, fruit: 0, jewelry: 0 } });
+    expect(sellAtMarket(game, player, 10, [0, 1, 2, 3])).toBe('Sold 4 goods for 18 Lira.');
+    expect(player).toMatchObject({ lira: 18, goods: { fabric: 0, spice: 0, fruit: 0, jewelry: 0 } });
     expect(game.largeDemand).toEqual([nextDemand, ...game.largeDemand.slice(1, -1), 'demand-large-1']);
     expect(sellAtMarket(game, player, 10, [0])).toBeNull();
     expect(sellAtMarket(game, player, 12, [0])).toBeNull();
+
+    const smallGame = createSetup(room(), 'small-market-sale');
+    const smallPlayer = smallGame.players[0];
+    smallGame.smallDemand = ['demand-small-1', ...smallGame.smallDemand.filter((id) => id !== 'demand-small-1')];
+    smallPlayer.goods = { fabric: 2, spice: 2, fruit: 0, jewelry: 0 };
+    smallPlayer.lira = 0;
+    expect(sellAtMarket(smallGame, smallPlayer, 11, [0, 1, 2, 3])).toBe('Sold 4 goods for 14 Lira.');
+    expect(smallPlayer.lira).toBe(14);
   });
 
   it('maps every Black Market roll boundary and respects wheelbarrow capacity', () => {

@@ -473,7 +473,7 @@ Ada and Bora narrate every input from an empty private room through seven ordina
 **Verifications:**
 
 - [x] The Large Market slot is checked
-- [x] One good again displays the 2-Lira tier
+- [x] One good displays the distinct 3-Lira Large Market tier
 - [x] The local selection has not spent stock
 
 ## 42. Ada completes the Large Market sale
@@ -484,7 +484,7 @@ Ada and Bora narrate every input from an empty private room through seven ordina
 
 **Verifications:**
 
-- [x] The exact sale summary is visible
+- [x] The exact distinct Large Market sale summary is visible
 - [x] Large Demand rotates independently
 - [x] Large Market tile exposes the newly rotated five-good demand
 - [x] Bora observes the same public market state
