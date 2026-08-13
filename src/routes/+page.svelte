@@ -6,6 +6,7 @@
   import { onMount } from 'svelte';
   import { appTitle } from '$lib/app-metadata';
   import GameTable from '$lib/components/GameTable.svelte';
+  import BonusController from '$lib/components/BonusController.svelte';
   import SharedTableLobby from '$lib/components/SharedTableLobby.svelte';
   import { initializeFirebase } from '$lib/firebase';
   import { createEventRepository, type EventRepository } from '$lib/game/repository';
@@ -62,6 +63,7 @@
   const game = $derived(projection.game);
   const localSeat = $derived(room?.seats.find((seat) => seat.uid === userUid));
   const isHost = $derived(room?.hostUid === userUid);
+  const sharedTablePhone = $derived(Boolean(room?.mode === 'shared-table' && localSeat && game && !tabletopRoute));
   const allReady = $derived(Boolean(room && room.seats.length >= 2 && room.seats.every((seat) => seat.ready)));
   const inviteUrl = $derived(room ? makeInviteUrl(room.roomCode) : '');
   const stateSummary = $derived(JSON.stringify({
@@ -406,6 +408,29 @@
     }
   }
 
+  async function takePrivatePlaceAction(choice: PlaceActionChoice) {
+    if (!repository || !game || !localSeat || game.players[game.turnSeat].uid !== userUid) return;
+    const privateActionPlace = game.phase === 'family-action' && game.pending?.kind === 'family-action' ? game.pending.destination : game.players[game.turnSeat].merchantPlace;
+    const privateCaravansary = choice.kind === 'caravansary-trade' && (game.phase === 'action' || game.phase === 'family-action') && privateActionPlace === 6;
+    if (!privateCaravansary) return;
+    actionPending = true;
+    try {
+      await repository.append('place/action-taken', { choice: JSON.parse(JSON.stringify(choice)) as PlaceActionChoice });
+    } finally {
+      actionPending = false;
+    }
+  }
+
+  async function resolvePrivateGovernor(discardCardId: string) {
+    if (!repository || !game || game.players[game.turnSeat].uid !== userUid || game.phase !== 'encounters' || game.pending?.kind !== 'encounters' || game.pending.governor !== 'payment') return;
+    actionPending = true;
+    try {
+      await repository.append('encounter/resolved', { choice: { kind: 'governor-pay', payment: 'card', discardCardId } });
+    } finally {
+      actionPending = false;
+    }
+  }
+
   async function resolveEncounter(choice: EncounterChoice) {
     if (!repository) return;
     actionPending = true;
@@ -640,15 +665,22 @@
   {:else if screen === 'shared-display' && room}
     {#if game}
       <GameTable
-        {game} {room} userUid={room.tabletopOwned ? userUid : ''} selectedPlace={null} selectedBonus={null} {boardScale} displayOnly
-      onInspectPlace={() => {}} onInspectBonus={() => {}} onMove={() => {}} onPayMerchants={() => {}}
-        onTakeAction={() => {}} onResolveEncounter={() => {}} onUseMosqueAbility={() => {}} onPlayBonus={() => {}}
-        onGrantE2eResources={() => {}} onRematch={() => { if (room.tabletopOwned) void rematch(); }} onEndTurn={() => {}}
+        {game} {room} userUid={userUid} {selectedPlace} selectedBonus={null} {boardScale} tabletopControls
+        onInspectPlace={inspectPlace} onInspectBonus={() => {}} onMove={(destination, assistantAction) => void moveTo(destination, assistantAction)} onPayMerchants={() => void payMerchants()}
+        onTakeAction={(choice) => void takePlaceAction(choice)} onResolveEncounter={(choice) => void resolveEncounter(choice)} onUseMosqueAbility={(choice) => void useMosqueAbility(choice)} onPlayBonus={() => {}}
+        onGrantE2eResources={() => {}} onRematch={() => { if (room.tabletopOwned) void rematch(); }} onEndTurn={() => void endTurn()}
         onZoomIn={() => boardScale = 1} onFit={() => boardScale = 1} {e2eResourceReview}
       />
     {:else}<SharedTableLobby {room} invitationFor={() => makeInviteUrl(room.roomCode)} layoutNames={layoutNames} canConfigure={isHost && room.tabletopOwned} canStart={isHost && allReady} {actionPending} onConfigure={(layout) => void configureRoom(layout)} onStart={() => void startGame()} />{/if}
   {:else if screen === 'game' && room && game}
-    <GameTable
+    {#if sharedTablePhone}
+      <BonusController
+        {game} {userUid} {selectedBonus} onInspectBonus={inspectBonus}
+        onPlayBonus={(cardId, choice) => void playBonus(cardId, choice)}
+        onTakePrivateAction={(choice) => void takePrivatePlaceAction(choice)}
+        onResolvePrivateEncounter={(cardId) => void resolvePrivateGovernor(cardId)}
+      />
+    {:else}<GameTable
       {game}
       {room}
       {userUid}
@@ -669,7 +701,7 @@
       onZoomIn={() => boardScale = 1}
       onFit={() => boardScale = 1}
       {e2eResourceReview}
-    />
+    />{/if}
   {/if}
   {/if}
 

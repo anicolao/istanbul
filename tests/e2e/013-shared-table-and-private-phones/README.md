@@ -1,6 +1,6 @@
-# Walk up to an Istanbul tabletop and join by QR
+# Play Istanbul together on one tabletop with private Bonus phones
 
-The dedicated /tabletop route creates and owns an empty shared-table room. Ada and Bora walk up, scan its QR codes, join and ready on private phones, then the tabletop starts play. Unclaimed positions disappear when the bazaar replaces the lobby. Every action is followed by exact screenshots, DOM checks, and serialized replay-state assertions.
+The dedicated /tabletop route creates and owns an empty shared-table room. Ada and Bora scan its QR codes, join and ready on phones, then gather around the tabletop for every public choice. The phones render only each player’s private Bonus-card hand: Ada privately inspects and plays a card, while the tabletop immediately reflects its public consequence and remains the sole surface for movement and Place actions. Every input is followed by exact screenshots, DOM checks, fitted-interface checks, and serialized replay-state assertions.
 
 ## 1. The tabletop opens empty room TABLE
 
@@ -154,48 +154,119 @@ The dedicated /tabletop route creates and owns an empty shared-table room. Ada a
 
 **Verifications:**
 
-- [x] Ada sees sixteen Places and her private hand
+- [x] Ada sees only her private Bonus-card controller
+- [x] The phone contains no bazaar board, Place controls, public trays, or end-turn control
 - [x] Ada’s controller agrees with the tabletop at event six
 
-## 15. Ada inspects a route on her private phone
+## 15. Ada privately inspects her Bonus card
 
-**Ada’s private phone** — Ada inspects a route on her private phone
+**Ada’s private phone** — Ada privately inspects her Bonus card
 
-![Ada inspects a route on her private phone](./screenshots/005-ada-inspects-route-desktop.png)
-
-**Verifications:**
-
-- [x] The selected Place is pressed and its move action is enabled
-- [x] Inspection remains local at event six
-
-## 16. Ada commits movement from her private phone
-
-**Ada’s private phone** — Ada commits movement from her private phone
-
-![Ada commits movement from her private phone](./screenshots/006-ada-commits-move-desktop.png)
+![Ada privately inspects her Bonus card](./screenshots/005-ada-inspects-private-bonus-desktop.png)
 
 **Verifications:**
 
-- [x] Ada advances into a Place action
+- [x] Only Ada’s phone reveals the card title, artwork, rules, and enabled play control
+- [x] The tabletop still contains no private title or card face
+- [x] Private inspection is local and appends no event
 
-## 17. The tabletop mirrors Ada’s committed move
+## 16. Ada plays the private Bonus card from her phone
 
-**The dedicated tabletop** — The tabletop mirrors Ada’s committed move
+**Ada’s private phone** — Ada plays the private Bonus card from her phone
 
-![The tabletop mirrors Ada’s committed move](./screenshots/005-tabletop-mirrors-move-desktop.png)
+![Ada plays the private Bonus card from her phone](./screenshots/006-ada-plays-private-bonus-desktop.png)
 
 **Verifications:**
 
-- [x] The public table announces Ada’s arrival
-- [x] Public replay reaches event seven while hidden state remains masked
+- [x] The private hand is now empty and returns to its explanatory resting state
+- [x] Only the Bonus-card event is appended and Ada gains exactly 5 Lira
 
-## 18. The tabletop reloads its retained room
+## 17. The tabletop reflects the public consequence of Ada’s card
+
+**The dedicated tabletop** — The tabletop reflects the public consequence of Ada’s card
+
+![The tabletop reflects the public consequence of Ada’s card](./screenshots/005-tabletop-reflects-private-bonus-desktop.png)
+
+**Verifications:**
+
+- [x] Ada’s public player mat shows 7 Lira and zero Bonus cards without revealing the spent title
+- [x] The public log describes the effect while movement still belongs to the tabletop
+
+## 18. Ada selects Fruit Warehouse on the shared tabletop
+
+**The dedicated tabletop** — Ada selects Fruit Warehouse on the shared tabletop
+
+![Ada selects Fruit Warehouse on the shared tabletop](./screenshots/006-tabletop-inspects-public-route-desktop.png)
+
+**Verifications:**
+
+- [x] The tabletop presses the public Place and offers the normal assistant drop
+- [x] Route inspection stays local to the table and creates no event
+
+## 19. Ada commits movement on the shared tabletop
+
+**The dedicated tabletop** — Ada commits movement on the shared tabletop
+
+![Ada commits movement on the shared tabletop](./screenshots/007-tabletop-commits-public-move-desktop.png)
+
+**Verifications:**
+
+- [x] The tabletop opens the public Fruit Warehouse action
+- [x] The tabletop-authored event records Ada’s assistant drop and no diagnostic
+
+## 20. Ada’s phone remains private while the tabletop resolves Fruit Warehouse
+
+**Ada’s private phone** — Ada’s phone remains private while the tabletop resolves Fruit Warehouse
+
+![Ada’s phone remains private while the tabletop resolves Fruit Warehouse](./screenshots/007-ada-phone-awaits-public-action-desktop.png)
+
+**Verifications:**
+
+- [x] The phone reports the public phase but renders no Warehouse action
+- [x] Phone replay agrees with the tabletop at event eight
+
+## 21. Ada fills fruit from the shared tabletop
+
+**The dedicated tabletop** — Ada fills fruit from the shared tabletop
+
+![Ada fills fruit from the shared tabletop](./screenshots/008-tabletop-resolves-public-place-desktop.png)
+
+**Verifications:**
+
+- [x] The tabletop advances to the public end-turn decision
+- [x] Fruit and the immutable public action are exact at event nine
+
+## 22. Ada passes clockwise on the shared tabletop
+
+**The dedicated tabletop** — Ada passes clockwise on the shared tabletop
+
+![Ada passes clockwise on the shared tabletop](./screenshots/009-tabletop-passes-public-turn-desktop.png)
+
+**Verifications:**
+
+- [x] The shared turn banner now gives Bora the tabletop
+- [x] Bora begins event ten with no diagnostic
+
+## 23. Bora privately inspects his Bonus card before using the tabletop
+
+**Bora’s private phone** — Bora privately inspects his Bonus card before using the tabletop
+
+![Bora privately inspects his Bonus card before using the tabletop](./screenshots/004-bora-inspects-private-bonus-desktop.png)
+
+**Verifications:**
+
+- [x] Bora alone sees A swift passage and can enable its private movement effect
+- [x] Bora’s phone still has no board or public movement destination controls
+- [x] The tabletop does not reveal Bora’s title and private inspection adds no event
+
+## 24. The tabletop reloads its retained room
 
 **The dedicated tabletop** — The tabletop reloads its retained room
 
-![The tabletop reloads its retained room](./screenshots/006-tabletop-reloads-owned-room-desktop.png)
+![The tabletop reloads its retained room](./screenshots/010-tabletop-reloads-owned-room-desktop.png)
 
 **Verifications:**
 
 - [x] Reload preserves the tabletop URL and public bazaar instead of creating another room
-- [x] Table ownership and the seven-event cursor survive reload
+- [x] Table ownership and the ten-event cursor survive reload
+- [x] Reload restores working public controls without exposing private card identities

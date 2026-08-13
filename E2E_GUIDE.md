@@ -343,9 +343,12 @@ merchant seat. They verify:
   with the public game surface;
 - readiness belongs to phones while layout and start belong to the tabletop;
 - the table displays public state and no Bonus-card identities;
-- phones display only their owner's private cards and choices;
-- an action initiated on a phone is attributed to that seat and converges on
-  every screen;
+- phones display only their owner's private Bonus cards and card-dependent
+  Caravansary or Governor choices, never the board or public action controls;
+- movement, Place actions, encounters, Mosque powers, payments, turn completion,
+  and rematches are initiated on the tabletop and converge on every screen;
+- a Bonus action initiated on a phone is attributed to that seat and converges
+  on the tabletop without revealing the card identity there;
 - controls and labels remain understandable from the configured table edge;
 - reloading the table does not claim a player identity; and
 - reconnecting a phone restores its seat and private selector without exposing

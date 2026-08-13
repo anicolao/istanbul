@@ -33,8 +33,10 @@ that blocks them. The UI assists understanding but never recommends an
 
 - In ordinary network play, each player uses a phone, tablet, or desktop and
   sees the complete public bazaar plus their private Bonus-card hand.
-- In shared-table play, a large browser displays the public bazaar while phones
-  provide private hands and focused controls. QR codes make taking a seat fast.
+- In shared-table play, a large browser is the primary game controller: players
+  gather around it for movement and every public action. Phones provide only
+  private Bonus hands and choices that would reveal card identities. QR codes
+  make taking a seat fast.
 
 These modes project the same game state and append the same events. Shared-table
 mode is not a separate rules implementation.

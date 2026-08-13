@@ -86,4 +86,29 @@ describe('room replay', () => {
     expect(projection.acceptedEventIds).toHaveLength(6);
     expect(projection.diagnostics).toEqual([]);
   });
+
+  it('lets the dedicated tabletop author public turns while cards remain player-authored', () => {
+    const setup = [
+      event(1, 'table', 'game/created', { roomCode: 'TABLE', tabletopOwned: true, maxPlayers: 5, layout: 'short-path', mode: 'shared-table' }),
+      event(2, 'ada', 'player/joined', { name: 'Ada' }),
+      event(3, 'bora', 'player/joined', { name: 'Bora' }),
+      event(4, 'ada', 'player/ready', { ready: true }),
+      event(5, 'bora', 'player/ready', { ready: true }),
+      event(6, 'table', 'game/started', { seed: 'recovery-12' })
+    ];
+    const started = replayEvents(setup);
+    const player = started.game!.players[started.game!.turnSeat];
+    const other = started.game!.players[1 - started.game!.turnSeat];
+    const projection = replayEvents([
+      ...setup,
+      event(7, 'table', 'turn/moved', { destination: 4, assistantAction: 'drop' }),
+      event(8, other.uid, 'place/action-taken', { choice: { kind: 'warehouse-fill', good: 'fruit' } }),
+      event(9, 'table', 'place/action-taken', { choice: { kind: 'warehouse-fill', good: 'fruit' } }),
+      event(10, 'table', 'bonus/played', { cardId: player.bonusHand[0], choice: { kind: 'gain-lira' } })
+    ]);
+
+    expect(projection.game).toMatchObject({ phase: 'turn-end', players: [{ merchantPlace: 4, goods: { fruit: 2 } }, {}] });
+    expect(projection.acceptedEventIds).toHaveLength(8);
+    expect(projection.diagnostics.map(({ reason }) => reason)).toEqual(['invalid-place-action', 'invalid-bonus-play']);
+  });
 });
