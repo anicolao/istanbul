@@ -241,6 +241,22 @@ function applyEvent(state: ReplayProjection, event: CanonicalEvent): boolean {
     return true;
   }
 
+  if (event.type === 'e2e/yellow-recall-reviewed' && import.meta.env.VITE_USE_FIREBASE_EMULATORS === 'true') {
+    const game = state.game;
+    const player = game.players[game.turnSeat];
+    const yellowTile = game.mosqueStacks.fruit[0];
+    if (event.actorUid !== player.uid || game.phase !== 'movement' || !yellowTile || ownsMosqueAbility(player, 'fruit')) {
+      reject(state, event, 'invalid-e2e-yellow-recall');
+      return false;
+    }
+    game.mosqueStacks.fruit.shift();
+    player.mosqueTileIds.push(yellowTile);
+    player.lira = 6;
+    player.assistantsCarried = 3;
+    player.assistantsByPlace = { 14: 1 };
+    return true;
+  }
+
   if (event.type === 'turn/ended') {
     const game = state.game;
     const player = game.players[game.turnSeat];
