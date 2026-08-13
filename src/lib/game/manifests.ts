@@ -50,7 +50,7 @@ const bonusKinds: Array<[BonusCardManifest['effect'], number, string, string]> =
   ['repeat-post', 2, 'Another delivery', 'After the Post Office action, perform it once more and advance the indicators again.'],
   ['repeat-gemstone', 2, 'A second ruby offer', 'After the Gemstone Dealer action, perform it once more at its new price.'],
   ['return-family', 2, 'Family pardon', 'Return your family member to Police Station and take the usual catch reward.'],
-  ['stay', 2, 'Work where you stand', 'During movement, remain here and use an assistant at this Place.'],
+  ['stay', 2, 'Work where you stand', 'Instead of moving, remain here and pick up your assistant if present; otherwise leave one from your merchant stack.'],
   ['long-move', 4, 'A swift passage', 'During movement, travel three or four Places instead of one or two.'],
   ['wild-small-market', 2, 'Flexible demand', 'At the Small Market, sell the chosen number using any mixture of goods.'],
   ['return-assistant', 2, 'An assistant returns', 'During movement, return one assistant from the board to your merchant stack.']

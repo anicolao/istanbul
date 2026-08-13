@@ -162,8 +162,10 @@ At the destination, resolve exactly one assistant case:
 - If neither is possible—or the player declines—the turn ends immediately.
 
 Fountain 7 is the exception: its action does not require leaving or collecting
-an assistant. A “stay here” Bonus card replaces movement, but the player must
-still use an assistant at the current place in the normal way.
+an assistant. A “stay here” Bonus card replaces movement with a zero-distance
+move. At the current Place, pick up the player's assistant if one is already
+there; otherwise leave the bottom assistant from the merchant stack. The card
+cannot be used at Fountain or when neither assistant operation is possible.
 
 The yellow Mosque ability may be used once per turn: pay 2 Lira to return one
 of the player's assistants from any other Place to the merchant stack.
@@ -351,7 +353,8 @@ versioned 26-card manifest:
 5. after a Gemstone Dealer action, perform it once more at the new price;
 6. return the player's family member to the Police Station and take the usual
    catch reward; unavailable if already there;
-7. during movement, stay at the current Place and use an assistant there;
+7. during movement, stay at the current Place and perform the normal assistant
+   operation there—pick one up if present, otherwise leave one;
 8. during movement, move three or four Places instead of one or two;
 9. during movement, return one assistant to the merchant stack; and
 10. at the Small Market, sell the required number using any mixture of goods

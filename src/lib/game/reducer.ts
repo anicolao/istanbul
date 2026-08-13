@@ -257,6 +257,30 @@ function applyEvent(state: ReplayProjection, event: CanonicalEvent): boolean {
     return true;
   }
 
+  if (event.type === 'e2e/zero-move-reviewed' && import.meta.env.VITE_USE_FIREBASE_EMULATORS === 'true') {
+    const game = state.game;
+    const player = game.players[game.turnSeat];
+    if (event.actorUid !== player.uid || game.phase !== 'movement') {
+      reject(state, event, 'invalid-e2e-zero-move');
+      return false;
+    }
+    const stayCards = ['bonus-stay-1', 'bonus-stay-2'];
+    for (const reviewedPlayer of game.players) {
+      reviewedPlayer.bonusHand = reviewedPlayer.bonusHand.filter((card) => !stayCards.includes(card));
+    }
+    game.bonusDrawPile = game.bonusDrawPile.filter((card) => !stayCards.includes(card));
+    game.bonusDiscard = game.bonusDiscard.filter((card) => !stayCards.includes(card));
+    game.players[0].bonusHand.push(stayCards[0]);
+    game.players[0].merchantPlace = 4;
+    game.players[0].assistantsCarried = 3;
+    game.players[0].assistantsByPlace = { 4: 1 };
+    game.players[1].bonusHand.push(stayCards[1]);
+    game.players[1].merchantPlace = 2;
+    game.players[1].assistantsCarried = 4;
+    game.players[1].assistantsByPlace = {};
+    return true;
+  }
+
   if (event.type === 'turn/ended') {
     const game = state.game;
     const player = game.players[game.turnSeat];
@@ -431,10 +455,20 @@ export function applyBonus(state: ReplayProjection, event: CanonicalEvent): bool
     activateBonus(game, 'long-move');
     summary = 'Played a Bonus card to move exactly 3 or 4 Places.';
   } else if (effect === 'stay' && choice.kind === 'stay') {
-    if (game.phase !== 'movement' || player.merchantPlace === 7 || (player.assistantsByPlace[player.merchantPlace] ?? 0) < 1) return rejectBonus(state, event, 'bonus-stay-unavailable');
-    game.lastMovement = { playerUid: player.uid, from: player.merchantPlace, to: player.merchantPlace, distance: 0, assistantAction: 'stay', paymentTotal: 0, paymentBlocked: false };
+    const assistantAction = requiredAssistantAction(player, player.merchantPlace);
+    if (game.phase !== 'movement' || player.merchantPlace === 7 || !assistantAction || assistantAction === 'fountain') return rejectBonus(state, event, 'bonus-stay-unavailable');
+    if (assistantAction === 'pick-up') {
+      player.assistantsCarried += 1;
+      const remaining = (player.assistantsByPlace[player.merchantPlace] ?? 0) - 1;
+      if (remaining === 0) delete player.assistantsByPlace[player.merchantPlace];
+      else player.assistantsByPlace[player.merchantPlace] = remaining;
+    } else {
+      player.assistantsCarried -= 1;
+      player.assistantsByPlace[player.merchantPlace] = (player.assistantsByPlace[player.merchantPlace] ?? 0) + 1;
+    }
+    game.lastMovement = { playerUid: player.uid, from: player.merchantPlace, to: player.merchantPlace, distance: 0, assistantAction, paymentTotal: 0, paymentBlocked: false };
     game.phase = 'action';
-    summary = `Stayed at Place ${player.merchantPlace} and used the assistant already there.`;
+    summary = `Stayed at Place ${player.merchantPlace} and ${assistantAction === 'pick-up' ? 'picked up' : 'left'} 1 assistant.`;
   } else if (effect === 'wild-small-market' && choice.kind === 'wild-small-market') {
     if (game.phase !== 'action' || player.merchantPlace !== 11 || game.activeBonusEffects.includes('wild-small-market')) return rejectBonus(state, event, 'bonus-market-unavailable');
     activateBonus(game, 'wild-small-market');
