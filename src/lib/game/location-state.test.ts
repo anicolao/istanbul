@@ -27,7 +27,7 @@ describe('location state summaries', () => {
     game.players[game.turnSeat].familyPlace = 8;
     game.rubyTracks.gemstonePrice = 19;
 
-    expect(locationStateSummary(game, 5)).toContain('1 fabric, 1 fabric, 1 jewelry, 1 Lira');
+    expect(locationStateSummary(game, 5)).toContain('1 spice, 2 Lira, 1 fruit, 2 Lira');
     expect(locationStateSummary(game, 6)).toMatch(/\d+ Bonus cards in draw pile; 1 in discard, topped by/);
     expect(locationStateSummary(game, 7)).toContain('recall 2 assistants');
     expect(locationStateSummary(game, 10)).toMatch(/Current Large Market demand: .+, .+, .+, .+, .+/);

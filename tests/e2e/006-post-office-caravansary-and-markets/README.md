@@ -157,9 +157,9 @@ Ada and Bora narrate every input from an empty private room through seven ordina
 
 **Verifications:**
 
-- [x] The completion copy lists spice, fabric, fruit, and 1 Lira
-- [x] The leftmost indicator alone moves lower
-- [x] The Post Office tile immediately exposes its next four resources
+- [x] The completion copy lists cloth, 2 Lira, jewelry, and 2 Lira from the top row
+- [x] The top row pays fabric, two Lira, jewelry, and two Lira
+- [x] The leftmost indicator drops to expose spice while the other columns stay on their top rewards
 - [x] The action cannot be collected twice
 
 ## 15. Ada passes the completed mail turn clockwise
@@ -278,7 +278,7 @@ Ada and Bora narrate every input from an empty private room through seven ordina
 **Verifications:**
 
 - [x] The two-crate track is full
-- [x] The warehouse closes in turn-end
+- [x] The warehouse closes in turn-end without inventing Post Office goods
 
 ## 25. Ada passes the filled warehouse turn
 
@@ -289,7 +289,7 @@ Ada and Bora narrate every input from an empty private room through seven ordina
 **Verifications:**
 
 - [x] Bora starts turn four
-- [x] Ada’s market stock remains public
+- [x] Ada’s corrected market stock remains public
 
 ## 26. Bora routes two spaces north to Post Office
 
@@ -322,8 +322,8 @@ Ada and Bora narrate every input from an empty private room through seven ordina
 
 **Verifications:**
 
-- [x] The completion copy names two fabric, one fruit, and 1 Lira
-- [x] The first two indicators are now lower
+- [x] The completion copy names spice, 2 Lira, jewelry, and 2 Lira
+- [x] The second mail combination pays spice, two Lira, jewelry, and two Lira before its indicator drops
 
 ## 29. Bora passes after the second mail collection
 
@@ -334,7 +334,7 @@ Ada and Bora narrate every input from an empty private room through seven ordina
 **Verifications:**
 
 - [x] Ada starts turn five
-- [x] Both merchants retain their distinct goods
+- [x] Both merchants retain their corrected, distinct Post Office goods
 
 ## 30. Ada selects Small Market two spaces south
 
@@ -360,11 +360,11 @@ Ada and Bora narrate every input from an empty private room through seven ordina
 - [x] No selection means the sale is disabled
 - [x] The active Demand is still on top
 
-## 32. Ada selects one depicted fabric for the Small Market
+## 32. Ada selects one depicted jewelry for the Small Market
 
-**Ada, the first merchant** — Ada selects one depicted fabric for the Small Market
+**Ada, the first merchant** — Ada selects one depicted jewelry for the Small Market
 
-![Ada selects one depicted fabric for the Small Market](./screenshots/017-host-chooses-small-sale-desktop.png)
+![Ada selects one depicted jewelry for the Small Market](./screenshots/017-host-chooses-small-sale-desktop.png)
 
 **Verifications:**
 
