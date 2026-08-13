@@ -13,8 +13,9 @@ Every client can reload and reconstruct the same game from immutable history.
 
 The MVP includes ordinary phone/tablet/desktop play and a dedicated `/tabletop/`
 route. The tabletop creates and owns an empty room, displays QR invitations,
-owns layout and start, and never consumes a merchant seat. Scanned phones hold
-player identities, readiness, private choices, and private Bonus cards. It
+owns layout, start, and all public gameplay, and never consumes a merchant seat.
+Scanned phones hold player identities, readiness, private Bonus cards, and only
+the card-dependent Caravansary or Governor choices that cannot be public. It
 excludes both expansions and the optional neutral-assistant variant.
 
 ## Fixed technical decisions
@@ -275,7 +276,9 @@ least one representative browser path.
 - Add direct table-owned room creation, a join QR at every open tabletop
   position, private phone controllers, and reconnect ownership. Joined
   merchants replace invitations in the lobby; the tabletop alone starts play,
-  removes all open positions, and presents only the public game.
+  removes all open positions, presents the public game, and owns every public
+  gameplay control. Phones reduce to Bonus-card hands and card-dependent private
+  choices once play begins.
 - Finish keyboard board navigation, focus transfer, live announcements, touch
   targets, safe areas, contrast, non-color labels, and reduced motion.
 - Complete scenarios 013 and 014 across phone portrait, phone landscape,

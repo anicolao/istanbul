@@ -25,7 +25,7 @@
 
 <section class="table-lobby" aria-labelledby="shared-table-title">
   <header>
-    <div><p>Dedicated tabletop · room {room.roomCode}</p><h1 id="shared-table-title">Scan. Join. Ready.</h1><span class="table-instruction">Join and ready on private phones. The tabletop opens the bazaar when everyone is here.</span></div>
+    <div><p>Dedicated tabletop · room {room.roomCode}</p><h1 id="shared-table-title">Scan. Join. Ready.</h1><span class="table-instruction">Join and ready on private phones. Once play begins, gather here for every public action.</span></div>
     <div class="room-code"><span>Join code</span><strong>{room.roomCode}</strong></div>
   </header>
   <section class="table-controls" aria-label="Tabletop game controls">
@@ -51,7 +51,7 @@
       </article>
     {/each}
   </div>
-  <footer><strong>{room.seats.filter(({ ready }) => ready).length}/{room.seats.length} ready · {room.maxPlayers - room.seats.length} invitations open</strong><span>Bonus cards and choices remain on each player’s phone.</span></footer>
+  <footer><strong>{room.seats.filter(({ ready }) => ready).length}/{room.seats.length} ready · {room.maxPlayers - room.seats.length} invitations open</strong><span>Phones show private Bonus cards; the tabletop controls the game.</span></footer>
 </section>
 
 <style>

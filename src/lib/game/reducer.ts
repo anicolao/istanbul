@@ -44,6 +44,14 @@ function reject(state: ReplayProjection, event: CanonicalEvent, reason: string) 
   state.diagnostics.push({ eventId: event.id, reason });
 }
 
+function controlsPublicTable(state: ReplayProjection, event: CanonicalEvent, playerUid: string): boolean {
+  return event.actorUid === playerUid || Boolean(
+    state.room?.mode === 'shared-table'
+    && state.room.tabletopOwned
+    && event.actorUid === state.room.hostUid
+  );
+}
+
 export function replayEvents(events: unknown[]): ReplayProjection {
   const state = emptyProjection();
   const seen = new Set<string>();
@@ -285,13 +293,13 @@ function applyEvent(state: ReplayProjection, event: CanonicalEvent): boolean {
     const game = state.game;
     const player = game.players[game.turnSeat];
     if (game.phase === 'final-bonus') {
-      if (event.actorUid !== player.uid || !finishFinalBonusSeat(game)) {
+      if (!controlsPublicTable(state, event, player.uid) || !finishFinalBonusSeat(game)) {
         reject(state, event, 'final-bonus-cannot-end');
         return false;
       }
       return true;
     }
-    if (!['action', 'family-action', 'turn-end'].includes(game.phase) || event.actorUid !== player.uid) {
+    if (!['action', 'family-action', 'turn-end'].includes(game.phase) || !controlsPublicTable(state, event, player.uid)) {
       reject(state, event, 'turn-cannot-end');
       return false;
     }
@@ -310,7 +318,7 @@ function applyPlaceAction(state: ReplayProjection, event: CanonicalEvent): boole
   const choice = event.payload.choice;
   const familyPending = game.phase === 'family-action' && game.pending?.kind === 'family-action' ? game.pending : null;
   const familyAction = familyPending !== null;
-  if ((game.phase !== 'action' && !familyAction) || event.actorUid !== player.uid || !isPlaceActionChoice(choice)) {
+  if ((game.phase !== 'action' && !familyAction) || !controlsPublicTable(state, event, player.uid) || !isPlaceActionChoice(choice)) {
     reject(state, event, 'invalid-place-action');
     return false;
   }
@@ -505,7 +513,7 @@ function applyMosqueAbility(state: ReplayProjection, event: CanonicalEvent): boo
   const game = state.game!;
   const player = game.players[game.turnSeat];
   const choice = event.payload.choice;
-  if (event.actorUid !== player.uid || !isMosqueAbilityChoice(choice)) {
+  if (!controlsPublicTable(state, event, player.uid) || !isMosqueAbilityChoice(choice)) {
     reject(state, event, 'invalid-mosque-ability');
     return false;
   }
@@ -568,7 +576,7 @@ function applyEncounter(state: ReplayProjection, event: CanonicalEvent): boolean
   const player = game.players[game.turnSeat];
   const pending = game.pending;
   const choice = event.payload.choice;
-  if (game.phase !== 'encounters' || event.actorUid !== player.uid || pending?.kind !== 'encounters' || !isEncounterChoice(choice)) {
+  if (game.phase !== 'encounters' || !controlsPublicTable(state, event, player.uid) || pending?.kind !== 'encounters' || !isEncounterChoice(choice)) {
     reject(state, event, 'invalid-encounter');
     return false;
   }
@@ -665,7 +673,7 @@ function applyMovement(state: ReplayProjection, event: CanonicalEvent): boolean 
   const destination = event.payload.destination;
   const assistantAction = event.payload.assistantAction;
   if (
-    game.phase !== 'movement' || event.actorUid !== player.uid ||
+    game.phase !== 'movement' || !controlsPublicTable(state, event, player.uid) ||
     typeof destination !== 'number' || !Number.isInteger(destination) ||
     !isAssistantAction(assistantAction)
   ) {
@@ -722,7 +730,7 @@ function applyMerchantPayment(state: ReplayProjection, event: CanonicalEvent): b
   const recipientUids = stringArray(event.payload.recipientUids);
   const neutralMerchantIds = stringArray(event.payload.neutralMerchantIds);
   if (
-    game.phase !== 'merchant-payment' || event.actorUid !== player.uid || pending?.kind !== 'merchant-payment' ||
+    game.phase !== 'merchant-payment' || !controlsPublicTable(state, event, player.uid) || pending?.kind !== 'merchant-payment' ||
     !recipientUids || !neutralMerchantIds ||
     recipientUids.join('|') !== pending.recipientUids.join('|') ||
     neutralMerchantIds.join('|') !== pending.neutralMerchantIds.join('|') ||

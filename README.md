@@ -31,8 +31,9 @@ browser-level tracer bullets verified with Playwright.
 - Correct two-player neutral merchants and six-ruby target.
 - Reconnect and replay from a complete immutable event history.
 - Ordinary network play on phone, tablet, and desktop.
-- A dedicated `/tabletop/` route that creates and owns the public room on a
-  large display while private phones hold player identities and Bonus cards.
+- A dedicated `/tabletop/` route that creates and owns the room, renders every
+  public game control on the shared display, and leaves only private Bonus-card
+  information and decisions on each player's phone.
 - Keyboard, pointer, touch, reduced-motion, and screen-reader-friendly play.
 
 The Mocha & Baksheesh and Letters & Seals expansions, optional neutral-assistant
@@ -72,9 +73,12 @@ ranking, rematches, and reconnect recovery. Personal-screen games run from two
 to five browsers. Opening `/tabletop/` creates a fresh table-owned room without
 claiming a merchant seat. Every open position shows a real QR leading only to a
 private phone controller; merchants scan, join, and mark themselves ready. The
-dedicated tabletop owns layout and start controls, starts with everyone present,
-and replaces every claimed and unclaimed lobby position with the privacy-safe
-public bazaar. Reloading its retained URL reopens the same room. The MVP is
+dedicated tabletop owns layout, start, movement, Place actions, encounters,
+Mosque powers, payments, turn completion, and rematches. It starts with everyone
+present and replaces every claimed and unclaimed lobby position with the
+privacy-safe public bazaar. Phones become compact private Bonus-card controllers;
+Caravansary card selection and Governor card payment stay there because they
+depend on hand identities. Reloading its retained URL reopens the same room. The MVP is
 complete: its final slice adds roving keyboard
 navigation and focus transfer, live turn announcements, 44 px touch actions,
 safe-area insets, reduced-motion behaviour, labelled non-colour cues, and
@@ -85,7 +89,8 @@ screenshot-by-screenshot play-by-play. Its README names the acting user, shows
 the exact UI after every action, and lists the DOM and serialized projection
 facts checked before that image was accepted. For example, scenario 013 starts
 at the direct tabletop URL, follows Ada and Bora scanning its QR codes on
-private phones, and returns to the public table for start, a move, and reload
+private phones, plays Ada's private Bonus card on her phone, then performs the
+movement, Warehouse action, and clockwise handoff on the tabletop before reload,
 without omitting an interaction.
 
 The local verification entry point is:
