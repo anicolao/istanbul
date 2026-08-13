@@ -120,8 +120,9 @@ materialized state.
    two-player game.
 5. Put three wheelbarrow extensions and one ruby per player at Wainwright 1.
 6. Populate the Sultan's Palace 13 and Gemstone Dealer 16 ruby tracks from the
-   printed starting space for the player count. Empty spaces expose the current
-   increasing cost.
+   printed starting space for the player count. At Sultan's Palace, cover seven
+   cost spaces for two players, six for three players, and four for four or five
+   players. Empty spaces expose the current increasing cost.
 7. Put all four Mail indicators in the upper Post Office row.
 8. Shuffle the five dark Demand tiles into a face-up stack at Large Market 10
    and the five light tiles into a face-up stack at Small Market 11. The top

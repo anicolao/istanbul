@@ -1,6 +1,6 @@
 # Buying escalating rubies and playing Bonus cards at exact moments
 
-Ada opens a two-player table with the reviewed 15-Lira Dealer and six-good Palace starts. A visible emulator-only review control supplies resources through the same immutable event stream. Ada plays a long-move card, pays the neutral merchant, buys and immediately repeats the Gemstone Dealer at the increased price, then reaches the Sultan, chooses the wild good, buys and repeats at the newly exposed seven-good cost. Along the route she plays direct Lira and good cards, reloads private state, and Bora performs every intervening turn through ordinary controls.
+Ada opens a two-player table with the reviewed 15-Lira Dealer and seven-good Palace start. A visible emulator-only review control supplies resources through the same immutable event stream. Ada plays a long-move card, pays the neutral merchant, buys and immediately repeats the Gemstone Dealer at the increased price, then reaches the Sultan, chooses the wild good, buys and repeats at the newly exposed eight-good cost. Along the route she plays direct Lira and good cards, reloads private state, and Bora performs every intervening turn through ordinary controls.
 
 ## 1. Ada opens the private-table creator
 
@@ -319,31 +319,31 @@ Ada opens a two-player table with the reviewed 15-Lira Dealer and six-good Palac
 
 **Verifications:**
 
-- [x] The two-player track demands six goods
+- [x] The two-player track demands seven goods
 - [x] The exposed Palace index remains exact
 
-## 30. Ada assigns spice to the first Palace wild cost
+## 30. Ada assigns fruit to the first Palace wild cost
 
-**Ada, the first merchant** — Ada assigns spice to the first Palace wild cost
+**Ada, the first merchant** — Ada assigns fruit to the first Palace wild cost
 
-![Ada assigns spice to the first Palace wild cost](./screenshots/022-host-chooses-first-palace-wild-desktop.png)
+![Ada assigns fruit to the first Palace wild cost](./screenshots/022-host-chooses-first-palace-wild-desktop.png)
 
 **Verifications:**
 
-- [x] The visible wild selector reads Spice
-- [x] Six-goods delivery is now enabled without an event
+- [x] The visible wild selector reads Fruit
+- [x] Seven-goods delivery is now enabled without an event
 
-## 31. Ada delivers six goods for the Palace ruby
+## 31. Ada delivers seven goods for the Palace ruby
 
-**Ada, the first merchant** — Ada delivers six goods for the Palace ruby
+**Ada, the first merchant** — Ada delivers seven goods for the Palace ruby
 
-![Ada delivers six goods for the Palace ruby](./screenshots/023-host-buys-first-palace-ruby-desktop.png)
+![Ada delivers seven goods for the Palace ruby](./screenshots/023-host-buys-first-palace-ruby-desktop.png)
 
 **Verifications:**
 
 - [x] The first delivery conserves the extended goods
-- [x] Palace tile advances to the seven-good cost and three rubies
-- [x] The completion panel reports the exact six-good delivery
+- [x] Palace tile advances to the eight-good cost and two rubies
+- [x] The completion panel reports the exact seven-good delivery
 
 ## 32. Ada inspects A useful connection for jewelry
 
@@ -378,73 +378,106 @@ Ada opens a two-player table with the reviewed 15-Lira Dealer and six-good Palac
 - [x] The second private good card opens independently
 - [x] Opening another private card writes no event
 
-## 35. Ada chooses spice on the next useful connection
+## 35. Ada chooses fabric on the next useful connection
 
-**Ada, the first merchant** — Ada chooses spice on the next useful connection
+**Ada, the first merchant** — Ada chooses fabric on the next useful connection
 
-![Ada chooses spice on the next useful connection](./screenshots/027-host-chooses-spice-bonus-desktop.png)
+![Ada chooses fabric on the next useful connection](./screenshots/027-host-chooses-spice-bonus-desktop.png)
 
 **Verifications:**
 
-- [x] The private selector visibly reads Spice
+- [x] The private selector visibly reads Fabric
 - [x] Changing a private card choice writes no event
 
-## 36. Ada plays a useful connection for spice
+## 36. Ada plays a useful connection for fabric
 
-**Ada, the first merchant** — Ada plays a useful connection for spice
+**Ada, the first merchant** — Ada plays a useful connection for fabric
 
-![Ada plays a useful connection for spice](./screenshots/028-host-plays-gain-spice-desktop.png)
+![Ada plays a useful connection for fabric](./screenshots/028-host-plays-gain-spice-desktop.png)
 
 **Verifications:**
 
-- [x] Spice and jewelry are both restored to two
+- [x] Fabric and jewelry are both restored to two
 - [x] The action remains in the repeat timing window
 
-## 37. Ada inspects The Sultan grants another audience
+## 37. Ada inspects a third useful connection
+
+**Ada, the first merchant** — Ada inspects a third useful connection
+
+![Ada inspects a third useful connection](./screenshots/029-host-inspects-gain-fruit-desktop.png)
+
+**Verifications:**
+
+- [x] The third private good card opens at the prior Fabric selection
+- [x] Opening the card writes no event
+
+## 38. Ada chooses fruit on the third useful connection
+
+**Ada, the first merchant** — Ada chooses fruit on the third useful connection
+
+![Ada chooses fruit on the third useful connection](./screenshots/030-host-chooses-fruit-bonus-desktop.png)
+
+**Verifications:**
+
+- [x] The private selector visibly reads Fruit
+- [x] Changing the selection writes no event
+
+## 39. Ada plays the third useful connection for fruit
+
+**Ada, the first merchant** — Ada plays the third useful connection for fruit
+
+![Ada plays the third useful connection for fruit](./screenshots/031-host-plays-gain-fruit-desktop.png)
+
+**Verifications:**
+
+- [x] Eight goods now cover the newly exposed Palace cost
+- [x] The repeat timing window remains open
+
+## 40. Ada inspects The Sultan grants another audience
 
 **Ada, the first merchant** — Ada inspects The Sultan grants another audience
 
-![Ada inspects The Sultan grants another audience](./screenshots/029-host-inspects-repeat-palace-desktop.png)
+![Ada inspects The Sultan grants another audience](./screenshots/032-host-inspects-repeat-palace-desktop.png)
 
 **Verifications:**
 
-- [x] The repeat names the newly exposed seven-good cost
+- [x] The repeat names the newly exposed eight-good cost
 - [x] The replenished post-purchase goods are exact
 
-## 38. Ada repeats Sultan’s Palace at seven goods
+## 41. Ada repeats Sultan’s Palace at eight goods
 
-**Ada, the first merchant** — Ada repeats Sultan’s Palace at seven goods
+**Ada, the first merchant** — Ada repeats Sultan’s Palace at eight goods
 
-![Ada repeats Sultan’s Palace at seven goods](./screenshots/030-host-repeats-palace-at-new-cost-desktop.png)
+![Ada repeats Sultan’s Palace at eight goods](./screenshots/033-host-repeats-palace-at-new-cost-desktop.png)
 
 **Verifications:**
 
-- [x] A fourth ruby and the eight-good next cost are public
+- [x] A fourth ruby and the nine-good next cost are public
 - [x] The completion copy records both Palace deliveries
 
-## 39. Ada reloads the completed repeat decision
+## 42. Ada reloads the completed repeat decision
 
 **Ada, the first merchant** — Ada reloads the completed repeat decision
 
-![Ada reloads the completed repeat decision](./screenshots/031-host-reloads-completed-repeat-desktop.png)
+![Ada reloads the completed repeat decision](./screenshots/034-host-reloads-completed-repeat-desktop.png)
 
 **Verifications:**
 
 - [x] The spent private repeat card stays discarded
-- [x] Replay restores event twenty-one byte-for-byte
+- [x] Replay restores event twenty-two byte-for-byte
 
-## 40. Ada passes after the reviewed Palace shortfall
+## 43. Ada passes after the reviewed Palace shortfall
 
 **Ada, the first merchant** — Ada passes after the reviewed Palace shortfall
 
-![Ada passes after the reviewed Palace shortfall](./screenshots/032-host-ends-palace-turn-desktop.png)
+![Ada passes after the reviewed Palace shortfall](./screenshots/035-host-ends-palace-turn-desktop.png)
 
 **Verifications:**
 
 - [x] Bora begins turn four
 - [x] All four earned rubies remain public
 
-## 41. Bora selects Fountain
+## 44. Bora selects Fountain
 
 **Bora, the second merchant** — Bora selects Fountain
 
@@ -455,7 +488,7 @@ Ada opens a two-player table with the reviewed 15-Lira Dealer and six-good Palac
 - [x] Fountain is selected without changing history
 - [x] The required assistant operation is visible
 
-## 42. Bora arrives at Fountain
+## 45. Bora arrives at Fountain
 
 **Bora, the second merchant** — Bora arrives at Fountain
 
@@ -466,7 +499,7 @@ Ada opens a two-player table with the reviewed 15-Lira Dealer and six-good Palac
 - [x] Bora reaches the action phase exactly once
 - [x] A Place action may be skipped explicitly
 
-## 43. Bora skips Fountain and passes
+## 46. Bora skips Fountain and passes
 
 **Bora, the second merchant** — Bora skips Fountain and passes
 
