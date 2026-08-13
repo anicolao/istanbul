@@ -294,13 +294,13 @@
             >
               <GameArt kind="location" place={place.id} class="place-art" />
               <span class="place-shade"></span>
-              {#if [5, 6, 7, 8, 10, 11, 13, 14, 15, 16].includes(place.id)}<LocationState {game} placeId={place.id} />{/if}
+              {#if [5, 6, 7, 8, 10, 11, 12, 13, 14, 15, 16].includes(place.id)}<LocationState {game} placeId={place.id} />{/if}
               <span class="place-number">{place.id}</span>
               <strong>{place.shortName}</strong>
               <span class="occupants" aria-hidden="true">
                 {#each here as merchant}<GameArt kind="piece" piece="merchant" color={merchant.color as PlayerColorName} class="merchant" label={`${merchant.name}'s merchant`} />{/each}
                 {#each assistants(placeId) as assistant}<GameArt kind="piece" piece="assistant" color={assistant.color as PlayerColorName} class="assistant" label={`${assistant.name}'s assistant`} />{/each}
-                {#each families(placeId) as family}<GameArt kind="piece" piece="family" color={family.color as PlayerColorName} class="family-member" label={`${family.name}'s family member`} />{/each}
+                {#each placeId === 12 ? [] : families(placeId) as family}<GameArt kind="piece" piece="family" color={family.color as PlayerColorName} class="family-member" label={`${family.name}'s family member`} />{/each}
                 {#each game.neutralMerchants.filter(({ place: neutralPlace }) => neutralPlace === placeId), index}<GameArt kind="piece" piece="neutral-merchant" class="merchant neutral" label={`Neutral merchant ${index + 1}`} />{/each}
               </span>
               {#if placeId === game.governorPlace}<GameArt kind="piece" piece="governor" class="encounter governor-piece" label="Governor" />{/if}

@@ -55,9 +55,13 @@ export function locationStateSummary(game: GameSetup, placeId: number): string {
   }
   if (placeId === 10) return `Current Large Market demand: ${demandSummary(game, 10)}`;
   if (placeId === 11) return `Current Small Market demand: ${demandSummary(game, 11)}`;
-  if (placeId === 12) return active.familyPlace === 12
-    ? `${active.name}'s family is ready for dispatch`
-    : `${active.name}'s family is at Place ${active.familyPlace}`;
+  if (placeId === 12) {
+    const ready = game.players.filter(({ familyPlace }) => familyPlace === 12);
+    const roster = ready.length ? ready.map(({ name }) => name).join(', ') : 'none';
+    return `${ready.length} family member${ready.length === 1 ? '' : 's'} at Police Station: ${roster}; ${active.familyPlace === 12
+      ? `${active.name}'s family is ready for dispatch`
+      : `${active.name}'s family is at Place ${active.familyPlace}`}`;
+  }
   if (placeId === 13) return `Next ruby costs ${currentSultanCost(game).map((good) => goodNames[good]).join(', ')}`;
   if (placeId === 14) return mosqueSummary(game, 14);
   if (placeId === 15) return mosqueSummary(game, 15);

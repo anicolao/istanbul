@@ -31,7 +31,7 @@ describe('location state summaries', () => {
     expect(locationStateSummary(game, 6)).toMatch(/\d+ Bonus cards in draw pile; 1 in discard, topped by/);
     expect(locationStateSummary(game, 7)).toContain('recall 2 assistants');
     expect(locationStateSummary(game, 10)).toMatch(/Current Large Market demand: .+, .+, .+, .+, .+/);
-    expect(locationStateSummary(game, 12)).toContain('Place 8');
+    expect(locationStateSummary(game, 12)).toBe("1 family member at Police Station: Ada; Bora's family is at Place 8");
     expect(locationStateSummary(game, 14)).toMatch(/required, pay 1; .*required, pay 1$/);
     expect(locationStateSummary(game, 16)).toContain('19 Lira');
   });

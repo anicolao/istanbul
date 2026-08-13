@@ -122,6 +122,7 @@ Ada sends her family member from Police Station to fill the Fabric Warehouse. Bo
 
 - [x] Police Station is selected as a one-space route
 - [x] Ada is offered the ordinary assistant drop
+- [x] Both available families occupy the lower Police corral, outside the visiting-piece row
 - [x] The route selection changes no family position
 
 ## 12. Ada arrives at Police Station
@@ -134,6 +135,7 @@ Ada sends her family member from Police Station to fill the Fabric Warehouse. Bo
 
 - [x] The family destination control is visible
 - [x] The default dispatch truthfully names Wainwright
+- [x] The center now distinguishes Ada’s visiting merchant and assistant from both lower-corral families
 - [x] Movement enters action without moving the family
 
 ## 13. Ada chooses Fabric Warehouse for her family member
@@ -157,6 +159,7 @@ Ada sends her family member from Police Station to fill the Fabric Warehouse. Bo
 **Verifications:**
 
 - [x] The remote Warehouse action opens in place of Police
+- [x] Ada leaves the Police corral while Bora remains available there
 - [x] Ada’s family marker leaves Police for Place 2
 - [x] No merchant toll or encounter interrupts family travel
 
@@ -252,6 +255,7 @@ Ada sends her family member from Police Station to fill the Fabric Warehouse. Bo
 **Verifications:**
 
 - [x] The mandatory family panel is gone
+- [x] Ada’s returned family rejoins Bora in the lower Police corral
 - [x] Ada’s family returns to Police and Bora’s hand grows
 - [x] Governor remains independently optional
 
