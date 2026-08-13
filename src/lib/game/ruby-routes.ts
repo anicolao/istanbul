@@ -7,7 +7,7 @@ export const sultanCostSequence: Array<Good | 'any'> = [
 ];
 
 export function createRubyTracks(playerCount: number): GameSetup['rubyTracks'] {
-  const sultanIndex = playerCount === 2 ? 6 : playerCount === 3 ? 4 : 4;
+  const sultanIndex = playerCount <= 3 ? 5 : 4;
   const gemstonePrice = playerCount <= 3 ? 15 : 12;
   return {
     sultanIndex,

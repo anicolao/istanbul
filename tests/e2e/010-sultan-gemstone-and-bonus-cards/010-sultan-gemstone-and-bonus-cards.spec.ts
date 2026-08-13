@@ -15,7 +15,7 @@ test('ruby routes escalate and Bonus cards resolve at reviewed timing windows', 
   const bora = new TestStepHelper(boraPage, testInfo, journal, 'Bora, the second merchant');
   ada.setMetadata(
     'Buying escalating rubies and playing Bonus cards at exact moments',
-    'Ada opens a two-player table with the reviewed 15-Lira Dealer and six-good Palace start. A visible emulator-only review control supplies resources through the same immutable event stream. Ada plays a long-move card, pays the neutral merchant, buys and immediately repeats the Gemstone Dealer at the increased price, then reaches the Sultan, chooses the wild good, buys and repeats at the newly exposed seven-good cost. Along the route she plays direct Lira and good cards, reloads private state, and Bora performs every intervening turn through ordinary controls.'
+    'Ada opens a two-player table with the reviewed 15-Lira Dealer and five-good Palace start. A visible emulator-only review control supplies resources through the same immutable event stream. Ada plays a long-move card, pays the neutral merchant, buys and immediately repeats the Gemstone Dealer at the increased price, then reaches the Sultan, chooses the wild good, buys and repeats at the newly exposed six-good cost. Along the route she plays direct Lira and good cards, reloads private state, and Bora performs every intervening turn through ordinary controls.'
   );
 
   async function boraTurn(destination: 7 | 12, events: [number, number], nextTurn: number, slug: string) {
@@ -56,7 +56,7 @@ test('ruby routes escalate and Bonus cards resolve at reviewed timing windows', 
 
     await page.getByRole('button', { name: 'Review ruby routes with supplied resources' }).click();
     await ada.step('host-supplies-reviewed-resources', { description: 'Ada supplies reviewed ruby-route resources', verifications: [
-      { spec: 'The resource rail shows 35 Lira, capacity three, and three of each good', check: async () => expectState(page, { eventCount: 6, diagnosticCount: 0, game: { players: [{ lira: 35, capacity: 3, extensions: 1, goods: { fabric: 3, spice: 3, fruit: 3, jewelry: 3 } }, {}], rubyTracks: { gemstonePrice: 15, gemstoneRubies: 10, sultanIndex: 6, sultanRubies: 4 } } }) },
+      { spec: 'The resource rail shows 35 Lira, capacity three, and three of each good', check: async () => expectState(page, { eventCount: 6, diagnosticCount: 0, game: { players: [{ lira: 35, capacity: 3, extensions: 1, goods: { fabric: 3, spice: 3, fruit: 3, jewelry: 3 } }, {}], rubyTracks: { gemstonePrice: 15, gemstoneRubies: 10, sultanIndex: 5, sultanRubies: 5 } } }) },
       { spec: 'All supplied cards are real reviewed manifest instances', check: async () => expect(page.getByLabel('Ada resources').getByText('Private hand')).toBeVisible() }
     ] });
 
@@ -108,19 +108,19 @@ test('ruby routes escalate and Bonus cards resolve at reviewed timing windows', 
     ] });
     await page.getByRole('button', { name: 'Move here and leave an assistant' }).click();
     await ada.step('host-arrives-palace', { description: 'Ada arrives at Sultan’s Palace', verifications: [
-      { spec: 'The two-player track demands six goods', check: async () => { await expect(page.getByLabel('Current Sultan goods cost').locator('.good')).toHaveCount(6); await expect(page.getByLabel('Sultan wild good 1')).toBeVisible(); } },
-      { spec: 'The exposed Palace index remains exact', check: async () => expectState(page, { eventCount: 17, game: { phase: 'action', activeBonusEffects: [], rubyTracks: { sultanIndex: 6, sultanRubies: 4 } } }) }
+      { spec: 'The two-player track demands five goods', check: async () => { await expect(page.getByLabel('Current Sultan goods cost').locator('.good')).toHaveCount(5); await expect(page.getByLabel('Sultan wild good 1')).toBeVisible(); } },
+      { spec: 'The exposed Palace index remains exact', check: async () => expectState(page, { eventCount: 17, game: { phase: 'action', activeBonusEffects: [], rubyTracks: { sultanIndex: 5, sultanRubies: 5 } } }) }
     ] });
     await page.getByLabel('Sultan wild good 1').selectOption('fruit');
     await ada.step('host-chooses-first-palace-wild', { description: 'Ada assigns fruit to the first Palace wild cost', verifications: [
       { spec: 'The visible wild selector reads Fruit', check: async () => expect(page.getByLabel('Sultan wild good 1')).toHaveValue('fruit') },
-      { spec: 'Six-goods delivery is now enabled without an event', check: async () => { await expect(page.getByRole('button', { name: 'Deliver 6 goods for 1 ruby' })).toBeEnabled(); await expectState(page, { eventCount: 17 }); } }
+      { spec: 'Five-goods delivery is now enabled without an event', check: async () => { await expect(page.getByRole('button', { name: 'Deliver 5 goods for 1 ruby' })).toBeEnabled(); await expectState(page, { eventCount: 17 }); } }
     ] });
-    await page.getByRole('button', { name: 'Deliver 6 goods for 1 ruby' }).click();
-    await ada.step('host-buys-first-palace-ruby', { description: 'Ada delivers six goods for the Palace ruby', verifications: [
-      { spec: 'The first delivery conserves the extended goods', check: async () => expectState(page, { eventCount: 18, game: { phase: 'turn-end', rubyTracks: { sultanIndex: 7, sultanRubies: 3 }, players: [{ goods: { fabric: 2, spice: 2, fruit: 1, jewelry: 1 }, rubies: 3 }, {}] } }) },
-      { spec: 'Palace tile advances to the seven-good cost and three rubies', check: async () => expect(page.getByTestId('place-state-13')).toHaveAttribute('data-state-summary', /Next ruby costs .+, .+, .+, .+, .+, .+, .+; 3 rubies remain/) },
-      { spec: 'The completion panel reports the exact six-good delivery', check: async () => expect(page.getByRole('complementary').getByText('Delivered 6 goods to the Sultan and claimed 1 ruby.', { exact: true })).toBeVisible() }
+    await page.getByRole('button', { name: 'Deliver 5 goods for 1 ruby' }).click();
+    await ada.step('host-buys-first-palace-ruby', { description: 'Ada delivers five goods for the Palace ruby', verifications: [
+      { spec: 'The first delivery conserves the extended goods', check: async () => expectState(page, { eventCount: 18, game: { phase: 'turn-end', rubyTracks: { sultanIndex: 6, sultanRubies: 4 }, players: [{ goods: { fabric: 2, spice: 2, fruit: 1, jewelry: 2 }, rubies: 3 }, {}] } }) },
+      { spec: 'Palace tile advances to the six-good cost and four rubies', check: async () => expect(page.getByTestId('place-state-13')).toHaveAttribute('data-state-summary', /Next ruby costs .+, .+, .+, .+, .+, .+; 4 rubies remain/) },
+      { spec: 'The completion panel reports the exact five-good delivery', check: async () => expect(page.getByRole('complementary').getByText('Delivered 5 goods to the Sultan and claimed 1 ruby.', { exact: true })).toBeVisible() }
     ] });
     await inspectAndPlayBonus(ada, page, /Inspect Bonus card: A useful connection/, /Play to gain 1 jewelry/, 'gain-jewelry', 'A useful connection for jewelry', 18, 19);
     await page.getByRole('button', { name: /Inspect Bonus card: A useful connection/ }).first().click();
@@ -135,7 +135,7 @@ test('ruby routes escalate and Bonus cards resolve at reviewed timing windows', 
     ] });
     await page.getByRole('button', { name: 'Play to gain 1 fabric' }).click();
     await ada.step('host-plays-gain-spice', { description: 'Ada plays a useful connection for fabric', verifications: [
-      { spec: 'Fabric is filled and jewelry is restored to two', check: async () => expectState(page, { eventCount: 20, game: { players: [{ goods: { fabric: 3, spice: 2, fruit: 1, jewelry: 2 } }, {}] } }) },
+      { spec: 'Fabric is filled and jewelry reaches capacity', check: async () => expectState(page, { eventCount: 20, game: { players: [{ goods: { fabric: 3, spice: 2, fruit: 1, jewelry: 3 } }, {}] } }) },
       { spec: 'The action remains in the repeat timing window', check: async () => expectState(page, { game: { phase: 'turn-end', lastAction: { place: 13 } } }) }
     ] });
     await page.getByRole('button', { name: /Inspect Bonus card: A useful connection/ }).first().click();
@@ -150,26 +150,26 @@ test('ruby routes escalate and Bonus cards resolve at reviewed timing windows', 
     ] });
     await page.getByRole('button', { name: 'Play to gain 1 fruit' }).click();
     await ada.step('host-plays-gain-fruit', { description: 'Ada plays the third useful connection for fruit', verifications: [
-      { spec: 'Nine goods now cover the newly exposed Palace cost', check: async () => expectState(page, { eventCount: 21, game: { players: [{ goods: { fabric: 3, spice: 2, fruit: 2, jewelry: 2 } }, {}] } }) },
+      { spec: 'Ten goods now cover the newly exposed Palace cost', check: async () => expectState(page, { eventCount: 21, game: { players: [{ goods: { fabric: 3, spice: 2, fruit: 2, jewelry: 3 } }, {}] } }) },
       { spec: 'The repeat timing window remains open', check: async () => expectState(page, { game: { phase: 'turn-end', lastAction: { place: 13 } } }) }
     ] });
     await page.getByRole('button', { name: /Inspect Bonus card: The Sultan grants another audience/ }).click();
     await ada.step('host-inspects-repeat-palace', { description: 'Ada inspects The Sultan grants another audience', verifications: [
-      { spec: 'The repeat names the newly exposed seven-good cost', check: async () => expect(page.getByRole('button', { name: 'Repeat for 7 goods' })).toBeEnabled() },
-      { spec: 'The replenished post-purchase goods are exact', check: async () => expectState(page, { eventCount: 21, game: { players: [{ goods: { fabric: 3, spice: 2, fruit: 2, jewelry: 2 } }, {}] } }) }
+      { spec: 'The repeat names the newly exposed six-good cost', check: async () => expect(page.getByRole('button', { name: 'Repeat for 6 goods' })).toBeEnabled() },
+      { spec: 'The replenished post-purchase goods are exact', check: async () => expectState(page, { eventCount: 21, game: { players: [{ goods: { fabric: 3, spice: 2, fruit: 2, jewelry: 3 } }, {}] } }) }
     ] });
-    await page.getByRole('button', { name: 'Repeat for 7 goods' }).click();
-    await ada.step('host-repeats-palace-at-new-cost', { description: 'Ada repeats Sultan’s Palace at seven goods', verifications: [
-      { spec: 'A fourth ruby and the eight-good next cost are public', check: async () => expectState(page, { eventCount: 22, game: { rubyTracks: { sultanIndex: 8, sultanRubies: 2 }, players: [{ goods: { fabric: 1, spice: 1, fruit: 0, jewelry: 0 }, rubies: 4 }, {}] } }) },
+    await page.getByRole('button', { name: 'Repeat for 6 goods' }).click();
+    await ada.step('host-repeats-palace-at-new-cost', { description: 'Ada repeats Sultan’s Palace at six goods', verifications: [
+      { spec: 'A fourth ruby and the seven-good next cost are public', check: async () => expectState(page, { eventCount: 22, game: { rubyTracks: { sultanIndex: 7, sultanRubies: 3 }, players: [{ goods: { fabric: 2, spice: 1, fruit: 0, jewelry: 1 }, rubies: 4 }, {}] } }) },
       { spec: 'The completion copy records both Palace deliveries', check: async () => expect(page.getByRole('complementary')).toContainText("Repeated Sultan's Palace") }
     ] });
     await page.reload();
     await ada.step('host-reloads-completed-repeat', { description: 'Ada reloads the completed repeat decision', verifications: [
       { spec: 'The spent private repeat card stays discarded', check: async () => expect(page.getByRole('button', { name: /Inspect Bonus card: The Sultan grants another audience/ })).toHaveCount(0) },
-      { spec: 'Replay restores event twenty-two byte-for-byte', check: async () => expectState(page, { eventCount: 22, diagnosticCount: 0, game: { phase: 'turn-end', rubyTracks: { sultanIndex: 8 }, players: [{ rubies: 4 }, {}] } }) }
+      { spec: 'Replay restores event twenty-two byte-for-byte', check: async () => expectState(page, { eventCount: 22, diagnosticCount: 0, game: { phase: 'turn-end', rubyTracks: { sultanIndex: 7 }, players: [{ rubies: 4 }, {}] } }) }
     ] });
     await page.getByRole('button', { name: 'End turn and pass clockwise' }).click();
-    await ada.step('host-ends-palace-turn', { description: 'Ada passes after the reviewed Palace shortfall', verifications: [
+    await ada.step('host-ends-palace-turn', { description: 'Ada passes after the reviewed Palace repeat', verifications: [
       { spec: 'Bora begins turn four', check: async () => expectState(page, { eventCount: 23, game: { currentTurn: 'Bora', turnNumber: 4, phase: 'movement' } }) },
       { spec: 'All four earned rubies remain public', check: async () => expectState(page, { game: { players: [{ rubies: 4 }, {}] } }) }
     ] });
