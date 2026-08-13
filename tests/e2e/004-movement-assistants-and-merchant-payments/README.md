@@ -182,7 +182,7 @@ Ada and Bora open a two-player Short Path table, then perform every visible choi
 **Verifications:**
 
 - [x] A mandatory player-to-player toll is visible
-- [x] Ada’s observer sees both merchants on Place 14
+- [x] Ada’s observer state sees both merchants on Place 14
 - [x] Bora’s drop and exact recipient are pending canonically
 
 ## 17. Bora pays Ada the two-Lira encounter toll
@@ -205,7 +205,7 @@ Ada and Bora open a two-player Short Path table, then perform every visible choi
 **Verifications:**
 
 - [x] Ada becomes current for turn three
-- [x] Both Place-14 assistants remain on the public board
+- [x] Both Place-14 assistants remain in public state
 - [x] Turn three begins with a clean movement phase
 
 ## 19. Ada selects adjacent Fabric Warehouse
@@ -320,7 +320,7 @@ Ada and Bora open a two-player Short Path table, then perform every visible choi
 
 **Verifications:**
 
-- [x] Both merchants are now visibly at Fountain
+- [x] Both merchants are now at Fountain in public state
 - [x] Bora’s assistant counts are unchanged in action phase
 
 ## 29. Bora ends the Fountain turn

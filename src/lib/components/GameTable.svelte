@@ -105,6 +105,14 @@
   let bonusAssistantPlace = $state(1);
   let flexibleGoods = $state<Good[]>(['fabric']);
   let keyboardPlace = $state(0);
+  let mobileBoardOpen = $state(false);
+  let previousPhase: typeof game.phase | undefined = $state();
+  $effect(() => {
+    if (previousPhase !== undefined && game.phase !== previousPhase) {
+      mobileBoardOpen = game.phase === 'movement';
+    }
+    previousPhase = game.phase;
+  });
   const caravanPreview = $derived(previewCaravansary(game, caravanSources) ?? []);
   const activeDemand = $derived(demandTiles.find(({ id }) => id === (actionPlace.id === 10 ? game.largeDemand[0] : game.smallDemand[0])));
   const marketSelectionLegal = $derived(isMarketSelectionLegal(activeDemand?.goods ?? [], marketSelection));
@@ -193,21 +201,22 @@
   }
 </script>
 
-<section class:many={game.players.length > 3} class:display-only={displayOnly} class="game-table" aria-labelledby="game-title" style={`--courtyard: url('${artUrl}')`}>
+<section class:many={game.players.length > 3} class:display-only={displayOnly} class="game-table" aria-labelledby="game-title" style={`--courtyard: url('${artUrl}')`} data-e2e-fit data-e2e-no-scroll>
   <p class="visually-hidden" aria-live="polite" aria-atomic="true" data-testid="turn-announcement">Turn {game.turnNumber}. {currentPlayer.name}. {game.phase.replace('-', ' ')}. {currentPlayer.uid === userUid ? 'Your action.' : 'Waiting for this merchant.'}</p>
-  <header class="turn-banner">
+  <header class="turn-banner" data-e2e-fit data-e2e-no-scroll>
     <div><p>{game.phase === 'game-over' ? `Game ${game.epoch} · final ranking` : game.phase === 'final-bonus' ? 'Final Bonus cards' : `Turn ${game.turnNumber} · ${game.phase.replace('-', ' ')}`}</p><h1 id="game-title">{game.phase === 'game-over' ? `${game.end.winnerUids.length > 1 ? 'The merchants share the victory.' : `${game.end.rankings[0]?.name} wins the ruby race.`}` : game.phase === 'final-bonus' ? `${currentPlayer.name} makes final trades.` : game.phase === 'movement' ? `${currentPlayer.name} surveys the bazaar.` : game.phase === 'merchant-payment' ? `${currentPlayer.name} meets another merchant.` : game.phase === 'family-action' ? `${currentPlayer.name} sends family to ${actionPlace.name}.` : game.phase === 'mosque-ability' ? `${currentPlayer.name} considers a Mosque ability.` : game.phase === 'encounters' ? `${currentPlayer.name} resolves bazaar encounters.` : game.phase === 'turn-end' ? `${currentPlayer.name} completed ${actionPlace.name}.` : `${currentPlayer.name} arrives at ${actionPlace.name}.`}</h1>{#if game.lastMovement?.paymentBlocked}<small class="turn-notice">{game.players.find((player) => player.uid === game.lastMovement?.playerUid)?.name} could not pay {game.lastMovement.paymentTotal} Lira; that turn ended immediately.</small>{/if}</div>
     <div class="turn-token"><span class={`player-dot ${currentPlayer.color}`}></span><strong>{game.phase === 'game-over' ? game.end.rankings[0]?.name : currentPlayer.name}</strong><small>{game.phase === 'game-over' ? 'Result locked' : displayOnly ? 'Public table · choices stay on phones' : currentPlayer.uid === userUid ? 'Your turn' : game.phase === 'movement' ? 'Planning route' : 'Resolving turn'}</small></div>
   </header>
 
-  <div class="play-area">
-    <section class:hidden-at-finish={game.phase === 'game-over'} class="board-shell" aria-label="Istanbul bazaar board">
+  <div class:mobile-board-open={mobileBoardOpen || displayOnly} class="play-area" data-e2e-fit data-e2e-no-scroll>
+    {#if game.phase !== 'movement'}<nav class="mobile-view-switch" aria-label="Phone game view"><button class:active={mobileBoardOpen} aria-pressed={mobileBoardOpen} onclick={() => mobileBoardOpen = true}>Board</button><button class:active={!mobileBoardOpen} aria-pressed={!mobileBoardOpen} onclick={() => mobileBoardOpen = false}>Decision</button></nav>{/if}
+    <section class:hidden-at-finish={game.phase === 'game-over'} class="board-shell" aria-label="Istanbul bazaar board" data-e2e-fit data-e2e-no-scroll>
       <div class="board-tools" aria-label="Board view controls">
-        <button class="zoom-button" onclick={onZoomIn} aria-label="Zoom board in"><span aria-hidden="true"></span></button>
+        <button class="zoom-button" onclick={onZoomIn} aria-label="Zoom board in" disabled={boardScale >= 1}><span aria-hidden="true"></span></button>
         <button onclick={onFit}>Fit board</button>
       </div>
-      <div class="board-viewport">
-        <div class="board" style={`--board-scale: ${boardScale}`} data-testid="bazaar-board">
+      <div class="board-viewport" data-e2e-fit>
+        <div class="board" style={`--board-scale: ${boardScale}`} data-testid="bazaar-board" data-e2e-fit>
           {#each game.board as placeId, index}
             {@const place = placeById.get(placeId)!}
             {@const here = occupants(placeId)}
@@ -252,7 +261,7 @@
       {#if import.meta.env.VITE_USE_FIREBASE_EMULATORS === 'true' && localIsCurrent && game.phase === 'movement'}<button class="e2e-resources" onclick={onGrantE2eResources}>Review ruby routes with supplied resources</button>{/if}
     </section>
 
-    <aside class:finish={game.phase === 'game-over'} class="inspector" class:route-planner={!selectedBonusManifest && game.phase === 'movement' && !selectedPlaceManifest} aria-live="polite">
+    <aside class:finish={game.phase === 'game-over'} class:decision={game.phase !== 'movement'} class="inspector" class:route-planner={!selectedBonusManifest && game.phase === 'movement' && !selectedPlaceManifest} aria-live="polite" data-e2e-fit data-e2e-no-scroll>
       {#if selectedBonusManifest}
         <p class="section-kicker">Private Bonus card</p>
         <h2>{selectedBonusManifest.title}</h2>
@@ -462,9 +471,9 @@
     </aside>
   </div>
 
-  <section class:hidden-at-finish={game.phase === 'game-over'} class:many={game.players.length > 3} class="player-rail" aria-label="Player resources" style={`--players: ${game.players.length}`}>
+  <section class:hidden-at-finish={game.phase === 'game-over'} class:many={game.players.length > 3} class="player-rail" aria-label="Player resources" style={`--players: ${game.players.length}`} data-e2e-fit data-e2e-no-scroll>
     {#each game.players as player, index}
-      <article class:local={player.uid === userUid} aria-label={`${player.name} resources`} data-player-color={player.color}>
+      <article class:local={player.uid === userUid} aria-label={`${player.name} resources`} data-player-color={player.color} data-e2e-fit data-e2e-no-scroll>
         <PlayerTray
           {player}
           seat={index + 1}
@@ -481,7 +490,7 @@
 <style>
   .game-table { height: 100%; min-height: 0; display: flex; flex-direction: column; gap: .65rem; color: #fffaf0; }
   .visually-hidden { position: fixed; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
-  .game-table.display-only .board { width: min(100%, 92rem); }
+  .game-table.display-only .board { --board-limit: 92rem; }
   .game-table.display-only .play-area { grid-template-columns: minmax(0, 3fr) minmax(19rem, 1fr); }
   .game-table.display-only .player-rail article { padding: clamp(.55rem, 1vw, 1.2rem); }
   .turn-banner { min-height: 4.4rem; display: flex; align-items: center; justify-content: space-between; gap: 1rem; padding: .55rem 1.1rem; border: 1px solid rgb(239 202 125 / 35%); border-radius: 1rem; background: linear-gradient(100deg, rgb(13 48 51 / 96%), rgb(28 76 75 / 92%)); box-shadow: 0 .8rem 2rem rgb(35 21 9 / 22%); }
@@ -504,7 +513,12 @@
   .sultan-cost .good { min-width: 4.4rem; display: flex; align-items: center; gap: .3rem; padding: .4rem .5rem; border: 1px solid #d7c49c; border-radius: .45rem; color: #173f43; background: #fffaf0; font-size: .72rem; font-weight: 700; }
   .sultan-cost .good i { width: .75rem; height: .75rem; display: inline-block; border-radius: .18rem; }
   .sultan-cost .fabric i { background: #b23d43; }.sultan-cost .spice i { background: #27806e; }.sultan-cost .fruit i { background: #e1aa35; }.sultan-cost .jewelry i { background: #3e7da0; }.sultan-cost .any i { background: conic-gradient(#b23d43 0 25%, #27806e 0 50%, #e1aa35 0 75%, #3e7da0 0); }
-  .play-area { flex: 1; min-height: 0; display: grid; grid-template-columns: minmax(0, 1fr) minmax(15rem, .3fr); gap: .65rem; }
+  .inspector.decision:has(.sultan-route) > p:not(.section-kicker) { margin: .45rem 0; line-height: 1.25; }
+  .inspector.decision:has(.sultan-route) .ruby-route { margin: .45rem 0; }
+  .inspector.decision:has(.sultan-route) .ruby-route :global(.route-art) { height: 3rem; }
+  .inspector.decision:has(.sultan-route) .ruby-route div { padding: .45rem; }
+  .play-area { flex: 1; min-height: 0; display: grid; grid-template-columns: minmax(0, 1fr) minmax(23rem, .48fr); gap: .65rem; }
+  .mobile-view-switch { display: none; }
   .board-shell { position: relative; min-height: 0; display: flex; flex-direction: column; overflow: hidden; border: 1px solid rgb(239 202 125 / 35%); border-radius: 1rem; background: linear-gradient(rgb(7 31 34 / 47%), rgb(7 31 34 / 68%)), var(--courtyard) center / cover; box-shadow: inset 0 0 5rem rgb(0 0 0 / 38%); }
   .board-tools { position: absolute; z-index: 5; top: .5rem; right: .5rem; display: flex; gap: .3rem; }
   .board-tools button { min-height: 2rem; padding: .3rem .65rem; border: 1px solid rgb(255 255 255 / 32%); border-radius: 2rem; color: #fffaf0; background: rgb(10 44 47 / 80%); font: inherit; font-size: .72rem; font-weight: 700; }
@@ -513,8 +527,8 @@
   .zoom-button span { position: relative; width: .7rem; height: .7rem; display: block; }
   .zoom-button span::before, .zoom-button span::after { position: absolute; inset: calc(50% - 1px) 0 auto; height: 2px; border-radius: 1px; background: currentColor; content: ''; }
   .zoom-button span::after { rotate: 90deg; }
-  .board-viewport { flex: 1; min-height: 0; display: grid; place-items: center; overflow: hidden; padding: 2.4rem 1.2rem 1rem; }
-  .board { width: min(100%, 42rem); aspect-ratio: 1.42; display: grid; grid-template-columns: repeat(4, 1fr); grid-template-rows: repeat(4, 1fr); gap: .42rem; scale: var(--board-scale); transform-origin: center; transition: scale .2s ease; }
+  .board-viewport { container-type: size; flex: 1; min-height: 0; display: grid; place-items: center; overflow: hidden; padding: 2.4rem 1.2rem 1rem; }
+  .board { --board-ratio: 1.42; --board-limit: 42rem; --board-scale: 1; width: min(calc(100% / var(--board-scale) - .75rem), calc(var(--board-limit) / var(--board-scale)), calc(100cqh * var(--board-ratio) / var(--board-scale) - .75rem)); aspect-ratio: var(--board-ratio); display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); grid-template-rows: repeat(4, minmax(0, 1fr)); gap: .42rem; scale: var(--board-scale); transform-origin: center; transition: scale .2s ease; }
   .place { position: relative; min-width: 0; min-height: 0; display: grid; grid-template-columns: 1fr; grid-template-rows: 1fr auto; gap: .15rem; align-items: end; overflow: hidden; padding: .42rem; border: 1px solid rgb(255 250 240 / 60%); border-radius: .55rem; color: #fffaf0; text-align: left; background: #173f43; box-shadow: 0 .35rem .7rem rgb(0 0 0 / 30%); cursor: pointer; }
   .place :global(.place-art), .place-shade { position: absolute; inset: 0; }
   .place :global(.place-art) { z-index: 0; transition: scale .25s ease; }.place:hover :global(.place-art), .place:focus-visible :global(.place-art) { scale: 1.05; }
@@ -564,6 +578,17 @@
   .player-rail.many { grid-template-columns: repeat(var(--players, 2), minmax(11rem, 1fr)); overflow-x: auto; }
   @keyframes departure-pulse { from { filter: brightness(1.45); } to { filter: none; } }
   @keyframes arrival-pulse { 0% { translate: 0 -.25rem; filter: brightness(1.7); } 100% { translate: 0; filter: none; } }
+  @media (min-width: 721px) {
+    .inspector.decision { padding: .7rem; }
+    .inspector.decision h2 { margin: .1rem 0 .35rem; font-size: 1.55rem; }
+    .inspector.decision > p:not(.section-kicker) { margin: .35rem 0; line-height: 1.25; }
+    .inspector.decision .mosque-offers { grid-template-columns: 1fr 1fr; gap: .35rem; margin-top: .35rem; }
+    .inspector.decision .mosque-offers article { grid-template-columns: 4.4rem 1fr; grid-template-rows: auto auto 1fr auto; gap: .15rem .35rem; padding: .35rem; }
+    .inspector.decision .mosque-offers article > small { min-height: 0; }
+    .inspector.decision .mosque-offers .turn-action { min-height: 2.25rem; padding: .35rem; }
+    .inspector.decision .encounter-choices { gap: .35rem; margin-top: .35rem; }
+    .inspector.decision .encounter-choices section { gap: .2rem; padding: .35rem; }
+  }
   @media (min-width: 721px) and (max-width: 960px) {
     .player-rail article { min-width: 0; }
   }
@@ -572,9 +597,16 @@
     .game-table.display-only .play-area { grid-template-columns: 1fr; }
     .turn-banner { min-height: 3.4rem; padding: .35rem .6rem; }.turn-banner h1 { font-size: 1.45rem; }.turn-token { font-size: .7rem; }.turn-token small { font-size: .55rem; }
     .play-area { grid-template-columns: 1fr; grid-template-rows: minmax(0, 1fr) auto; gap: .4rem; }
-    .board-viewport { padding: 2.1rem .4rem .35rem; }.board { width: 100%; aspect-ratio: 1.18; gap: .25rem; }.game-table.many .board { aspect-ratio: 1.42; }.place { grid-template-columns: 1.35rem 1fr; padding: .24rem; border-radius: .38rem; }.place-glyph { width: 1.25rem; height: 1.25rem; }.place strong { display: -webkit-box; overflow: hidden; font-size: .52rem; line-height: .88; white-space: normal; -webkit-box-orient: vertical; -webkit-line-clamp: 2; line-clamp: 2; }.place-number { font-size: .5rem; }.occupants { min-height: .85rem; gap: .03rem; }.occupants :global(.merchant), .occupants :global(.assistant), .occupants :global(.family-member) { width: .68rem; height: .68rem; }.place :global(.encounter) { width: .72rem; height: .72rem; }.place.has-encounter .occupants { padding-right: .58rem; }
+    .play-area:has(.inspector.decision) { grid-template-rows: auto minmax(0, 1fr); }
+    .play-area:has(.inspector.decision) .board-shell { display: none; }
+    .play-area.mobile-board-open:has(.inspector.decision) .board-shell { display: flex; }
+    .play-area.mobile-board-open:has(.inspector.decision) .inspector { display: none; }
+    .mobile-view-switch { grid-column: 1; display: grid; grid-template-columns: 1fr 1fr; gap: .25rem; padding: .2rem; border: 1px solid #efca7d66; border-radius: .65rem; background: #0b292c; }.mobile-view-switch button { min-height: 2.2rem; border: 0; border-radius: .45rem; color: #bdd0ca; background: transparent; font-size: .68rem; font-weight: 700; }.mobile-view-switch button.active { color: #173f43; background: #efca7d; }
+    .board-viewport { padding: 2.1rem .4rem .35rem; }.board { --board-ratio: 1.18; --board-limit: 100%; gap: .25rem; }.game-table.many .board { --board-ratio: 1.42; }.place { grid-template-columns: 1.35rem 1fr; padding: .24rem; border-radius: .38rem; }.place-glyph { width: 1.25rem; height: 1.25rem; }.place strong { display: -webkit-box; overflow: hidden; font-size: .52rem; line-height: .88; white-space: normal; -webkit-box-orient: vertical; -webkit-line-clamp: 2; line-clamp: 2; }.place-number { font-size: .5rem; }.occupants { min-height: .85rem; gap: .03rem; }.occupants :global(.merchant), .occupants :global(.assistant), .occupants :global(.family-member) { width: .68rem; height: .68rem; }.place :global(.encounter) { width: .72rem; height: .72rem; }.place.has-encounter .occupants { padding-right: .58rem; }
     .inspector { min-height: 5.5rem; max-height: none; display: grid; grid-template-columns: auto 1fr; gap: .2rem .7rem; align-content: start; padding: .55rem .7rem; }.inspector .section-kicker, .inspector h2, .inspector > p { grid-column: 2; }.inspector h2 { margin: 0; font-size: 1.35rem; }.inspector > p:not(.section-kicker) { margin: 0; font-size: .65rem; }.inspector-glyph { grid-column: 1; grid-row: 1 / 4; width: 3rem; height: 3rem; }.inspector dl { grid-column: 1 / -1; display: flex; gap: .8rem; margin: 0; }.inspector dl div { padding: .15rem 0; border: 0; font-size: .55rem; }.inspector .turn-action, .inspector .skip-link, .inspector .wheelbarrow-track, .inspector .crate-track, .inspector .recall-list, .inspector .action-balance, .inspector .mail-track, .inspector .caravan-sources, .inspector .card-preview, .inspector .discard-choice, .inspector .demand-card, .inspector .market-revenue, .inspector .basic-good-choice, .inspector .wager-control, .inspector .dice-result, .inspector .encounter-choices, .inspector .encounter-history, .inspector .mosque-ability-card, .inspector .dice-adjustments, .inspector .mosque-offers, .inspector .yellow-recall { grid-column: 1 / -1; margin-top: .2rem; }.inspector .turn-action { min-height: 2.75rem; }.inspector .skip-link { min-height: 2.75rem; }.recall-list { grid-template-columns: 1fr 1fr; }.encounter-ledger, .supply-ledger { display: none; }.inspector .large-card { grid-column: 1; grid-row: 1 / 5; width: 5.1rem; min-height: 7rem; padding: .35rem; display: flex; }.inspector .large-card strong, .inspector .large-card p { display: none; }.inspector .large-card > span { margin-top: auto; font-size: .45rem; }.mobile-card-text { display: block; }.encounter-choices { grid-template-columns: 1fr 1fr; }.encounter-choices section { padding: .4rem; }.encounter-choices section > div { grid-template-columns: 1fr; }.mosque-offers article > small { min-height: auto; }.dice-adjustments { grid-template-columns: 1fr 1fr; }
     .inspector.route-planner { position: relative; display: block; height: 8rem; max-height: 8rem; padding: 0; }.route-planner .section-kicker { position: absolute; top: .55rem; left: 1.4rem; margin: 0; }.route-planner h2 { position: absolute; top: 1.45rem; left: 1.4rem; margin: 0; }.route-planner > p:not(.section-kicker) { position: absolute; top: 3.15rem; right: .7rem; left: 1.4rem; margin: 0; line-height: .82rem; }.route-planner .supply-ledger { position: absolute; right: .7rem; bottom: .45rem; left: .7rem; display: flex; justify-content: space-between; margin: 0 !important; }
+    .inspector.decision:has(.encounter-choices) > p:not(.section-kicker) { display: none; }
+    .inspector.decision { align-content: center; padding: .4rem .55rem; }.inspector.decision > p:not(.section-kicker) { line-height: 1.1; }.inspector.decision .turn-action, .inspector.decision .skip-link { min-height: 2.2rem; }.inspector.decision .sultan-cost { margin: .3rem 0; }.inspector.decision .sultan-cost .good { min-width: 3.6rem; padding: .25rem .35rem; }.inspector.decision .wager-control { margin-top: .25rem; }.inspector.decision .skip-link { min-height: 1.8rem; }.inspector.decision .encounter-choices { gap: .25rem; }.inspector.decision .encounter-choices section { gap: .18rem; padding: .25rem; }.inspector.decision .encounter-choices section > span { display: none; }.inspector.decision .encounter-choices .turn-action, .inspector.decision .encounter-choices .skip-link { min-height: 1.9rem; }.inspector.decision .mosque-offers { grid-template-columns: 1fr 1fr; gap: .3rem; }.inspector.decision .mosque-offers article { grid-template-columns: 4rem 1fr; grid-template-rows: auto auto auto; gap: .12rem .3rem; padding: .3rem; }.inspector.decision .mosque-offers :global(.mosque-tile-art) { grid-row: 1 / 4; }.inspector.decision .mosque-offers article > small { display: none; }.inspector.decision .mosque-offers article > b { padding: .2rem; }.inspector.decision .mosque-offers .turn-action { min-height: 2.2rem; }
     .player-rail { grid-auto-flow: row; grid-template-columns: 1fr 1fr; gap: .3rem; }.player-rail article { min-width: 0; }
     .player-rail.many { grid-auto-flow: row; grid-template-columns: repeat(var(--players, 2), minmax(0, 1fr)); gap: .18rem; overflow: visible; }
     .inspector.finish { display: block; padding: .85rem; }.inspector.finish .section-kicker, .inspector.finish h2, .inspector.finish > p { display: block; }.inspector.finish .final-ranking { display: grid; grid-template-columns: 1fr; }.inspector.finish .final-ranking li { display: grid; grid-template-columns: 1.5rem 1fr auto; }.inspector.finish .final-ranking li > span { grid-column: auto; }.inspector.finish .final-ranking li > small { grid-column: 2 / 4; }
@@ -583,10 +615,10 @@
     .game-table { gap: .25rem; }
     .turn-banner { min-height: 2.8rem; padding: .25rem .6rem; }.turn-banner h1 { font-size: 1.25rem; }.turn-banner p { font-size: .5rem; }.turn-token { font-size: .62rem; }
     .play-area { grid-template-columns: minmax(0, 1.35fr) minmax(14rem, .65fr); gap: .3rem; }
-    .board-viewport { padding: .25rem; }.board { width: min(100%, 25rem); aspect-ratio: 1.42; gap: .2rem; }.board-tools, .board-caption, .e2e-resources { display: none; }
+    .board-viewport { padding: .25rem; }.board { --board-ratio: 1.42; --board-limit: 25rem; gap: .2rem; }.board-tools, .board-caption, .e2e-resources { display: none; }
     .place { grid-template-columns: 1.2rem 1fr; padding: .2rem; }.place-glyph { width: 1.1rem; height: 1.1rem; }.place strong { font-size: .5rem; }.occupants { min-height: .65rem; }.merchant, .assistant, .family-member { width: .68rem; height: .68rem; font-size: .34rem; }
-    .inspector { padding: .45rem; overflow: hidden; }.inspector h2 { margin: 0; font-size: 1.15rem; }.inspector > p:not(.section-kicker) { margin: .2rem 0; font-size: .58rem; }.inspector-glyph, .encounter-ledger, .supply-ledger { display: none; }.inspector .large-card { display: flex; }.inspector .turn-action { min-height: 2.75rem; margin-top: .3rem; }
-    .player-rail { grid-template-columns: 1fr 1fr; gap: .25rem; }.player-rail article { padding: 0; }.player-rail :global(.hand), .player-rail :global(.masked-hand) { display: none; }
+    .inspector { padding: .35rem; overflow: hidden; }.inspector h2 { margin: 0; font-size: 1.15rem; }.inspector > p:not(.section-kicker) { margin: .2rem 0; font-size: .58rem; }.inspector:not(.route-planner) > p:not(.section-kicker), .inspector:not(.route-planner):not(.decision) dl { display: none; }.inspector-glyph, .encounter-ledger, .supply-ledger { display: none; }.inspector .large-card { display: flex; }.inspector .turn-action { min-height: 2.75rem; margin-top: .15rem; }.inspector.decision .mail-track { margin: .15rem 0; }.inspector.decision .mail-column i { min-height: 1.25rem; }.inspector.decision .mail-column b.lower { top: 1.65rem; }.inspector.decision .skip-link { min-height: 2.2rem; margin-top: .1rem; }
+    .player-rail { grid-template-columns: repeat(2, minmax(0, 15rem)); justify-content: center; gap: .25rem; }.player-rail.many { grid-template-columns: repeat(var(--players, 2), minmax(0, 1fr)); }.player-rail article { padding: 0; }.player-rail :global(.hand), .player-rail :global(.masked-hand) { display: none; }
   }
   @media (pointer: coarse) { .turn-action, .skip-link, .board-tools button, .hand button { min-height: 2.75rem; } }
   @media (prefers-reduced-motion: reduce) { .board { transition: none; }.place.departed, .place.arrived { animation: none; } }

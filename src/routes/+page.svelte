@@ -97,6 +97,7 @@
       rubyTracks: game.rubyTracks,
       governorPlace: game.governorPlace,
       smugglerPlace: game.smugglerPlace,
+      neutralMerchants: game.neutralMerchants,
       postOfficeLower: game.postOfficeLower,
       largeDemand: game.largeDemand,
       smallDemand: game.smallDemand,
@@ -372,6 +373,7 @@
         recipientUids: pending.recipientUids,
         neutralMerchantIds: pending.neutralMerchantIds
       });
+      selectedPlace = null;
     } finally {
       actionPending = false;
     }
@@ -393,6 +395,7 @@
     actionPending = true;
     try {
       await repository.append('place/action-taken', { choice: JSON.parse(JSON.stringify(choice)) as PlaceActionChoice });
+      selectedPlace = null;
     } finally {
       actionPending = false;
     }
@@ -628,7 +631,7 @@
         onInspectPlace={() => {}} onInspectBonus={() => {}} onMove={() => {}} onPayMerchants={() => {}}
         onTakeAction={() => {}} onResolveEncounter={() => {}} onUseMosqueAbility={() => {}} onPlayBonus={() => {}}
         onGrantE2eResources={() => {}} onRematch={() => { if (room.tabletopOwned) void rematch(); }} onEndTurn={() => {}}
-        onZoomIn={() => boardScale = Math.min(1.18, boardScale + 0.09)} onFit={() => boardScale = 1}
+        onZoomIn={() => boardScale = 1} onFit={() => boardScale = 1}
       />
     {:else}<SharedTableLobby {room} invitationFor={() => makeInviteUrl(room.roomCode)} layoutNames={layoutNames} canConfigure={isHost && room.tabletopOwned} canStart={isHost && allReady} {actionPending} onConfigure={(layout) => void configureRoom(layout)} onStart={() => void startGame()} />{/if}
   {:else if screen === 'game' && room && game}
@@ -650,7 +653,7 @@
       onGrantE2eResources={() => void grantE2eResources()}
       onRematch={() => void rematch()}
       onEndTurn={() => void endTurn()}
-      onZoomIn={() => boardScale = Math.min(1.18, boardScale + 0.09)}
+      onZoomIn={() => boardScale = 1}
       onFit={() => boardScale = 1}
     />
   {/if}
@@ -806,7 +809,7 @@
   }
   @media (max-height: 500px) and (orientation: landscape) {
     :global(html), :global(body) { height: 100%; overflow: hidden; }
-    main { padding: max(3.35rem, env(safe-area-inset-top)) max(.5rem, env(safe-area-inset-right)) max(.4rem, env(safe-area-inset-bottom)) max(.5rem, env(safe-area-inset-left)); }
+    main { height: 100svh; min-height: 0; padding: max(3.35rem, env(safe-area-inset-top)) max(.5rem, env(safe-area-inset-right)) max(.4rem, env(safe-area-inset-bottom)) max(.5rem, env(safe-area-inset-left)); }
     main.game-screen { padding-top: max(3.25rem, env(safe-area-inset-top)); }
     .topbar { height: 3rem; padding: 0 max(.7rem, env(safe-area-inset-right)) 0 max(.7rem, env(safe-area-inset-left)); }
     .brand { font-size: 1.2rem; }.connection { font-size: .62rem; }.build { display: none; }
@@ -815,7 +818,7 @@
     .entry-card, .join-panel { padding: .75rem 1rem; }.entry-card h2 { margin-bottom: .35rem; }.landing .entry-card > .divider, .landing .entry-card > section:last-of-type { display: none; }
     input, select { min-height: 2.2rem; padding: .35rem .55rem; }.entry-card button { min-height: 2.25rem; }
     .join-room { grid-template-columns: .72fr 1.28fr; }.room-ticket strong { font-size: 3.5rem; }.join-panel h1 { font-size: 2.25rem; }.join-panel > p:not(.section-kicker,.error) { margin: .2rem 0 .5rem; font-size: .72rem; }
-    .lobby { min-height: calc(100svh - 3.7rem); }.lobby-heading { margin: 0 0 .3rem; }.lobby-heading h1 { margin: 0; font-size: 1.8rem; }.lobby-heading > div:first-child > p:last-child { display: none; }.room-state { min-width: 5rem; padding: .25rem .5rem; }.room-state small { display: none; }.room-state span { font-size: .5rem; }.room-state strong { font-size: 1.2rem; }
+    .lobby { height: 100%; min-height: 0; }.lobby-heading { margin: 0 0 .3rem; }.lobby-heading h1 { margin: 0; font-size: 1.8rem; }.lobby-heading > div:first-child > p:last-child { display: none; }.room-state { min-width: 5rem; padding: .25rem .5rem; }.room-state small { display: none; }.room-state span { font-size: .5rem; }.room-state strong { font-size: 1.2rem; }
     .lobby-grid { grid-template-columns: .8fr 1.2fr; gap: .4rem; }.seats-card, .table-card { padding: .5rem; border-radius: .7rem; }.card-heading { padding-bottom: .25rem; }.card-heading h2 { margin: 0; font-size: 1.05rem; }.seats { gap: .2rem; margin-top: .25rem; }.seats li { min-height: 2rem; padding: .2rem .35rem; }.merchant-token, .empty-token { width: 1.5rem; height: 1.5rem; border-width: 2px; }.table-card { display: grid; grid-template-columns: 1fr 1fr; gap: .2rem .4rem; }.table-card .card-heading, .layout-note, .invite, .ready-button { grid-column: 1 / -1; }.table-card label { margin-top: 0; }.layout-note { min-height: 0; margin: 0; font-size: .55rem; }.invite input { min-height: 1.8rem; font-size: .55rem; }.ready-button { min-height: 2.2rem; margin-top: 0 !important; }.history { display: none; }
   }
   @media (prefers-reduced-motion: reduce) { *, *::before, *::after { scroll-behavior: auto !important; transition: none !important; animation: none !important; } }

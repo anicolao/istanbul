@@ -205,7 +205,7 @@ Ada sends her family member from Police Station to fill the Fabric Warehouse. Bo
 
 - [x] Place action correctly precedes every other encounter
 - [x] Arrival itself has not caught or moved any token
-- [x] All family and special tokens remain visible on the board
+- [x] All family and special tokens remain at Fabric Warehouse in public state
 
 ## 19. Bora fills fabric before choosing encounter order
 

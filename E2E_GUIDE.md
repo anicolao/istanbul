@@ -226,9 +226,15 @@ Playwright runs pinned Chromium with:
 - stable repository-managed fonts; and
 - zero allowed differing pixels.
 
-Before capture, the helper moves the pointer away, waits for explicit settled
-state, rejects viewport overflow, and checks interactive controls for accidental
-overlap.
+Before every capture, the shared helper moves the pointer away, waits for
+explicit settled state, and enforces the viewport-fit invariant. Every tested
+interface must keep the document at the viewport size and scroll position zero;
+every visible control and every marked layout region must remain inside the
+viewport; and every marked board, panel, tray, and hand must have no hidden or
+scrollable overflow. A screenshot step fails before pixel comparison when any
+of these conditions is false. Do not hide an oversized interface with
+`overflow: hidden`; size the complete interface from both available width and
+available height.
 
 Never update a baseline merely because CI differs. Determine whether the cause
 is an intentional UI change, platform rasterization, an unsettled state, or a
@@ -260,6 +266,11 @@ game at all supported presentation sizes:
   document scrolling.
 - `tabletop-wide`, 3840×2160: shared public state, QR seating, readable opposite
   edges, and no private cards.
+
+The invariant applies to every step in every project, not only scenario 014.
+When adding a layout container that must be completely presented, mark it with
+`data-e2e-fit data-e2e-no-scroll`; the journal helper will reject viewport escape,
+internal scrolling, and containment clipping automatically.
 
 Every gameplay control must be a native keyboard-operable element or implement
 the appropriate composite-widget keyboard pattern. Scenarios verify visible

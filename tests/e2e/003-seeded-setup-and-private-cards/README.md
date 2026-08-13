@@ -146,17 +146,17 @@ Ada and Bora prepare an ordinary two-player room entirely through visible contro
 - [x] The inspector reports row two, column two and both merchants
 - [x] Inspection changes local view state without appending an event
 
-## 13. Ada zooms the courtyard board for a closer route view
+## 13. Ada confirms the courtyard board already fits completely
 
-**Ada, the host** — Ada zooms the courtyard board for a closer route view
+**Ada, the host** — Ada confirms the courtyard board already fits completely
 
-![Ada zooms the courtyard board for a closer route view](./screenshots/007-host-zooms-board-desktop.png)
+![Ada confirms the courtyard board already fits completely](./screenshots/007-host-zooms-board-desktop.png)
 
 **Verifications:**
 
-- [x] The complete board remains present while zoomed
+- [x] The complete board remains presented without a clipping zoom
 - [x] Fountain remains the selected accessible tile
-- [x] Only Ada’s local board scale changes to 1.09
+- [x] The board stays at its fitted scale of one
 
 ## 14. Ada fits the complete 4×4 bazaar back into view
 

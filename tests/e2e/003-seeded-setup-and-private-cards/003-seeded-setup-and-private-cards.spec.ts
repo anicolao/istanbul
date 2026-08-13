@@ -148,13 +148,13 @@ test('a ready room becomes an exact seeded board with private hands', async ({ b
       ]
     });
 
-    await page.getByRole('button', { name: 'Zoom board in' }).click();
+    await expect(page.getByRole('button', { name: 'Zoom board in' })).toBeDisabled();
     await ada.step('host-zooms-board', {
-      description: 'Ada zooms the courtyard board for a closer route view',
+      description: 'Ada confirms the courtyard board already fits completely',
       verifications: [
-        { spec: 'The complete board remains present while zoomed', check: async () => expect(page.getByTestId('bazaar-board').getByRole('button')).toHaveCount(16) },
+        { spec: 'The complete board remains presented without a clipping zoom', check: async () => expect(page.getByTestId('bazaar-board').getByRole('button')).toHaveCount(16) },
         { spec: 'Fountain remains the selected accessible tile', check: async () => expect(page.getByRole('button', { name: /7 Fountain/ })).toHaveAttribute('aria-pressed', 'true') },
-        { spec: 'Only Ada’s local board scale changes to 1.09', check: async () => expectState(page, { eventCount: 6, game: { selectedPlace: 7, boardScale: 1.09 } }) }
+        { spec: 'The board stays at its fitted scale of one', check: async () => expectState(page, { eventCount: 6, game: { selectedPlace: 7, boardScale: 1 } }) }
       ]
     });
 
