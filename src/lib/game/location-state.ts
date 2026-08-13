@@ -27,8 +27,7 @@ function mosqueSummary(game: GameSetup, placeId: 14 | 15) {
     const tile = mosqueTiles.find(({ id }) => id === game.mosqueStacks[color][0]);
     return tile ? `${tile.required} ${goodNames[color]} required, pay 1` : `${goodNames[color]} stack empty`;
   });
-  const rubies = placeId === 14 ? game.supplies.smallMosqueRubies : game.supplies.greatMosqueRubies;
-  return `${offers.join('; ')}; ${rubies} ruby rewards remain`;
+  return offers.join('; ');
 }
 
 export function locationStateSummary(game: GameSetup, placeId: number): string {
@@ -59,9 +58,9 @@ export function locationStateSummary(game: GameSetup, placeId: number): string {
   if (placeId === 12) return active.familyPlace === 12
     ? `${active.name}'s family is ready for dispatch`
     : `${active.name}'s family is at Place ${active.familyPlace}`;
-  if (placeId === 13) return `Next ruby costs ${currentSultanCost(game).map((good) => goodNames[good]).join(', ')}; ${game.rubyTracks.sultanRubies} rubies remain`;
+  if (placeId === 13) return `Next ruby costs ${currentSultanCost(game).map((good) => goodNames[good]).join(', ')}`;
   if (placeId === 14) return mosqueSummary(game, 14);
   if (placeId === 15) return mosqueSummary(game, 15);
-  if (placeId === 16) return `Next ruby costs ${game.rubyTracks.gemstonePrice} Lira; ${game.rubyTracks.gemstoneRubies} rubies remain`;
+  if (placeId === 16) return `Next ruby costs ${game.rubyTracks.gemstonePrice} Lira`;
   return 'No location state';
 }

@@ -30,7 +30,7 @@ describe('escalating ruby routes', () => {
     expect(buySultanRuby(game, player, ['spice'])).toBe('Delivered 5 goods to the Sultan and claimed 1 ruby.');
     expect(player.goods).toEqual({ fabric: 1, spice: 0, fruit: 0, jewelry: 1 });
     expect(player.rubies).toBe(1);
-    expect(game.rubyTracks).toMatchObject({ sultanIndex: 6, sultanRubies: 4 });
+    expect(game.rubyTracks).toMatchObject({ sultanIndex: 6, sultanRubies: 5 });
   });
 
   it('rejects short payment and advances the Gemstone price once per ruby', () => {
@@ -42,16 +42,23 @@ describe('escalating ruby routes', () => {
     expect(buyGemstoneRuby(game, player)).toBe('Paid 12 Lira to the Gemstone Dealer and claimed 1 ruby.');
     expect(buyGemstoneRuby(game, player)).toBe('Paid 13 Lira to the Gemstone Dealer and claimed 1 ruby.');
     expect(player).toMatchObject({ lira: 0, rubies: 2 });
-    expect(game.rubyTracks).toMatchObject({ gemstonePrice: 14, gemstoneRubies: 11 });
+    expect(game.rubyTracks).toMatchObject({ gemstonePrice: 14, gemstoneRubies: 13 });
   });
 
-  it('conserves finite tracks when every ruby is claimed', () => {
+  it('keeps awarding rubies after the printed tracks reach their capped price and cost', () => {
     const game = setup(2);
     const player = game.players[0];
-    player.lira = 1_000;
-    while (buyGemstoneRuby(game, player)) { /* exhaust the printed track */ }
-    expect(game.rubyTracks).toMatchObject({ gemstonePrice: 25, gemstoneRubies: 0 });
-    expect(player.rubies).toBe(10);
-    expect(buyGemstoneRuby(game, player)).toBeNull();
+    player.lira = 100;
+    game.rubyTracks.gemstonePrice = 25;
+    expect(buyGemstoneRuby(game, player)).toContain('Paid 25 Lira');
+    expect(buyGemstoneRuby(game, player)).toContain('Paid 25 Lira');
+    expect(game.rubyTracks).toMatchObject({ gemstonePrice: 25, gemstoneRubies: 10 });
+
+    game.rubyTracks.sultanIndex = sultanCostSequence.length;
+    player.goods = { fabric: 10, spice: 10, fruit: 10, jewelry: 10 };
+    expect(buySultanRuby(game, player, ['fabric', 'spice'])).toContain('Delivered 10 goods');
+    expect(buySultanRuby(game, player, ['fruit', 'jewelry'])).toContain('Delivered 10 goods');
+    expect(game.rubyTracks).toMatchObject({ sultanIndex: 10, sultanRubies: 5 });
+    expect(player.rubies).toBe(4);
   });
 });

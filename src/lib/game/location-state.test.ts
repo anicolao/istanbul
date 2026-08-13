@@ -32,7 +32,7 @@ describe('location state summaries', () => {
     expect(locationStateSummary(game, 7)).toContain('recall 2 assistants');
     expect(locationStateSummary(game, 10)).toMatch(/Current Large Market demand: .+, .+, .+, .+, .+/);
     expect(locationStateSummary(game, 12)).toContain('Place 8');
-    expect(locationStateSummary(game, 14)).toMatch(/required, pay 1; .*required, pay 1; 2 ruby rewards remain/);
+    expect(locationStateSummary(game, 14)).toMatch(/required, pay 1; .*required, pay 1$/);
     expect(locationStateSummary(game, 16)).toContain('19 Lira');
   });
 });

@@ -546,7 +546,7 @@
 
 <svelte:head><title>{appTitle}</title></svelte:head>
 
-<main data-e2e-layout data-tabletop-route={tabletopRoute} class:lobby-screen={screen === 'lobby'} class:game-screen={screen === 'game' || screen === 'shared-display'} class:shared-screen={screen === 'shared-display'}>
+<main data-e2e-layout data-tabletop-route={tabletopRoute} class:lobby-screen={screen === 'lobby'} class:game-screen={screen === 'game' || screen === 'shared-display'} class:shared-screen={screen === 'shared-display'} class:tabletop-game={screen === 'shared-display' && Boolean(game)}>
   <header class="topbar">
     <a class="brand" href={tabletopRoute ? '../' : './'} aria-label="Istanbul home">
       <span class="brand-gem" aria-hidden="true"></span>
@@ -717,6 +717,8 @@
   :global(button:disabled, select:disabled) { cursor: not-allowed; }
   main { min-height: 100svh; overflow: hidden; padding: max(clamp(4.8rem, 8vw, 6rem), env(safe-area-inset-top)) max(clamp(1rem, 4vw, 4rem), env(safe-area-inset-right)) max(clamp(1rem, 3vw, 2rem), env(safe-area-inset-bottom)) max(clamp(1rem, 4vw, 4rem), env(safe-area-inset-left)); background: radial-gradient(circle at 8% 8%, #fff9e9 0 0.5rem, transparent 0.55rem), linear-gradient(90deg, rgb(23 63 67 / 5%) 1px, transparent 1px) 0 0 / 4rem 4rem, linear-gradient(rgb(23 63 67 / 5%) 1px, transparent 1px) 0 0 / 4rem 4rem, linear-gradient(145deg, #f4ead6, #dfc28e); }
   main.game-screen { height: 100svh; min-height: 0; padding: max(4.75rem, env(safe-area-inset-top)) max(.7rem, env(safe-area-inset-right)) max(.6rem, env(safe-area-inset-bottom)) max(.7rem, env(safe-area-inset-left)); background: #102f32; }
+  main.tabletop-game { padding: max(.35rem, env(safe-area-inset-top)) max(.35rem, env(safe-area-inset-right)) max(.35rem, env(safe-area-inset-bottom)) max(.35rem, env(safe-area-inset-left)); }
+  main.tabletop-game > .topbar { display: none; }
   .topbar { position: absolute; inset: 0 0 auto; height: 4.2rem; display: flex; align-items: center; justify-content: space-between; padding: 0 clamp(1rem, 4vw, 4rem); border-bottom: 1px solid rgb(23 63 67 / 18%); background: rgb(255 251 240 / 78%); backdrop-filter: blur(12px); }
   .brand { display: flex; align-items: center; gap: .8rem; color: inherit; font: 700 1.7rem/1 'Cormorant Garamond', serif; text-decoration: none; }
   .brand-gem { width: 1.15rem; height: 1.15rem; rotate: 45deg; border: 2px solid #f3aa8c; border-radius: .2rem; background: #aa303f; box-shadow: inset 0 0 0 3px #c84a51; }

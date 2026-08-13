@@ -245,7 +245,7 @@
   }
 </script>
 
-<section class:many={game.players.length > 3} class:display-only={displayOnly} class="game-table" aria-labelledby="game-title" style={`--courtyard: url('${artUrl}')`} data-e2e-fit data-e2e-no-scroll>
+<section class:many={game.players.length > 3} class:display-only={displayOnly} class:tabletop={tabletopControls} class="game-table" aria-labelledby="game-title" style={`--courtyard: url('${artUrl}')`} data-e2e-fit data-e2e-no-scroll>
   <p class="visually-hidden" aria-live="polite" aria-atomic="true" data-testid="turn-announcement">Turn {game.turnNumber}. {currentPlayer.name}. {game.phase.replace('-', ' ')}. {currentPlayer.uid === userUid ? 'Your action.' : 'Waiting for this merchant.'}</p>
   <header class="turn-banner" data-e2e-fit data-e2e-no-scroll>
     <div><p>{game.phase === 'game-over' ? `Game ${game.epoch} · final ranking` : game.phase === 'final-bonus' ? 'Final Bonus cards' : `Turn ${game.turnNumber} · ${game.phase.replace('-', ' ')}`}</p><h1 id="game-title">{game.phase === 'game-over' ? `${game.end.winnerUids.length > 1 ? 'The merchants share the victory.' : `${game.end.rankings[0]?.name} wins the ruby race.`}` : game.phase === 'final-bonus' ? `${currentPlayer.name} makes final trades.` : game.phase === 'movement' ? `${currentPlayer.name} surveys the bazaar.` : game.phase === 'merchant-payment' ? `${currentPlayer.name} meets another merchant.` : game.phase === 'family-action' ? `${currentPlayer.name} sends family to ${actionPlace.name}.` : game.phase === 'mosque-ability' ? `${currentPlayer.name} considers a Mosque ability.` : game.phase === 'encounters' ? `${currentPlayer.name} resolves bazaar encounters.` : game.phase === 'turn-end' ? `${currentPlayer.name} completed ${actionPlace.name}.` : `${currentPlayer.name} arrives at ${actionPlace.name}.`}</h1>{#if game.lastMovement?.paymentBlocked}<small class="turn-notice">{game.players.find((player) => player.uid === game.lastMovement?.playerUid)?.name} could not pay {game.lastMovement.paymentTotal} Lira; that turn ended immediately.</small>{:else if tabletopControls && game.bonusLog.length}<small class="turn-notice">{game.bonusLog.at(-1)?.summary}</small>{/if}</div>
@@ -494,16 +494,16 @@
           {#if localIsCurrent}<button class="skip-link" onclick={onEndTurn}>Skip Mosque and end turn</button>{:else}<p class="waiting-copy">Waiting for {currentPlayer.name} to choose a Mosque tile.</p>{/if}
         {:else if actionPlace.id === 13}
           <p>Deliver every uncovered good to claim the next Palace ruby. Each purchase reveals one additional requirement.</p>
-          <div class="ruby-route sultan-route" aria-label="Sultan's Palace ruby track"><GameArt kind="component" component="sultan-track" class="route-art" /><div><span>Ruby available</span><strong>{game.rubyTracks.sultanRubies}</strong></div><div><span>Goods due</span><strong>{sultanCost.length}</strong></div></div>
+          <div class="ruby-route sultan-route" aria-label="Sultan's Palace cost track"><GameArt kind="component" component="sultan-track" class="route-art" /><div><span>Goods due</span><strong>{sultanCost.length}</strong></div></div>
           <div class="sultan-cost" aria-label="Current Sultan goods cost">{#each sultanCost as good}<span class={`good ${good === 'any' ? 'any' : good}`} title={good === 'any' ? 'Any good' : goodNames[good]}><i></i>{good === 'any' ? 'Any' : goodNames[good]}</span>{/each}</div>
           {#if localIsCurrent}
             {#each Array.from({ length: sultanWildCount }) as _, index}<label class="wager-control">Wild good {index + 1}<select aria-label={`Sultan wild good ${index + 1}`} value={sultanWildGoods[index] ?? 'fabric'} onchange={(event) => setSultanWild(index, event.currentTarget.value as Good)}>{#each Object.keys(goodNames) as good}<option value={good}>{goodNames[good as Good]}</option>{/each}</select></label>{/each}
-            <button class="turn-action" disabled={!sultanAffordable || game.rubyTracks.sultanRubies < 1} onclick={() => onTakeAction({ kind: 'sultan-buy', wildGoods: [...sultanWildGoods] })}>Deliver {sultanCost.length} goods for 1 ruby</button><button class="skip-link" onclick={onEndTurn}>Skip Sultan's Palace and end turn</button>
+            <button class="turn-action" disabled={!sultanAffordable} onclick={() => onTakeAction({ kind: 'sultan-buy', wildGoods: [...sultanWildGoods] })}>Deliver {sultanCost.length} goods for 1 ruby</button><button class="skip-link" onclick={onEndTurn}>Skip Sultan's Palace and end turn</button>
           {:else}<p class="waiting-copy">Waiting for {currentPlayer.name} to deliver goods.</p>{/if}
         {:else if actionPlace.id === 16}
           <p>Pay the greatest uncovered price to claim the next Dealer ruby. The price rises by one after every purchase.</p>
-          <div class="ruby-route gemstone-route" aria-label="Gemstone Dealer ruby track"><GameArt kind="component" component="gemstone-track" class="route-art" /><div><span>Current price</span><strong>{game.rubyTracks.gemstonePrice} Lira</strong></div><div><span>Rubies available</span><strong>{game.rubyTracks.gemstoneRubies}</strong></div></div>
-          {#if localIsCurrent}<button class="turn-action" disabled={localPlayer.lira < game.rubyTracks.gemstonePrice || game.rubyTracks.gemstoneRubies < 1} onclick={() => onTakeAction({ kind: 'gemstone-buy' })}>Pay {game.rubyTracks.gemstonePrice} Lira for 1 ruby</button><button class="skip-link" onclick={onEndTurn}>Skip Gemstone Dealer and end turn</button>{:else}<p class="waiting-copy">Waiting for {currentPlayer.name} to buy or pass.</p>{/if}
+          <div class="ruby-route gemstone-route" aria-label="Gemstone Dealer price track"><GameArt kind="component" component="gemstone-track" class="route-art" /><div><span>Current price</span><strong>{game.rubyTracks.gemstonePrice} Lira</strong></div></div>
+          {#if localIsCurrent}<button class="turn-action" disabled={localPlayer.lira < game.rubyTracks.gemstonePrice} onclick={() => onTakeAction({ kind: 'gemstone-buy' })}>Pay {game.rubyTracks.gemstonePrice} Lira for 1 ruby</button><button class="skip-link" onclick={onEndTurn}>Skip Gemstone Dealer and end turn</button>{:else}<p class="waiting-copy">Waiting for {currentPlayer.name} to buy or pass.</p>{/if}
         {:else}
           <p>{actionPlace.action}</p>
           {#if localIsCurrent}<button class="turn-action secondary-action" onclick={onEndTurn}>Skip this Place action and end turn</button>{:else}<p class="waiting-copy">Waiting for {currentPlayer.name} to finish the Place action.</p>{/if}
@@ -532,7 +532,6 @@
           <div><dt>Mosque tiles</dt><dd>{Object.values(game.mosqueStacks).flat().length}</dd></div>
           <div><dt>Market demands</dt><dd>{game.largeDemand.length + game.smallDemand.length}</dd></div>
           <div><dt>Wheelbarrow extensions</dt><dd>{game.supplies.wheelbarrowExtensions}</dd></div>
-          <div><dt>Ruby supply</dt><dd>{game.supplies.wainwrightRubies + game.supplies.smallMosqueRubies + game.supplies.greatMosqueRubies + game.rubyTracks.sultanRubies + game.rubyTracks.gemstoneRubies}</dd></div>
         </dl>
       {/if}
     </aside>
@@ -540,18 +539,20 @@
 
   <section class:hidden-at-finish={game.phase === 'game-over'} class:many={game.players.length > 3} class="player-rail" aria-label="Player resources" style={`--players: ${game.players.length}`} data-e2e-fit data-e2e-no-scroll>
     {#each game.players as player, index}
-      <article class:local={player.uid === userUid} aria-label={`${player.name} resources`} data-player-color={player.color} data-e2e-fit data-e2e-no-scroll>
+      <article class:local={!tabletopControls && player.uid === userUid} aria-label={`${player.name} resources`} data-player-color={player.color} data-e2e-fit data-e2e-no-scroll>
         <PlayerTray
           {player}
           seat={index + 1}
           starting={index === game.startingSeat}
-          local={player.uid === userUid}
+          local={!tabletopControls && player.uid === userUid}
+          compact={tabletopControls}
           {selectedBonus}
           onInspectBonus={inspectBonus}
         />
       </article>
     {/each}
   </section>
+  {#if tabletopControls}<footer class="tabletop-strip" data-e2e-fit data-e2e-no-scroll><strong>Istanbul tabletop</strong><span>{room.roomCode} · {room.layout.replace('-', ' ')}</span></footer>{/if}
 </section>
 
 <style>
@@ -560,6 +561,20 @@
   .game-table.display-only .board { --board-limit: 92rem; }
   .game-table.display-only .play-area { grid-template-columns: minmax(0, 3fr) minmax(19rem, 1fr); }
   .game-table.display-only .player-rail article { padding: clamp(.55rem, 1vw, 1.2rem); }
+  .game-table.tabletop { display: grid; grid-template-columns: clamp(13rem, 17vw, 20rem) minmax(0, 1fr) clamp(18rem, 22vw, 28rem); grid-template-rows: auto minmax(0, 1fr) auto; gap: .45rem; }
+  .tabletop .turn-banner { grid-column: 1; grid-row: 1; min-height: 0; gap: .35rem; padding: .4rem .55rem; border-radius: .65rem; }
+  .tabletop .turn-banner > div:first-child { min-width: 0; }.tabletop .turn-banner h1 { overflow: hidden; font-size: clamp(1rem, 1.3vw, 1.35rem); line-height: 1; text-overflow: ellipsis; white-space: nowrap; }.tabletop .turn-banner p { font-size: .48rem; }.tabletop .turn-notice { overflow: hidden; font-size: .48rem; text-overflow: ellipsis; white-space: nowrap; }
+  .tabletop .turn-token { flex: 0 0 auto; grid-template-columns: 1.2rem; gap: .08rem; justify-items: center; font-size: .48rem; }.tabletop .turn-token .player-dot { grid-row: auto; width: 1.15rem; height: 1.15rem; border-width: 2px; }.tabletop .turn-token small { display: none; }
+  .tabletop .play-area { display: contents; }
+  .tabletop .play-area > .mobile-view-switch { display: none; }
+  .tabletop .board-shell { grid-column: 2; grid-row: 1 / 4; }
+  .tabletop .board { --board-limit: 100%; }
+  .tabletop .inspector { grid-column: 3; grid-row: 1 / 4; }
+  .tabletop .player-rail { grid-column: 1; grid-row: 2; min-height: 0; grid-template-columns: 1fr; grid-auto-flow: row; grid-auto-rows: minmax(0, 1fr); align-content: center; gap: .3rem; overflow: hidden; }
+  .tabletop .player-rail.many { grid-template-columns: repeat(2, minmax(0, 1fr)); grid-auto-flow: row; grid-auto-rows: auto; overflow: hidden; }
+  .tabletop .player-rail article { min-width: 0; min-height: 0; display: grid; place-items: center; overflow: hidden; padding: 0; border: 0; aspect-ratio: 1; background: transparent; }
+  .tabletop-strip { grid-column: 1; grid-row: 3; min-width: 0; display: flex; justify-content: space-between; gap: .4rem; overflow: hidden; padding: .32rem .5rem; border: 1px solid rgb(239 202 125 / 35%); border-radius: .55rem; color: #d3dfd8; background: rgb(5 29 31 / 78%); font-size: .48rem; letter-spacing: .04em; text-transform: uppercase; }
+  .tabletop-strip strong, .tabletop-strip span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
   .turn-banner { min-height: 4.4rem; display: flex; align-items: center; justify-content: space-between; gap: 1rem; padding: .55rem 1.1rem; border: 1px solid rgb(239 202 125 / 35%); border-radius: 1rem; background: linear-gradient(100deg, rgb(13 48 51 / 96%), rgb(28 76 75 / 92%)); box-shadow: 0 .8rem 2rem rgb(35 21 9 / 22%); }
   .turn-banner p, .section-kicker { margin: 0; color: #efca7d; font-size: .68rem; font-weight: 700; letter-spacing: .14em; text-transform: uppercase; }
   .turn-banner h1 { margin: .1rem 0 0; font: 700 clamp(1.65rem, 3vw, 2.5rem)/.95 'Cormorant Garamond', serif; }
@@ -569,8 +584,8 @@
   .turn-token small { color: #bdd0ca; }
   .player-dot { width: 1.7rem; height: 1.7rem; display: inline-block; border: 3px solid #f0cd80; border-radius: 50%; box-shadow: inset 0 0 0 2px #fffaf0; }
   .ruby { background: #a63e3a; }.saffron { background: #c98c28; }.teal { background: #28796f; }.indigo { background: #43588f; }.plum { background: #73466e; }
-  .ruby-route { display: grid; grid-template-columns: repeat(2, 1fr); gap: .5rem; margin: .9rem 0; }
-  .ruby-route :global(.route-art) { grid-column: 1 / -1; width: 100%; height: 4rem; border: 1px solid #d9bd7b; border-radius: .7rem; }
+  .ruby-route { display: grid; grid-template-columns: 1fr; gap: .5rem; margin: .9rem 0; }
+  .ruby-route :global(.route-art) { width: 100%; height: 4rem; border: 1px solid #d9bd7b; border-radius: .7rem; }
   .ruby-route div { display: grid; gap: .1rem; padding: .75rem; border: 1px solid #d9bd7b; border-radius: .7rem; background: #f5e6bd; }
   .ruby-route span { color: #55706f; font-size: .66rem; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; }
   .ruby-route strong { color: #a43d43; font: 700 1.35rem/1 'Cormorant Garamond', serif; }
@@ -663,6 +678,13 @@
   }
   @media (max-width: 720px) {
     .game-table { gap: .4rem; }
+    .game-table.tabletop { display: grid; grid-template-columns: 1fr 1fr; grid-template-rows: auto minmax(0, 1fr) auto auto; gap: .3rem; }
+    .tabletop .turn-banner { grid-column: 1 / 3; grid-row: 1; }
+    .tabletop .board-shell { grid-column: 1 / 3; grid-row: 2; }
+    .tabletop .inspector { grid-column: 1 / 3; grid-row: 3; }
+    .tabletop .player-rail, .tabletop .player-rail.many { grid-column: 1 / 3; grid-row: 4; grid-template-columns: repeat(var(--players, 2), minmax(0, 1fr)); grid-auto-flow: row; grid-auto-rows: auto; overflow: hidden; }
+    .tabletop .player-rail article { aspect-ratio: 1; }
+    .tabletop-strip { display: none; }
     .game-table.display-only .play-area { grid-template-columns: 1fr; }
     .turn-banner { min-height: 3.4rem; padding: .35rem .6rem; }.turn-banner h1 { font-size: 1.45rem; }.turn-token { font-size: .7rem; }.turn-token small { font-size: .55rem; }
     .play-area { grid-template-columns: 1fr; grid-template-rows: minmax(0, 1fr) auto; gap: .4rem; }

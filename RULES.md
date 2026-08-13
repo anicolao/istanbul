@@ -119,8 +119,9 @@ materialized state.
    goods in a three-player game; remove tiles showing three and five goods in a
    two-player game.
 5. Put three wheelbarrow extensions and one ruby per player at Wainwright 1.
-6. Populate the Sultan's Palace 13 and Gemstone Dealer 16 ruby tracks from the
-   printed starting space for the player count. At Sultan's Palace, the first
+6. Cover the initial cost spaces at Sultan's Palace 13 and Gemstone Dealer 16
+   from the printed starting space for the player count. Their ruby supplies
+   are unlimited; the tracks determine cost, not remaining stock. At Sultan's Palace, the first
    ruby costs five goods in a two- or three-player game and four goods in a
    four- or five-player game. Empty spaces expose the current increasing cost.
 7. Put all four Mail indicators in the upper Post Office row.
@@ -299,9 +300,10 @@ that player.
 
 ### 13 — Sultan's Palace
 
-Pay every good shown on the currently uncovered cost spaces, then take the next
-ruby from the track. Removing that ruby exposes a larger cost for the next
-purchase. A wild-good symbol may be paid with any good. If the exact current
+Pay every good shown on the currently uncovered cost spaces, then take a ruby.
+Each purchase exposes a larger cost for the next purchase until all ten cost
+spaces are exposed; later purchases continue to cost ten goods. The Sultan's
+ruby supply does not run out. A wild-good symbol may be paid with any good. If the exact current
 cost cannot be paid, the action is unavailable.
 
 The player-count start positions and ordered costs are immutable Place-manifest
@@ -331,10 +333,11 @@ The four abilities are:
 
 ### 16 — Gemstone Dealer
 
-Pay the currently exposed Lira price, then take the next ruby from the track.
-Removing it exposes a higher price. The player-count start positions and price
-sequence are immutable Place-manifest data. A repeat-action Bonus card pays the
-newly increased price for the second ruby.
+Pay the currently exposed Lira price, then take a ruby. The price rises after
+each purchase until it reaches 25 Lira; later purchases continue to cost 25
+Lira. The Dealer's ruby supply does not run out. The player-count start
+positions and price sequence are immutable Place-manifest data. A repeat-action
+Bonus card pays the newly increased price for the second ruby.
 
 ## Bonus cards
 
