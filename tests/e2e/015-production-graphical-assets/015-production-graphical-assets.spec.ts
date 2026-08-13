@@ -38,7 +38,7 @@ test('original production art communicates the complete tabletop', async ({ brow
         } },
         { spec: 'Both colour-keyed physical trays and every resource token are real loaded images', check: async () => {
           await expect(page.locator('[data-art-kind="mat"]')).toHaveCount(2);
-          expect(await page.locator('[data-art-kind="component"]').count()).toBeGreaterThan(50);
+          expect(await page.locator('[data-art-kind="component"]').count()).toBeGreaterThanOrEqual(50);
           expect((await loadedBackgrounds(page.locator('[data-art-kind="mat"], [data-art-kind="component"]'))).every(Boolean)).toBe(true);
         } },
         { spec: 'Each tray aligns goods, extensions, rubies, money, cards, and four power recesses', check: async () => {
@@ -51,12 +51,13 @@ test('original production art communicates the complete tabletop', async ({ brow
           await expect(page.getByLabel('Ada resources').getByLabel('1 Bonus cards')).toBeVisible();
           await expect(page.getByLabel('Bora resources').getByLabel('1 Bonus cards')).toBeVisible();
         } },
-        { spec: 'Every Place exposes a distinct physical and semantic live-state apparatus', check: async () => {
+        { spec: 'Only Places with relevant live public state expose a large physical apparatus', check: async () => {
           const states = page.locator('.location-state');
-          await expect(states).toHaveCount(16);
+          await expect(states).toHaveCount(9);
           const summaries = await states.evaluateAll((elements) => elements.map((element) => element.getAttribute('data-state-summary') ?? ''));
           expect(summaries.every((summary) => summary.length > 12)).toBe(true);
-          expect(new Set(summaries).size).toBe(16);
+          expect(new Set(summaries).size).toBe(9);
+          expect(await states.evaluateAll((elements) => elements.map((element) => Number(element.getAttribute('data-testid')?.replace('place-state-', ''))).sort((a, b) => a - b))).toEqual([5, 6, 7, 10, 11, 13, 14, 15, 16]);
           await expect(page.locator('[data-testid="place-state-5"]')).toHaveAttribute('data-state-summary', /Exposed mail:/);
           await expect(page.locator('[data-testid="place-state-6"]')).toHaveAttribute('data-state-summary', /Bonus cards in draw pile; 0 in discard/);
           await expect(page.locator('[data-testid="place-state-14"]')).toHaveAttribute('data-state-summary', /required, pay 1.*ruby rewards remain/);
@@ -65,6 +66,22 @@ test('original production art communicates the complete tabletop', async ({ brow
           await expect(page.locator('[data-testid="place-state-5"] .mail-column')).toHaveCount(4);
           await expect(page.locator('[data-testid="place-state-6"] .card-pile')).toHaveCount(2);
           await expect(page.locator('[data-testid="place-state-14"] .mosque-power')).toHaveCount(2);
+        } },
+        { spec: 'Place names occupy the tile tops while enlarged pieces are vertically centered', check: async () => {
+          const geometry = await page.locator('[data-place-id="7"]').evaluate((tile) => {
+            const tileRect = tile.getBoundingClientRect();
+            const titleRect = tile.querySelector(':scope > strong')!.getBoundingClientRect();
+            const merchantRect = tile.querySelector('.merchant')!.getBoundingClientRect();
+            const assistantRect = tile.querySelector('.assistant');
+            return {
+              titleNearTop: titleRect.top - tileRect.top < tileRect.height * 0.25,
+              merchantCentered: Math.abs((merchantRect.top + merchantRect.height / 2) - (tileRect.top + tileRect.height / 2)) < 2,
+              merchantWidth: merchantRect.width,
+              assistantAbsentAtStart: assistantRect === null
+            };
+          });
+          expect(geometry).toMatchObject({ titleNearTop: true, merchantCentered: true, assistantAbsentAtStart: true });
+          expect(geometry.merchantWidth).toBeGreaterThanOrEqual(testInfo.project.name === 'phone' ? 22 : 44);
         } },
         { spec: 'The canonical setup remains unchanged by its visual treatment', check: async () => expectState(page, { screen: 'game', eventCount: 5, diagnosticCount: 0, game: { seed, phase: 'movement', turnNumber: 1, players: [{ name: 'Ada', merchantPlace: 7, assistantsCarried: 4, rubies: 0 }, { name: 'Bora', merchantPlace: 7, assistantsCarried: 4, rubies: 0 }] } }) }
       ]

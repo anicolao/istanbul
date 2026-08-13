@@ -25,6 +25,17 @@ test('mail, private card trading, and both demand markets remain exact through r
   try {
     await openTwoPlayerGame({ hostPage: page, guestPage: boraPage, host: ada, guest: bora, roomCode, seed });
 
+    const drawPile = page.locator('[data-testid="place-state-6"] [data-pile-source="deck"]');
+    const drawTitle = (await drawPile.getAttribute('aria-label') ?? '').replace('Inspect draw pile top card: ', '');
+    const drawCard = bonusCards.find(({ title }) => title === drawTitle)!;
+    await drawPile.click();
+    await ada.step('host-inspects-caravansary-draw-pile', { description: `Ada inspects the Caravansary draw pile and sees ${drawTitle}`, verifications: [
+      { spec: 'The pile opens the exact top draw-card title rather than a generic card back', check: async () => expect(page.getByTestId('pile-card-title')).toHaveText(drawTitle) },
+      { spec: 'The full graphical card and its rules text are visible', check: async () => { await expect(page.getByTestId('pile-card-detail').locator('[data-art-kind="card"]')).toHaveCount(1); await expect(page.getByTestId('pile-card-detail')).toContainText(drawCard.text); } },
+      { spec: 'Inspection identifies the draw source and remaining count', check: async () => { await expect(page.getByText('Top of Bonus draw pile')).toBeVisible(); await expect(page.getByText('24 cards remain in the draw pile.')).toBeVisible(); } },
+      { spec: 'Looking at public pile information appends no event or private card', check: async () => expectState(page, { eventCount: 5, game: { phase: 'movement', bonusDrawCount: 24, bonusDiscard: [], localHand: [expect.any(String)] } }) }
+    ] });
+
     await page.getByRole('button', { name: /^5 Post Office.*Reachable/ }).click();
     await ada.step('host-selects-post-office', { description: 'Ada selects Post Office two spaces away', verifications: [
       { spec: 'Post Office is a selected legal route', check: async () => expect(page.getByRole('button', { name: /^5 Post Office.*Reachable/ })).toHaveAttribute('aria-pressed', 'true') },
