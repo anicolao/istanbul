@@ -1,0 +1,1 @@
+import{t as e}from"../chunks/BeyU__N-.js";export{e as component};
