@@ -112,11 +112,24 @@ Ada and Bora narrate every input from an empty private room through seven ordina
 - [x] All sixteen Place controls are rendered
 - [x] Ada is the seeded first merchant at Fountain
 
-## 11. Ada selects Post Office two spaces away
+## 11. Ada inspects the Caravansary draw pile and sees A swift passage
+
+**Ada, the first merchant** — Ada inspects the Caravansary draw pile and sees A swift passage
+
+![Ada inspects the Caravansary draw pile and sees A swift passage](./screenshots/006-host-inspects-caravansary-draw-pile-desktop.png)
+
+**Verifications:**
+
+- [x] The pile opens the exact top draw-card title rather than a generic card back
+- [x] The full graphical card and its rules text are visible
+- [x] Inspection identifies the draw source and remaining count
+- [x] Looking at public pile information appends no event or private card
+
+## 12. Ada selects Post Office two spaces away
 
 **Ada, the first merchant** — Ada selects Post Office two spaces away
 
-![Ada selects Post Office two spaces away](./screenshots/006-host-selects-post-office-desktop.png)
+![Ada selects Post Office two spaces away](./screenshots/007-host-selects-post-office-desktop.png)
 
 **Verifications:**
 
@@ -124,11 +137,11 @@ Ada and Bora narrate every input from an empty private room through seven ordina
 - [x] The route requires one assistant drop
 - [x] Route inspection leaves event five canonical
 
-## 12. Ada arrives and exposes the initial mail route
+## 13. Ada arrives and exposes the initial mail route
 
 **Ada, the first merchant** — Ada arrives and exposes the initial mail route
 
-![Ada arrives and exposes the initial mail route](./screenshots/007-host-arrives-post-office-desktop.png)
+![Ada arrives and exposes the initial mail route](./screenshots/008-host-arrives-post-office-desktop.png)
 
 **Verifications:**
 
@@ -136,11 +149,11 @@ Ada and Bora narrate every input from an empty private room through seven ordina
 - [x] The collection control is enabled
 - [x] No mail resource is granted by movement alone
 
-## 13. Ada collects the first four uncovered resources
+## 14. Ada collects the first four uncovered resources
 
 **Ada, the first merchant** — Ada collects the first four uncovered resources
 
-![Ada collects the first four uncovered resources](./screenshots/008-host-collects-first-mail-desktop.png)
+![Ada collects the first four uncovered resources](./screenshots/009-host-collects-first-mail-desktop.png)
 
 **Verifications:**
 
@@ -149,18 +162,18 @@ Ada and Bora narrate every input from an empty private room through seven ordina
 - [x] The Post Office tile immediately exposes its next four resources
 - [x] The action cannot be collected twice
 
-## 14. Ada passes the completed mail turn clockwise
+## 15. Ada passes the completed mail turn clockwise
 
 **Ada, the first merchant** — Ada passes the completed mail turn clockwise
 
-![Ada passes the completed mail turn clockwise](./screenshots/009-host-ends-mail-turn-desktop.png)
+![Ada passes the completed mail turn clockwise](./screenshots/010-host-ends-mail-turn-desktop.png)
 
 **Verifications:**
 
 - [x] Bora begins turn two in movement
 - [x] Mail resources and the lower indicator persist
 
-## 15. Bora selects Caravansary two spaces away
+## 16. Bora selects Caravansary two spaces away
 
 **Bora, the second merchant** — Bora selects Caravansary two spaces away
 
@@ -172,7 +185,7 @@ Ada and Bora narrate every input from an empty private room through seven ordina
 - [x] Bora is offered an assistant drop
 - [x] Bora still has one private card
 
-## 16. Bora arrives and chooses two face-down cards
+## 17. Bora arrives and chooses two face-down cards
 
 **Bora, the second merchant** — Bora arrives and chooses two face-down cards
 
@@ -185,7 +198,7 @@ Ada and Bora narrate every input from an empty private room through seven ordina
 - [x] No future face, preview, or discard choice exists in the DOM and Ada sees only waiting copy
 - [x] Choosing consumes no card or event
 
-## 17. Bora reveals both chosen cards together
+## 18. Bora reveals both chosen cards together
 
 **Bora, the second merchant** — Bora reveals both chosen cards together
 
@@ -197,7 +210,7 @@ Ada and Bora narrate every input from an empty private room through seven ordina
 - [x] Three discard choices appear only after reveal
 - [x] Revealing is local and leaves the canonical deck untouched
 
-## 18. Bora chooses the original hand card to discard
+## 19. Bora chooses the original hand card to discard
 
 **Bora, the second merchant** — Bora chooses the original hand card to discard
 
@@ -209,7 +222,7 @@ Ada and Bora narrate every input from an empty private room through seven ordina
 - [x] The trade control becomes enabled
 - [x] The local radio choice is not canonical state
 
-## 19. Bora takes two deck cards and discards the original
+## 20. Bora takes two deck cards and discards the original
 
 **Bora, the second merchant** — Bora takes two deck cards and discards the original
 
@@ -222,7 +235,7 @@ Ada and Bora narrate every input from an empty private room through seven ordina
 - [x] Caravansary now shows 22 draw cards and one face-up discard
 - [x] Two draws and one discard conserve the card manifest
 
-## 20. Bora passes after the private card trade
+## 21. Bora passes after the private card trade
 
 **Bora, the second merchant** — Bora passes after the private card trade
 
@@ -233,11 +246,11 @@ Ada and Bora narrate every input from an empty private room through seven ordina
 - [x] Ada starts turn three
 - [x] The public discard remains face-up in state
 
-## 21. Ada routes from Post Office to Fabric Warehouse
+## 22. Ada routes from Post Office to Fabric Warehouse
 
 **Ada, the first merchant** — Ada routes from Post Office to Fabric Warehouse
 
-![Ada routes from Post Office to Fabric Warehouse](./screenshots/010-host-selects-fabric-desktop.png)
+![Ada routes from Post Office to Fabric Warehouse](./screenshots/011-host-selects-fabric-desktop.png)
 
 **Verifications:**
 
@@ -245,40 +258,40 @@ Ada and Bora narrate every input from an empty private room through seven ordina
 - [x] Ada must leave her second assistant
 - [x] Ada owns one fabric before filling
 
-## 22. Ada arrives at Fabric Warehouse
+## 23. Ada arrives at Fabric Warehouse
 
 **Ada, the first merchant** — Ada arrives at Fabric Warehouse
 
-![Ada arrives at Fabric Warehouse](./screenshots/011-host-arrives-fabric-desktop.png)
+![Ada arrives at Fabric Warehouse](./screenshots/012-host-arrives-fabric-desktop.png)
 
 **Verifications:**
 
 - [x] The CTA offers capacity two
 - [x] Movement leaves goods unchanged
 
-## 23. Ada fills fabric to wheelbarrow capacity
+## 24. Ada fills fabric to wheelbarrow capacity
 
 **Ada, the first merchant** — Ada fills fabric to wheelbarrow capacity
 
-![Ada fills fabric to wheelbarrow capacity](./screenshots/012-host-fills-fabric-desktop.png)
+![Ada fills fabric to wheelbarrow capacity](./screenshots/013-host-fills-fabric-desktop.png)
 
 **Verifications:**
 
 - [x] The two-crate track is full
 - [x] The warehouse closes in turn-end
 
-## 24. Ada passes the filled warehouse turn
+## 25. Ada passes the filled warehouse turn
 
 **Ada, the first merchant** — Ada passes the filled warehouse turn
 
-![Ada passes the filled warehouse turn](./screenshots/013-host-ends-fabric-turn-desktop.png)
+![Ada passes the filled warehouse turn](./screenshots/014-host-ends-fabric-turn-desktop.png)
 
 **Verifications:**
 
 - [x] Bora starts turn four
 - [x] Ada’s market stock remains public
 
-## 25. Bora routes two spaces north to Post Office
+## 26. Bora routes two spaces north to Post Office
 
 **Bora, the second merchant** — Bora routes two spaces north to Post Office
 
@@ -290,7 +303,7 @@ Ada and Bora narrate every input from an empty private room through seven ordina
 - [x] A second placed assistant is required
 - [x] Exactly the first mail indicator is already lower
 
-## 26. Bora arrives at the advanced mail track
+## 27. Bora arrives at the advanced mail track
 
 **Bora, the second merchant** — Bora arrives at the advanced mail track
 
@@ -301,7 +314,7 @@ Ada and Bora narrate every input from an empty private room through seven ordina
 - [x] The accessible track names lower then three upper indicators
 - [x] Bora still has no goods before collection
 
-## 27. Bora collects the second mail combination
+## 28. Bora collects the second mail combination
 
 **Bora, the second merchant** — Bora collects the second mail combination
 
@@ -312,7 +325,7 @@ Ada and Bora narrate every input from an empty private room through seven ordina
 - [x] The completion copy names two fabric, one fruit, and 1 Lira
 - [x] The first two indicators are now lower
 
-## 28. Bora passes after the second mail collection
+## 29. Bora passes after the second mail collection
 
 **Bora, the second merchant** — Bora passes after the second mail collection
 
@@ -323,11 +336,11 @@ Ada and Bora narrate every input from an empty private room through seven ordina
 - [x] Ada starts turn five
 - [x] Both merchants retain their distinct goods
 
-## 29. Ada selects Small Market two spaces south
+## 30. Ada selects Small Market two spaces south
 
 **Ada, the first merchant** — Ada selects Small Market two spaces south
 
-![Ada selects Small Market two spaces south](./screenshots/014-host-selects-small-market-desktop.png)
+![Ada selects Small Market two spaces south](./screenshots/015-host-selects-small-market-desktop.png)
 
 **Verifications:**
 
@@ -335,11 +348,11 @@ Ada and Bora narrate every input from an empty private room through seven ordina
 - [x] Ada can leave a third assistant
 - [x] No Demand rotates during inspection
 
-## 30. Ada arrives at Small Market with sale stock
+## 31. Ada arrives at Small Market with sale stock
 
 **Ada, the first merchant** — Ada arrives at Small Market with sale stock
 
-![Ada arrives at Small Market with sale stock](./screenshots/015-host-arrives-small-market-desktop.png)
+![Ada arrives at Small Market with sale stock](./screenshots/016-host-arrives-small-market-desktop.png)
 
 **Verifications:**
 
@@ -347,11 +360,11 @@ Ada and Bora narrate every input from an empty private room through seven ordina
 - [x] No selection means the sale is disabled
 - [x] The active Demand is still on top
 
-## 31. Ada selects one depicted fabric for the Small Market
+## 32. Ada selects one depicted fabric for the Small Market
 
 **Ada, the first merchant** — Ada selects one depicted fabric for the Small Market
 
-![Ada selects one depicted fabric for the Small Market](./screenshots/016-host-chooses-small-sale-desktop.png)
+![Ada selects one depicted fabric for the Small Market](./screenshots/017-host-chooses-small-sale-desktop.png)
 
 **Verifications:**
 
@@ -359,11 +372,11 @@ Ada and Bora narrate every input from an empty private room through seven ordina
 - [x] One good earns the official 2 Lira
 - [x] Selection does not rotate or spend yet
 
-## 32. Ada completes the one-good Small Market sale
+## 33. Ada completes the one-good Small Market sale
 
 **Ada, the first merchant** — Ada completes the one-good Small Market sale
 
-![Ada completes the one-good Small Market sale](./screenshots/017-host-sells-small-market-desktop.png)
+![Ada completes the one-good Small Market sale](./screenshots/018-host-sells-small-market-desktop.png)
 
 **Verifications:**
 
@@ -372,18 +385,18 @@ Ada and Bora narrate every input from an empty private room through seven ordina
 - [x] Small Market tile replaces its five graphical demand goods
 - [x] Exactly the selected good was spent
 
-## 33. Ada passes after rotating Small Market
+## 34. Ada passes after rotating Small Market
 
 **Ada, the first merchant** — Ada passes after rotating Small Market
 
-![Ada passes after rotating Small Market](./screenshots/018-host-ends-small-market-turn-desktop.png)
+![Ada passes after rotating Small Market](./screenshots/019-host-ends-small-market-turn-desktop.png)
 
 **Verifications:**
 
 - [x] Bora starts turn six
 - [x] The rotation remains canonical in movement
 
-## 34. Bora selects her placed Caravansary assistant
+## 35. Bora selects her placed Caravansary assistant
 
 **Bora, the second merchant** — Bora selects her placed Caravansary assistant
 
@@ -395,7 +408,7 @@ Ada and Bora narrate every input from an empty private room through seven ordina
 - [x] The CTA now offers assistant pick-up
 - [x] The public discard still holds Bora’s original card
 
-## 35. Bora returns and picks up the Caravansary assistant
+## 36. Bora returns and picks up the Caravansary assistant
 
 **Bora, the second merchant** — Bora returns and picks up the Caravansary assistant
 
@@ -406,7 +419,7 @@ Ada and Bora narrate every input from an empty private room through seven ordina
 - [x] The discard source is now enabled
 - [x] Bora carries three assistants after the pick-up
 
-## 36. Bora chooses the face-up discard as the first draw
+## 37. Bora chooses the face-up discard as the first draw
 
 **Bora, the second merchant** — Bora chooses the face-up discard as the first draw
 
@@ -419,7 +432,7 @@ Ada and Bora narrate every input from an empty private room through seven ordina
 - [x] The second draw-pile card remains graphically face down
 - [x] Changing a private source appends no event
 
-## 37. Bora reveals the face-up discard and face-down draw together
+## 38. Bora reveals the face-up discard and face-down draw together
 
 **Bora, the second merchant** — Bora reveals the face-up discard and face-down draw together
 
@@ -430,7 +443,7 @@ Ada and Bora narrate every input from an empty private room through seven ordina
 - [x] The revealed pair contains the known discard plus one newly revealed draw
 - [x] Reveal still appends no event
 
-## 38. Bora selects one current hand card for the exchange
+## 39. Bora selects one current hand card for the exchange
 
 **Bora, the second merchant** — Bora selects one current hand card for the exchange
 
@@ -442,7 +455,7 @@ Ada and Bora narrate every input from an empty private room through seven ordina
 - [x] The discard/deck exchange is enabled
 - [x] Bora still owns two canonical cards before committing
 
-## 39. Bora takes one discard and one deck card, then discards one
+## 40. Bora takes one discard and one deck card, then discards one
 
 **Bora, the second merchant** — Bora takes one discard and one deck card, then discards one
 
@@ -454,7 +467,7 @@ Ada and Bora narrate every input from an empty private room through seven ordina
 - [x] The new face-up discard is the selected hand card
 - [x] Ada sees three hidden cards and no private title
 
-## 40. Bora passes after reclaiming the face-up card
+## 41. Bora passes after reclaiming the face-up card
 
 **Bora, the second merchant** — Bora passes after reclaiming the face-up card
 
@@ -465,11 +478,11 @@ Ada and Bora narrate every input from an empty private room through seven ordina
 - [x] Ada starts turn seven
 - [x] All private-card counts survive turn closure
 
-## 41. Ada selects Large Market two spaces away
+## 42. Ada selects Large Market two spaces away
 
 **Ada, the first merchant** — Ada selects Large Market two spaces away
 
-![Ada selects Large Market two spaces away](./screenshots/019-host-selects-large-market-desktop.png)
+![Ada selects Large Market two spaces away](./screenshots/020-host-selects-large-market-desktop.png)
 
 **Verifications:**
 
@@ -477,11 +490,11 @@ Ada and Bora narrate every input from an empty private room through seven ordina
 - [x] Ada can leave her last carried assistant
 - [x] Large Demand has not rotated yet
 
-## 42. Ada arrives at Large Market with remaining stock
+## 43. Ada arrives at Large Market with remaining stock
 
 **Ada, the first merchant** — Ada arrives at Large Market with remaining stock
 
-![Ada arrives at Large Market with remaining stock](./screenshots/020-host-arrives-large-market-desktop.png)
+![Ada arrives at Large Market with remaining stock](./screenshots/021-host-arrives-large-market-desktop.png)
 
 **Verifications:**
 
@@ -489,11 +502,11 @@ Ada and Bora narrate every input from an empty private room through seven ordina
 - [x] The sale begins disabled with zero selected
 - [x] Ada now has zero carried assistants but may finish this action
 
-## 43. Ada selects one depicted fabric for Large Market
+## 44. Ada selects one depicted fabric for Large Market
 
 **Ada, the first merchant** — Ada selects one depicted fabric for Large Market
 
-![Ada selects one depicted fabric for Large Market](./screenshots/021-host-chooses-large-sale-desktop.png)
+![Ada selects one depicted fabric for Large Market](./screenshots/022-host-chooses-large-sale-desktop.png)
 
 **Verifications:**
 
@@ -501,11 +514,11 @@ Ada and Bora narrate every input from an empty private room through seven ordina
 - [x] One good displays the distinct 3-Lira Large Market tier
 - [x] The local selection has not spent stock
 
-## 44. Ada completes the Large Market sale
+## 45. Ada completes the Large Market sale
 
 **Ada, the first merchant** — Ada completes the Large Market sale
 
-![Ada completes the Large Market sale](./screenshots/022-host-sells-large-market-desktop.png)
+![Ada completes the Large Market sale](./screenshots/023-host-sells-large-market-desktop.png)
 
 **Verifications:**
 
@@ -514,11 +527,11 @@ Ada and Bora narrate every input from an empty private room through seven ordina
 - [x] Large Market tile exposes the newly rotated five-good demand
 - [x] Bora observes the same public market state
 
-## 45. Ada reloads the completed Large Market turn
+## 46. Ada reloads the completed Large Market turn
 
 **Ada, the first merchant** — Ada reloads the completed Large Market turn
 
-![Ada reloads the completed Large Market turn](./screenshots/023-host-reloads-large-market-desktop.png)
+![Ada reloads the completed Large Market turn](./screenshots/024-host-reloads-large-market-desktop.png)
 
 **Verifications:**
 
@@ -526,11 +539,11 @@ Ada and Bora narrate every input from an empty private room through seven ordina
 - [x] Both Demand rotations and card exchange replay exactly
 - [x] End turn is the sole continuation
 
-## 46. Ada passes the fully replayed economy turn
+## 47. Ada passes the fully replayed economy turn
 
 **Ada, the first merchant** — Ada passes the fully replayed economy turn
 
-![Ada passes the fully replayed economy turn](./screenshots/024-host-ends-large-market-turn-desktop.png)
+![Ada passes the fully replayed economy turn](./screenshots/025-host-ends-large-market-turn-desktop.png)
 
 **Verifications:**
 

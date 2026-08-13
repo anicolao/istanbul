@@ -36,6 +36,13 @@ browser-level tracer bullets verified with Playwright.
   information and decisions on each player's phone.
 - Keyboard, pointer, touch, reduced-motion, and screen-reader-friendly play.
 
+The bazaar board follows the physical tabletop hierarchy: every Place name is
+anchored at the top, enlarged merchants and assistants occupy the visual
+center, and only Places with changing public state carry a large graphical
+display at the bottom. The Caravansary draw and discard piles are directly
+inspectable, revealing the exact current top-card art and rules text without
+changing game history.
+
 The Mocha & Baksheesh and Letters & Seals expansions, optional neutral-assistant
 variant, bots, matchmaking, accounts, rankings, and anti-cheat game authority
 are outside the MVP.

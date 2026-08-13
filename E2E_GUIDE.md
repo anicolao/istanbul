@@ -129,6 +129,10 @@ Every spec must:
 8. cover every required viewport for responsive scenarios; and
 9. generate the scenario walkthrough.
 
+Direct inspection of a board pile or another public graphical status counts as
+a user action. Capture it, assert the exact revealed identity and rules text,
+and prove that inspection does not append an event.
+
 The first scenario should follow this shape:
 
 ```ts
