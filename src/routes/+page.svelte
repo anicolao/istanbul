@@ -519,7 +519,7 @@
             <label>Your merchant name<input bind:value={hostName} maxlength="24" autocomplete="nickname" required /></label>
             <label>Layout<select bind:value={selectedLayout}><option value="short-path">Short Path</option><option value="long-path">Long Path</option><option value="number-order">Number Order</option><option value="random">Seeded Random</option></select></label>
             <label>Play surface<select bind:value={selectedMode}><option value="personal-screens">Personal screens</option><option value="shared-table">Shared table + private phones</option></select></label>
-            <button class="primary" type="submit" disabled={!hostName.trim() || actionPending}>Create {selectedMode === 'shared-table' ? 'shared table' : 'private room'} <span aria-hidden="true">→</span></button>
+            <button class="primary" type="submit" disabled={!hostName.trim() || actionPending}>Create {selectedMode === 'shared-table' ? 'shared table' : 'private room'} <svg class="button-arrow" aria-hidden="true" viewBox="0 0 16 16"><path d="M2 8h11M9 4l4 4-4 4" /></svg></button>
           </form>
         </section>
         <div class="divider"><span>or</span></div>
@@ -546,7 +546,7 @@
         {#if room.mode === 'shared-table'}<button class="display-selector" onclick={useAsSharedDisplay}>Use this screen as the public table</button><div class="divider"><span>or claim a private controller</span></div>{/if}
         <form onsubmit={(event) => { event.preventDefault(); void joinRoom(); }}>
           <label>Your merchant name<input bind:value={guestName} maxlength="24" autocomplete="nickname" required /></label>
-          <button class="primary" type="submit" disabled={!guestName.trim() || actionPending || room.seats.length >= room.maxPlayers}>Join the room <span aria-hidden="true">→</span></button>
+          <button class="primary" type="submit" disabled={!guestName.trim() || actionPending || room.seats.length >= room.maxPlayers}>Join the room <svg class="button-arrow" aria-hidden="true" viewBox="0 0 16 16"><path d="M2 8h11M9 4l4 4-4 4" /></svg></button>
         </form>
         {#if message}<p class="error" role="alert">{message}</p>{/if}
       </div>
@@ -587,7 +587,7 @@
             <div class="shared-invite"><SeatQr compact url={makeInviteUrl(room.roomCode)} label="Merchant invitation" /><a href={makeInviteUrl(room.roomCode, { display: true })} target="_blank" rel="noreferrer">Open public table display</a></div>
           {/if}
           {#if allReady && isHost}
-            <button class="primary ready-button start-button" onclick={() => void startGame()} disabled={actionPending}>Open the bazaar <span aria-hidden="true">→</span></button>
+            <button class="primary ready-button start-button" onclick={() => void startGame()} disabled={actionPending}>Open the bazaar <svg class="button-arrow" aria-hidden="true" viewBox="0 0 16 16"><path d="M2 8h11M9 4l4 4-4 4" /></svg></button>
           {:else}
             <button class:unready={localSeat.ready} class="primary ready-button" onclick={() => void toggleReady()} disabled={actionPending}>{localSeat.ready ? 'Keep planning' : 'I am ready'} <span aria-hidden="true">{localSeat.ready ? '↺' : '✓'}</span></button>
           {/if}
@@ -670,6 +670,7 @@
   select option { color: #173f43; background: #fffaf0; }
   button { min-height: 2.9rem; border: 0; border-radius: .75rem; font-weight: 700; }
   button.primary { display: flex; align-items: center; justify-content: space-between; margin-top: .65rem; padding: .72rem 1rem; color: #173f43; background: #efca7d; box-shadow: 0 .35rem 0 #bd8b39; }
+  .button-arrow { width: 1rem; height: 1rem; fill: none; stroke: currentColor; stroke-width: 1.75; stroke-linecap: round; stroke-linejoin: round; }
   button.primary:active { translate: 0 .2rem; box-shadow: 0 .15rem 0 #bd8b39; }
   button:disabled { opacity: .48; box-shadow: none; }
   .divider { display: flex; align-items: center; gap: .7rem; margin: 1.2rem 0; color: #9cb4af; font-size: .75rem; text-transform: uppercase; }
