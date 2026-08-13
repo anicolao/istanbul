@@ -31,8 +31,8 @@ browser-level tracer bullets verified with Playwright.
 - Correct two-player neutral merchants and six-ruby target.
 - Reconnect and replay from a complete immutable event history.
 - Ordinary network play on phone, tablet, and desktop.
-- A shared-table mode with the public bazaar on a large display and private
-  Bonus cards on player phones.
+- A dedicated `/tabletop/` route that creates and owns the public room on a
+  large display while private phones hold player identities and Bonus cards.
 - Keyboard, pointer, touch, reduced-motion, and screen-reader-friendly play.
 
 The Mocha & Baksheesh and Letters & Seals expansions, optional neutral-assistant
@@ -69,12 +69,13 @@ The implementation now supports complete base-game play: immutable multiplayer
 rooms, deterministic setup and replay, movement and assistant rules, every Place
 action, encounters, Mosque abilities, Bonus cards, all ruby routes, final turns,
 ranking, rematches, and reconnect recovery. Personal-screen games run from two
-to five browsers. Shared-table games add a privacy-safe public board, real
-seat-specific QR invitations, private phone controllers, and retained controller
-ownership after reload. Rooms do not ask the creator to predict attendance:
-merchants join, mark themselves ready, and the creator starts with everyone who
-is present. On a shared tabletop every open position shows a join QR until play
-begins, when all unclaimed positions disappear. The MVP is complete: its final slice adds roving keyboard
+to five browsers. Opening `/tabletop/` creates a fresh table-owned room without
+claiming a merchant seat. Every open position shows a real QR leading only to a
+private phone controller; merchants scan, join, and mark themselves ready. The
+dedicated tabletop owns layout and start controls, starts with everyone present,
+and replaces every claimed and unclaimed lobby position with the privacy-safe
+public bazaar. Reloading its retained URL reopens the same room. The MVP is
+complete: its final slice adds roving keyboard
 navigation and focus transfer, live turn announcements, 44 px touch actions,
 safe-area insets, reduced-motion behaviour, labelled non-colour cues, and
 responsive play at every target viewport in [MVP_DESIGN.md](MVP_DESIGN.md).
@@ -82,9 +83,10 @@ responsive play at every target viewport in [MVP_DESIGN.md](MVP_DESIGN.md).
 Each numbered directory under [`tests/e2e`](tests/e2e) is a generated,
 screenshot-by-screenshot play-by-play. Its README names the acting user, shows
 the exact UI after every action, and lists the DOM and serialized projection
-facts checked before that image was accepted. For example, scenario 013 follows
-Ada’s phone, Bora’s phone, and the public display from room creation through a
-move and reconnect without omitting an interaction.
+facts checked before that image was accepted. For example, scenario 013 starts
+at the direct tabletop URL, follows Ada and Bora scanning its QR codes on
+private phones, and returns to the public table for start, a move, and reload
+without omitting an interaction.
 
 The local verification entry point is:
 

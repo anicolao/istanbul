@@ -6,7 +6,6 @@
   import { onMount } from 'svelte';
   import { appTitle } from '$lib/app-metadata';
   import GameTable from '$lib/components/GameTable.svelte';
-  import SeatQr from '$lib/components/SeatQr.svelte';
   import SharedTableLobby from '$lib/components/SharedTableLobby.svelte';
   import { initializeFirebase } from '$lib/firebase';
   import { createEventRepository, type EventRepository } from '$lib/game/repository';
@@ -26,9 +25,10 @@
     schemaVersion,
     type CanonicalEvent,
     type LayoutKind,
-    type ReplayProjection,
-    type RoomMode
+    type ReplayProjection
   } from '$lib/game/protocol';
+
+  let { tabletopRoute = false }: { tabletopRoute?: boolean } = $props();
 
   type Screen = 'landing' | 'loading-room' | 'join-room' | 'lobby' | 'game' | 'shared-display';
 
@@ -44,7 +44,6 @@
   let guestName = $state('');
   let joinCode = $state('');
   let selectedLayout = $state<LayoutKind>('short-path');
-  let selectedMode = $state<RoomMode>('personal-screens');
   let sharedDisplay = $state(false);
   let requestedSeat = $state<number | null>(null);
   let actionPending = $state(false);
@@ -74,6 +73,8 @@
     maxPlayers: room?.maxPlayers ?? null,
     layout: room?.layout ?? null,
     mode: room?.mode ?? null,
+    tabletopOwned: room?.tabletopOwned ?? false,
+    tabletopRoute,
     sharedDisplay,
     ready: room?.seats.map((seat) => seat.ready) ?? [],
     localSeat: localSeat?.name ?? null,
@@ -129,7 +130,7 @@
       recoveryReview = import.meta.env.VITE_USE_FIREBASE_EMULATORS === 'true' && new URL(location.href).searchParams.get('e2eRecovery') === '1';
       const reviewedCacheCount = Number(new URL(location.href).searchParams.get('e2eCacheCount') ?? '0');
       const reviewedRoom = normalizeRoomCode(new URL(location.href).searchParams.get('room') ?? '');
-      sharedDisplay = new URL(location.href).searchParams.get('display') === 'table';
+      sharedDisplay = tabletopRoute;
       const seatParameter = Number(new URL(location.href).searchParams.get('seat'));
       requestedSeat = Number.isInteger(seatParameter) && seatParameter > 0 ? seatParameter : null;
       if (recoveryReview && reviewedCacheCount > 0 && isRoomCode(reviewedRoom)) {
@@ -144,20 +145,31 @@
 
       const requestedRoom = normalizeRoomCode(new URL(location.href).searchParams.get('room') ?? '');
       if (isRoomCode(requestedRoom)) await openRoom(requestedRoom, services.db);
+      else if (tabletopRoute) await createTabletopRoom(services.db);
     } catch (error) {
       connectionStatus = 'error';
       connectionText = error instanceof Error ? error.message : 'Firebase unavailable';
     }
   });
 
-  function makeInviteUrl(roomCode: string, options: { seat?: number; display?: boolean } = {}) {
+  function makeInviteUrl(roomCode: string, options: { seat?: number } = {}) {
+    if (typeof location === 'undefined') return `?room=${roomCode}`;
+    const url = new URL(location.href);
+    const e2eSeed = url.searchParams.get('e2eSeed');
+    url.pathname = `${url.pathname.replace(/\/tabletop\/?$/, '/')}`;
+    url.search = '';
+    url.searchParams.set('room', roomCode);
+    if (options.seat) url.searchParams.set('seat', String(options.seat));
+    if (import.meta.env.VITE_USE_FIREBASE_EMULATORS === 'true' && e2eSeed) url.searchParams.set('e2eSeed', e2eSeed);
+    return url.toString();
+  }
+
+  function makeTabletopUrl(roomCode: string) {
     if (typeof location === 'undefined') return `?room=${roomCode}`;
     const url = new URL(location.href);
     const e2eSeed = url.searchParams.get('e2eSeed');
     url.search = '';
     url.searchParams.set('room', roomCode);
-    if (options.seat) url.searchParams.set('seat', String(options.seat));
-    if (options.display) url.searchParams.set('display', 'table');
     if (import.meta.env.VITE_USE_FIREBASE_EMULATORS === 'true' && e2eSeed) url.searchParams.set('e2eSeed', e2eSeed);
     return url.toString();
   }
@@ -233,7 +245,7 @@
         hostName: hostName.trim(),
         maxPlayers: maxRoomPlayers,
         layout: selectedLayout,
-        mode: selectedMode
+        mode: 'personal-screens'
       });
       replaceState(makeInviteUrl(roomCode), {});
       await openRoom(roomCode, db);
@@ -245,11 +257,29 @@
     }
   }
 
-  function useAsSharedDisplay() {
-    if (!room || room.mode !== 'shared-table') return;
-    sharedDisplay = true;
-    replaceState(makeInviteUrl(room.roomCode, { display: true }), {});
-    screen = 'shared-display';
+  async function createTabletopRoom(db?: Awaited<ReturnType<typeof initializeFirebase>>['db']) {
+    if (actionPending) return;
+    actionPending = true;
+    message = '';
+    try {
+      const roomCode = makeRoomCode();
+      const firestore = db ?? (await initializeFirebase()).db;
+      repository = createEventRepository(firestore, roomCode, userUid);
+      await repository.append('game/created', {
+        roomCode,
+        tabletopOwned: true,
+        maxPlayers: maxRoomPlayers,
+        layout: selectedLayout,
+        mode: 'shared-table'
+      });
+      replaceState(makeTabletopUrl(roomCode), {});
+      await openRoom(roomCode, firestore);
+    } catch (error) {
+      message = error instanceof Error ? error.message : 'Could not open the tabletop';
+      screen = 'landing';
+    } finally {
+      actionPending = false;
+    }
   }
 
   async function findRoom() {
@@ -475,9 +505,9 @@
 
 <svelte:head><title>{appTitle}</title></svelte:head>
 
-<main data-e2e-layout class:lobby-screen={screen === 'lobby'} class:game-screen={screen === 'game' || screen === 'shared-display'} class:shared-screen={screen === 'shared-display'}>
+<main data-e2e-layout data-tabletop-route={tabletopRoute} class:lobby-screen={screen === 'lobby'} class:game-screen={screen === 'game' || screen === 'shared-display'} class:shared-screen={screen === 'shared-display'}>
   <header class="topbar">
-    <a class="brand" href="./" aria-label="Istanbul home">
+    <a class="brand" href={tabletopRoute ? '../' : './'} aria-label="Istanbul home">
       <span class="brand-gem" aria-hidden="true"></span>
       <span>Istanbul</span>
     </a>
@@ -518,8 +548,7 @@
           <form onsubmit={(event) => { event.preventDefault(); void createRoom(); }}>
             <label>Your merchant name<input bind:value={hostName} maxlength="24" autocomplete="nickname" required /></label>
             <label>Layout<select bind:value={selectedLayout}><option value="short-path">Short Path</option><option value="long-path">Long Path</option><option value="number-order">Number Order</option><option value="random">Seeded Random</option></select></label>
-            <label>Play surface<select bind:value={selectedMode}><option value="personal-screens">Personal screens</option><option value="shared-table">Shared table + private phones</option></select></label>
-            <button class="primary" type="submit" disabled={!hostName.trim() || actionPending}>Create {selectedMode === 'shared-table' ? 'shared table' : 'private room'} <svg class="button-arrow" aria-hidden="true" viewBox="0 0 16 16"><path d="M2 8h11M9 4l4 4-4 4" /></svg></button>
+            <button class="primary" type="submit" disabled={!hostName.trim() || actionPending}>Create private room <svg class="button-arrow" aria-hidden="true" viewBox="0 0 16 16"><path d="M2 8h11M9 4l4 4-4 4" /></svg></button>
           </form>
         </section>
         <div class="divider"><span>or</span></div>
@@ -541,9 +570,8 @@
       <div class="room-ticket"><span>{modeNames[room.mode]}</span><strong>{room.roomCode}</strong><small>{room.seats.length} {room.seats.length === 1 ? 'merchant' : 'merchants'} here · {room.maxPlayers - room.seats.length} open</small></div>
       <div class="join-panel">
         <p class="section-kicker">You were invited</p>
-        <h1 id="join-room-title">Take a seat at {room.seats[0].name}’s table.</h1>
+        <h1 id="join-room-title">{room.tabletopOwned ? 'Take a seat at the tabletop.' : `Take a seat at ${room.seats[0].name}’s table.`}</h1>
         <p>The table is using the <strong>{layoutNames[room.layout]}</strong> layout.{requestedSeat ? ` This invitation is for controller seat ${requestedSeat}.` : ''} Your merchant name is public; Bonus cards stay private once play begins.</p>
-        {#if room.mode === 'shared-table'}<button class="display-selector" onclick={useAsSharedDisplay}>Use this screen as the public table</button><div class="divider"><span>or claim a private controller</span></div>{/if}
         <form onsubmit={(event) => { event.preventDefault(); void joinRoom(); }}>
           <label>Your merchant name<input bind:value={guestName} maxlength="24" autocomplete="nickname" required /></label>
           <button class="primary" type="submit" disabled={!guestName.trim() || actionPending || room.seats.length >= room.maxPlayers}>Join the room <svg class="button-arrow" aria-hidden="true" viewBox="0 0 16 16"><path d="M2 8h11M9 4l4 4-4 4" /></svg></button>
@@ -554,7 +582,7 @@
   {:else if screen === 'lobby' && room && localSeat}
     <section class="lobby" aria-labelledby="lobby-title">
       <div class="lobby-heading">
-        <div><p class="eyebrow">Private room · {room.roomCode}</p><h1 id="lobby-title">Gather your merchants.</h1><p>{allReady ? 'Everyone here is ready. The room creator can open the bazaar.' : 'Invite everyone who is playing, then each merchant marks themselves ready.'}</p></div>
+      <div><p class="eyebrow">Private room · {room.roomCode}</p><h1 id="lobby-title">Gather your merchants.</h1><p>{allReady ? (room.tabletopOwned ? 'Everyone here is ready. Start from the tabletop.' : 'Everyone here is ready. The room creator can open the bazaar.') : 'Invite everyone who is playing, then each merchant marks themselves ready.'}</p></div>
         <div class:ready-seal={allReady} class="room-state" aria-live="polite"><span>{allReady ? 'Table ready' : 'Waiting'}</span><strong>{room.seats.filter((seat) => seat.ready).length}/{room.seats.length}</strong><small>merchants ready</small></div>
       </div>
 
@@ -583,9 +611,6 @@
           {/if}
           <p class="layout-note">{room.layout === 'short-path' ? 'Direct trade routes make this a welcoming first table.' : room.layout === 'long-path' ? 'Ruby routes sit farther apart for a more tactical journey.' : room.layout === 'number-order' ? 'The numbered reference arrangement from the rulebook.' : 'A valid arrangement derived from the committed setup seed.'}</p>
           <div class="invite"><label>Invitation link<input readonly value={inviteUrl} aria-label="Invitation link" /></label><p>Room code <strong>{room.roomCode}</strong></p></div>
-          {#if room.mode === 'shared-table'}
-            <div class="shared-invite"><SeatQr compact url={makeInviteUrl(room.roomCode)} label="Merchant invitation" /><a href={makeInviteUrl(room.roomCode, { display: true })} target="_blank" rel="noreferrer">Open public table display</a></div>
-          {/if}
           {#if allReady && isHost}
             <button class="primary ready-button start-button" onclick={() => void startGame()} disabled={actionPending}>Open the bazaar <svg class="button-arrow" aria-hidden="true" viewBox="0 0 16 16"><path d="M2 8h11M9 4l4 4-4 4" /></svg></button>
           {:else}
@@ -599,13 +624,13 @@
   {:else if screen === 'shared-display' && room}
     {#if game}
       <GameTable
-        {game} {room} userUid="" selectedPlace={null} selectedBonus={null} {boardScale} displayOnly
+        {game} {room} userUid={room.tabletopOwned ? userUid : ''} selectedPlace={null} selectedBonus={null} {boardScale} displayOnly
         onInspectPlace={() => {}} onInspectBonus={() => {}} onMove={() => {}} onPayMerchants={() => {}}
         onTakeAction={() => {}} onResolveEncounter={() => {}} onUseMosqueAbility={() => {}} onPlayBonus={() => {}}
-        onGrantE2eResources={() => {}} onRematch={() => {}} onEndTurn={() => {}}
+        onGrantE2eResources={() => {}} onRematch={() => { if (room.tabletopOwned) void rematch(); }} onEndTurn={() => {}}
         onZoomIn={() => boardScale = Math.min(1.18, boardScale + 0.09)} onFit={() => boardScale = 1}
       />
-    {:else}<SharedTableLobby {room} invitationFor={() => makeInviteUrl(room.roomCode)} />{/if}
+    {:else}<SharedTableLobby {room} invitationFor={() => makeInviteUrl(room.roomCode)} layoutNames={layoutNames} canConfigure={isHost && room.tabletopOwned} canStart={isHost && allReady} {actionPending} onConfigure={(layout) => void configureRoom(layout)} onStart={() => void startGame()} />{/if}
   {:else if screen === 'game' && room && game}
     <GameTable
       {game}
@@ -677,7 +702,6 @@
   .divider::before, .divider::after { height: 1px; flex: 1; content: ''; background: rgb(255 250 240 / 18%); }
   .join-form { grid-template-columns: 1fr auto; align-items: end; }
   .secondary { padding: .6rem 1rem; border: 1px solid rgb(255 250 240 / 40%); color: #fffaf0; background: transparent; }
-  .display-selector { width: 100%; padding: .65rem 1rem; border: 1px solid #efca7d; color: #173f43; background: #efca7d; }
   .code-input { font-weight: 700; letter-spacing: .22em; text-transform: uppercase; }
   .error { margin: .7rem 0 0; color: #ffc1b6; }
   .loading { min-height: calc(100svh - 9rem); display: grid; place-content: center; text-align: center; }
@@ -726,8 +750,6 @@
   .invite { display: grid; grid-template-columns: 1fr auto; gap: .7rem; align-items: end; }
   .invite p { margin: 0; padding-bottom: .65rem; color: #bdd0ca; font-size: .78rem; }
   .invite strong { display: block; color: #efca7d; font-size: 1.15rem; letter-spacing: .16em; }
-  .shared-invite { display: grid; grid-template-columns: 1fr auto; gap: .7rem; align-items: center; margin-top: .65rem; padding: .55rem; border: 1px solid rgb(255 255 255 / 17%); border-radius: .7rem; }
-  .shared-invite a { padding: .65rem; border: 1px solid #efca7d; border-radius: .55rem; color: #efca7d; font-size: .7rem; font-weight: 700; text-align: center; text-decoration: none; }
   .ready-button.unready { color: #fffaf0; background: #9c3d39; box-shadow: 0 .35rem 0 #652927; }
   .start-button { color: #fffaf0 !important; background: #267356 !important; box-shadow: 0 .35rem 0 #164a37 !important; }
   .history { display: flex; justify-content: center; gap: 1.4rem; padding-top: .85rem; color: #5c716e; font-size: .76rem; }
@@ -778,7 +800,6 @@
     .invite { grid-column: 1 / -1; grid-template-columns: 1fr auto; }
     .invite input { min-height: 2.1rem; font-size: .68rem; }
     .invite p { padding-bottom: .35rem; }
-    .shared-invite { grid-column: 1 / -1; }
     .ready-button { grid-column: 1 / -1; margin-top: .2rem !important; }
     .history { gap: .55rem; padding-top: .45rem; font-size: .62rem; }
     .history span + span { padding-left: .55rem; }
@@ -793,9 +814,9 @@
     .welcome { padding: 1rem; }.welcome h1 { font-size: 2.2rem; }.welcome .lede, .route-notes { display: none; }
     .entry-card, .join-panel { padding: .75rem 1rem; }.entry-card h2 { margin-bottom: .35rem; }.landing .entry-card > .divider, .landing .entry-card > section:last-of-type { display: none; }
     input, select { min-height: 2.2rem; padding: .35rem .55rem; }.entry-card button { min-height: 2.25rem; }
-    .join-room { grid-template-columns: .72fr 1.28fr; }.room-ticket strong { font-size: 3.5rem; }.join-panel h1 { font-size: 2.25rem; }.join-panel > p:not(.section-kicker,.error) { margin: .2rem 0 .5rem; font-size: .72rem; }.join-panel .divider { margin: .3rem 0; }
+    .join-room { grid-template-columns: .72fr 1.28fr; }.room-ticket strong { font-size: 3.5rem; }.join-panel h1 { font-size: 2.25rem; }.join-panel > p:not(.section-kicker,.error) { margin: .2rem 0 .5rem; font-size: .72rem; }
     .lobby { min-height: calc(100svh - 3.7rem); }.lobby-heading { margin: 0 0 .3rem; }.lobby-heading h1 { margin: 0; font-size: 1.8rem; }.lobby-heading > div:first-child > p:last-child { display: none; }.room-state { min-width: 5rem; padding: .25rem .5rem; }.room-state small { display: none; }.room-state span { font-size: .5rem; }.room-state strong { font-size: 1.2rem; }
-    .lobby-grid { grid-template-columns: .8fr 1.2fr; gap: .4rem; }.seats-card, .table-card { padding: .5rem; border-radius: .7rem; }.card-heading { padding-bottom: .25rem; }.card-heading h2 { margin: 0; font-size: 1.05rem; }.seats { gap: .2rem; margin-top: .25rem; }.seats li { min-height: 2rem; padding: .2rem .35rem; }.merchant-token, .empty-token { width: 1.5rem; height: 1.5rem; border-width: 2px; }.table-card { display: grid; grid-template-columns: 1fr 1fr; gap: .2rem .4rem; }.table-card .card-heading, .layout-note, .invite, .shared-invite, .ready-button { grid-column: 1 / -1; }.table-card label { margin-top: 0; }.layout-note { min-height: 0; margin: 0; font-size: .55rem; }.invite input { min-height: 1.8rem; font-size: .55rem; }.shared-invite { display: none; }.ready-button { min-height: 2.2rem; margin-top: 0 !important; }.history { display: none; }
+    .lobby-grid { grid-template-columns: .8fr 1.2fr; gap: .4rem; }.seats-card, .table-card { padding: .5rem; border-radius: .7rem; }.card-heading { padding-bottom: .25rem; }.card-heading h2 { margin: 0; font-size: 1.05rem; }.seats { gap: .2rem; margin-top: .25rem; }.seats li { min-height: 2rem; padding: .2rem .35rem; }.merchant-token, .empty-token { width: 1.5rem; height: 1.5rem; border-width: 2px; }.table-card { display: grid; grid-template-columns: 1fr 1fr; gap: .2rem .4rem; }.table-card .card-heading, .layout-note, .invite, .ready-button { grid-column: 1 / -1; }.table-card label { margin-top: 0; }.layout-note { min-height: 0; margin: 0; font-size: .55rem; }.invite input { min-height: 1.8rem; font-size: .55rem; }.ready-button { min-height: 2.2rem; margin-top: 0 !important; }.history { display: none; }
   }
   @media (prefers-reduced-motion: reduce) { *, *::before, *::after { scroll-behavior: auto !important; transition: none !important; animation: none !important; } }
 </style>

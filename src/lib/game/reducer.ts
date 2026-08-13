@@ -78,13 +78,14 @@ function applyEvent(state: ReplayProjection, event: CanonicalEvent): boolean {
     }
     const roomCode = stringField(event.payload, 'roomCode');
     const hostName = stringField(event.payload, 'hostName');
+    const tabletopOwned = event.payload.tabletopOwned === true;
     const maxPlayers = event.payload.maxPlayers;
     const layout = event.payload.layout;
     const mode = event.payload.mode;
     if (
-      !roomCode || !isRoomCode(roomCode) || !hostName ||
+      !roomCode || !isRoomCode(roomCode) || (!tabletopOwned && !hostName) ||
       typeof maxPlayers !== 'number' || maxPlayers < 2 || maxPlayers > 5 ||
-      !isLayout(layout) || !isMode(mode)
+      !isLayout(layout) || !isMode(mode) || (tabletopOwned && mode !== 'shared-table')
     ) {
       reject(state, event, 'invalid-room-creation');
       return false;
@@ -92,8 +93,9 @@ function applyEvent(state: ReplayProjection, event: CanonicalEvent): boolean {
     state.room = {
       roomCode,
       hostUid: event.actorUid,
+      tabletopOwned,
       status: 'lobby',
-      seats: [{ uid: event.actorUid, name: hostName, ready: false }],
+      seats: tabletopOwned ? [] : [{ uid: event.actorUid, name: hostName!, ready: false }],
       maxPlayers,
       layout,
       mode

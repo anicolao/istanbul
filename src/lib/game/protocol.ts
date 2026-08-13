@@ -36,6 +36,7 @@ export interface Seat {
 export interface RoomProjection {
   roomCode: string;
   hostUid: string;
+  tabletopOwned?: boolean;
   status: 'lobby' | 'playing';
   seats: Seat[];
   maxPlayers: number;

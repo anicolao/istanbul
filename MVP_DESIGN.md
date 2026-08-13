@@ -11,9 +11,11 @@ a short code or QR link, select a reviewed bazaar layout, play through ordinary
 browser controls, and finish with the official round completion and tie-breaks.
 Every client can reload and reconstruct the same game from immutable history.
 
-The MVP includes ordinary phone/tablet/desktop play and shared-table play with
-private Bonus cards on player phones. It excludes both expansions and the
-optional neutral-assistant variant.
+The MVP includes ordinary phone/tablet/desktop play and a dedicated `/tabletop/`
+route. The tabletop creates and owns an empty room, displays QR invitations,
+owns layout and start, and never consumes a merchant seat. Scanned phones hold
+player identities, readiness, private choices, and private Bonus cards. It
+excludes both expansions and the optional neutral-assistant variant.
 
 ## Fixed technical decisions
 
@@ -270,10 +272,10 @@ least one representative browser path.
 
 ### 9. Shared table, responsiveness, and accessibility
 
-- Add shared-table creation, a join QR at every open tabletop position, public
-  display selector, private phone controllers, and reconnect ownership. Joined
-  merchants replace invitations in the lobby; starting play removes all open
-  positions and presents only the public game.
+- Add direct table-owned room creation, a join QR at every open tabletop
+  position, private phone controllers, and reconnect ownership. Joined
+  merchants replace invitations in the lobby; the tabletop alone starts play,
+  removes all open positions, and presents only the public game.
 - Finish keyboard board navigation, focus transfer, live announcements, touch
   targets, safe areas, contrast, non-color labels, and reduced motion.
 - Complete scenarios 013 and 014 across phone portrait, phone landscape,
