@@ -225,6 +225,9 @@ type, still limited by capacity.
 Gain every resource shown in the four currently uncovered spaces. Then move
 the leftmost Mail indicator still in the upper row to the lower row. If all
 four are already in the lower row, return all four to the upper row instead.
+The bottom row starts uncovered and pays spice, 1 Lira, fruit, and 1 Lira;
+the corresponding top row under the four starting indicators pays fabric,
+2 Lira, jewelry, and 2 Lira.
 
 The Post Office reward track is a versioned manifest copied from the tile; the
 state stores only the four indicator positions and derives the visible reward.
@@ -361,8 +364,8 @@ versioned 26-card manifest:
    operation there—pick one up if present, otherwise leave one;
 8. during movement, move three or four Places instead of one or two;
 9. during movement, return one assistant to the merchant stack; and
-10. at the Small Market, sell the required number using any mixture of goods
-    rather than the pictured types.
+10. at the Small Market, select the demand slots to sell and satisfy each one
+    with either its pictured good or a substituted good of the player's choice.
 
 “Perform twice” means complete the first action—including its changing cost or
 track—before testing and paying for the second. A card cannot make an otherwise

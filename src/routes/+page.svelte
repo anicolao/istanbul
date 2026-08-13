@@ -56,7 +56,7 @@
   let selectedPlace = $state<number | null>(null);
   let selectedBonus = $state<string | null>(null);
   let boardScale = $state(1);
-  let e2eResourceReview = $state<'ruby-routes' | 'yellow-recall' | 'zero-move'>('ruby-routes');
+  let e2eResourceReview = $state<'ruby-routes' | 'yellow-recall' | 'zero-move' | 'flexible-market'>('ruby-routes');
   const buildHash = (import.meta.env.VITE_GIT_HASH ?? 'local').slice(0, 7);
 
   const room = $derived(projection.room);
@@ -133,7 +133,7 @@
       const services = await initializeFirebase();
       recoveryReview = import.meta.env.VITE_USE_FIREBASE_EMULATORS === 'true' && new URL(location.href).searchParams.get('e2eRecovery') === '1';
       const e2eReview = new URL(location.href).searchParams.get('e2eReview');
-      e2eResourceReview = import.meta.env.VITE_USE_FIREBASE_EMULATORS === 'true' && (e2eReview === 'yellow-recall' || e2eReview === 'zero-move')
+      e2eResourceReview = import.meta.env.VITE_USE_FIREBASE_EMULATORS === 'true' && (e2eReview === 'yellow-recall' || e2eReview === 'zero-move' || e2eReview === 'flexible-market')
         ? e2eReview
         : 'ruby-routes';
       const reviewedCacheCount = Number(new URL(location.href).searchParams.get('e2eCacheCount') ?? '0');
@@ -472,6 +472,10 @@
       }
       if (e2eResourceReview === 'zero-move') {
         await repository.append('e2e/zero-move-reviewed', {});
+        return;
+      }
+      if (e2eResourceReview === 'flexible-market') {
+        await repository.append('e2e/flexible-market-reviewed', {});
         return;
       }
       await repository.append('e2e/resources-granted', {

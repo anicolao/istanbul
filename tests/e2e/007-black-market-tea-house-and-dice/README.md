@@ -261,6 +261,7 @@ Ada and Bora narrate every input from room creation through deterministic dice a
 **Verifications:**
 
 - [x] Black Market is a one-space legal route
+- [x] The tile displays all three jewelry thresholds before the roll
 - [x] Bora must leave a second assistant
 - [x] Bora begins with no goods
 

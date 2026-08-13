@@ -77,7 +77,7 @@ export function isPlaceActionChoice(value: unknown): value is PlaceActionChoice 
 export function collectPostOffice(game: GameSetup, player: SetupPlayer): string {
   const received: string[] = [];
   for (const [index, rows] of postOfficeRows.entries()) {
-    const resource = rows[game.postOfficeLower[index] ? 0 : 1];
+    const resource = rows[game.postOfficeLower[index] ? 1 : 0];
     if (resource.lira) player.lira += resource.lira;
     if (resource.good) player.goods[resource.good] = Math.min(player.capacity, player.goods[resource.good] + 1);
     received.push(resource.lira ? `${resource.lira} Lira` : `1 ${resource.good}`);
@@ -123,7 +123,9 @@ export function sellAtMarket(game: GameSetup, player: SetupPlayer, place: number
   const stack = place === 10 ? game.largeDemand : place === 11 ? game.smallDemand : null;
   if (!stack) return null;
   if (wildGoods) {
-    if (place !== 11 || !game.activeBonusEffects.includes('wild-small-market') || wildGoods.length < 1 || wildGoods.length > 5) return null;
+    const unique = [...new Set(slotIndexes)].sort((a, b) => a - b);
+    if (place !== 11 || !game.activeBonusEffects.includes('wild-small-market') || wildGoods.length < 1 || wildGoods.length > 5
+      || unique.length !== slotIndexes.length || unique.length !== wildGoods.length || unique.some((index) => index < 0 || index > 4)) return null;
     const counts = wildGoods.reduce<Record<Good, number>>((totals, good) => ({ ...totals, [good]: totals[good] + 1 }), { fabric: 0, spice: 0, fruit: 0, jewelry: 0 });
     if ((Object.keys(counts) as Good[]).some((good) => counts[good] > player.goods[good])) return null;
     for (const good of Object.keys(counts) as Good[]) player.goods[good] -= counts[good];

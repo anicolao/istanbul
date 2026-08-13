@@ -64,6 +64,7 @@ test('ruby routes escalate and Bonus cards resolve at reviewed timing windows', 
     await page.getByRole('button', { name: /^16 Gemstone Dealer.*Reachable/ }).click();
     await ada.step('host-selects-gemstone-long-route', { description: 'Ada selects Gemstone Dealer three spaces away', verifications: [
       { spec: 'The distant Dealer is now reachable only through the card', check: async () => { await expect(page.getByRole('button', { name: /^16 Gemstone Dealer.*Reachable/ })).toHaveAttribute('aria-pressed', 'true'); await expect(page.getByRole('button', { name: 'Move here and leave an assistant' })).toBeEnabled(); } },
+      { spec: 'Inspection reveals that another trade would raise the price to 16 Lira', check: async () => expect(page.getByLabel('After the next Gemstone Dealer trade: 16 Lira')).toBeVisible() },
       { spec: 'Movement inspection preserves event seven', check: async () => expectState(page, { eventCount: 7, game: { activeBonusEffects: ['long-move'], selectedPlace: 16 } }) }
     ] });
     await page.getByRole('button', { name: 'Move here and leave an assistant' }).click();
@@ -104,6 +105,7 @@ test('ruby routes escalate and Bonus cards resolve at reviewed timing windows', 
     await page.getByRole('button', { name: /^13 Sultan's Palace.*Reachable/ }).click();
     await ada.step('host-selects-palace', { description: 'Ada selects Sultan’s Palace beside the Dealer', verifications: [
       { spec: 'The Palace is a legal adjacent route', check: async () => expect(page.getByRole('button', { name: /^13 Sultan's Palace.*Reachable/ })).toHaveAttribute('aria-pressed', 'true') },
+      { spec: 'Inspection reveals that another trade would expose a six-good cost', check: async () => expect(page.getByLabel('After the next Sultan trade: 6 goods')).toBeVisible() },
       { spec: 'Ada carries seven Lira and the extended goods capacity', check: async () => expectState(page, { eventCount: 16, game: { activeBonusEffects: ['long-move'], players: [{ lira: 7, capacity: 3, goods: { fabric: 3, spice: 3, fruit: 3, jewelry: 3 } }, {}] } }) }
     ] });
     await page.getByRole('button', { name: 'Move here and leave an assistant' }).click();

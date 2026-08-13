@@ -46,15 +46,16 @@ test('mail, private card trading, and both demand markets remain exact through r
     await page.getByRole('button', { name: 'Move here and leave an assistant' }).click();
     await ada.step('host-arrives-post-office', { description: 'Ada arrives and exposes the initial mail route', verifications: [
       { spec: 'All four indicators are visibly upper', check: async () => expect(page.getByLabel('Post Office indicators upper, upper, upper, upper')).toBeVisible() },
+      { spec: 'The four available bottom rewards are vivid while all four cubed top rewards are grey', check: async () => { const state = page.getByTestId('place-state-5'); await expect(state.locator('[data-mail-row="lower"].covered')).toHaveCount(0); await expect(state.locator('[data-mail-row="upper"].covered')).toHaveCount(4); } },
       { spec: 'The collection control is enabled', check: async () => expect(page.getByRole('button', { name: 'Collect uncovered mail resources' })).toBeEnabled() },
       { spec: 'No mail resource is granted by movement alone', check: async () => expectState(page, { eventCount: 6, game: { phase: 'action', players: [{ merchantPlace: 5, lira: 2, goods: { fabric: 0, spice: 0, fruit: 0, jewelry: 0 } }, {}] } }) }
     ] });
 
     await page.getByRole('button', { name: 'Collect uncovered mail resources' }).click();
     await ada.step('host-collects-first-mail', { description: 'Ada collects the first four uncovered resources', verifications: [
-      { spec: 'The completion copy lists cloth, 2 Lira, jewelry, and 2 Lira from the top row', check: async () => expect(page.getByText('Collected 1 fabric, 2 Lira, 1 jewelry, 2 Lira.', { exact: true })).toBeVisible() },
-      { spec: 'The top row pays fabric, two Lira, jewelry, and two Lira', check: async () => expectState(page, { eventCount: 7, game: { phase: 'turn-end', postOfficeLower: [true, false, false, false], players: [{ lira: 6, goods: { fabric: 1, spice: 0, fruit: 0, jewelry: 1 } }, {}] } }) },
-      { spec: 'The leftmost indicator drops to expose spice while the other columns stay on their top rewards', check: async () => expect(page.getByTestId('place-state-5')).toHaveAttribute('data-state-summary', 'Exposed mail: 1 spice, 2 Lira, 1 jewelry, 2 Lira') },
+      { spec: 'The completion copy lists spice, 1 Lira, fruit, and 1 Lira from the bottom row', check: async () => expect(page.getByText('Collected 1 spice, 1 Lira, 1 fruit, 1 Lira.', { exact: true })).toBeVisible() },
+      { spec: 'The bottom row pays spice, one Lira, fruit, and one Lira', check: async () => expectState(page, { eventCount: 7, game: { phase: 'turn-end', postOfficeLower: [true, false, false, false], players: [{ lira: 4, goods: { fabric: 0, spice: 1, fruit: 1, jewelry: 0 } }, {}] } }) },
+      { spec: 'The leftmost indicator drops to expose fabric while the other columns stay on their bottom rewards', check: async () => expect(page.getByTestId('place-state-5')).toHaveAttribute('data-state-summary', 'Exposed mail: 1 fabric, 1 Lira, 1 fruit, 1 Lira') },
       { spec: 'The action cannot be collected twice', check: async () => expect(page.getByRole('button', { name: 'Collect uncovered mail resources' })).toHaveCount(0) }
     ] });
 
@@ -112,25 +113,25 @@ test('mail, private card trading, and both demand markets remain exact through r
     await ada.step('host-selects-fabric', { description: 'Ada routes from Post Office to Fabric Warehouse', verifications: [
       { spec: 'The adjacent warehouse is selected', check: async () => expect(page.getByRole('button', { name: /^2 Fabric Warehouse.*Reachable/ })).toHaveAttribute('aria-pressed', 'true') },
       { spec: 'Ada must leave her second assistant', check: async () => expect(page.getByRole('button', { name: 'Move here and leave an assistant' })).toBeVisible() },
-      { spec: 'Ada owns one fabric before filling', check: async () => expectState(page, { eventCount: 11, game: { players: [{ goods: { fabric: 1 } }, {}] } }) }
+      { spec: 'Ada owns no fabric before filling', check: async () => expectState(page, { eventCount: 11, game: { players: [{ goods: { fabric: 0, spice: 1, fruit: 1 } }, {}] } }) }
     ] });
 
     await page.getByRole('button', { name: 'Move here and leave an assistant' }).click();
     await ada.step('host-arrives-fabric', { description: 'Ada arrives at Fabric Warehouse', verifications: [
       { spec: 'The CTA offers capacity two', check: async () => expect(page.getByRole('button', { name: 'Fill fabric to 2' })).toBeEnabled() },
-      { spec: 'Movement leaves goods unchanged', check: async () => expectState(page, { eventCount: 12, game: { phase: 'action', players: [{ merchantPlace: 2, goods: { fabric: 1 } }, {}] } }) }
+      { spec: 'Movement leaves goods unchanged', check: async () => expectState(page, { eventCount: 12, game: { phase: 'action', players: [{ merchantPlace: 2, goods: { fabric: 0, spice: 1, fruit: 1 } }, {}] } }) }
     ] });
 
     await page.getByRole('button', { name: 'Fill fabric to 2' }).click();
     await ada.step('host-fills-fabric', { description: 'Ada fills fabric to wheelbarrow capacity', verifications: [
       { spec: 'The two-crate track is full', check: async () => expect(page.getByLabel('Ada goods').getByTitle('Fabric')).toHaveText('2') },
-      { spec: 'The warehouse closes in turn-end without inventing Post Office goods', check: async () => expectState(page, { eventCount: 13, game: { phase: 'turn-end', players: [{ goods: { fabric: 2, spice: 0, fruit: 0, jewelry: 1 } }, {}] } }) }
+      { spec: 'The warehouse closes in turn-end without changing Post Office goods', check: async () => expectState(page, { eventCount: 13, game: { phase: 'turn-end', players: [{ goods: { fabric: 2, spice: 1, fruit: 1, jewelry: 0 } }, {}] } }) }
     ] });
 
     await page.getByRole('button', { name: 'End turn and pass clockwise' }).click();
     await ada.step('host-ends-fabric-turn', { description: 'Ada passes the filled warehouse turn', verifications: [
       { spec: 'Bora starts turn four', check: async () => expect(page.getByRole('heading', { name: 'Bora surveys the bazaar.' })).toBeVisible() },
-      { spec: 'Ada’s corrected market stock remains public', check: async () => expectState(page, { eventCount: 14, game: { currentTurn: 'Bora', players: [{ goods: { fabric: 2, spice: 0, fruit: 0, jewelry: 1 } }, {}] } }) }
+      { spec: 'Ada’s corrected market stock remains public', check: async () => expectState(page, { eventCount: 14, game: { currentTurn: 'Bora', players: [{ goods: { fabric: 2, spice: 1, fruit: 1, jewelry: 0 } }, {}] } }) }
     ] });
 
     await boraPage.getByRole('button', { name: /^5 Post Office.*Reachable/ }).click();
@@ -148,14 +149,14 @@ test('mail, private card trading, and both demand markets remain exact through r
 
     await boraPage.getByRole('button', { name: 'Collect uncovered mail resources' }).click();
     await bora.step('guest-collects-second-mail', { description: 'Bora collects the second mail combination', verifications: [
-      { spec: 'The completion copy names spice, 2 Lira, jewelry, and 2 Lira', check: async () => expect(boraPage.getByText('Collected 1 spice, 2 Lira, 1 jewelry, 2 Lira.', { exact: true })).toBeVisible() },
-      { spec: 'The second mail combination pays spice, two Lira, jewelry, and two Lira before its indicator drops', check: async () => expectState(boraPage, { eventCount: 16, game: { phase: 'turn-end', postOfficeLower: [true, true, false, false], players: [{}, { lira: 7, goods: { spice: 1, jewelry: 1 } }] } }) }
+      { spec: 'The completion copy names fabric, 1 Lira, fruit, and 1 Lira', check: async () => expect(boraPage.getByText('Collected 1 fabric, 1 Lira, 1 fruit, 1 Lira.', { exact: true })).toBeVisible() },
+      { spec: 'The second mail combination pays fabric, one Lira, fruit, and one Lira before its indicator drops', check: async () => expectState(boraPage, { eventCount: 16, game: { phase: 'turn-end', postOfficeLower: [true, true, false, false], players: [{}, { lira: 5, goods: { fabric: 1, fruit: 1 } }] } }) }
     ] });
 
     await boraPage.getByRole('button', { name: 'End turn and pass clockwise' }).click();
     await bora.step('guest-ends-mail-turn', { description: 'Bora passes after the second mail collection', verifications: [
       { spec: 'Ada starts turn five', check: async () => expect(boraPage.getByRole('heading', { name: 'Ada surveys the bazaar.' })).toBeVisible() },
-      { spec: 'Both merchants retain their corrected, distinct Post Office goods', check: async () => expectState(boraPage, { eventCount: 17, game: { currentTurn: 'Ada', players: [{ goods: { fabric: 2, spice: 0, fruit: 0, jewelry: 1 } }, { goods: { spice: 1, jewelry: 1 } }] } }) }
+      { spec: 'Both merchants retain their corrected, distinct Post Office goods', check: async () => expectState(boraPage, { eventCount: 17, game: { currentTurn: 'Ada', players: [{ goods: { fabric: 2, spice: 1, fruit: 1, jewelry: 0 } }, { goods: { fabric: 1, fruit: 1 } }] } }) }
     ] });
 
     await page.getByRole('button', { name: /^11 Small Market.*Reachable/ }).click();
@@ -188,7 +189,7 @@ test('mail, private card trading, and both demand markets remain exact through r
     await page.getByRole('button', { name: 'Sell selected goods for 2 Lira' }).click();
     await ada.step('host-sells-small-market', { description: 'Ada completes the one-good Small Market sale', verifications: [
       { spec: 'The completion panel reports the exact revenue', check: async () => expect(page.getByText('Sold 1 good for 2 Lira.', { exact: true })).toBeVisible() },
-      { spec: 'The used Demand moves to the bottom', check: async () => expectState(page, { eventCount: 19, game: { phase: 'turn-end', smallDemand: [...smallState.game.smallDemand.slice(1), smallId], players: [{ lira: 8 }, {}] } }) },
+      { spec: 'The used Demand moves to the bottom', check: async () => expectState(page, { eventCount: 19, game: { phase: 'turn-end', smallDemand: [...smallState.game.smallDemand.slice(1), smallId], players: [{ lira: 6 }, {}] } }) },
       { spec: 'Small Market tile replaces its five graphical demand goods', check: async () => expect(page.getByTestId('place-state-11')).toHaveAttribute('data-state-summary', `Current Small Market demand: ${nextSmallDemand.goods.join(', ')}`) },
       { spec: 'Exactly the selected good was spent', check: async () => { const after = await readState(page); expect(after.game.players[0].goods[smallGood]).toBe(adaGoods[smallGood] - 1); } }
     ] });
@@ -277,7 +278,7 @@ test('mail, private card trading, and both demand markets remain exact through r
     await page.getByRole('button', { name: 'Sell selected goods for 3 Lira' }).click();
     await ada.step('host-sells-large-market', { description: 'Ada completes the Large Market sale', verifications: [
       { spec: 'The exact distinct Large Market sale summary is visible', check: async () => expect(page.getByText('Sold 1 good for 3 Lira.', { exact: true })).toBeVisible() },
-      { spec: 'Large Demand rotates independently', check: async () => expectState(page, { eventCount: 25, game: { phase: 'turn-end', largeDemand: [...largeState.game.largeDemand.slice(1), largeId], smallDemand: [...smallState.game.smallDemand.slice(1), smallId], players: [{ lira: 11 }, {}] } }) },
+      { spec: 'Large Demand rotates independently', check: async () => expectState(page, { eventCount: 25, game: { phase: 'turn-end', largeDemand: [...largeState.game.largeDemand.slice(1), largeId], smallDemand: [...smallState.game.smallDemand.slice(1), smallId], players: [{ lira: 9 }, {}] } }) },
       { spec: 'Large Market tile exposes the newly rotated five-good demand', check: async () => expect(page.getByTestId('place-state-10')).toHaveAttribute('data-state-summary', `Current Large Market demand: ${nextLargeDemand.goods.join(', ')}`) },
       { spec: 'Bora observes the same public market state', check: async () => { const host = await readState(page); const guest = await readState(boraPage); expect(guest.game.largeDemand).toEqual(host.game.largeDemand); expect(guest.game.players).toEqual(host.game.players); } }
     ] });

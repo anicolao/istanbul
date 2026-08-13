@@ -36,7 +36,7 @@ export function locationStateSummary(game: GameSetup, placeId: number): string {
   if (placeId === 2) return 'Fill fabric to current wheelbarrow capacity';
   if (placeId === 3) return 'Fill spice to current wheelbarrow capacity';
   if (placeId === 4) return 'Fill fruit to current wheelbarrow capacity';
-  if (placeId === 5) return `Exposed mail: ${postOfficeRows.map((rows, index) => resourceName(rows[game.postOfficeLower[index] ? 0 : 1])).join(', ')}`;
+  if (placeId === 5) return `Exposed mail: ${postOfficeRows.map((rows, index) => resourceName(rows[game.postOfficeLower[index] ? 1 : 0])).join(', ')}`;
   if (placeId === 6) {
     const top = bonusCards.find(({ id }) => id === game.bonusDiscard.at(-1));
     return `${game.bonusDrawPile.length} Bonus cards in draw pile; ${game.bonusDiscard.length} in discard${top ? `, topped by ${top.title}` : ''}`;
