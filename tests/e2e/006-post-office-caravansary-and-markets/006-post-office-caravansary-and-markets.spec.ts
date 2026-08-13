@@ -61,14 +61,21 @@ test('mail, private card trading, and both demand markets remain exact through r
     ] });
 
     await boraPage.getByRole('button', { name: 'Move here and leave an assistant' }).click();
-    await bora.step('guest-arrives-caravansary', { description: 'Bora arrives and previews two deck cards', verifications: [
-      { spec: 'Both ordered card sources begin on Draw pile', check: async () => { await expect(boraPage.getByLabel('First card source')).toHaveValue('deck'); await expect(boraPage.getByLabel('Second card source')).toHaveValue('deck'); } },
-      { spec: 'Three private discard choices are rendered without exposing them to Ada', check: async () => { await expect(boraPage.getByRole('group', { name: 'Discard one' }).getByRole('radio')).toHaveCount(3); await expect(page.getByText('Waiting for Bora to manage a private Bonus hand.')).toBeVisible(); } },
-      { spec: 'Previewing consumes no card or event', check: async () => expectState(boraPage, { eventCount: 9, game: { phase: 'action', bonusDrawCount: 24, bonusDiscard: [], localHand: [expect.any(String)] } }) }
+    await bora.step('guest-arrives-caravansary', { description: 'Bora arrives and chooses two face-down cards', verifications: [
+      { spec: 'Both ordered card sources begin on the face-down draw pile', check: async () => { await expect(boraPage.getByLabel('First card source')).toHaveValue('deck'); await expect(boraPage.getByLabel('Second card source')).toHaveValue('deck'); } },
+      { spec: 'Both graphical choices remain face down and no discard titles are offered', check: async () => { await expect(boraPage.getByLabel('Chosen card 1 remains face down')).toBeVisible(); await expect(boraPage.getByLabel('Chosen card 2 remains face down')).toBeVisible(); await expect(boraPage.getByRole('radio')).toHaveCount(0); } },
+      { spec: 'No future face, preview, or discard choice exists in the DOM and Ada sees only waiting copy', check: async () => { await expect(boraPage.getByLabel('Revealed chosen cards')).toHaveCount(0); await expect(boraPage.getByText(/^Preview:/)).toHaveCount(0); await expect(boraPage.getByRole('radio')).toHaveCount(0); await expect(page.getByText('Waiting for Bora to manage a private Bonus hand.')).toBeVisible(); } },
+      { spec: 'Choosing consumes no card or event', check: async () => expectState(boraPage, { eventCount: 9, game: { phase: 'action', bonusDrawCount: 24, bonusDiscard: [], localHand: [expect.any(String)] } }) }
     ] });
 
     const firstBoraState = await readState(boraPage);
     const originalBoraCard = firstBoraState.game.localHand[0] as string;
+    await boraPage.getByRole('button', { name: 'Reveal 2 chosen cards' }).click();
+    await bora.step('guest-reveals-deck-cards', { description: 'Bora reveals both chosen cards together', verifications: [
+      { spec: 'Exactly two chosen cards are now graphically face up', check: async () => expect(boraPage.getByLabel('Revealed chosen cards').locator('[data-art-kind="card"]')).toHaveCount(2) },
+      { spec: 'Three discard choices appear only after reveal', check: async () => expect(boraPage.getByRole('group', { name: 'Discard one after reveal' }).getByRole('radio')).toHaveCount(3) },
+      { spec: 'Revealing is local and leaves the canonical deck untouched', check: async () => expectState(boraPage, { eventCount: 9, game: { bonusDrawCount: 24, bonusDiscard: [], localHand: [originalBoraCard] } }) }
+    ] });
     await boraPage.getByRole('radio', { name: new RegExp(originalBoraCard) }).check();
     await bora.step('guest-chooses-original-card', { description: 'Bora chooses the original hand card to discard', verifications: [
       { spec: 'The named private card is visibly selected', check: async () => expect(boraPage.getByRole('radio', { name: new RegExp(originalBoraCard) })).toBeChecked() },
@@ -197,12 +204,18 @@ test('mail, private card trading, and both demand markets remain exact through r
     await boraPage.getByLabel('First card source').selectOption('discard');
     await bora.step('guest-selects-discard-source', { description: 'Bora chooses the face-up discard as the first draw', verifications: [
       { spec: 'The first source visibly reads Discard pile', check: async () => expect(boraPage.getByLabel('First card source')).toHaveValue('discard') },
-      { spec: 'The preview names the returned original card', check: async () => expect(boraPage.getByText(new RegExp(`Preview: ${bonusById.get(originalBoraCard)!.title}`))).toBeVisible() },
+      { spec: 'The known face-up source names the returned original card', check: async () => expect(boraPage.getByLabel(`Chosen face-up card ${bonusById.get(originalBoraCard)!.title}`)).toBeVisible() },
+      { spec: 'The second draw-pile card remains graphically face down', check: async () => expect(boraPage.getByLabel('Chosen card 2 remains face down')).toBeVisible() },
       { spec: 'Changing a private source appends no event', check: async () => expectState(boraPage, { eventCount: 21, game: { bonusDiscard: [originalBoraCard] } }) }
     ] });
 
     const secondBoraState = await readState(boraPage);
     const cardToDiscard = secondBoraState.game.localHand[0] as string;
+    await boraPage.getByRole('button', { name: 'Reveal 2 chosen cards' }).click();
+    await bora.step('guest-reveals-mixed-cards', { description: 'Bora reveals the face-up discard and face-down draw together', verifications: [
+      { spec: 'The revealed pair contains the known discard plus one newly revealed draw', check: async () => { await expect(boraPage.getByLabel('Revealed chosen cards').getByText(bonusById.get(originalBoraCard)!.title, { exact: true })).toBeVisible(); await expect(boraPage.getByLabel('Revealed chosen cards').locator('[data-art-kind="card"]')).toHaveCount(2); } },
+      { spec: 'Reveal still appends no event', check: async () => expectState(boraPage, { eventCount: 21, game: { localHand: secondBoraState.game.localHand, bonusDiscard: [originalBoraCard] } }) }
+    ] });
     await boraPage.getByRole('radio', { name: new RegExp(cardToDiscard) }).check();
     await bora.step('guest-chooses-new-discard', { description: 'Bora selects one current hand card for the exchange', verifications: [
       { spec: 'The chosen private title is checked', check: async () => expect(boraPage.getByRole('radio', { name: new RegExp(cardToDiscard) })).toBeChecked() },

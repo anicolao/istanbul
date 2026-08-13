@@ -232,7 +232,9 @@ twice, in order.
 
 Take two Bonus cards, then discard one card from hand. For this action only,
 each taken card may come from either the face-down draw pile or the top of the
-face-up discard pile. The final hand therefore grows by one card.
+face-up discard pile. Choose both sources while draw-pile cards remain face
+down; reveal the complete selection together, then choose the card to discard.
+The final hand therefore grows by one card.
 
 ### 7 — Fountain
 
