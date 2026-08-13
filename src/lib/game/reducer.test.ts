@@ -70,4 +70,20 @@ describe('room replay', () => {
     expect(projection.acceptedEventIds).toHaveLength(5);
     expect(projection.diagnostics).toEqual([]);
   });
+
+  it('lets a dedicated tabletop own an empty room and start its ready merchants', () => {
+    const projection = replayEvents([
+      event(1, 'table', 'game/created', { roomCode: 'TABLE', tabletopOwned: true, maxPlayers: 5, layout: 'short-path', mode: 'shared-table' }),
+      event(2, 'ada', 'player/joined', { name: 'Ada' }),
+      event(3, 'bora', 'player/joined', { name: 'Bora' }),
+      event(4, 'ada', 'player/ready', { ready: true }),
+      event(5, 'bora', 'player/ready', { ready: true }),
+      event(6, 'table', 'game/started', { seed: 'table-owned' })
+    ]);
+
+    expect(projection.room).toMatchObject({ hostUid: 'table', tabletopOwned: true, status: 'playing' });
+    expect(projection.game?.players.map(({ name }) => name)).toEqual(['Ada', 'Bora']);
+    expect(projection.acceptedEventIds).toHaveLength(6);
+    expect(projection.diagnostics).toEqual([]);
+  });
 });

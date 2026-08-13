@@ -1,203 +1,201 @@
-# A shared Istanbul table with private phone controllers
+# Walk up to an Istanbul tabletop and join by QR
 
-Ada creates an open shared-table room without predicting attendance. The public tabletop shows a real QR at every open position; Bora follows one on his private phone, joins, and readies. Once everyone present is ready, Ada starts the game and every invitation disappears in favour of the public bazaar. The public board follows the immutable game without revealing either Bonus hand; a controller action and reload prove convergence and retained ownership. Every user action is followed immediately by DOM and serialized-state checks plus an exact screenshot—including the 3840×2160 tabletop surface.
+The dedicated /tabletop route creates and owns an empty shared-table room. Ada and Bora walk up, scan its QR codes, join and ready on private phones, then the tabletop starts play. Unclaimed positions disappear when the bazaar replaces the lobby. Every action is followed by exact screenshots, DOM checks, and serialized replay-state assertions.
 
-## 1. Ada opens the table creator on her phone
+## 1. The tabletop opens empty room TABLE
 
-**Ada, seat-one phone** — Ada opens the table creator on her phone
+**The dedicated tabletop** — The tabletop opens empty room TABLE
 
-![Ada opens the table creator on her phone](./screenshots/000-ada-opens-table-creator-desktop.png)
+![The tabletop opens empty room TABLE](./screenshots/000-tabletop-opens-empty-room-desktop.png)
 
 **Verifications:**
 
-- [x] Firebase is ready and no room exists yet
-- [x] Both personal-screen and shared-table surfaces are available
+- [x] The direct tabletop route creates five QR invitations without claiming a merchant seat
+- [x] The tabletop owns the sole creation event and stays outside the roster
+- [x] The tabletop owns layout and start controls, with start disabled until two players join and ready
 
-## 2. Ada enters her public merchant name
+## 2. Ada scans a tabletop QR on her phone
 
-**Ada, seat-one phone** — Ada enters her public merchant name
+**Ada’s private phone** — Ada scans a tabletop QR on her phone
+
+![Ada scans a tabletop QR on her phone](./screenshots/000-ada-scans-tabletop-qr-desktop.png)
+
+**Verifications:**
+
+- [x] The QR opens only a private-controller join screen
+- [x] Ada is not seated while the empty tabletop room replays
+
+## 3. Ada enters her public merchant name
+
+**Ada’s private phone** — Ada enters her public merchant name
 
 ![Ada enters her public merchant name](./screenshots/001-ada-enters-name-desktop.png)
 
 **Verifications:**
 
-- [x] The creator retains Ada’s name without writing history
+- [x] The private phone retains Ada’s name without writing an event
 
-## 3. Ada reviews an open shared-table room
+## 4. Ada joins as the first merchant
 
-**Ada, seat-one phone** — Ada reviews an open shared-table room
+**Ada’s private phone** — Ada joins as the first merchant
 
-![Ada reviews an open shared-table room](./screenshots/002-ada-reviews-open-room-desktop.png)
-
-**Verifications:**
-
-- [x] Short Path is visible and no player count is requested
-- [x] Reviewing the open-room form is still local
-
-## 4. Ada selects a shared table with private phones
-
-**Ada, seat-one phone** — Ada selects a shared table with private phones
-
-![Ada selects a shared table with private phones](./screenshots/003-ada-selects-shared-table-desktop.png)
+![Ada joins as the first merchant](./screenshots/002-ada-joins-from-phone-desktop.png)
 
 **Verifications:**
 
-- [x] The submit action now promises a shared table
-- [x] Surface selection has not appended an event
+- [x] Ada’s phone identifies her without granting tabletop ownership
+- [x] The join is event two and Ada is the only player
 
-## 5. Ada creates shared table TABLE
+## 5. The tabletop replaces one QR with Ada
 
-**Ada, seat-one phone** — Ada creates shared table TABLE
+**The dedicated tabletop** — The tabletop replaces one QR with Ada
 
-![Ada creates shared table TABLE](./screenshots/004-ada-creates-shared-table-desktop.png)
-
-**Verifications:**
-
-- [x] Ada owns the first position and sees a real general invitation
-- [x] The first canonical event records shared-table mode and open capacity
-
-## 6. The central screen opens the public tabletop route
-
-**The public table display** — The central screen opens the public tabletop route
-
-![The central screen opens the public tabletop route](./screenshots/000-display-opens-tabletop-route-desktop.png)
+![The tabletop replaces one QR with Ada](./screenshots/001-tabletop-shows-ada-desktop.png)
 
 **Verifications:**
 
-- [x] The tabletop shows the room code and a QR in every open position
-- [x] The dedicated URL enters display mode without claiming a player identity
-- [x] Every QR carries the same open-room invitation
+- [x] Ada occupies one public position while four invitations remain
+- [x] The tabletop remains seatless at the same two-event cursor
 
-## 7. Bora scans a tabletop QR invitation on his phone
+## 6. Bora scans an open tabletop QR
 
-**Bora, seat-two phone** — Bora scans a tabletop QR invitation on his phone
+**Bora’s private phone** — Bora scans an open tabletop QR
 
-![Bora scans a tabletop QR invitation on his phone](./screenshots/000-bora-scans-table-invitation-desktop.png)
+![Bora scans an open tabletop QR](./screenshots/000-bora-scans-tabletop-qr-desktop.png)
 
 **Verifications:**
 
-- [x] The open invitation identifies Ada’s table without reserving a numbered seat
-- [x] Bora is unseated while the creation event replays
+- [x] Bora sees the same private-controller join screen
+- [x] Ada is present but Bora has not yet joined
 
-## 8. Bora enters his public merchant name
+## 7. Bora enters his public merchant name
 
-**Bora, seat-two phone** — Bora enters his public merchant name
+**Bora’s private phone** — Bora enters his public merchant name
 
 ![Bora enters his public merchant name](./screenshots/001-bora-enters-name-desktop.png)
 
 **Verifications:**
 
-- [x] Bora’s private controller retains the entered name
-- [x] No event is written until Bora claims the seat
+- [x] Typing remains local until the join action
 
-## 9. Bora claims seat two from his phone
+## 8. Bora joins as the second merchant
 
-**Bora, seat-two phone** — Bora claims seat two from his phone
+**Bora’s private phone** — Bora joins as the second merchant
 
-![Bora claims seat two from his phone](./screenshots/002-bora-claims-controller-desktop.png)
-
-**Verifications:**
-
-- [x] Bora’s phone labels seat two as his
-- [x] The join is the second canonical event
-
-## 10. The public table mirrors both claimed controllers
-
-**The public table display** — The public table mirrors both claimed controllers
-
-![The public table mirrors both claimed controllers](./screenshots/001-display-shows-both-controllers-desktop.png)
+![Bora joins as the second merchant](./screenshots/002-bora-joins-from-phone-desktop.png)
 
 **Verifications:**
 
-- [x] Ada and Bora occupy two positions while three QR invitations remain
-- [x] The public display replays the same two events without claiming a seat
+- [x] Bora’s private phone shows both joined merchants
+- [x] The second join is event three
 
-## 11. Bora readies from his private controller
+## 9. The tabletop shows both joined merchants
 
-**Bora, seat-two phone** — Bora readies from his private controller
+**The dedicated tabletop** — The tabletop shows both joined merchants
 
-![Bora readies from his private controller](./screenshots/003-bora-readies-controller-desktop.png)
-
-**Verifications:**
-
-- [x] Bora sees one of two merchants ready
-- [x] Only seat two is ready in event three
-
-## 12. Ada readies and unlocks start on her phone
-
-**Ada, seat-one phone** — Ada readies and unlocks start on her phone
-
-![Ada readies and unlocks start on her phone](./screenshots/005-ada-readies-controller-desktop.png)
+![The tabletop shows both joined merchants](./screenshots/002-tabletop-shows-both-merchants-desktop.png)
 
 **Verifications:**
 
-- [x] Ada sees Table ready and an enabled opening action
-- [x] Both seats are ready after four events
+- [x] Ada and Bora occupy public positions while three QR invitations remain
+- [x] Start remains disabled until both private phones are ready
 
-## 13. Ada starts the bazaar from seat one
+## 10. Ada readies on her private phone
 
-**Ada, seat-one phone** — Ada starts the bazaar from seat one
+**Ada’s private phone** — Ada readies on her private phone
 
-![Ada starts the bazaar from seat one](./screenshots/006-ada-starts-from-controller-desktop.png)
-
-**Verifications:**
-
-- [x] Ada’s phone renders all sixteen Places and her private hand
-- [x] The seeded fifth event begins Ada’s movement phase
-
-## 14. The tabletop opens the public bazaar projection
-
-**The public table display** — The tabletop opens the public bazaar projection
-
-![The tabletop opens the public bazaar projection](./screenshots/002-display-mirrors-public-bazaar-desktop.png)
+![Ada readies on her private phone](./screenshots/003-ada-readies-phone-desktop.png)
 
 **Verifications:**
 
-- [x] The large surface shows sixteen Places and identifies itself as public
-- [x] Starting play removes every empty position and QR invitation
-- [x] No private hand or Bonus title is exposed in public DOM or state
+- [x] Ada sees one of two merchants ready
+- [x] Only Ada is ready in event four
 
-## 15. Ada inspects a reachable route on her phone
+## 11. Bora readies on his private phone
 
-**Ada, seat-one phone** — Ada inspects a reachable route on her phone
+**Bora’s private phone** — Bora readies on his private phone
 
-![Ada inspects a reachable route on her phone](./screenshots/007-ada-inspects-route-on-phone-desktop.png)
-
-**Verifications:**
-
-- [x] The selected Place is pressed and its movement action is enabled
-- [x] Inspection is local UI state and event five remains canonical
-
-## 16. Ada commits the selected move from her controller
-
-**Ada, seat-one phone** — Ada commits the selected move from her controller
-
-![Ada commits the selected move from her controller](./screenshots/008-ada-commits-move-on-phone-desktop.png)
+![Bora readies on his private phone](./screenshots/003-bora-readies-phone-desktop.png)
 
 **Verifications:**
 
-- [x] Ada’s controller advances from movement into a Place action
-- [x] Event six records Ada away from Fountain
+- [x] Both merchants are ready but no phone receives a start control
+- [x] Both readiness events are replayed without creating a game
 
-## 17. The public table mirrors Ada’s committed movement
+## 12. The tabletop unlocks the start control
 
-**The public table display** — The public table mirrors Ada’s committed movement
+**The dedicated tabletop** — The tabletop unlocks the start control
 
-![The public table mirrors Ada’s committed movement](./screenshots/003-display-mirrors-adas-move-desktop.png)
-
-**Verifications:**
-
-- [x] Ada’s token has left Fountain on the large board
-- [x] Public and controller cursors agree while private state stays masked
-- [x] The route originated from the phone selection: 5 Post Office. Take the four uncovered mail-track resources. Current state: Exposed mail: 1 spice, 1 fabric, 1 fruit, 1 Lira. Reachable this turn.
-
-## 18. Ada reloads and reclaims her owned controller
-
-**Ada, seat-one phone** — Ada reloads and reclaims her owned controller
-
-![Ada reloads and reclaims her owned controller](./screenshots/009-ada-reconnects-to-owned-controller-desktop.png)
+![The tabletop unlocks the start control](./screenshots/003-tabletop-unlocks-start-desktop.png)
 
 **Verifications:**
 
-- [x] Anonymous-auth persistence returns Ada directly to her game, not the join screen
-- [x] Seat ownership, private hand, and six-event cursor survive reconnect
+- [x] The tabletop announces everyone present is ready
+- [x] Only the dedicated tabletop can now open the bazaar
+- [x] Three unclaimed QR positions remain visible until start
+
+## 13. The tabletop starts play and becomes the public bazaar
+
+**The dedicated tabletop** — The tabletop starts play and becomes the public bazaar
+
+![The tabletop starts play and becomes the public bazaar](./screenshots/004-tabletop-starts-public-bazaar-desktop.png)
+
+**Verifications:**
+
+- [x] The public board replaces every joined and unclaimed lobby position
+- [x] The sixth event starts Ada’s seeded movement turn
+- [x] No private Bonus hand appears in public DOM or state
+
+## 14. Ada’s private phone receives the opening turn
+
+**Ada’s private phone** — Ada’s private phone receives the opening turn
+
+![Ada’s private phone receives the opening turn](./screenshots/004-ada-receives-private-turn-desktop.png)
+
+**Verifications:**
+
+- [x] Ada sees sixteen Places and her private hand
+- [x] Ada’s controller agrees with the tabletop at event six
+
+## 15. Ada inspects a route on her private phone
+
+**Ada’s private phone** — Ada inspects a route on her private phone
+
+![Ada inspects a route on her private phone](./screenshots/005-ada-inspects-route-desktop.png)
+
+**Verifications:**
+
+- [x] The selected Place is pressed and its move action is enabled
+- [x] Inspection remains local at event six
+
+## 16. Ada commits movement from her private phone
+
+**Ada’s private phone** — Ada commits movement from her private phone
+
+![Ada commits movement from her private phone](./screenshots/006-ada-commits-move-desktop.png)
+
+**Verifications:**
+
+- [x] Ada advances into a Place action
+
+## 17. The tabletop mirrors Ada’s committed move
+
+**The dedicated tabletop** — The tabletop mirrors Ada’s committed move
+
+![The tabletop mirrors Ada’s committed move](./screenshots/005-tabletop-mirrors-move-desktop.png)
+
+**Verifications:**
+
+- [x] The public table announces Ada’s arrival
+- [x] Public replay reaches event seven while hidden state remains masked
+
+## 18. The tabletop reloads its retained room
+
+**The dedicated tabletop** — The tabletop reloads its retained room
+
+![The tabletop reloads its retained room](./screenshots/006-tabletop-reloads-owned-room-desktop.png)
+
+**Verifications:**
+
+- [x] Reload preserves the tabletop URL and public bazaar instead of creating another room
+- [x] Table ownership and the seven-event cursor survive reload

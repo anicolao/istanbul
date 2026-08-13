@@ -76,8 +76,9 @@ The initial suite follows the MVP's vertical slices:
     ranking, shared winners where applicable, and rematch.
 12. `012-reconnect-replay-and-conflicts` proves the cache prefix, cursor
     catch-up, scratch replay, stale events, concurrency, and version errors.
-13. `013-shared-table-and-private-phones` proves QR seats, public tabletop,
-    private phone hands, action ownership, and recovery.
+13. `013-shared-table-and-private-phones` proves the direct `/tabletop/` entry,
+    table-owned room creation/start, QR phone joining, private hands, action
+    ownership, and retained tabletop recovery.
 14. `014-responsive-accessible-complete-game` proves a complete game at the
     full viewport matrix with keyboard, touch, announcements, and reduced
     motion.
@@ -318,14 +319,18 @@ secrecy.
 
 ## Shared-table scenarios
 
-Shared-table tests use one public tabletop page plus one isolated phone context
-per occupied seat. They verify:
+Shared-table tests open `/tabletop/` first, then use one isolated phone context
+per occupied seat. The tabletop creates and owns the room without consuming a
+merchant seat. They verify:
 
-- every open tabletop position exposes a real QR for the same open-room invite;
+- the direct route immediately exposes a real QR in every open position;
+- QR URLs leave `/tabletop/` and open only private-controller join screens;
+- no phone can nominate itself as the public table or start the game;
 - a scanned invitation claims the next clockwise position only when its player
   submits a name, without reserving attendance in advance;
 - joining replaces one QR, and starting replaces every remaining invitation
   with the public game surface;
+- readiness belongs to phones while layout and start belong to the tabletop;
 - the table displays public state and no Bonus-card identities;
 - phones display only their owner's private cards and choices;
 - an action initiated on a phone is attributed to that seat and converges on
