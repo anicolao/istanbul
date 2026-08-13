@@ -25,6 +25,7 @@ test('Police dispatch, family catches, Governor, and Smuggler survive immutable 
     await ada.step('host-selects-police', { description: 'Ada selects adjacent Police Station', verifications: [
       { spec: 'Police Station is selected as a one-space route', check: async () => expect(page.getByRole('button', { name: /^12 Police Station.*Reachable/ })).toHaveAttribute('aria-pressed', 'true') },
       { spec: 'Ada is offered the ordinary assistant drop', check: async () => expect(page.getByRole('button', { name: 'Move here and leave an assistant' })).toBeEnabled() },
+      { spec: 'Both available families occupy the lower Police corral, outside the visiting-piece row', check: async () => { await expect(page.getByTestId('place-state-12').locator('.station-family')).toHaveCount(2); await expect(page.locator('[data-place-id="12"] > .occupants .family-member')).toHaveCount(0); } },
       { spec: 'The route selection changes no family position', check: async () => expectState(page, { eventCount: 5, game: { selectedPlace: 12, players: [{ familyPlace: 12 }, { familyPlace: 12 }] } }) }
     ] });
 
@@ -32,6 +33,7 @@ test('Police dispatch, family catches, Governor, and Smuggler survive immutable 
     await ada.step('host-arrives-police', { description: 'Ada arrives at Police Station', verifications: [
       { spec: 'The family destination control is visible', check: async () => expect(page.getByLabel('Family destination')).toHaveValue('1') },
       { spec: 'The default dispatch truthfully names Wainwright', check: async () => expect(page.getByRole('button', { name: 'Send family to Wainwright' })).toBeEnabled() },
+      { spec: 'The center now distinguishes Ada’s visiting merchant and assistant from both lower-corral families', check: async () => { const station = page.locator('[data-place-id="12"]'); await expect(station.locator(':scope > .occupants .merchant')).toHaveCount(1); await expect(station.locator(':scope > .occupants .assistant')).toHaveCount(1); await expect(station.locator(':scope > .occupants .family-member')).toHaveCount(0); await expect(page.getByTestId('place-state-12').locator('.station-family')).toHaveCount(2); } },
       { spec: 'Movement enters action without moving the family', check: async () => expectState(page, { eventCount: 6, game: { phase: 'action', players: [{ merchantPlace: 12, familyPlace: 12, assistantsCarried: 3 }, {}] } }) }
     ] });
 
@@ -45,6 +47,7 @@ test('Police dispatch, family catches, Governor, and Smuggler survive immutable 
     await page.getByRole('button', { name: 'Send family to Fabric Warehouse' }).click();
     await ada.step('host-dispatches-family', { description: 'Ada dispatches her family to Fabric Warehouse', verifications: [
       { spec: 'The remote Warehouse action opens in place of Police', check: async () => expect(page.getByRole('button', { name: 'Fill fabric to 2' })).toBeEnabled() },
+      { spec: 'Ada leaves the Police corral while Bora remains available there', check: async () => { await expect(page.getByTestId('place-state-12').locator('.station-family')).toHaveCount(1); await expect(page.locator('[data-place-id="2"] > .occupants .family-member')).toHaveCount(1); } },
       { spec: 'Ada’s family marker leaves Police for Place 2', check: async () => expectState(page, { eventCount: 7, game: { phase: 'family-action', pending: { kind: 'family-action', destination: 2 }, players: [{ merchantPlace: 12, familyPlace: 2 }, {}] } }) },
       { spec: 'No merchant toll or encounter interrupts family travel', check: async () => expect(page.getByText('sends family to Fabric Warehouse.')).toBeVisible() }
     ] });
@@ -100,6 +103,7 @@ test('Police dispatch, family catches, Governor, and Smuggler survive immutable 
     await boraPage.getByRole('button', { name: 'Catch for 1 Bonus card' }).click();
     await bora.step('guest-catches-family-for-card', { description: 'Bora catches Ada’s family for a Bonus card', verifications: [
       { spec: 'The mandatory family panel is gone', check: async () => expect(boraPage.getByLabel("Catch Ada's family")).toHaveCount(0) },
+      { spec: 'Ada’s returned family rejoins Bora in the lower Police corral', check: async () => { await expect(boraPage.getByTestId('place-state-12').locator('.station-family')).toHaveCount(2); await expect(boraPage.locator('[data-place-id="12"] > .occupants .family-member')).toHaveCount(0); } },
       { spec: 'Ada’s family returns to Police and Bora’s hand grows', check: async () => expectState(boraPage, { eventCount: 13, game: { phase: 'encounters', pending: { familyUids: [] }, players: [{ familyPlace: 12 }, { familyPlace: 12 }], localHand: [expect.any(String), expect.any(String)], bonusDrawCount: 23 } }) },
       { spec: 'Governor remains independently optional', check: async () => expect(boraPage.getByRole('button', { name: 'Visit the Governor' })).toBeEnabled() }
     ] });

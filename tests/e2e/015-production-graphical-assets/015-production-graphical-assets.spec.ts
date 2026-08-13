@@ -53,11 +53,11 @@ test('original production art communicates the complete tabletop', async ({ brow
         } },
         { spec: 'Only Places with relevant live public state expose a large physical apparatus', check: async () => {
           const states = page.locator('.location-state');
-          await expect(states).toHaveCount(10);
+          await expect(states).toHaveCount(11);
           const summaries = await states.evaluateAll((elements) => elements.map((element) => element.getAttribute('data-state-summary') ?? ''));
           expect(summaries.every((summary) => summary.length > 12)).toBe(true);
-          expect(new Set(summaries).size).toBe(10);
-          expect(await states.evaluateAll((elements) => elements.map((element) => Number(element.getAttribute('data-testid')?.replace('place-state-', ''))).sort((a, b) => a - b))).toEqual([5, 6, 7, 8, 10, 11, 13, 14, 15, 16]);
+          expect(new Set(summaries).size).toBe(11);
+          expect(await states.evaluateAll((elements) => elements.map((element) => Number(element.getAttribute('data-testid')?.replace('place-state-', ''))).sort((a, b) => a - b))).toEqual([5, 6, 7, 8, 10, 11, 12, 13, 14, 15, 16]);
           await expect(page.locator('[data-testid="place-state-5"]')).toHaveAttribute('data-state-summary', /Exposed mail:/);
           await expect(page.locator('[data-testid="place-state-6"]')).toHaveAttribute('data-state-summary', /Bonus cards in draw pile; 0 in discard/);
           await expect(page.locator('[data-testid="place-state-14"]')).toHaveAttribute('data-state-summary', /required, pay 1.*required, pay 1/);
@@ -65,6 +65,8 @@ test('original production art communicates the complete tabletop', async ({ brow
           await expect(page.locator('[data-place-id="5"]')).toHaveAttribute('aria-label', /Current state: Exposed mail:/);
           await expect(page.locator('[data-testid="place-state-5"] .mail-column')).toHaveCount(4);
           await expect(page.locator('[data-testid="place-state-6"] .card-pile')).toHaveCount(2);
+          await expect(page.locator('[data-testid="place-state-12"] .station-family')).toHaveCount(2);
+          await expect(page.locator('[data-place-id="12"] > .occupants .family-member')).toHaveCount(0);
           await expect(page.locator('[data-testid="place-state-14"] .mosque-power')).toHaveCount(2);
         } },
         { spec: 'Place names occupy the tile tops while enlarged pieces are vertically centered', check: async () => {
