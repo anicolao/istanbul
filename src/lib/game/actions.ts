@@ -21,10 +21,10 @@ export const postOfficeRows: Array<[
   { lira?: number; good?: Good },
   { lira?: number; good?: Good }
 ]> = [
-  [{ good: 'fabric' }, { good: 'spice' }],
-  [{ lira: 2 }, { good: 'fabric' }],
-  [{ good: 'jewelry' }, { good: 'fruit' }],
-  [{ good: 'spice' }, { lira: 1 }]
+  [{ good: 'spice' }, { good: 'fabric' }],
+  [{ lira: 1 }, { lira: 2 }],
+  [{ good: 'fruit' }, { good: 'jewelry' }],
+  [{ lira: 1 }, { lira: 2 }]
 ];
 
 export const marketRevenue = {

@@ -91,7 +91,7 @@ describe('deterministic economy actions', () => {
       expect(collectPostOffice(game, player)).toMatch(/^Collected/);
       expect(game.postOfficeLower).toEqual(lower);
     }
-    expect(player).toMatchObject({ lira: 10, goods: { fabric: 6, spice: 2, fruit: 3, jewelry: 2 } });
+    expect(player).toMatchObject({ lira: 16, goods: { fabric: 1, spice: 4, fruit: 2, jewelry: 3 } });
   });
 
   it('previews and resolves ordered Caravansary sources while conserving all 26 cards', () => {
