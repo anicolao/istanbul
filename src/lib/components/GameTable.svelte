@@ -65,7 +65,7 @@
     onEndTurn: () => void;
     onZoomIn: () => void;
     onFit: () => void;
-    e2eResourceReview?: 'ruby-routes' | 'yellow-recall';
+    e2eResourceReview?: 'ruby-routes' | 'yellow-recall' | 'zero-move';
     displayOnly?: boolean;
   } = $props();
 
@@ -78,6 +78,7 @@
   const localIsCurrent = $derived(currentPlayer.uid === userUid);
   const reachable = $derived(localIsCurrent && game.phase === 'movement' ? legalDestinations(game, localPlayer) : []);
   const selectedAssistantAction = $derived(selectedPlace && reachable.includes(selectedPlace) ? requiredAssistantAction(localPlayer, selectedPlace) : null);
+  const stayAssistantAction = $derived(requiredAssistantAction(localPlayer, localPlayer.merchantPlace));
   const abilityPending = $derived(game.pending?.kind === 'warehouse-extra' || game.pending?.kind === 'dice-adjust' ? game.pending : null);
   const actionPlaceId = $derived(game.phase === 'family-action' && game.pending?.kind === 'family-action'
     ? game.pending.destination : game.phase === 'mosque-ability' && abilityPending
@@ -269,7 +270,7 @@
         </div>
       </div>
       <p class="board-caption">{room.layout.replace('-', ' ')} · setup seed {game.seed}</p>
-      {#if import.meta.env.VITE_USE_FIREBASE_EMULATORS === 'true' && localIsCurrent && game.phase === 'movement'}<button class="e2e-resources" onclick={onGrantE2eResources}>{e2eResourceReview === 'yellow-recall' ? 'Review Yellow Mosque recall' : 'Review ruby routes with supplied resources'}</button>{/if}
+      {#if import.meta.env.VITE_USE_FIREBASE_EMULATORS === 'true' && localIsCurrent && game.phase === 'movement'}<button class="e2e-resources" onclick={onGrantE2eResources}>{e2eResourceReview === 'yellow-recall' ? 'Review Yellow Mosque recall' : e2eResourceReview === 'zero-move' ? 'Review zero-distance Bonus move' : 'Review ruby routes with supplied resources'}</button>{/if}
     </section>
 
     <aside class:finish={game.phase === 'game-over'} class:decision={game.phase !== 'movement'} class="inspector" class:route-planner={!selectedBonusManifest && game.phase === 'movement' && !selectedPlaceManifest} aria-live="polite" data-e2e-fit data-e2e-no-scroll>
@@ -291,7 +292,7 @@
             {:else if selectedBonusManifest.effect === 'long-move'}
               <button class="turn-action" disabled={game.phase !== 'movement' || game.activeBonusEffects.includes('long-move')} onclick={() => onPlayBonus(selectedBonusManifest.id, { kind: 'long-move' })}>Play for a 3–4 space move</button>
             {:else if selectedBonusManifest.effect === 'stay'}
-              <button class="turn-action" disabled={game.phase !== 'movement' || localPlayer.merchantPlace === 7 || !(localPlayer.assistantsByPlace[localPlayer.merchantPlace] ?? 0)} onclick={() => onPlayBonus(selectedBonusManifest.id, { kind: 'stay' })}>Stay and use this Place</button>
+              <button class="turn-action" disabled={game.phase !== 'movement' || localPlayer.merchantPlace === 7 || !stayAssistantAction || stayAssistantAction === 'fountain'} onclick={() => onPlayBonus(selectedBonusManifest.id, { kind: 'stay' })}>{stayAssistantAction === 'pick-up' ? 'Stay and pick up assistant' : 'Stay and leave assistant'}</button>
             {:else if selectedBonusManifest.effect === 'wild-small-market'}
               <button class="turn-action" disabled={game.phase !== 'action' || localPlayer.merchantPlace !== 11} onclick={() => onPlayBonus(selectedBonusManifest.id, { kind: 'wild-small-market' })}>Use flexible Small Market demand</button>
             {:else if selectedBonusManifest.effect === 'repeat-post'}

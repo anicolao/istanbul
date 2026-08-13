@@ -1,6 +1,6 @@
 import type { GameSetup, SetupPlayer } from './setup';
 
-export type AssistantAction = 'drop' | 'pick-up' | 'fountain' | 'stay';
+export type AssistantAction = 'drop' | 'pick-up' | 'fountain';
 
 export function gridDistance(board: number[], fromPlace: number, toPlace: number): number {
   const from = board.indexOf(fromPlace);

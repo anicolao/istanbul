@@ -83,9 +83,18 @@ describe('Bonus card timing contract', () => {
       expect(game.activeBonusEffects).toEqual(['long-move']);
     }
     {
-      const [state, game, card] = fixture('stay'); const player = game.players[0]; player.merchantPlace = 8; player.assistantsByPlace = { 8: 1 };
+      const [state, game, card] = fixture('stay'); const player = game.players[0]; player.merchantPlace = 8; player.assistantsCarried = 3; player.assistantsByPlace = { 8: 1 };
       expect(applyBonus(state, event(card, { kind: 'stay' }))).toBe(true);
-      expect(game).toMatchObject({ phase: 'action', lastMovement: { from: 8, to: 8, distance: 0, assistantAction: 'stay' } });
+      expect(player).toMatchObject({ assistantsCarried: 4, assistantsByPlace: {} });
+      expect(game).toMatchObject({ phase: 'action', lastMovement: { from: 8, to: 8, distance: 0, assistantAction: 'pick-up' } });
+      expect(game.bonusLog.at(-1)?.summary).toBe('Stayed at Place 8 and picked up 1 assistant.');
+    }
+    {
+      const [state, game, card] = fixture('stay'); const player = game.players[0]; player.merchantPlace = 8; player.assistantsCarried = 4; player.assistantsByPlace = {};
+      expect(applyBonus(state, event(card, { kind: 'stay' }))).toBe(true);
+      expect(player).toMatchObject({ assistantsCarried: 3, assistantsByPlace: { 8: 1 } });
+      expect(game).toMatchObject({ phase: 'action', lastMovement: { from: 8, to: 8, distance: 0, assistantAction: 'drop' } });
+      expect(game.bonusLog.at(-1)?.summary).toBe('Stayed at Place 8 and left 1 assistant.');
     }
     {
       const [state, game, card] = fixture('wild-small-market'); game.phase = 'action'; game.players[0].merchantPlace = 11;
@@ -121,6 +130,14 @@ describe('Bonus card timing contract', () => {
     expect(applyBonus(state, event(card, { kind: 'repeat-action' }))).toBe(false);
     expect(game).toEqual(before);
     expect(state.diagnostics.map(({ reason }) => reason)).toEqual(['bonus-repeat-payment']);
+  });
+
+  it('rejects a zero-distance move when no normal assistant operation is possible', () => {
+    const [state, game, card] = fixture('stay'); const player = game.players[0]; player.merchantPlace = 8; player.assistantsCarried = 0; player.assistantsByPlace = {};
+    const before = structuredClone(game);
+    expect(applyBonus(state, event(card, { kind: 'stay' }))).toBe(false);
+    expect(game).toEqual(before);
+    expect(state.diagnostics.map(({ reason }) => reason)).toEqual(['bonus-stay-unavailable']);
   });
 
   it('allows only direct-resource cards during the final Bonus window', () => {
