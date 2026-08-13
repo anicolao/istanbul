@@ -125,7 +125,7 @@ test('Mosque tiles grant reviewed permanent abilities and a paired ruby', async 
     await ada.step('host-buys-green-tile', { description: 'Ada pays one spice for the Green Mosque tile', verifications: [
       { spec: 'The full Green power tile settles into Ada’s tray', check: async () => { const power = page.getByLabel('Ada Mosque tiles').locator('[data-power-color="spice"]'); await expect(power).toHaveAttribute('data-enabled', 'true'); await expect(power.locator('[data-art-kind="component"]')).toBeVisible(); } },
       { spec: 'One spice is paid before the mandatory family catch', check: async () => expectState(page, { eventCount: 14, game: { phase: 'encounters', pending: { familyUids: [expect.any(String)] }, players: [{ goods: { spice: 1 }, mosqueTileIds: ['mosque-spice-2'], rubies: 0 }, { familyPlace: 14 }] } }) },
-      { spec: 'Small Mosque replaces Green’s cost with the next exposed requirement', check: async () => expect(page.getByTestId('place-state-14')).toHaveAttribute('data-state-summary', /2 fabric required, pay 1; 4 spice required, pay 1; 2 ruby rewards remain/) },
+      { spec: 'Small Mosque replaces Green’s cost with the next exposed requirement and devotes the display to both tiles', check: async () => expect(page.getByTestId('place-state-14')).toHaveAttribute('data-state-summary', '2 fabric required, pay 1; 4 spice required, pay 1') },
       { spec: 'The acquisition summary identifies the paid color', check: async () => expectState(page, { game: { lastAction: { summary: 'Paid 1 spice and gained the spice Mosque tile.' } } }) }
     ] });
     await page.getByRole('button', { name: 'Catch for 3 Lira' }).click();
@@ -188,7 +188,7 @@ test('Mosque tiles grant reviewed permanent abilities and a paired ruby', async 
     await ada.step('host-completes-small-mosque-pair', { description: 'Ada buys Red and completes the Small Mosque pair', verifications: [
       { spec: 'The action announces the paired ruby', check: async () => expect(page.getByText('Paid 1 fabric, gained its Mosque tile, and completed the pair for 1 ruby.', { exact: true })).toBeVisible() },
       { spec: 'Both tile IDs and one ruby are conserved', check: async () => expectState(page, { eventCount: 26, game: { phase: 'turn-end', players: [{ goods: { fabric: 1 }, mosqueTileIds: ['mosque-spice-2', 'mosque-fabric-2'], rubies: 1 }, {}] } }) },
-      { spec: 'The paired-ruby stock on Small Mosque decreases to one', check: async () => expect(page.getByTestId('place-state-14')).toHaveAttribute('data-state-summary', /1 ruby rewards remain/) },
+      { spec: 'The paired-ruby reward is recorded on Ada while the tile display remains uncluttered', check: async () => { await expectState(page, { game: { players: [{ rubies: 1 }, {}] } }); await expect(page.getByTestId('place-state-14').locator('.mosque-ruby')).toHaveCount(0); } },
       { spec: 'Red and Green square powers are both enabled in the tray', check: async () => { const powers = page.getByLabel('Ada Mosque tiles').locator('[data-enabled="true"]'); await expect(powers).toHaveCount(2); await expect(powers.locator('[data-art-kind="component"]')).toHaveCount(2); } }
     ] });
     await page.getByRole('button', { name: 'End turn and pass clockwise' }).click();

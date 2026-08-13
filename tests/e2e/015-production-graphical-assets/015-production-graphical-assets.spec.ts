@@ -38,7 +38,7 @@ test('original production art communicates the complete tabletop', async ({ brow
         } },
         { spec: 'Both colour-keyed physical trays and every resource token are real loaded images', check: async () => {
           await expect(page.locator('[data-art-kind="mat"]')).toHaveCount(2);
-          expect(await page.locator('[data-art-kind="component"]').count()).toBeGreaterThanOrEqual(50);
+          expect(await page.locator('[data-art-kind="component"]').count()).toBeGreaterThanOrEqual(46);
           expect((await loadedBackgrounds(page.locator('[data-art-kind="mat"], [data-art-kind="component"]'))).every(Boolean)).toBe(true);
         } },
         { spec: 'Each tray aligns goods, extensions, rubies, money, cards, and four power recesses', check: async () => {
@@ -60,7 +60,7 @@ test('original production art communicates the complete tabletop', async ({ brow
           expect(await states.evaluateAll((elements) => elements.map((element) => Number(element.getAttribute('data-testid')?.replace('place-state-', ''))).sort((a, b) => a - b))).toEqual([5, 6, 7, 10, 11, 13, 14, 15, 16]);
           await expect(page.locator('[data-testid="place-state-5"]')).toHaveAttribute('data-state-summary', /Exposed mail:/);
           await expect(page.locator('[data-testid="place-state-6"]')).toHaveAttribute('data-state-summary', /Bonus cards in draw pile; 0 in discard/);
-          await expect(page.locator('[data-testid="place-state-14"]')).toHaveAttribute('data-state-summary', /required, pay 1.*ruby rewards remain/);
+          await expect(page.locator('[data-testid="place-state-14"]')).toHaveAttribute('data-state-summary', /required, pay 1.*required, pay 1/);
           await expect(page.locator('[data-testid="place-state-16"]')).toHaveAttribute('data-state-summary', /Next ruby costs \d+ Lira/);
           await expect(page.locator('[data-place-id="5"]')).toHaveAttribute('aria-label', /Current state: Exposed mail:/);
           await expect(page.locator('[data-testid="place-state-5"] .mail-column')).toHaveCount(4);

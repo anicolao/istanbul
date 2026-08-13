@@ -244,7 +244,7 @@ The dedicated /tabletop route creates and owns an empty shared-table room. Ada a
 
 **Verifications:**
 
-- [x] The shared turn banner now gives Bora the tabletop
+- [x] The narrow shared turn strip now gives Bora the tabletop
 - [x] Bora begins event ten with no diagnostic
 
 ## 23. Bora privately inspects his Bonus card before using the tabletop

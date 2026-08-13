@@ -18,11 +18,10 @@ export function createRubyTracks(playerCount: number): GameSetup['rubyTracks'] {
 }
 
 export function currentSultanCost(game: GameSetup): Array<Good | 'any'> {
-  return sultanCostSequence.slice(0, game.rubyTracks.sultanIndex);
+  return sultanCostSequence.slice(0, Math.min(game.rubyTracks.sultanIndex, sultanCostSequence.length));
 }
 
 export function buySultanRuby(game: GameSetup, player: SetupPlayer, wildGoods: Good[]): string | null {
-  if (game.rubyTracks.sultanRubies < 1) return null;
   const cost = currentSultanCost(game);
   const wildCount = cost.filter((good) => good === 'any').length;
   if (wildGoods.length !== wildCount) return null;
@@ -37,17 +36,15 @@ export function buySultanRuby(game: GameSetup, player: SetupPlayer, wildGoods: G
 
   for (const good of Object.keys(payment) as Good[]) player.goods[good] -= payment[good];
   player.rubies += 1;
-  game.rubyTracks.sultanIndex += 1;
-  game.rubyTracks.sultanRubies -= 1;
+  game.rubyTracks.sultanIndex = Math.min(sultanCostSequence.length, game.rubyTracks.sultanIndex + 1);
   return `Delivered ${cost.length} goods to the Sultan and claimed 1 ruby.`;
 }
 
 export function buyGemstoneRuby(game: GameSetup, player: SetupPlayer): string | null {
   const price = game.rubyTracks.gemstonePrice;
-  if (game.rubyTracks.gemstoneRubies < 1 || player.lira < price) return null;
+  if (player.lira < price) return null;
   player.lira -= price;
   player.rubies += 1;
-  game.rubyTracks.gemstonePrice += 1;
-  game.rubyTracks.gemstoneRubies -= 1;
+  game.rubyTracks.gemstonePrice = Math.min(25, game.rubyTracks.gemstonePrice + 1);
   return `Paid ${price} Lira to the Gemstone Dealer and claimed 1 ruby.`;
 }

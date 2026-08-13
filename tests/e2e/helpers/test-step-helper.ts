@@ -102,6 +102,28 @@ export async function expectInterfaceToFit(page: Page) {
       }
     }
 
+    for (const statusArea of root.querySelectorAll<HTMLElement>('[data-e2e-status-area]')) {
+      if (!visible(statusArea)) continue;
+      const statusBounds = statusArea.getBoundingClientRect();
+      const clippingAncestor = clippedByAncestor(statusArea);
+      if (clippingAncestor) failures.push(`${label(statusArea)} status area is clipped by ${clippingAncestor}`);
+      for (const content of statusArea.querySelectorAll<HTMLElement>('*')) {
+        if (!visible(content)) continue;
+        const bounds = content.getBoundingClientRect();
+        if (
+          bounds.left < statusBounds.left - tolerance || bounds.top < statusBounds.top - tolerance
+          || bounds.right > statusBounds.right + tolerance || bounds.bottom > statusBounds.bottom + tolerance
+        ) failures.push(`${label(content)} leaves ${label(statusArea)} status area`);
+        const contentClippingAncestor = clippedByAncestor(content);
+        if (contentClippingAncestor) failures.push(`${label(content)} status content is clipped by ${contentClippingAncestor}`);
+      }
+    }
+
+    if (root.dataset.tabletopRoute === 'true') {
+      const privateControls = root.querySelectorAll('.hand, [aria-label^="Inspect Bonus card:"]');
+      if (privateControls.length) failures.push(`tabletop exposes ${privateControls.length} private hand element(s)`);
+    }
+
     return failures;
   });
   expect(problems, problems.join('\n')).toEqual([]);

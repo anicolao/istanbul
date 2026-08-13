@@ -86,7 +86,7 @@ test('a dedicated tabletop controls public play while phones contain private Bon
     await table.step('tabletop-starts-public-bazaar', { description: 'The tabletop starts play and becomes the public bazaar', verifications: [
       { spec: 'The public board replaces every joined and unclaimed lobby position', check: async () => { await expect(page.getByTestId('bazaar-board').getByRole('button')).toHaveCount(16); await expect(page.getByTestId('seat-qr')).toHaveCount(0); await expect(page.getByText(/invitations open/)).toHaveCount(0); } },
       { spec: 'The sixth event starts Ada’s seeded movement turn', check: async () => expectState(page, { screen: 'shared-display', eventCount: 6, localSeat: null, game: { seed, currentTurn: 'Ada', phase: 'movement' } }) },
-      { spec: 'No private Bonus hand appears in public DOM or state', check: async () => { await expect(page.locator('.hand')).toHaveCount(0); await expect(page.locator('.masked-hand')).toHaveCount(2); expect((await readState(page)).game.localHand).toEqual([]); } }
+      { spec: 'No private Bonus hand appears in public DOM or state', check: async () => { await expect(page.locator('.hand')).toHaveCount(0); await expect(page.getByRole('button', { name: /Inspect Bonus card:/ })).toHaveCount(0); await expect(page.locator('.compact-tray')).toHaveCount(2); expect((await readState(page)).game.localHand).toEqual([]); } }
     ] });
     await ada.step('ada-receives-private-turn', { description: 'Ada’s private phone receives the opening turn', verifications: [
       { spec: 'Ada sees only her private Bonus-card controller', check: async () => { await expect(adaPage.getByRole('heading', { name: 'Your Bonus cards' })).toBeVisible(); await expect(adaPage.getByRole('navigation', { name: 'Private Bonus hand' })).toBeVisible(); } },
@@ -135,7 +135,7 @@ test('a dedicated tabletop controls public play while phones contain private Bon
 
     await page.getByRole('button', { name: 'End turn and pass clockwise' }).click();
     await table.step('tabletop-passes-public-turn', { description: 'Ada passes clockwise on the shared tabletop', verifications: [
-      { spec: 'The shared turn banner now gives Bora the tabletop', check: async () => { await expect(page.getByRole('heading', { name: 'Bora surveys the bazaar.' })).toBeVisible(); await expect(page.getByText('Use the tabletop controls')).toBeVisible(); } },
+      { spec: 'The narrow shared turn strip now gives Bora the tabletop', check: async () => { await expect(page.getByRole('heading', { name: 'Bora surveys the bazaar.' })).toBeVisible(); await expect(page.locator('.tabletop-strip')).toContainText('Istanbul tabletop'); } },
       { spec: 'Bora begins event ten with no diagnostic', check: async () => expectState(page, { eventCount: 10, diagnosticCount: 0, game: { currentTurn: 'Bora', turnNumber: 2, phase: 'movement' } }) }
     ] });
 

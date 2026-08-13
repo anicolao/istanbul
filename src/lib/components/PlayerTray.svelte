@@ -9,6 +9,7 @@
     seat,
     starting,
     local,
+    compact = false,
     selectedBonus,
     onInspectBonus
   }: {
@@ -16,6 +17,7 @@
     seat: number;
     starting: boolean;
     local: boolean;
+    compact?: boolean;
     selectedBonus: string | null;
     onInspectBonus: (cardId: string) => void;
   } = $props();
@@ -31,6 +33,32 @@
   }
 </script>
 
+{#if compact}
+  <div class="compact-tray" data-testid={`player-tray-${player.uid}`} data-player-color={player.color} data-e2e-fit data-e2e-no-scroll>
+    <header>
+      {#if starting}<GameArt kind="piece" piece="first-player" class="compact-first-player" />{:else}<span class={`player-dot ${player.color}`}></span>{/if}
+      <span><strong>{player.name}</strong><small>{starting ? 'Start player' : `Seat ${seat}`}</small></span>
+      <span class="compact-assistants"><GameArt kind="piece" piece="assistant" color={player.color as PlayerColorName} /><b>{player.assistantsCarried}</b></span>
+    </header>
+    <div class="compact-goods" aria-label={`${player.name} goods`}>
+      {#each goods as good}<span class={good}><GameArt kind="component" component={good} /><b>{player.goods[good]}</b><small>{goodNames[good]}</small></span>{/each}
+    </div>
+    <div class="compact-powers" aria-label={`${player.name} Mosque tiles`}>
+      {#each goods as color}
+        {@const power = ownedPower(color)}
+        <span class:enabled={Boolean(power)} data-enabled={Boolean(power)} data-power-color={color} title={power?.ability ?? `${powerNames[color]} Mosque power not acquired`}>
+          {#if power}<GameArt kind="component" component={`mosque-${color}` as `mosque-${Good}`} label={`${powerNames[color]} Mosque power: ${power.ability}`} />{:else}<i></i>{/if}
+        </span>
+      {/each}
+    </div>
+    <footer>
+      <span aria-label={`${player.rubies} rubies`}><GameArt kind="component" component="ruby" /><b>{player.rubies}</b></span>
+      <span aria-label={`${player.lira} Lira`}><GameArt kind="component" component="lira" /><b>{player.lira}</b></span>
+      <span aria-label={`${player.extensions} wheelbarrow extensions`}><GameArt kind="component" component="wheelbarrow" /><b>{player.extensions}</b></span>
+      <span aria-label={`${player.bonusHand.length} Bonus cards`}><GameArt kind="card-back" /><b>{player.bonusHand.length}</b></span>
+    </footer>
+  </div>
+{:else}
 <div class="tray-stage" data-testid={`player-tray-${player.uid}`} data-player-color={player.color} data-e2e-fit>
   <GameArt kind="mat" color={player.color as PlayerColorName} class="player-mat-art" />
 
@@ -83,9 +111,31 @@
 {:else}
   <p class="masked-hand" data-e2e-fit data-e2e-no-scroll><GameArt kind="card-back" class="masked-card-art" />Bonus hand · {player.bonusHand.length} hidden card{player.bonusHand.length === 1 ? '' : 's'}</p>
 {/if}
+{/if}
 
 <style>
   .visually-hidden { position: fixed; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
+  .compact-tray { width: 100%; aspect-ratio: 1; min-height: 0; display: grid; grid-template-rows: auto 1fr 1fr auto; gap: .28rem; overflow: hidden; padding: .45rem; border: 1px solid rgb(239 202 125 / 45%); border-radius: .65rem; color: #fffaf0; background: radial-gradient(circle at 18% 12%, rgb(239 202 125 / 20%), transparent 42%), linear-gradient(145deg, #153f42, #20160f); box-shadow: inset 0 0 1.4rem rgb(0 0 0 / 30%); text-shadow: 0 1px 2px #000; }
+  .compact-tray header { min-width: 0; display: grid; grid-template-columns: 1.65rem minmax(0, 1fr) 2rem; gap: .35rem; align-items: center; }
+  .compact-tray header > span:nth-child(2) { min-width: 0; display: grid; }
+  .compact-tray header strong { overflow: hidden; font: 700 clamp(.72rem, 1vw, 1rem)/1 'Cormorant Garamond', serif; text-overflow: ellipsis; white-space: nowrap; }
+  .compact-tray header small { color: #dccda9; font-size: .48rem; text-transform: uppercase; }
+  .compact-tray header :global(.compact-first-player), .compact-tray header .player-dot { width: 1.55rem; height: 1.55rem; }
+  .compact-assistants { position: relative; display: grid; place-items: center; }
+  .compact-assistants :global(.game-art) { width: 1.75rem; height: 1.75rem; }
+  .compact-assistants b { position: absolute; right: -.08rem; bottom: -.08rem; width: .9rem; height: .9rem; display: grid; place-items: center; border-radius: 50%; background: #a13c38; font-size: .52rem; }
+  .compact-goods, .compact-powers { min-height: 0; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: .22rem; }
+  .compact-goods > span { min-width: 0; display: grid; grid-template-columns: minmax(0, 1fr) auto; grid-template-rows: 1fr auto; place-items: center; padding: .14rem; border-radius: .35rem; background: rgb(255 250 239 / 9%); }
+  .compact-goods :global(.game-art) { grid-row: 1 / 3; width: min(90%, 2.2rem); height: min(90%, 2.2rem); }
+  .compact-goods b { font-size: .76rem; }.compact-goods small { color: #dccda9; font-size: .38rem; text-transform: uppercase; }
+  .compact-powers > span { min-width: 0; min-height: 0; display: grid; place-items: center; overflow: hidden; border: 1px solid rgb(239 202 125 / 23%); border-radius: .3rem; background: rgb(0 0 0 / 16%); }
+  .compact-powers > span.enabled { border-color: #efca7d; background: rgb(255 250 239 / 8%); }
+  .compact-powers :global(.game-art) { width: min(100%, 3.2rem); height: min(100%, 3.2rem); }
+  .compact-powers i { width: 34%; aspect-ratio: 1; border: 1px dashed rgb(239 202 125 / 28%); border-radius: .2rem; }
+  .compact-tray footer { min-width: 0; display: grid; grid-template-columns: repeat(4, 1fr); gap: .2rem; }
+  .compact-tray footer > span { position: relative; min-width: 0; height: 1.6rem; display: grid; place-items: center; border-radius: .3rem; background: rgb(255 250 239 / 8%); }
+  .compact-tray footer :global(.game-art) { width: 1.25rem; height: 1.25rem; }
+  .compact-tray footer b { position: absolute; right: .08rem; bottom: .04rem; min-width: .8rem; height: .8rem; display: grid; place-items: center; border-radius: 50%; background: #a13c38; font-size: .45rem; }
   .tray-stage { position: relative; width: 100%; aspect-ratio: 853 / 250; min-height: 0; overflow: hidden; color: #fffaf0; text-shadow: 0 1px 2px #000; }
   :global(.player-mat-art) { position: absolute; z-index: 0; inset: 0; opacity: 1; filter: none; }
   .tray-stage > :not(:global(.player-mat-art)) { position: absolute; z-index: 1; }
