@@ -1,6 +1,6 @@
 # Buying escalating rubies and playing Bonus cards at exact moments
 
-Ada opens a two-player table with the reviewed 15-Lira Dealer and six-good Palace start. A visible emulator-only review control supplies resources through the same immutable event stream. Ada plays a long-move card, pays the neutral merchant, buys and immediately repeats the Gemstone Dealer at the increased price, then reaches the Sultan, chooses the wild good, buys and repeats at the newly exposed seven-good cost. Along the route she plays direct Lira and good cards, reloads private state, and Bora performs every intervening turn through ordinary controls.
+Ada opens a two-player table with the reviewed 15-Lira Dealer and five-good Palace start. A visible emulator-only review control supplies resources through the same immutable event stream. Ada plays a long-move card, pays the neutral merchant, buys and immediately repeats the Gemstone Dealer at the increased price, then reaches the Sultan, chooses the wild good, buys and repeats at the newly exposed six-good cost. Along the route she plays direct Lira and good cards, reloads private state, and Bora performs every intervening turn through ordinary controls.
 
 ## 1. Ada opens the private-table creator
 
@@ -319,7 +319,7 @@ Ada opens a two-player table with the reviewed 15-Lira Dealer and six-good Palac
 
 **Verifications:**
 
-- [x] The two-player track demands six goods
+- [x] The two-player track demands five goods
 - [x] The exposed Palace index remains exact
 
 ## 30. Ada assigns fruit to the first Palace wild cost
@@ -331,19 +331,19 @@ Ada opens a two-player table with the reviewed 15-Lira Dealer and six-good Palac
 **Verifications:**
 
 - [x] The visible wild selector reads Fruit
-- [x] Six-goods delivery is now enabled without an event
+- [x] Five-goods delivery is now enabled without an event
 
-## 31. Ada delivers six goods for the Palace ruby
+## 31. Ada delivers five goods for the Palace ruby
 
-**Ada, the first merchant** — Ada delivers six goods for the Palace ruby
+**Ada, the first merchant** — Ada delivers five goods for the Palace ruby
 
-![Ada delivers six goods for the Palace ruby](./screenshots/023-host-buys-first-palace-ruby-desktop.png)
+![Ada delivers five goods for the Palace ruby](./screenshots/023-host-buys-first-palace-ruby-desktop.png)
 
 **Verifications:**
 
 - [x] The first delivery conserves the extended goods
-- [x] Palace tile advances to the seven-good cost and three rubies
-- [x] The completion panel reports the exact six-good delivery
+- [x] Palace tile advances to the six-good cost and four rubies
+- [x] The completion panel reports the exact five-good delivery
 
 ## 32. Ada inspects A useful connection for jewelry
 
@@ -397,7 +397,7 @@ Ada opens a two-player table with the reviewed 15-Lira Dealer and six-good Palac
 
 **Verifications:**
 
-- [x] Fabric is filled and jewelry is restored to two
+- [x] Fabric is filled and jewelry reaches capacity
 - [x] The action remains in the repeat timing window
 
 ## 37. Ada inspects a third useful connection
@@ -430,7 +430,7 @@ Ada opens a two-player table with the reviewed 15-Lira Dealer and six-good Palac
 
 **Verifications:**
 
-- [x] Nine goods now cover the newly exposed Palace cost
+- [x] Ten goods now cover the newly exposed Palace cost
 - [x] The repeat timing window remains open
 
 ## 40. Ada inspects The Sultan grants another audience
@@ -441,18 +441,18 @@ Ada opens a two-player table with the reviewed 15-Lira Dealer and six-good Palac
 
 **Verifications:**
 
-- [x] The repeat names the newly exposed seven-good cost
+- [x] The repeat names the newly exposed six-good cost
 - [x] The replenished post-purchase goods are exact
 
-## 41. Ada repeats Sultan’s Palace at seven goods
+## 41. Ada repeats Sultan’s Palace at six goods
 
-**Ada, the first merchant** — Ada repeats Sultan’s Palace at seven goods
+**Ada, the first merchant** — Ada repeats Sultan’s Palace at six goods
 
-![Ada repeats Sultan’s Palace at seven goods](./screenshots/033-host-repeats-palace-at-new-cost-desktop.png)
+![Ada repeats Sultan’s Palace at six goods](./screenshots/033-host-repeats-palace-at-new-cost-desktop.png)
 
 **Verifications:**
 
-- [x] A fourth ruby and the eight-good next cost are public
+- [x] A fourth ruby and the seven-good next cost are public
 - [x] The completion copy records both Palace deliveries
 
 ## 42. Ada reloads the completed repeat decision
@@ -468,7 +468,7 @@ Ada opens a two-player table with the reviewed 15-Lira Dealer and six-good Palac
 
 ## 43. Ada passes after the reviewed Palace shortfall
 
-**Ada, the first merchant** — Ada passes after the reviewed Palace shortfall
+**Ada, the first merchant** — Ada passes after the reviewed Palace repeat
 
 ![Ada passes after the reviewed Palace shortfall](./screenshots/035-host-ends-palace-turn-desktop.png)
 

@@ -120,9 +120,9 @@ materialized state.
    two-player game.
 5. Put three wheelbarrow extensions and one ruby per player at Wainwright 1.
 6. Populate the Sultan's Palace 13 and Gemstone Dealer 16 ruby tracks from the
-   printed starting space for the player count. At Sultan's Palace, cover seven
-   cost spaces for two players, six for three players, and four for four or five
-   players. Empty spaces expose the current increasing cost.
+   printed starting space for the player count. At Sultan's Palace, the first
+   ruby costs five goods in a two- or three-player game and four goods in a
+   four- or five-player game. Empty spaces expose the current increasing cost.
 7. Put all four Mail indicators in the upper Post Office row.
 8. Shuffle the five dark Demand tiles into a face-up stack at Large Market 10
    and the five light tiles into a face-up stack at Small Market 11. The top
@@ -305,8 +305,9 @@ purchase. A wild-good symbol may be paid with any good. If the exact current
 cost cannot be paid, the action is unavailable.
 
 The player-count start positions and ordered costs are immutable Place-manifest
-data. A repeat-action Bonus card pays the newly increased cost for the second
-ruby.
+data. The starting cost contains five goods with two or three players and four
+goods with four or five players. A repeat-action Bonus card pays the newly
+increased cost for the second ruby.
 
 ### 14–15 — Small and Great Mosques
 
