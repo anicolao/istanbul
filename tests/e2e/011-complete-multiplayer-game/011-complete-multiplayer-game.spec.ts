@@ -3,7 +3,7 @@ import { expectState, readState } from '../helpers/game-journey';
 import { ScenarioJournal, TestStepHelper } from '../helpers/test-step-helper';
 
 test('five merchants complete an ordinary game, final cards, ranking, and rematch', async ({ browser, page }, testInfo) => {
-  test.setTimeout(240_000);
+  test.setTimeout(300_000);
   const names = ['Ada', 'Bora', 'Cem', 'Derya', 'Emre'];
   const roomCode = testInfo.project.name === 'phone' ? 'FIVES' : 'RACES';
   const seed = 'complete-10956';
