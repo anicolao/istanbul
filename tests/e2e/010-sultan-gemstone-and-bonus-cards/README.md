@@ -186,8 +186,8 @@ Ada opens a two-player table with the reviewed 15-Lira Dealer and five-good Pala
 
 **Verifications:**
 
-- [x] The public track advances immediately to 16
-- [x] Dealer tile now shows the 16-Lira price and nine remaining rubies
+- [x] The public track advances immediately to 16 while the unlimited route remains available
+- [x] Dealer tile now gives the entire status area to the 16-Lira price
 - [x] The completion panel names the exact payment
 
 ## 18. Ada inspects A second ruby offer
@@ -342,7 +342,7 @@ Ada opens a two-player table with the reviewed 15-Lira Dealer and five-good Pala
 **Verifications:**
 
 - [x] The first delivery conserves the extended goods
-- [x] Palace tile advances to the six-good cost and four rubies
+- [x] Palace tile gives its status area to the newly exposed six-good cost
 - [x] The completion panel reports the exact five-good delivery
 
 ## 32. Ada inspects A useful connection for jewelry
