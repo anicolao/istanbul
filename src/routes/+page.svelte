@@ -55,6 +55,7 @@
   let selectedPlace = $state<number | null>(null);
   let selectedBonus = $state<string | null>(null);
   let boardScale = $state(1);
+  let e2eResourceReview = $state<'ruby-routes' | 'yellow-recall'>('ruby-routes');
   const buildHash = (import.meta.env.VITE_GIT_HASH ?? 'local').slice(0, 7);
 
   const room = $derived(projection.room);
@@ -129,6 +130,9 @@
     try {
       const services = await initializeFirebase();
       recoveryReview = import.meta.env.VITE_USE_FIREBASE_EMULATORS === 'true' && new URL(location.href).searchParams.get('e2eRecovery') === '1';
+      e2eResourceReview = import.meta.env.VITE_USE_FIREBASE_EMULATORS === 'true' && new URL(location.href).searchParams.get('e2eReview') === 'yellow-recall'
+        ? 'yellow-recall'
+        : 'ruby-routes';
       const reviewedCacheCount = Number(new URL(location.href).searchParams.get('e2eCacheCount') ?? '0');
       const reviewedRoom = normalizeRoomCode(new URL(location.href).searchParams.get('room') ?? '');
       sharedDisplay = tabletopRoute;
@@ -436,6 +440,10 @@
     if (!repository || actionPending || import.meta.env.VITE_USE_FIREBASE_EMULATORS !== 'true') return;
     actionPending = true;
     try {
+      if (e2eResourceReview === 'yellow-recall') {
+        await repository.append('e2e/yellow-recall-reviewed', {});
+        return;
+      }
       await repository.append('e2e/resources-granted', {
         lira: 35,
         capacity: 3,
@@ -628,10 +636,10 @@
     {#if game}
       <GameTable
         {game} {room} userUid={room.tabletopOwned ? userUid : ''} selectedPlace={null} selectedBonus={null} {boardScale} displayOnly
-        onInspectPlace={() => {}} onInspectBonus={() => {}} onMove={() => {}} onPayMerchants={() => {}}
+      onInspectPlace={() => {}} onInspectBonus={() => {}} onMove={() => {}} onPayMerchants={() => {}}
         onTakeAction={() => {}} onResolveEncounter={() => {}} onUseMosqueAbility={() => {}} onPlayBonus={() => {}}
         onGrantE2eResources={() => {}} onRematch={() => { if (room.tabletopOwned) void rematch(); }} onEndTurn={() => {}}
-        onZoomIn={() => boardScale = 1} onFit={() => boardScale = 1}
+        onZoomIn={() => boardScale = 1} onFit={() => boardScale = 1} {e2eResourceReview}
       />
     {:else}<SharedTableLobby {room} invitationFor={() => makeInviteUrl(room.roomCode)} layoutNames={layoutNames} canConfigure={isHost && room.tabletopOwned} canStart={isHost && allReady} {actionPending} onConfigure={(layout) => void configureRoom(layout)} onStart={() => void startGame()} />{/if}
   {:else if screen === 'game' && room && game}
@@ -655,6 +663,7 @@
       onEndTurn={() => void endTurn()}
       onZoomIn={() => boardScale = 1}
       onFit={() => boardScale = 1}
+      {e2eResourceReview}
     />
   {/if}
   {/if}
