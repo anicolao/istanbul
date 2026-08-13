@@ -466,11 +466,11 @@ Ada opens a two-player table with the reviewed 15-Lira Dealer and five-good Pala
 - [x] The spent private repeat card stays discarded
 - [x] Replay restores event twenty-two byte-for-byte
 
-## 43. Ada passes after the reviewed Palace shortfall
+## 43. Ada passes after the reviewed Palace repeat
 
 **Ada, the first merchant** — Ada passes after the reviewed Palace repeat
 
-![Ada passes after the reviewed Palace shortfall](./screenshots/035-host-ends-palace-turn-desktop.png)
+![Ada passes after the reviewed Palace repeat](./screenshots/035-host-ends-palace-turn-desktop.png)
 
 **Verifications:**
 
