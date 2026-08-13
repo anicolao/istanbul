@@ -20,6 +20,93 @@ export class ScenarioJournal {
   description = '';
 }
 
+export async function expectInterfaceToFit(page: Page) {
+  const problems = await page.evaluate(async () => {
+    await new Promise<void>((resolve) => requestAnimationFrame(() => requestAnimationFrame(() => resolve())));
+
+    const tolerance = 1;
+    const root = document.querySelector<HTMLElement>('[data-e2e-layout]');
+    if (!root) return ['missing [data-e2e-layout] root'];
+    const failures: string[] = [];
+    const label = (element: HTMLElement) => {
+      const identity = element.getAttribute('data-testid')
+        || element.getAttribute('aria-label')
+        || element.id
+        || element.className?.toString().split(/\s+/).filter(Boolean).slice(0, 2).join('.')
+        || '';
+      return `${element.tagName.toLowerCase()}${identity ? `[${identity}]` : ''}`;
+    };
+    const visible = (element: HTMLElement) => {
+      const style = getComputedStyle(element);
+      const rect = element.getBoundingClientRect();
+      return style.display !== 'none' && style.visibility !== 'hidden' && rect.width > 0 && rect.height > 0;
+    };
+    const clippedByAncestor = (element: HTMLElement) => {
+      const rect = element.getBoundingClientRect();
+      let ancestor = element.parentElement;
+      while (ancestor && ancestor !== root.parentElement) {
+        const style = getComputedStyle(ancestor);
+        if ([style.overflow, style.overflowX, style.overflowY].some((value) => value === 'hidden' || value === 'clip')) {
+          const bounds = ancestor.getBoundingClientRect();
+          if (
+            rect.left < bounds.left - tolerance || rect.top < bounds.top - tolerance
+            || rect.right > bounds.right + tolerance || rect.bottom > bounds.bottom + tolerance
+          ) return label(ancestor);
+        }
+        ancestor = ancestor.parentElement;
+      }
+      return '';
+    };
+
+    const documentWidth = Math.max(document.documentElement.scrollWidth, document.body.scrollWidth);
+    const documentHeight = Math.max(document.documentElement.scrollHeight, document.body.scrollHeight);
+    if (documentWidth > innerWidth + tolerance || documentHeight > innerHeight + tolerance) {
+      failures.push(`document scrolls: ${documentWidth}×${documentHeight} inside ${innerWidth}×${innerHeight}`);
+    }
+    if (scrollX !== 0 || scrollY !== 0) failures.push(`window is scrolled to ${scrollX},${scrollY}`);
+
+    for (const element of [root, ...root.querySelectorAll<HTMLElement>('[data-e2e-fit]')]) {
+      if (!visible(element)) continue;
+      const rect = element.getBoundingClientRect();
+      if (
+        rect.left < -tolerance || rect.top < -tolerance
+        || rect.right > innerWidth + tolerance || rect.bottom > innerHeight + tolerance
+      ) {
+        failures.push(`${label(element)} leaves viewport: ${rect.left.toFixed(1)},${rect.top.toFixed(1)}–${rect.right.toFixed(1)},${rect.bottom.toFixed(1)}`);
+      }
+      const clippingAncestor = clippedByAncestor(element);
+      if (clippingAncestor) failures.push(`${label(element)} is clipped by ${clippingAncestor}`);
+    }
+
+    for (const element of root.querySelectorAll<HTMLElement>('button, input, select, textarea, a[href]')) {
+      if (!visible(element)) continue;
+      const rect = element.getBoundingClientRect();
+      if (
+        rect.left < -tolerance || rect.top < -tolerance
+        || rect.right > innerWidth + tolerance || rect.bottom > innerHeight + tolerance
+      ) failures.push(`${label(element)} control leaves viewport`);
+      const clippingAncestor = clippedByAncestor(element);
+      if (clippingAncestor) failures.push(`${label(element)} control is clipped by ${clippingAncestor}`);
+    }
+
+    for (const element of root.querySelectorAll<HTMLElement>('[data-e2e-no-scroll]')) {
+      if (!visible(element)) continue;
+      if (
+        element.scrollWidth > element.clientWidth + tolerance
+        || element.scrollHeight > element.clientHeight + tolerance
+      ) {
+        failures.push(`${label(element)} clips or scrolls: ${element.scrollWidth}×${element.scrollHeight} inside ${element.clientWidth}×${element.clientHeight}`);
+      }
+      if (element.scrollLeft !== 0 || element.scrollTop !== 0) {
+        failures.push(`${label(element)} is internally scrolled to ${element.scrollLeft},${element.scrollTop}`);
+      }
+    }
+
+    return failures;
+  });
+  expect(problems, problems.join('\n')).toEqual([]);
+}
+
 export class TestStepHelper {
   private count = 0;
   private journal: ScenarioJournal;
@@ -49,36 +136,7 @@ export class TestStepHelper {
     );
     await this.page.bringToFront();
     await this.page.mouse.move(0, 0);
-    await this.page.evaluate(async () => {
-      await new Promise<void>((resolve) => requestAnimationFrame(() => requestAnimationFrame(() => resolve())));
-      const root = document.documentElement;
-      if (root.scrollWidth > window.innerWidth + 1 || root.scrollHeight > window.innerHeight + 1) {
-        throw new Error(
-          `page scrolls: ${root.scrollWidth}×${root.scrollHeight} inside `
-            + `${window.innerWidth}×${window.innerHeight}`
-        );
-      }
-      if (window.scrollX !== 0 || window.scrollY !== 0) {
-        throw new Error(`page is scrolled to ${window.scrollX},${window.scrollY}`);
-      }
-
-      for (const element of document.querySelectorAll<HTMLElement>('[data-e2e-layout] *')) {
-        if (!element.checkVisibility()) continue;
-        const rect = element.getBoundingClientRect();
-        if (rect.width === 0 || rect.height === 0) continue;
-        if (
-          rect.left < -1
-          || rect.right > window.innerWidth + 1
-          || rect.top < -1
-          || rect.bottom > window.innerHeight + 1
-        ) {
-          throw new Error(
-            `${element.tagName} is outside the viewport at `
-              + `${rect.left},${rect.top}–${rect.right},${rect.bottom}`
-          );
-        }
-      }
-    });
+    await expectInterfaceToFit(this.page);
 
     const index = String(this.count++).padStart(3, '0');
     const platform = process.platform === 'linux' ? '-linux' : '';

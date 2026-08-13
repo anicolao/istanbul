@@ -31,7 +31,7 @@
   }
 </script>
 
-<div class="tray-stage" data-testid={`player-tray-${player.uid}`} data-player-color={player.color}>
+<div class="tray-stage" data-testid={`player-tray-${player.uid}`} data-player-color={player.color} data-e2e-fit>
   <GameArt kind="mat" color={player.color as PlayerColorName} class="player-mat-art" />
 
   <div class="tray-name">
@@ -79,9 +79,9 @@
 </div>
 
 {#if local}
-  <div class="hand"><span>Private hand</span>{#each player.bonusHand as cardId}<button aria-label={`Inspect Bonus card: ${bonusById.get(cardId)?.title}`} aria-pressed={selectedBonus === cardId} onclick={() => onInspectBonus(cardId)}><GameArt kind="card" effect={bonusById.get(cardId)?.effect} class="hand-card-art" /><small>Bonus</small><strong>{bonusById.get(cardId)?.title}</strong></button>{/each}</div>
+  <div class="hand" data-e2e-fit data-e2e-no-scroll><span>Private hand</span>{#each player.bonusHand as cardId}<button aria-label={`Inspect Bonus card: ${bonusById.get(cardId)?.title}`} aria-pressed={selectedBonus === cardId} onclick={() => onInspectBonus(cardId)}><GameArt kind="card" effect={bonusById.get(cardId)?.effect} class="hand-card-art" /><small>Bonus</small><strong>{bonusById.get(cardId)?.title}</strong></button>{/each}</div>
 {:else}
-  <p class="masked-hand"><GameArt kind="card-back" class="masked-card-art" />Bonus hand · {player.bonusHand.length} hidden card{player.bonusHand.length === 1 ? '' : 's'}</p>
+  <p class="masked-hand" data-e2e-fit data-e2e-no-scroll><GameArt kind="card-back" class="masked-card-art" />Bonus hand · {player.bonusHand.length} hidden card{player.bonusHand.length === 1 ? '' : 's'}</p>
 {/if}
 
 <style>

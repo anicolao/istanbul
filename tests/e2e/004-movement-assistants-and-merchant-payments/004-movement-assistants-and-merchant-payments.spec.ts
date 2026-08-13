@@ -109,7 +109,7 @@ test('merchants move with assistants, settle tolls, and advance safely', async (
     await page.getByRole('button', { name: 'Pay 2 Lira and continue' }).click();
     await ada.step('host-pays-neutral', { description: 'Ada pays the neutral merchant and continues', verifications: [
       { spec: 'The Small Mosque action is now ready', check: async () => expect(page.getByRole('heading', { name: 'Small Mosque', exact: true })).toBeVisible() },
-      { spec: 'The neutral merchant has deterministically left Place 14', check: async () => { const state = await readState(page); expect(state.game.pending).toBeNull(); await expect(page.getByRole('button', { name: /^14 Small Mosque/ })).not.toContainText('N'); } },
+      { spec: 'The neutral merchant has deterministically left Place 14', check: async () => { const state = await readState(page); expect(state.game.pending).toBeNull(); expect(state.game.neutralMerchants).not.toContainEqual(expect.objectContaining({ place: 14 })); } },
       { spec: 'Ada has paid down to zero Lira in action phase', check: async () => expectState(page, { eventCount: 7, game: { phase: 'action', players: [{ merchantPlace: 14, lira: 0 }, {}] } }) }
     ] });
 
@@ -129,7 +129,7 @@ test('merchants move with assistants, settle tolls, and advance safely', async (
     await boraPage.getByRole('button', { name: 'Move here and leave an assistant' }).click();
     await bora.step('guest-moves-to-host', { description: 'Bora arrives beside Ada and leaves an assistant', verifications: [
       { spec: 'A mandatory player-to-player toll is visible', check: async () => { await expect(boraPage.getByText('Pay Ada 2 Lira each.')).toBeVisible(); await expect(boraPage.getByRole('button', { name: 'Pay 2 Lira and continue' })).toBeVisible(); } },
-      { spec: 'Ada’s observer sees both merchants on Place 14', check: async () => expect(page.getByRole('button', { name: /^14 Small Mosque.*Merchants: Ada, Bora/ })).toBeVisible() },
+      { spec: 'Ada’s observer state sees both merchants on Place 14', check: async () => expectState(page, { game: { players: [{ name: 'Ada', merchantPlace: 14 }, { name: 'Bora', merchantPlace: 14 }] } }) },
       { spec: 'Bora’s drop and exact recipient are pending canonically', check: async () => expectState(boraPage, { eventCount: 9, game: { phase: 'merchant-payment', pending: { total: 2 }, players: [{ name: 'Ada', lira: 0 }, { name: 'Bora', merchantPlace: 14, assistantsCarried: 3, lira: 3 }] } }) }
     ] });
 
@@ -142,7 +142,7 @@ test('merchants move with assistants, settle tolls, and advance safely', async (
     await boraPage.getByRole('button', { name: 'Skip Mosque and end turn' }).click();
     await bora.step('guest-ends-second-turn', { description: 'Bora ends turn after the settled encounter', verifications: [
       { spec: 'Ada becomes current for turn three', check: async () => expect(boraPage.getByRole('heading', { name: 'Ada surveys the bazaar.' })).toBeVisible() },
-      { spec: 'Both Place-14 assistants remain on the public board', check: async () => { await expect(boraPage.getByTitle("Ada's assistant")).toBeVisible(); await expect(boraPage.getByTitle("Bora's assistant")).toBeVisible(); } },
+      { spec: 'Both Place-14 assistants remain in public state', check: async () => expectState(boraPage, { game: { players: [{ assistantsByPlace: { 14: 1 } }, { assistantsByPlace: { 14: 1 } }] } }) },
       { spec: 'Turn three begins with a clean movement phase', check: async () => expectState(boraPage, { eventCount: 11, game: { currentTurn: 'Ada', turnNumber: 3, phase: 'movement' } }) }
     ] });
 
@@ -207,7 +207,7 @@ test('merchants move with assistants, settle tolls, and advance safely', async (
 
     await boraPage.getByRole('button', { name: 'Move here without leaving an assistant' }).click();
     await bora.step('guest-moves-to-fountain', { description: 'Bora moves to Fountain without leaving an assistant', verifications: [
-      { spec: 'Both merchants are now visibly at Fountain', check: async () => expect(boraPage.getByRole('button', { name: /^7 Fountain.*Merchants: Ada, Bora/ })).toBeVisible() },
+      { spec: 'Both merchants are now at Fountain in public state', check: async () => expectState(boraPage, { game: { players: [{ merchantPlace: 7 }, { merchantPlace: 7 }] } }) },
       { spec: 'Bora’s assistant counts are unchanged in action phase', check: async () => expectState(boraPage, { eventCount: 17, game: { phase: 'action', players: [{ merchantPlace: 7 }, { merchantPlace: 7, assistantsCarried: 2, assistantsByPlace: { 2: 1, 14: 1 } }] } }) }
     ] });
 

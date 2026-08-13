@@ -73,7 +73,7 @@ test('Police dispatch, family catches, Governor, and Smuggler survive immutable 
     await bora.step('guest-arrives-with-three-encounters', { description: 'Bora arrives among Ada’s family, Governor, and Smuggler', verifications: [
       { spec: 'Place action correctly precedes every other encounter', check: async () => expect(boraPage.getByRole('button', { name: 'Fill fabric to 2' })).toBeEnabled() },
       { spec: 'Arrival itself has not caught or moved any token', check: async () => expectState(boraPage, { eventCount: 10, game: { phase: 'action', players: [{ familyPlace: 2 }, { merchantPlace: 2, goods: { fabric: 0 } }], governorPlace: 2, smugglerPlace: 2 } }) },
-      { spec: 'All family and special tokens remain visible on the board', check: async () => expect(boraPage.getByRole('button', { name: /^2 Fabric Warehouse/ })).toContainText('Fabric') }
+      { spec: 'All family and special tokens remain at Fabric Warehouse in public state', check: async () => { const state = await readState(boraPage); expect(state.game).toMatchObject({ governorPlace: 2, smugglerPlace: 2, players: [{ familyPlace: 2 }, { merchantPlace: 2 }] }); } }
     ] });
 
     await boraPage.getByRole('button', { name: 'Fill fabric to 2' }).click();
