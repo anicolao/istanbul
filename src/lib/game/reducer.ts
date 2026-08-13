@@ -289,6 +289,24 @@ function applyEvent(state: ReplayProjection, event: CanonicalEvent): boolean {
     return true;
   }
 
+  if (event.type === 'e2e/flexible-market-reviewed' && import.meta.env.VITE_USE_FIREBASE_EMULATORS === 'true') {
+    const game = state.game;
+    const player = game.players[game.turnSeat];
+    if (event.actorUid !== player.uid || game.phase !== 'movement') {
+      reject(state, event, 'invalid-e2e-flexible-market');
+      return false;
+    }
+    const card = 'bonus-wild-small-market-1';
+    for (const reviewedPlayer of game.players) reviewedPlayer.bonusHand = reviewedPlayer.bonusHand.filter((id) => id !== card);
+    game.bonusDrawPile = game.bonusDrawPile.filter((id) => id !== card);
+    game.bonusDiscard = game.bonusDiscard.filter((id) => id !== card);
+    player.bonusHand.push(card);
+    player.capacity = 3;
+    player.extensions = 1;
+    player.goods = { fabric: 3, spice: 3, fruit: 3, jewelry: 3 };
+    return true;
+  }
+
   if (event.type === 'turn/ended') {
     const game = state.game;
     const player = game.players[game.turnSeat];

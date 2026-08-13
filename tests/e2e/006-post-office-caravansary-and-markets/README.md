@@ -146,6 +146,7 @@ Ada and Bora narrate every input from an empty private room through seven ordina
 **Verifications:**
 
 - [x] All four indicators are visibly upper
+- [x] The four available bottom rewards are vivid while all four cubed top rewards are grey
 - [x] The collection control is enabled
 - [x] No mail resource is granted by movement alone
 
@@ -157,9 +158,9 @@ Ada and Bora narrate every input from an empty private room through seven ordina
 
 **Verifications:**
 
-- [x] The completion copy lists cloth, 2 Lira, jewelry, and 2 Lira from the top row
-- [x] The top row pays fabric, two Lira, jewelry, and two Lira
-- [x] The leftmost indicator drops to expose spice while the other columns stay on their top rewards
+- [x] The completion copy lists spice, 1 Lira, fruit, and 1 Lira from the bottom row
+- [x] The bottom row pays spice, one Lira, fruit, and one Lira
+- [x] The leftmost indicator drops to expose fabric while the other columns stay on their bottom rewards
 - [x] The action cannot be collected twice
 
 ## 15. Ada passes the completed mail turn clockwise
@@ -256,7 +257,7 @@ Ada and Bora narrate every input from an empty private room through seven ordina
 
 - [x] The adjacent warehouse is selected
 - [x] Ada must leave her second assistant
-- [x] Ada owns one fabric before filling
+- [x] Ada owns no fabric before filling
 
 ## 23. Ada arrives at Fabric Warehouse
 
@@ -278,7 +279,7 @@ Ada and Bora narrate every input from an empty private room through seven ordina
 **Verifications:**
 
 - [x] The two-crate track is full
-- [x] The warehouse closes in turn-end without inventing Post Office goods
+- [x] The warehouse closes in turn-end without changing Post Office goods
 
 ## 25. Ada passes the filled warehouse turn
 
@@ -322,8 +323,8 @@ Ada and Bora narrate every input from an empty private room through seven ordina
 
 **Verifications:**
 
-- [x] The completion copy names spice, 2 Lira, jewelry, and 2 Lira
-- [x] The second mail combination pays spice, two Lira, jewelry, and two Lira before its indicator drops
+- [x] The completion copy names fabric, 1 Lira, fruit, and 1 Lira
+- [x] The second mail combination pays fabric, one Lira, fruit, and one Lira before its indicator drops
 
 ## 29. Bora passes after the second mail collection
 
@@ -360,11 +361,11 @@ Ada and Bora narrate every input from an empty private room through seven ordina
 - [x] No selection means the sale is disabled
 - [x] The active Demand is still on top
 
-## 32. Ada selects one depicted jewelry for the Small Market
+## 32. Ada selects one depicted fabric for the Small Market
 
-**Ada, the first merchant** — Ada selects one depicted jewelry for the Small Market
+**Ada, the first merchant** — Ada selects one depicted fabric for the Small Market
 
-![Ada selects one depicted jewelry for the Small Market](./screenshots/017-host-chooses-small-sale-desktop.png)
+![Ada selects one depicted fabric for the Small Market](./screenshots/017-host-chooses-small-sale-desktop.png)
 
 **Verifications:**
 

@@ -154,6 +154,7 @@ Ada opens a two-player table with the reviewed 15-Lira Dealer and five-good Pala
 **Verifications:**
 
 - [x] The distant Dealer is now reachable only through the card
+- [x] Inspection reveals that another trade would raise the price to 16 Lira
 - [x] Movement inspection preserves event seven
 
 ## 15. Ada crosses four spaces and meets the neutral Dealer merchant
@@ -309,6 +310,7 @@ Ada opens a two-player table with the reviewed 15-Lira Dealer and five-good Pala
 **Verifications:**
 
 - [x] The Palace is a legal adjacent route
+- [x] Inspection reveals that another trade would expose a six-good cost
 - [x] Ada carries seven Lira and the extended goods capacity
 
 ## 29. Ada arrives at Sultan’s Palace

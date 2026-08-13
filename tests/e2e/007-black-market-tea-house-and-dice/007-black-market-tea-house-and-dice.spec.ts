@@ -105,6 +105,7 @@ test('Tea House wagers and Black Market goods use seeded replayable dice', async
     await boraPage.getByRole('button', { name: /^8 Black Market.*Reachable/ }).click();
     await bora.step('guest-selects-black-market', { description: 'Bora selects adjacent Black Market', verifications: [
       { spec: 'Black Market is a one-space legal route', check: async () => expect(boraPage.getByRole('button', { name: /^8 Black Market.*Reachable/ })).toHaveAttribute('aria-pressed', 'true') },
+      { spec: 'The tile displays all three jewelry thresholds before the roll', check: async () => expect(boraPage.getByLabel('Black Market jewelry thresholds: 7 for 1, 9 for 2, 11 for 3')).toBeVisible() },
       { spec: 'Bora must leave a second assistant', check: async () => expect(boraPage.getByRole('button', { name: 'Move here and leave an assistant' })).toBeVisible() },
       { spec: 'Bora begins with no goods', check: async () => expectState(boraPage, { eventCount: 12, game: { players: [{}, { goods: { fabric: 0, spice: 0, fruit: 0, jewelry: 0 } }] } }) }
     ] });

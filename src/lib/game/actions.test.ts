@@ -91,7 +91,7 @@ describe('deterministic economy actions', () => {
       expect(collectPostOffice(game, player)).toMatch(/^Collected/);
       expect(game.postOfficeLower).toEqual(lower);
     }
-    expect(player).toMatchObject({ lira: 16, goods: { fabric: 1, spice: 4, fruit: 2, jewelry: 3 } });
+    expect(player).toMatchObject({ lira: 14, goods: { fabric: 4, spice: 1, fruit: 3, jewelry: 2 } });
   });
 
   it('previews and resolves ordered Caravansary sources while conserving all 26 cards', () => {
@@ -129,6 +129,17 @@ describe('deterministic economy actions', () => {
     smallPlayer.lira = 0;
     expect(sellAtMarket(smallGame, smallPlayer, 11, [0, 1, 2, 3])).toBe('Sold 4 goods for 14 Lira.');
     expect(smallPlayer.lira).toBe(14);
+
+    const flexibleGame = createSetup(room(), 'flexible-small-market-sale');
+    const flexiblePlayer = flexibleGame.players[0];
+    flexibleGame.smallDemand = ['demand-small-1', ...flexibleGame.smallDemand.filter((id) => id !== 'demand-small-1')];
+    flexibleGame.activeBonusEffects = ['wild-small-market'];
+    flexiblePlayer.goods = { fabric: 0, spice: 1, fruit: 1, jewelry: 1 };
+    flexiblePlayer.lira = 0;
+    expect(sellAtMarket(flexibleGame, flexiblePlayer, 11, [0, 2, 4], ['jewelry', 'spice', 'fruit'])).toBe('Used flexible demand to sell 3 goods for 9 Lira.');
+    expect(flexiblePlayer).toMatchObject({ lira: 9, goods: { fabric: 0, spice: 0, fruit: 0, jewelry: 0 } });
+    expect(flexibleGame.activeBonusEffects).toEqual([]);
+    expect(sellAtMarket({ ...smallGame, activeBonusEffects: ['wild-small-market'] }, smallPlayer, 11, [], ['fabric'])).toBeNull();
   });
 
   it('maps every Black Market roll boundary and respects wheelbarrow capacity', () => {

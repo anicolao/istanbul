@@ -13,7 +13,7 @@
   } from '$lib/game/actions';
   import type { EncounterChoice } from '$lib/game/encounters';
   import { ownsMosqueAbility, type MosqueAbilityChoice } from '$lib/game/mosques';
-  import { currentSultanCost } from '$lib/game/ruby-routes';
+  import { currentSultanCost, sultanCostSequence } from '$lib/game/ruby-routes';
   import { locationStateSummary } from '$lib/game/location-state';
   import type { BonusChoice } from '$lib/game/bonus';
   import type { RoomProjection } from '$lib/game/protocol';
@@ -66,7 +66,7 @@
     onEndTurn: () => void;
     onZoomIn: () => void;
     onFit: () => void;
-    e2eResourceReview?: 'ruby-routes' | 'yellow-recall' | 'zero-move';
+    e2eResourceReview?: 'ruby-routes' | 'yellow-recall' | 'zero-move' | 'flexible-market';
     displayOnly?: boolean;
     tabletopControls?: boolean;
   } = $props();
@@ -109,7 +109,7 @@
   let bonusGood = $state<Good>('jewelry');
   let bonusFamilyReward = $state<'lira' | 'bonus'>('lira');
   let bonusAssistantPlace = $state(1);
-  let flexibleGoods = $state<Good[]>(['fabric']);
+  let flexibleGoods = $state<Good[]>([]);
   let keyboardPlace = $state(0);
   let mobileBoardOpen = $state(false);
   let inspectedPileCardId = $state<string | null>(null);
@@ -124,9 +124,13 @@
   const caravanPreview = $derived(previewCaravansary(game, caravanSources) ?? []);
   const inspectedPileCard = $derived(inspectedPileCardId ? bonusById.get(inspectedPileCardId) : null);
   const activeDemand = $derived(demandTiles.find(({ id }) => id === (actionPlace.id === 10 ? game.largeDemand[0] : game.smallDemand[0])));
-  const marketSelectionLegal = $derived(isMarketSelectionLegal(activeDemand?.goods ?? [], marketSelection));
+  const flexibleMarketActive = $derived(actionPlace.id === 11 && game.activeBonusEffects.includes('wild-small-market'));
+  const marketPaymentGoods = $derived((activeDemand?.goods ?? []).map((good, index) => flexibleMarketActive ? flexibleGoods[index] ?? good : good));
+  const marketSelectionLegal = $derived(isMarketSelectionLegal(marketPaymentGoods, marketSelection));
   const smugglerGainAvailable = $derived(localPlayer.goods[smugglerGood] < localPlayer.capacity);
   const sultanCost = $derived(currentSultanCost(game));
+  const nextSultanCost = $derived(sultanCostSequence.slice(0, Math.min(game.rubyTracks.sultanIndex + 1, sultanCostSequence.length)));
+  const nextGemstonePrice = $derived(Math.min(25, game.rubyTracks.gemstonePrice + 1));
   const sultanWildCount = $derived(sultanCost.filter((good) => good === 'any').length);
   const sultanPayment = $derived((Object.keys(goodNames) as Good[]).reduce<Record<Good, number>>((totals, good) => ({
     ...totals,
@@ -212,7 +216,11 @@
   }
 
   function sellMarket() {
-    onTakeAction({ kind: 'market-sell', slotIndexes: marketSelection });
+    onTakeAction({
+      kind: 'market-sell',
+      slotIndexes: marketSelection,
+      ...(flexibleMarketActive ? { wildGoods: marketSelection.map((index) => marketPaymentGoods[index]) } : {})
+    });
     marketSelection = [];
   }
 
@@ -221,7 +229,7 @@
   }
 
   function setFlexibleGood(index: number, good: Good) {
-    flexibleGoods = flexibleGoods.map((value, slot) => slot === index ? good : value);
+    flexibleGoods = Array.from({ length: 5 }, (_, slot) => slot === index ? good : flexibleGoods[slot] ?? activeDemand?.goods[slot] ?? 'fabric');
   }
 
   function moveBoardFocus(index: number, key: string) {
@@ -286,7 +294,7 @@
             >
               <GameArt kind="location" place={place.id} class="place-art" />
               <span class="place-shade"></span>
-              {#if [5, 6, 7, 10, 11, 13, 14, 15, 16].includes(place.id)}<LocationState {game} placeId={place.id} />{/if}
+              {#if [5, 6, 7, 8, 10, 11, 13, 14, 15, 16].includes(place.id)}<LocationState {game} placeId={place.id} />{/if}
               <span class="place-number">{place.id}</span>
               <strong>{place.shortName}</strong>
               <span class="occupants" aria-hidden="true">
@@ -302,7 +310,7 @@
         </div>
       </div>
       <p class="board-caption">{room.layout.replace('-', ' ')} · setup seed {game.seed}</p>
-      {#if import.meta.env.VITE_USE_FIREBASE_EMULATORS === 'true' && localIsCurrent && game.phase === 'movement'}<button class="e2e-resources" onclick={onGrantE2eResources}>{e2eResourceReview === 'yellow-recall' ? 'Review Yellow Mosque recall' : e2eResourceReview === 'zero-move' ? 'Review zero-distance Bonus move' : 'Review ruby routes with supplied resources'}</button>{/if}
+      {#if import.meta.env.VITE_USE_FIREBASE_EMULATORS === 'true' && localIsCurrent && game.phase === 'movement'}<button class="e2e-resources" onclick={onGrantE2eResources}>{e2eResourceReview === 'yellow-recall' ? 'Review Yellow Mosque recall' : e2eResourceReview === 'zero-move' ? 'Review zero-distance Bonus move' : e2eResourceReview === 'flexible-market' ? 'Review Flexible Demand market sale' : 'Review ruby routes with supplied resources'}</button>{/if}
     </section>
 
     <aside class:finish={game.phase === 'game-over'} class:decision={game.phase !== 'movement'} class="inspector" class:route-planner={!selectedBonusManifest && game.phase === 'movement' && !selectedPlaceManifest} aria-live="polite" data-e2e-fit data-e2e-no-scroll>
@@ -424,9 +432,9 @@
           <div class="mail-track" aria-label={`Post Office indicators ${game.postOfficeLower.map((lower) => lower ? 'lower' : 'upper').join(', ')}`}>
             {#each postOfficeRows as rows, index}
               <span class="mail-column">
-                <i class:covered={!game.postOfficeLower[index]}>{rows[0].lira ? `${rows[0].lira}₺` : goodNames[rows[0].good!].slice(0, 1)}</i>
+                <i class:covered={!game.postOfficeLower[index]}>{rows[1].lira ? `${rows[1].lira}₺` : goodNames[rows[1].good!].slice(0, 1)}</i>
                 <b aria-hidden="true" class:lower={game.postOfficeLower[index]}></b>
-                <i class:covered={game.postOfficeLower[index]}>{rows[1].lira ? `${rows[1].lira}₺` : goodNames[rows[1].good!].slice(0, 1)}</i>
+                <i class:covered={game.postOfficeLower[index]}>{rows[0].lira ? `${rows[0].lira}₺` : goodNames[rows[0].good!].slice(0, 1)}</i>
               </span>
             {/each}
           </div>
@@ -457,16 +465,10 @@
         {:else if actionPlace.id === 10 || actionPlace.id === 11}
           <p>Select one to five depicted goods you own. {actionPlace.id === 10 ? 'Large Market revenue rises from 3 to 25 Lira.' : 'Small Market revenue rises from 2 to 20 Lira.'} Then this Demand rotates.</p>
           <div class="demand-card" aria-label={`${actionPlace.name} demand ${activeDemand?.id}`}><GameArt kind="component" component={actionPlace.id === 10 ? 'demand-large' : 'demand-small'} class="demand-art" />
-            {#each activeDemand?.goods ?? [] as good, index}<label class={good}><input type="checkbox" aria-label={`Sell demand slot ${index + 1}: ${good}`} checked={marketSelection.includes(index)} onchange={() => toggleMarketSlot(index)} /><i></i><span>{goodNames[good]}</span></label>{/each}
+            {#each activeDemand?.goods ?? [] as good, index}<label class={marketPaymentGoods[index]}><input type="checkbox" aria-label={`Sell demand slot ${index + 1}: ${good}`} checked={marketSelection.includes(index)} onchange={() => toggleMarketSlot(index)} /><i></i>{#if flexibleMarketActive}<select aria-label={`Payment for demand slot ${index + 1}`} value={marketPaymentGoods[index]} onchange={(event) => setFlexibleGood(index, event.currentTarget.value as Good)}>{#each Object.keys(goodNames) as option}<option value={option}>{goodNames[option as Good]}{option === good ? ' (shown)' : ''}</option>{/each}</select>{:else}<span>{goodNames[good]}</span>{/if}</label>{/each}
           </div>
-          {#if actionPlace.id === 11 && game.activeBonusEffects.includes('wild-small-market')}
-            <label class="wager-control">Flexible sale size<select aria-label="Flexible sale size" value={flexibleGoods.length} onchange={(event) => flexibleGoods = Array.from({ length: Number(event.currentTarget.value) }, (_, index) => flexibleGoods[index] ?? 'fabric')}>{#each [1, 2, 3, 4, 5] as count}<option value={count}>{count} good{count === 1 ? '' : 's'} · {marketRevenueFor(11, count)} Lira</option>{/each}</select></label>
-            {#each flexibleGoods as good, index}<label class="wager-control">Flexible good {index + 1}<select aria-label={`Flexible good ${index + 1}`} value={good} onchange={(event) => setFlexibleGood(index, event.currentTarget.value as Good)}>{#each Object.keys(goodNames) as option}<option value={option}>{goodNames[option as Good]}</option>{/each}</select></label>{/each}
-            {#if localIsCurrent}<button class="turn-action" disabled={!((Object.keys(goodNames) as Good[]).every((good) => flexibleGoods.filter((value) => value === good).length <= localPlayer.goods[good]))} onclick={() => onTakeAction({ kind: 'market-sell', slotIndexes: [], wildGoods: flexibleGoods })}>Sell any {flexibleGoods.length} goods for {marketRevenueFor(11, flexibleGoods.length)} Lira</button>{/if}
-          {:else}
-            <p class="market-revenue">{marketSelection.length ? `${marketSelection.length} selected · ${marketRevenueFor(actionPlace.id, marketSelection.length)} Lira` : 'Select goods to sell'}</p>
-            {#if localIsCurrent}<button class="turn-action" disabled={!marketSelectionLegal} onclick={sellMarket}>Sell selected goods for {marketRevenueFor(actionPlace.id, marketSelection.length)} Lira</button>{/if}
-          {/if}
+          <p class="market-revenue">{marketSelection.length ? `${marketSelection.length} selected · ${marketRevenueFor(actionPlace.id, marketSelection.length)} Lira` : flexibleMarketActive ? 'Select slots, then keep or substitute each good' : 'Select goods to sell'}</p>
+          {#if localIsCurrent}<button class="turn-action" disabled={!marketSelectionLegal} onclick={sellMarket}>{flexibleMarketActive ? 'Sell flexible goods' : 'Sell selected goods'} for {marketRevenueFor(actionPlace.id, marketSelection.length)} Lira</button>{/if}
           {#if localIsCurrent}<button class="skip-link" onclick={onEndTurn}>Skip market and end turn</button>{:else}<p class="waiting-copy">Waiting for {currentPlayer.name} to choose a sale.</p>{/if}
         {:else if actionPlace.id === 8}
           <p>Choose one basic good, then roll two deterministic dice for zero to three jewelry.</p>
@@ -513,6 +515,11 @@
         <h2 data-testid="place-inspector-title" tabindex="-1">{selectedPlaceManifest.name}</h2>
         <div class="inspector-glyph"><GameArt kind="location" place={selectedPlaceManifest.id} /></div>
         <p>{selectedPlaceManifest.action}</p>
+        {#if selectedPlaceManifest.id === 13}
+          <div class="next-route-cost" aria-label={`After the next Sultan trade: ${nextSultanCost.length} goods`}><span>After the next trade</span><strong>{nextSultanCost.length} goods</strong><small>{nextSultanCost.map((good) => good === 'any' ? 'Any' : goodNames[good]).join(' · ')}</small></div>
+        {:else if selectedPlaceManifest.id === 16}
+          <div class="next-route-cost" aria-label={`After the next Gemstone Dealer trade: ${nextGemstonePrice} Lira`}><span>After the next trade</span><strong>{nextGemstonePrice} Lira</strong><small>{nextGemstonePrice === game.rubyTracks.gemstonePrice ? 'Maximum price' : `Current price ${game.rubyTracks.gemstonePrice} Lira`}</small></div>
+        {/if}
         <dl><div><dt>Grid position</dt><dd>Row {Math.floor(game.board.indexOf(selectedPlaceManifest.id) / 4) + 1}, column {(game.board.indexOf(selectedPlaceManifest.id) % 4) + 1}</dd></div><div><dt>Merchants here</dt><dd>{occupants(selectedPlaceManifest.id).map(({ name }) => name).join(', ') || 'None'}</dd></div></dl>
         {#if selectedAssistantAction}<button class="turn-action" onclick={() => onMove(selectedPlaceManifest.id, selectedAssistantAction)}>{selectedAssistantAction === 'pick-up' ? 'Move here and pick up assistant' : selectedAssistantAction === 'fountain' ? 'Move here without leaving an assistant' : 'Move here and leave an assistant'}</button>{:else if localIsCurrent}<p class="route-warning">This Place is not one or two orthogonal spaces away.</p>{/if}
       {:else}
@@ -645,7 +652,8 @@
   .recall-list { display: grid; gap: .35rem; margin-top: .65rem; }.recall-list label { grid-template-columns: auto 1fr; align-items: center; padding: .4rem .5rem; border: 1px solid #d9cdb7; border-radius: .45rem; font-size: .7rem; }.recall-list input { width: 1.2rem; min-height: 1.2rem; accent-color: #267356; }
   .mail-track { display: flex; gap: .45rem; margin: .7rem 0; }.mail-column { position: relative; width: 2.5rem; display: grid; gap: .25rem; }.mail-column i { min-height: 1.6rem; display: grid; place-items: center; border: 1px solid #b99a6b; border-radius: .3rem; color: #173f43; background: #f0d28f; font-size: .68rem; font-style: normal; font-weight: 700; }.mail-column i.covered { opacity: .38; }.mail-column b { position: absolute; top: .15rem; right: .15rem; width: .65rem; height: .65rem; border: 2px solid #fffaf0; border-radius: .15rem; background: #a23b36; box-shadow: 0 .1rem .2rem #0004; transition: top .18s ease; }.mail-column b.lower { top: 2rem; }
   .caravan-sources { display: flex; gap: .5rem; margin-top: .55rem; }.caravan-sources label { flex: 1; color: #6d7c79; font-size: .58rem; text-transform: uppercase; }.caravan-sources select { width: 100%; min-height: 2rem; margin-top: .15rem; border: 1px solid #b99a6b; border-radius: .35rem; color: #173f43; background: #fffaf0; }.source-card { height: 3.4rem; display: grid; grid-template-columns: 2.15rem 1fr; gap: .35rem; align-items: center; overflow: hidden; margin-top: .3rem; padding: .25rem; border: 1px solid #b99a6b; border-radius: .4rem; color: #efe3c5; background: #173f43; text-transform: none; }.source-card :global(.source-card-art) { width: 2.05rem; height: 2.8rem; border-radius: .2rem; }.source-card strong { overflow: hidden; font-size: .57rem; line-height: 1.05; text-overflow: ellipsis; }.source-card:not(.face-up) strong { color: #efca7d; letter-spacing: .08em; text-transform: uppercase; }.card-preview { margin: .35rem 0 !important; font-size: .62rem !important; font-weight: 700; }.concealed-cards { text-align: center; }.revealed-cards { display: grid; grid-template-columns: 1fr 1fr; gap: .3rem; }.revealed-cards span { min-width: 0; display: grid; grid-template-columns: 2rem 1fr; gap: .3rem; align-items: center; padding: .25rem; border: 1px solid #d4bd91; border-radius: .35rem; background: #f1e5cc; }.revealed-cards :global(.revealed-card-art) { width: 2rem; height: 2.65rem; border-radius: .18rem; }.revealed-cards strong { overflow: hidden; text-overflow: ellipsis; }.discard-choice { display: grid; grid-template-columns: repeat(3, 1fr); gap: .3rem; margin: 0; padding: .35rem; border: 1px solid #d9cdb7; border-radius: .45rem; }.discard-choice legend { padding: 0 .25rem; font-size: .58rem; font-weight: 700; text-transform: uppercase; }.discard-choice label { min-width: 0; display: grid; grid-template-columns: auto 1fr; gap: .2rem; align-items: center; font-size: .55rem; }.discard-choice span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }.discard-choice input { width: .9rem; min-height: .9rem; accent-color: #a23b36; }
-  .demand-card { position: relative; display: grid; grid-template-columns: repeat(5, 1fr); gap: .3rem; overflow: hidden; margin: .7rem 0; padding: .55rem; border: 2px solid #d49d42; border-radius: .55rem; background: #ead8b8; }:global(.demand-art) { position: absolute; inset: 0; width: 100%; height: 100%; opacity: .32; }.demand-card label { position: relative; z-index: 1; min-width: 0; display: grid; place-items: center; gap: .15rem; color: #173f43; font-size: .52rem; font-weight: 700; }.demand-card input { position: absolute; opacity: 0; }.demand-card i { width: 1.8rem; height: 1.8rem; border: 3px solid #fffaf0; border-radius: .4rem; box-shadow: 0 .15rem .25rem #0003; }.demand-card .fabric i { background: #b7423c; }.demand-card .spice i { background: #3b8662; }.demand-card .fruit i { background: #d6a82c; }.demand-card .jewelry i { background: #4382a9; }.demand-card input:checked + i { outline: 3px solid #173f43; outline-offset: 1px; }.market-revenue { margin: .2rem 0 !important; font-weight: 700; text-align: center; }
+  .demand-card { position: relative; display: grid; grid-template-columns: repeat(5, 1fr); gap: .3rem; overflow: hidden; margin: .7rem 0; padding: .55rem; border: 2px solid #d49d42; border-radius: .55rem; background: #ead8b8; }:global(.demand-art) { position: absolute; inset: 0; width: 100%; height: 100%; opacity: .32; }.demand-card label { position: relative; z-index: 1; min-width: 0; display: grid; place-items: center; gap: .15rem; color: #173f43; font-size: .52rem; font-weight: 700; }.demand-card input { position: absolute; opacity: 0; }.demand-card i { width: 1.8rem; height: 1.8rem; border: 3px solid #fffaf0; border-radius: .4rem; box-shadow: 0 .15rem .25rem #0003; }.demand-card .fabric i { background: #b7423c; }.demand-card .spice i { background: #3b8662; }.demand-card .fruit i { background: #d6a82c; }.demand-card .jewelry i { background: #4382a9; }.demand-card input:checked + i { outline: 3px solid #173f43; outline-offset: 1px; }.demand-card select { width: 100%; min-width: 0; min-height: 1.8rem; border: 1px solid #9f8055; border-radius: .3rem; color: #173f43; background: #fffaf0; font-size: .5rem; font-weight: 700; }.market-revenue { margin: .2rem 0 !important; font-weight: 700; text-align: center; }
+  .next-route-cost { display: grid; gap: .12rem; margin: .55rem 0; padding: .55rem .7rem; border: 2px solid #d49d42; border-radius: .55rem; color: #173f43; background: linear-gradient(115deg, #fff6dd, #ead8b8); }.next-route-cost span { color: #8f672a; font-size: .55rem; font-weight: 700; letter-spacing: .1em; text-transform: uppercase; }.next-route-cost strong { font: 700 1.25rem 'Cormorant Garamond', serif; }.next-route-cost small { color: #526b68; font-size: .58rem; }
   .basic-good-choice { display: grid; grid-template-columns: repeat(3, 1fr); gap: .4rem; margin: .7rem 0 0; padding: .45rem; border: 1px solid #d9cdb7; border-radius: .5rem; }.basic-good-choice legend { padding: 0 .25rem; font-size: .58rem; font-weight: 700; text-transform: uppercase; }.basic-good-choice label { display: grid; grid-template-columns: auto auto 1fr; gap: .25rem; align-items: center; font-size: .62rem; }.basic-good-choice input { accent-color: #173f43; }.basic-good-choice i { width: 1rem; height: 1rem; border-radius: .25rem; }.basic-good-choice .fabric i { background: #b7423c; }.basic-good-choice .spice i { background: #3b8662; }.basic-good-choice .fruit i { background: #d6a82c; }.wager-control { display: grid; gap: .25rem; margin-top: .7rem; color: #6d7c79; font-size: .62rem; font-weight: 700; text-transform: uppercase; }.wager-control select { min-height: 2.35rem; border: 1px solid #b99a6b; border-radius: .4rem; color: #173f43; background: #fffaf0; font: inherit; }.dice-result { display: flex; gap: .45rem; align-items: center; margin-top: .65rem; }.dice-result span { width: 2.4rem; height: 2.4rem; display: grid; place-items: center; border: 2px solid #173f43; border-radius: .5rem; color: #a23b36; background: #fffaf0; box-shadow: .15rem .2rem 0 #d4bd91; font: 700 1.2rem 'Cormorant Garamond', serif; }.dice-result strong { margin-left: .3rem; color: #267356; font-size: .75rem; }
   .skip-link { width: 100%; min-height: 2rem; margin-top: .35rem; border: 0; color: #8d3c37; text-decoration: underline; background: transparent; font: inherit; font-size: .68rem; font-weight: 700; }
   .encounter-choices { display: grid; gap: .55rem; margin-top: .65rem; }.encounter-choices section { display: grid; gap: .35rem; padding: .55rem; border: 1px solid #d4bd91; border-radius: .55rem; background: #f1e5cc; }.encounter-choices section > strong { font: 700 1.1rem 'Cormorant Garamond', serif; }.encounter-choices section > span { color: #627572; font-size: .62rem; }.encounter-choices section > div { display: grid; grid-template-columns: 1fr 1fr; gap: .35rem; }.encounter-choices .turn-action, .encounter-choices .skip-link { min-height: 2.1rem; margin: 0; font-size: .62rem; }.encounter-choices .alternate { background: #744c8b; box-shadow: 0 .2rem 0 #4c315b; }.encounter-choices label { display: grid; gap: .2rem; color: #627572; font-size: .58rem; text-transform: uppercase; }.encounter-choices select { min-height: 2rem; border: 1px solid #b99a6b; border-radius: .35rem; color: #173f43; background: #fffaf0; }
@@ -677,6 +685,7 @@
     .player-rail article { min-width: 0; }
   }
   @media (max-width: 720px) {
+    .inspector .next-route-cost { grid-column: 1 / -1; margin-top: .2rem; }
     .game-table { gap: .4rem; }
     .game-table.tabletop { display: grid; grid-template-columns: 1fr 1fr; grid-template-rows: auto minmax(0, 1fr) auto auto; gap: .3rem; }
     .tabletop .turn-banner { grid-column: 1 / 3; grid-row: 1; }
