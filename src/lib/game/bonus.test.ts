@@ -120,7 +120,7 @@ describe('Bonus card timing contract', () => {
       const [state, game, card] = fixture('repeat-sultan'); const player = game.players[0]; game.phase = 'turn-end'; player.goods = { fabric: 2, spice: 2, fruit: 2, jewelry: 2 }; game.lastAction = { playerUid: player.uid, place: 13, kind: 'sultan-buy', summary: 'Bought once.' };
       expect(applyBonus(state, event(card, { kind: 'repeat-action', wildGoods: ['spice'] }))).toBe(true);
       expect(player.rubies).toBe(1);
-      expect(game.rubyTracks.sultanIndex).toBe(8);
+      expect(game.rubyTracks.sultanIndex).toBe(7);
     }
   });
 
