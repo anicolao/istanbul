@@ -267,16 +267,16 @@ both once.
 
 Sell from one through five goods matching icons on the current Demand tile. A
 depicted good icon can be used at most once, so the player chooses a subset of
-the tile's five positions and pays those goods. Revenue depends only on the
-number sold:
+the tile's five positions and pays those goods. Revenue depends on the Market
+and the number sold:
 
-| Goods sold | Lira gained |
-| ---: | ---: |
-| 1 | 2 |
-| 2 | 5 |
-| 3 | 9 |
-| 4 | 14 |
-| 5 | 20 |
+| Goods sold | Small Market | Large Market |
+| ---: | ---: | ---: |
+| 1 | 2 Lira | 3 Lira |
+| 2 | 5 Lira | 7 Lira |
+| 3 | 9 Lira | 12 Lira |
+| 4 | 14 Lira | 18 Lira |
+| 5 | 20 Lira | 25 Lira |
 
 After the sale, move the current Demand tile to the bottom of its stack. The
 Small Market Bonus card still requires the chosen sale size, but lets each sold

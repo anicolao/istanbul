@@ -27,7 +27,15 @@ export const postOfficeRows: Array<[
   [{ good: 'spice' }, { lira: 1 }]
 ];
 
-export const marketRevenue = [0, 2, 5, 9, 14, 20] as const;
+export const marketRevenue = {
+  10: [0, 3, 7, 12, 18, 25],
+  11: [0, 2, 5, 9, 14, 20]
+} as const;
+
+export function marketRevenueFor(place: number, goodsSold: number): number {
+  if ((place !== 10 && place !== 11) || goodsSold < 0 || goodsSold > 5 || !Number.isInteger(goodsSold)) return 0;
+  return marketRevenue[place][goodsSold];
+}
 
 export function warehouseGood(place: number): Exclude<Good, 'jewelry'> | null {
   if (place === 2) return 'fabric';
@@ -119,10 +127,11 @@ export function sellAtMarket(game: GameSetup, player: SetupPlayer, place: number
     const counts = wildGoods.reduce<Record<Good, number>>((totals, good) => ({ ...totals, [good]: totals[good] + 1 }), { fabric: 0, spice: 0, fruit: 0, jewelry: 0 });
     if ((Object.keys(counts) as Good[]).some((good) => counts[good] > player.goods[good])) return null;
     for (const good of Object.keys(counts) as Good[]) player.goods[good] -= counts[good];
-    player.lira += marketRevenue[wildGoods.length];
+    const revenue = marketRevenueFor(place, wildGoods.length);
+    player.lira += revenue;
     stack.push(stack.shift()!);
     game.activeBonusEffects = game.activeBonusEffects.filter((effect) => effect !== 'wild-small-market');
-    return `Used flexible demand to sell ${wildGoods.length} good${wildGoods.length === 1 ? '' : 's'} for ${marketRevenue[wildGoods.length]} Lira.`;
+    return `Used flexible demand to sell ${wildGoods.length} good${wildGoods.length === 1 ? '' : 's'} for ${revenue} Lira.`;
   }
   if (slotIndexes.length < 1 || slotIndexes.length > 5) return null;
   const unique = [...new Set(slotIndexes)].sort((a, b) => a - b);
@@ -135,9 +144,10 @@ export function sellAtMarket(game: GameSetup, player: SetupPlayer, place: number
   });
   if ((Object.keys(counts) as Good[]).some((good) => counts[good] > player.goods[good])) return null;
   for (const good of Object.keys(counts) as Good[]) player.goods[good] -= counts[good];
-  player.lira += marketRevenue[sold.length];
+  const revenue = marketRevenueFor(place, sold.length);
+  player.lira += revenue;
   stack.push(stack.shift()!);
-  return `Sold ${sold.length} good${sold.length === 1 ? '' : 's'} for ${marketRevenue[sold.length]} Lira.`;
+  return `Sold ${sold.length} good${sold.length === 1 ? '' : 's'} for ${revenue} Lira.`;
 }
 
 export function resolveBlackMarket(player: SetupPlayer, good: Exclude<Good, 'jewelry'>, dice: [number, number]): string {
