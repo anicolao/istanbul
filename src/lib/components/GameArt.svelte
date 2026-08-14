@@ -22,7 +22,7 @@
     label,
     class: className = ''
   }: {
-    kind: 'location' | 'piece' | 'card' | 'card-back' | 'mat' | 'component';
+    kind: 'location' | 'piece' | 'card' | 'card-back' | 'card-deck' | 'mat' | 'component';
     place?: number;
     piece?: PieceKind | 'neutral-merchant' | 'governor' | 'smuggler' | 'first-player' | 'dice-pair';
     color?: PlayerColorName;
@@ -60,6 +60,7 @@
     if (kind === 'mat' && color) return playerMatArt[color];
     if (kind === 'card' && effect) return bonusCardArt[effect];
     if (kind === 'card-back') return bonusCardArt.back;
+    if (kind === 'card-deck') return bonusCardArt.deck;
     if (kind === 'component' && component) return componentPaths[component];
     if (kind === 'piece' && piece) {
       if ((piece === 'merchant' || piece === 'assistant' || piece === 'family') && color) return pieceArt[piece][color];
@@ -77,7 +78,7 @@
   class={`game-art ${className}`}
   class:location={kind === 'location'}
   class:piece={kind === 'piece'}
-  class:card={kind === 'card' || kind === 'card-back'}
+  class:card={kind === 'card' || kind === 'card-back' || kind === 'card-deck'}
   class:mat={kind === 'mat'}
   class:component={kind === 'component'}
   style={`--game-art: url('${artPath(base, asset)}')`}

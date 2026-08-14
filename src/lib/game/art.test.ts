@@ -2,6 +2,7 @@ import { existsSync } from 'node:fs';
 import { resolve } from 'node:path';
 import { describe, expect, it } from 'vitest';
 import { bonusCardArt, componentArt, locationArt, pieceArt, playerColorNames, playerMatArt } from './art';
+import { galleryCategories, rawGalleryItems } from './gallery';
 
 function flattenAssets(value: unknown): string[] {
   if (typeof value === 'string') return [value];
@@ -25,5 +26,18 @@ describe('production art manifest', () => {
 
   it.each(assets)('ships %s in the static production bundle', (asset) => {
     expect(existsSync(resolve(process.cwd(), 'static', asset))).toBe(true);
+  });
+
+  it('exposes every source asset and every composed demand tile in the review gallery', () => {
+    expect(rawGalleryItems).toHaveLength(73);
+    expect(new Set(rawGalleryItems.map(({ assetPath }) => assetPath))).toEqual(new Set(assets));
+    expect(Object.fromEntries(galleryCategories.map(({ id, items }) => [id, items.length]))).toEqual({
+      places: 16,
+      mats: 5,
+      pieces: 20,
+      bonus: 12,
+      demands: 10,
+      components: 20
+    });
   });
 });

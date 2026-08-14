@@ -97,6 +97,10 @@ The initial suite follows the MVP's vertical slices:
     three-action Undo Turn event, direct rollback to an earlier action from the
     immutable game log, grey unavailable history, and rollback of an action
     above—without crossing—a retained dice barrier.
+21. `021-production-asset-gallery` proves the standalone review route exposes
+    all 73 source assets and all 10 composed Market demand tiles, loads every
+    expected stable ID, enlarges exact sources, and remains fully visible on
+    phone and desktop after every category, page, open, and close action.
 
 Scenario numbers are stable once merged. Add the next number for a new coherent
 story; do not renumber existing scenarios to make room.

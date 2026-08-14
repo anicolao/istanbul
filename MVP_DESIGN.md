@@ -1,8 +1,9 @@
 # MVP design
 
-> Implementation status: complete. Scenarios 001–020 exercise every slice and
+> Implementation status: complete. Scenarios 001–021 exercise every slice and
 > subsequent production refinement, including append-only suffix rollback,
-> turn review, and direct game-log navigation.
+> turn review, direct game-log navigation, and a complete production-asset
+> review gallery.
 
 ## Outcome
 
@@ -12,8 +13,9 @@ a short code or QR link, select a reviewed bazaar layout, play through ordinary
 browser controls, and finish with the official round completion and tie-breaks.
 Every client can reload and reconstruct the same game from immutable history.
 
-The MVP includes ordinary phone/tablet/desktop play and a dedicated `/tabletop/`
-route. The tabletop creates and owns an empty room, displays QR invitations,
+The MVP includes ordinary phone/tablet/desktop play, a dedicated `/tabletop/`
+route, and a standalone `/gallery/` production review room. The tabletop
+creates and owns an empty room, displays QR invitations,
 owns layout, start, and all public gameplay, and never consumes a merchant seat.
 Scanned phones hold player identities, readiness, private Bonus cards, and only
 the card-dependent Caravansary or Governor choices that cannot be public. It
@@ -210,6 +212,13 @@ Initial scenario map:
 012-reconnect-replay-and-conflicts
 013-shared-table-and-private-phones
 014-responsive-accessible-complete-game
+015-production-graphical-assets
+016-yellow-mosque-assistant-recall
+017-zero-distance-assistant-move
+018-flexible-demand-slots
+019-undo-actions
+020-turn-log-and-direct-rollback
+021-production-asset-gallery
 ```
 
 At least one E2E scenario must use five browser contexts, one must prove the
