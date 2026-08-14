@@ -82,6 +82,17 @@ The initial suite follows the MVP's vertical slices:
 14. `014-responsive-accessible-complete-game` proves a complete game at the
     full viewport matrix with keyboard, touch, announcements, and reduced
     motion.
+15. `015-production-graphical-assets` proves that every published gameplay
+    object uses reviewed production artwork and semantic fallback text.
+16. `016-yellow-mosque-assistant-recall` proves the permanent Yellow Mosque
+    power through its ordinary pre-movement controls.
+17. `017-zero-distance-assistant-move` proves both assistant consequences of
+    the zero-distance Bonus move.
+18. `018-flexible-demand-slots` proves direct per-slot substitutions and exact
+    payment for Flexible Demand.
+19. `019-undo-actions` proves append-only rollback of a private Bonus play,
+    market trade, and movement; alternate replay; observer convergence; and a
+    visible lock after newly revealed dice.
 
 Scenario numbers are stable once merged. Add the next number for a new coherent
 story; do not renumber existing scenarios to make room.
@@ -411,6 +422,33 @@ scenario. The ordinary client must still receive, order, validate, reject, and
 diagnose them. Fixture writes may create adversarial input events; they may not
 write a desired projection or resolution event.
 
+## Undo and information boundaries
+
+Undo scenarios use the same repository, subscription, and reducer path as every
+other action. They must never delete an event, write a snapshot, mutate a prior
+payload, or inject compensating resources. Clicking Undo appends one
+`action/undone` event naming the latest still-active gameplay event.
+
+Browser proof must establish all of the following:
+
+- the original action and undo both remain counted in immutable history;
+- replay restores the exact prior public state and the owner's exact private
+  hand, while an observer independently converges;
+- repeated undo walks backward one active action at a time and permits a new
+  legal choice to be replayed;
+- only the target action's original author can append its undo, so tabletop
+  public actions remain on the tabletop and private Bonus actions remain on the
+  owning phone;
+- stale, duplicate, non-latest, concurrent, and cross-player undo events are
+  contained with deterministic diagnostics; and
+- drawing any card or rolling any die—including encounter and neutral-token
+  relocation—visibly locks the control and prevents rollback past the revealed
+  information.
+
+Assert the exact card, goods, Lira, assistant, Demand, phase, event count, undo
+log, and boundary reason where applicable. A screenshot after each input must
+make the available target or lock reason legible without clipping.
+
 ## Local workflow
 
 Install the exact dependency graph:
@@ -478,6 +516,7 @@ Before committing a scenario:
 - [ ] Keyboard, focus, names, announcements, and reduced motion are covered.
 - [ ] Screenshot comparison allows zero differing pixels.
 - [ ] Every changed baseline was visually reviewed.
+- [ ] Undo tests retain immutable events and stop at every revealed-information boundary.
 - [ ] The generated scenario `README.md` matches the spec.
 - [ ] Firestore emulator data is isolated from other scenarios.
 - [ ] Additional browser contexts are closed.

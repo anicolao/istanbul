@@ -32,8 +32,76 @@ const emptyProjection = (): ReplayProjection => ({
   room: null,
   game: null,
   acceptedEventIds: [],
-  diagnostics: []
+  diagnostics: [],
+  undo: null,
+  undoLog: []
 });
+
+interface UndoTarget {
+  event: CanonicalEvent;
+  label: string;
+  blockedReason: string | null;
+}
+
+const gameplayEventTypes = new Set([
+  'turn/moved',
+  'turn/merchant-paid',
+  'place/action-taken',
+  'encounter/resolved',
+  'mosque/ability-used',
+  'bonus/played',
+  'turn/ended'
+]);
+
+function undoLabel(event: CanonicalEvent): string {
+  if (event.type === 'turn/moved') return `move to Place ${event.payload.destination}`;
+  if (event.type === 'turn/merchant-paid') return 'merchant payment';
+  if (event.type === 'turn/ended') return 'end turn';
+  const choice = event.payload.choice as Record<string, unknown> | undefined;
+  if (event.type === 'bonus/played') return 'Bonus card play';
+  if (event.type === 'mosque/ability-used') return `${String(choice?.kind ?? 'Mosque').replaceAll('-', ' ')} choice`;
+  if (event.type === 'encounter/resolved') return `${String(choice?.kind ?? 'encounter').replaceAll('-', ' ')}`;
+  return `${String(choice?.kind ?? 'Place action').replaceAll('-', ' ')}`;
+}
+
+export function revealedInformationReason(event: CanonicalEvent): string | null {
+  const choice = event.payload.choice as Record<string, unknown> | undefined;
+  if (event.type === 'place/action-taken') {
+    if (choice?.kind === 'caravansary-trade') return 'Bonus cards were revealed';
+    if (choice?.kind === 'black-market-roll' || choice?.kind === 'tea-house-wager') return 'dice were rolled';
+  }
+  if (event.type === 'turn/merchant-paid' && Array.isArray(event.payload.neutralMerchantIds) && event.payload.neutralMerchantIds.length > 0) {
+    return 'a neutral merchant was relocated by dice';
+  }
+  if (event.type === 'encounter/resolved') {
+    if (choice?.kind === 'catch-family' && choice.reward === 'bonus') return 'a Bonus card was drawn';
+    if (choice?.kind === 'governor-visit' && choice.accept === true) return 'a Bonus card was drawn';
+    if (choice?.kind === 'governor-pay') return 'the Governor was relocated by dice';
+    if (choice?.kind === 'smuggler-trade' && choice.accept === true) return 'the Smuggler was relocated by dice';
+  }
+  if (event.type === 'mosque/ability-used' && choice?.kind === 'dice-adjust' && choice.adjustment === 'reroll') return 'a die was rerolled';
+  if (event.type === 'bonus/played' && choice?.kind === 'return-family' && choice.reward === 'bonus') return 'a Bonus card was drawn';
+  return null;
+}
+
+function latestUndoTarget(activeEvents: CanonicalEvent[]): UndoTarget | null {
+  for (let index = activeEvents.length - 1; index >= 0; index -= 1) {
+    const event = activeEvents[index];
+    if (event.type === 'game/started' || event.type === 'game/rematched') return null;
+    if (event.type.startsWith('e2e/')) return null;
+    if (!gameplayEventTypes.has(event.type)) continue;
+    return { event, label: undoLabel(event), blockedReason: revealedInformationReason(event) };
+  }
+  return null;
+}
+
+function rebuildActiveProjection(activeEvents: CanonicalEvent[]): ReplayProjection {
+  const rebuilt = emptyProjection();
+  for (const activeEvent of activeEvents) {
+    if (applyEvent(rebuilt, activeEvent)) rebuilt.acceptedEventIds.push(activeEvent.id);
+  }
+  return rebuilt;
+}
 
 function stringField(payload: Record<string, unknown>, field: string): string | null {
   const value = payload[field];
@@ -53,9 +121,10 @@ function controlsPublicTable(state: ReplayProjection, event: CanonicalEvent, pla
 }
 
 export function replayEvents(events: unknown[]): ReplayProjection {
-  const state = emptyProjection();
+  let state = emptyProjection();
   const seen = new Set<string>();
   const validEvents: CanonicalEvent[] = [];
+  const activeEvents: CanonicalEvent[] = [];
 
   for (const value of events) {
     if (!isCanonicalEvent(value)) {
@@ -71,9 +140,50 @@ export function replayEvents(events: unknown[]): ReplayProjection {
   for (const event of canonicalSort(validEvents)) {
     if (seen.has(event.id)) continue;
     seen.add(event.id);
+    if (event.type === 'action/undone') {
+      const targetEventId = stringField(event.payload, 'targetEventId');
+      const target = latestUndoTarget(activeEvents);
+      if (!targetEventId || !target || target.event.id !== targetEventId) {
+        reject(state, event, 'stale-undo-target');
+        continue;
+      }
+      if (target.event.actorUid !== event.actorUid) {
+        reject(state, event, 'undo-not-authorized');
+        continue;
+      }
+      if (target.blockedReason) {
+        reject(state, event, 'undo-revealed-information');
+        continue;
+      }
+      activeEvents.splice(activeEvents.indexOf(target.event), 1);
+      const acceptedEventIds = [...state.acceptedEventIds, event.id];
+      const diagnostics = [...state.diagnostics];
+      const undoLog = [...state.undoLog, {
+        eventId: event.id,
+        targetEventId,
+        actorUid: event.actorUid,
+        label: target.label
+      }];
+      state = rebuildActiveProjection(activeEvents);
+      state.acceptedEventIds = acceptedEventIds;
+      state.diagnostics = diagnostics;
+      state.undoLog = undoLog;
+      continue;
+    }
     const accepted = applyEvent(state, event);
-    if (accepted) state.acceptedEventIds.push(event.id);
+    if (accepted) {
+      state.acceptedEventIds.push(event.id);
+      activeEvents.push(event);
+    }
   }
+
+  const target = latestUndoTarget(activeEvents);
+  state.undo = target ? {
+    targetEventId: target.event.id,
+    actorUid: target.event.actorUid,
+    label: target.label,
+    blockedReason: target.blockedReason
+  } : null;
 
   return state;
 }
@@ -241,7 +351,9 @@ function applyEvent(state: ReplayProjection, event: CanonicalEvent): boolean {
     player.lira = lira;
     player.capacity = capacity;
     player.extensions = capacity - 2;
-    player.goods = supplied as Record<Good, number>;
+    player.goods = Object.fromEntries(
+      (['fabric', 'spice', 'fruit', 'jewelry'] as Good[]).map((good) => [good, supplied[good] as number])
+    ) as Record<Good, number>;
     for (const card of bonusCards) {
       const deckIndex = game.bonusDrawPile.indexOf(card);
       if (deckIndex >= 0) player.bonusHand.push(game.bonusDrawPile.splice(deckIndex, 1)[0]);

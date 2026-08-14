@@ -49,6 +49,18 @@ export interface ReplayProjection {
   game: GameSetup | null;
   acceptedEventIds: string[];
   diagnostics: Array<{ eventId: string; reason: string }>;
+  undo: {
+    targetEventId: string;
+    actorUid: string;
+    label: string;
+    blockedReason: string | null;
+  } | null;
+  undoLog: Array<{
+    eventId: string;
+    targetEventId: string;
+    actorUid: string;
+    label: string;
+  }>;
 }
 
 export const layoutNames: Record<LayoutKind, string> = {

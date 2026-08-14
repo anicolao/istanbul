@@ -100,7 +100,8 @@ test('mail, private card trading, and both demand markets remain exact through r
       { spec: 'The completion panel reports two cards retained', check: async () => expect(boraPage.getByText('Took 2 Bonus cards and discarded 1; 2 remain in hand.', { exact: true })).toBeVisible() },
       { spec: 'Bora privately sees two cards while Ada sees only a count', check: async () => { await expect(boraPage.getByLabel('Bora resources').getByRole('button', { name: /Inspect Bonus card/ })).toHaveCount(2); await expect(page.getByText('Bonus hand · 2 hidden cards')).toBeVisible(); } },
       { spec: 'Caravansary now shows 22 draw cards and one face-up discard', check: async () => expect(boraPage.getByTestId('place-state-6')).toHaveAttribute('data-state-summary', /22 Bonus cards in draw pile; 1 in discard, topped by/) },
-      { spec: 'Two draws and one discard conserve the card manifest', check: async () => expectState(boraPage, { eventCount: 10, game: { phase: 'turn-end', bonusDrawCount: 22, bonusDiscard: [originalBoraCard], localHand: [expect.any(String), expect.any(String)], opponentHandCounts: [1] } }) }
+      { spec: 'Two draws and one discard conserve the card manifest', check: async () => expectState(boraPage, { eventCount: 10, undo: { label: 'caravansary trade', blockedReason: 'Bonus cards were revealed' }, game: { phase: 'turn-end', bonusDrawCount: 22, bonusDiscard: [originalBoraCard], localHand: [expect.any(String), expect.any(String)], opponentHandCounts: [1] } }) },
+      { spec: 'Undo is locked because the two newly drawn faces cannot be unseen', check: async () => expect(boraPage.getByRole('button', { name: 'Undo locked · Bonus cards were revealed' })).toBeDisabled() }
     ] });
 
     await boraPage.getByRole('button', { name: 'End turn and pass clockwise' }).click();
@@ -238,7 +239,8 @@ test('mail, private card trading, and both demand markets remain exact through r
     await boraPage.getByRole('button', { name: 'Keep two cards and discard selected' }).click();
     await bora.step('guest-trades-discard-card', { description: 'Bora takes one discard and one deck card, then discards one', verifications: [
       { spec: 'The second trade leaves exactly three cards in hand', check: async () => expect(boraPage.getByText('Took 2 Bonus cards and discarded 1; 3 remain in hand.', { exact: true })).toBeVisible() },
-      { spec: 'The new face-up discard is the selected hand card', check: async () => expectState(boraPage, { eventCount: 22, game: { phase: 'turn-end', bonusDrawCount: 21, bonusDiscard: [cardToDiscard], localHand: expect.arrayContaining([originalBoraCard]) } }) },
+      { spec: 'The new face-up discard is the selected hand card', check: async () => expectState(boraPage, { eventCount: 22, undo: { label: 'caravansary trade', blockedReason: 'Bonus cards were revealed' }, game: { phase: 'turn-end', bonusDrawCount: 21, bonusDiscard: [cardToDiscard], localHand: expect.arrayContaining([originalBoraCard]) } }) },
+      { spec: 'The mixed face-up and face-down draw is also an undo boundary', check: async () => expect(boraPage.getByRole('button', { name: 'Undo locked · Bonus cards were revealed' })).toBeDisabled() },
       { spec: 'Ada sees three hidden cards and no private title', check: async () => expect(page.getByText('Bonus hand · 3 hidden cards')).toBeVisible() }
     ] });
 

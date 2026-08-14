@@ -235,6 +235,7 @@ Ada and Bora narrate every input from an empty private room through seven ordina
 - [x] Bora privately sees two cards while Ada sees only a count
 - [x] Caravansary now shows 22 draw cards and one face-up discard
 - [x] Two draws and one discard conserve the card manifest
+- [x] Undo is locked because the two newly drawn faces cannot be unseen
 
 ## 21. Bora passes after the private card trade
 
@@ -466,6 +467,7 @@ Ada and Bora narrate every input from an empty private room through seven ordina
 
 - [x] The second trade leaves exactly three cards in hand
 - [x] The new face-up discard is the selected hand card
+- [x] The mixed face-up and face-down draw is also an undo boundary
 - [x] Ada sees three hidden cards and no private title
 
 ## 41. Bora passes after reclaiming the face-up card

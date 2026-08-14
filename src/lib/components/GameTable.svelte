@@ -17,7 +17,7 @@
   import { currentSultanCost, sultanCostSequence } from '$lib/game/ruby-routes';
   import { locationStateSummary } from '$lib/game/location-state';
   import type { BonusChoice } from '$lib/game/bonus';
-  import type { RoomProjection } from '$lib/game/protocol';
+  import type { ReplayProjection, RoomProjection } from '$lib/game/protocol';
   import type { GameSetup } from '$lib/game/setup';
   import type { PlayerColorName } from '$lib/game/art';
   import GameArt from './GameArt.svelte';
@@ -42,6 +42,10 @@
     onGrantE2eResources,
     onRematch,
     onEndTurn,
+    onUndo,
+    undo,
+    undoLog,
+    undoPending = false,
     onZoomIn,
     onFit,
     e2eResourceReview = 'ruby-routes',
@@ -65,6 +69,10 @@
     onGrantE2eResources: () => void;
     onRematch: () => void;
     onEndTurn: () => void;
+    onUndo: () => void;
+    undo: ReplayProjection['undo'];
+    undoLog: ReplayProjection['undoLog'];
+    undoPending?: boolean;
     onZoomIn: () => void;
     onFit: () => void;
     e2eResourceReview?: 'ruby-routes' | 'yellow-recall' | 'zero-move' | 'flexible-market';
@@ -81,6 +89,11 @@
   const selectedPlaceManifest = $derived(selectedPlace ? placeById.get(selectedPlace) : null);
   const selectedBonusManifest = $derived(selectedBonus ? bonusById.get(selectedBonus) : null);
   const localIsCurrent = $derived(tabletopControls || currentPlayer.uid === userUid);
+  const undoOwner = $derived(undo ? game.players.find(({ uid }) => uid === undo.actorUid)?.name ?? (undo.actorUid === room.hostUid ? 'the tabletop' : 'another merchant') : null);
+  const canUndo = $derived(Boolean(undo && undo.actorUid === userUid && !undo.blockedReason && !undoPending));
+  const undoText = $derived(!undo ? 'Nothing to undo' : undo.blockedReason ? `Undo locked · ${undo.blockedReason}` : undo.actorUid === userUid ? `Undo ${undo.label}` : `Undo belongs to ${undoOwner}`);
+  const undoButtonText = $derived(undo?.blockedReason ? 'Locked' : 'Undo');
+  const undoStatusText = $derived(!undo ? 'Undo log · no active action' : undo.blockedReason ? `Locked · ${undo.blockedReason}` : undo.actorUid === userUid ? `Can undo · ${undo.label}` : `Waiting · ${undoOwner}`);
   const reachable = $derived(localIsCurrent && game.phase === 'movement' ? legalDestinations(game, localPlayer) : []);
   const selectedAssistantAction = $derived(selectedPlace && reachable.includes(selectedPlace) ? requiredAssistantAction(localPlayer, selectedPlace) : null);
   const stayAssistantAction = $derived(requiredAssistantAction(localPlayer, localPlayer.merchantPlace));
@@ -259,8 +272,9 @@
 <section class:many={game.players.length > 3} class:display-only={displayOnly} class:table-layout={tableLayout} class:tabletop={tabletopControls} class="game-table" aria-labelledby="game-title" style={`--courtyard: url('${artUrl}')`} data-e2e-fit data-e2e-no-scroll>
   <p class="visually-hidden" aria-live="polite" aria-atomic="true" data-testid="turn-announcement">Turn {game.turnNumber}. {currentPlayer.name}. {game.phase.replace('-', ' ')}. {currentPlayer.uid === userUid ? 'Your action.' : 'Waiting for this merchant.'}</p>
   <header class="turn-banner" data-e2e-fit data-e2e-no-scroll>
-    <div><p>{game.phase === 'game-over' ? `Game ${game.epoch} · final ranking` : game.phase === 'final-bonus' ? 'Final Bonus cards' : `Turn ${game.turnNumber} · ${game.phase.replace('-', ' ')}`}</p><h1 id="game-title">{game.phase === 'game-over' ? `${game.end.winnerUids.length > 1 ? 'The merchants share the victory.' : `${game.end.rankings[0]?.name} wins the ruby race.`}` : game.phase === 'final-bonus' ? `${currentPlayer.name} makes final trades.` : game.phase === 'movement' ? `${currentPlayer.name} surveys the bazaar.` : game.phase === 'merchant-payment' ? `${currentPlayer.name} meets another merchant.` : game.phase === 'family-action' ? `${currentPlayer.name} sends family to ${actionPlace.name}.` : game.phase === 'mosque-ability' ? `${currentPlayer.name} considers a Mosque ability.` : game.phase === 'encounters' ? `${currentPlayer.name} resolves bazaar encounters.` : game.phase === 'turn-end' ? `${currentPlayer.name} completed ${actionPlace.name}.` : `${currentPlayer.name} arrives at ${actionPlace.name}.`}</h1>{#if game.lastMovement?.paymentBlocked}<small class="turn-notice">{game.players.find((player) => player.uid === game.lastMovement?.playerUid)?.name} could not pay {game.lastMovement.paymentTotal} Lira; that turn ended immediately.</small>{:else if tabletopControls && game.bonusLog.length}<small class="turn-notice">{game.bonusLog.at(-1)?.summary}</small>{/if}</div>
+    <div><p>{game.phase === 'game-over' ? `Game ${game.epoch} · final ranking` : game.phase === 'final-bonus' ? 'Final Bonus cards' : `Turn ${game.turnNumber} · ${game.phase.replace('-', ' ')}`}</p><h1 id="game-title">{game.phase === 'game-over' ? `${game.end.winnerUids.length > 1 ? 'The merchants share the victory.' : `${game.end.rankings[0]?.name} wins the ruby race.`}` : game.phase === 'final-bonus' ? `${currentPlayer.name} makes final trades.` : game.phase === 'movement' ? `${currentPlayer.name} surveys the bazaar.` : game.phase === 'merchant-payment' ? `${currentPlayer.name} meets another merchant.` : game.phase === 'family-action' ? `${currentPlayer.name} sends family to ${actionPlace.name}.` : game.phase === 'mosque-ability' ? `${currentPlayer.name} considers a Mosque ability.` : game.phase === 'encounters' ? `${currentPlayer.name} resolves bazaar encounters.` : game.phase === 'turn-end' ? `${currentPlayer.name} completed ${actionPlace.name}.` : `${currentPlayer.name} arrives at ${actionPlace.name}.`}</h1>{#if undo?.blockedReason}<small class="turn-notice">Undo locked · {undo.blockedReason}.</small>{:else if game.lastMovement?.paymentBlocked}<small class="turn-notice">{game.players.find((player) => player.uid === game.lastMovement?.playerUid)?.name} could not pay {game.lastMovement.paymentTotal} Lira; that turn ended immediately.</small>{:else if undoLog.length}<small class="turn-notice">Undo event recorded · restored before {undoLog.at(-1)?.label}.</small>{:else if tabletopControls && game.bonusLog.length}<small class="turn-notice">{game.bonusLog.at(-1)?.summary}</small>{/if}</div>
     <div class="turn-token"><span class={`player-dot ${currentPlayer.color}`}></span><strong>{game.phase === 'game-over' ? game.end.rankings[0]?.name : currentPlayer.name}</strong><small>{game.phase === 'game-over' ? 'Result locked' : tabletopControls ? 'Use the tabletop controls' : displayOnly ? 'Public display' : currentPlayer.uid === userUid ? 'Your turn' : game.phase === 'movement' ? 'Planning route' : 'Resolving turn'}</small></div>
+    {#if !tableLayout}<button class="undo-action" aria-label={undoText} disabled={!canUndo} onclick={onUndo}><span aria-hidden="true">↶</span>{undoButtonText}</button>{/if}
   </header>
 
   <div class:mobile-board-open={mobileBoardOpen || displayOnly} class="play-area" data-e2e-fit data-e2e-no-scroll>
@@ -562,7 +576,7 @@
       </article>
     {/each}
   </section>
-  {#if tableLayout}<footer class="tabletop-strip" data-e2e-fit data-e2e-no-scroll><strong>{tabletopControls ? 'Istanbul tabletop' : 'Istanbul'}</strong><span>{room.roomCode} · {room.layout.replace('-', ' ')}</span></footer>{/if}
+  {#if tableLayout}<footer class="tabletop-strip" data-e2e-fit data-e2e-no-scroll><span class="table-identity"><strong>{tabletopControls ? 'Istanbul tabletop' : 'Istanbul'}</strong><i>{room.roomCode} · {room.layout.replace('-', ' ')}</i></span><button class="undo-action" aria-label={undoText} disabled={!canUndo} onclick={onUndo}><span aria-hidden="true">↶</span>{undoButtonText}</button><span class="undo-record" aria-live="polite">{undoStatusText}{undoLog.length ? ` · last log: ${undoLog.at(-1)?.label}` : ''}</span></footer>{/if}
 </section>
 
 <style>
@@ -585,8 +599,9 @@
   .table-layout .player-rail { grid-column: 1; grid-row: 2; min-height: 0; grid-template-columns: 1fr; grid-auto-flow: row; grid-auto-rows: minmax(0, 1fr); align-content: center; gap: .3rem; overflow: hidden; }
   .table-layout .player-rail.many { grid-template-columns: repeat(2, minmax(0, 1fr)); grid-auto-flow: row; grid-auto-rows: auto; overflow: hidden; }
   .table-layout .player-rail article { min-width: 0; min-height: 0; display: grid; place-items: center; overflow: hidden; padding: 0; border: 0; aspect-ratio: 1; background: transparent; }
-  .tabletop-strip { grid-column: 1; grid-row: 3; min-width: 0; display: flex; justify-content: space-between; gap: .4rem; overflow: hidden; padding: .32rem .5rem; border: 1px solid rgb(239 202 125 / 35%); border-radius: .55rem; color: #d3dfd8; background: rgb(5 29 31 / 78%); font-size: .48rem; letter-spacing: .04em; text-transform: uppercase; }
-  .tabletop-strip strong, .tabletop-strip span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .tabletop-strip { grid-column: 1; grid-row: 3; min-width: 0; display: grid; grid-template-columns: 1fr; gap: .2rem; overflow: hidden; padding: .25rem .35rem; border: 1px solid rgb(239 202 125 / 35%); border-radius: .55rem; color: #d3dfd8; background: rgb(5 29 31 / 78%); font-size: .48rem; letter-spacing: .04em; text-transform: uppercase; }
+  .tabletop-strip .table-identity { min-width: 0; display: flex; align-items: center; justify-content: space-between; gap: .4rem; }.tabletop-strip .table-identity strong, .tabletop-strip .table-identity i { white-space: nowrap; }.tabletop-strip .table-identity i { font-style: normal; }.undo-record { color: #9fb8b2; font-size: .43rem; line-height: .55rem; text-align: center; }
+  .undo-action { min-width: 0; min-height: 2rem; display: inline-flex; align-items: center; justify-content: center; gap: .3rem; padding: .25rem .55rem; border: 1px solid #e8c573; border-radius: .45rem; color: #173f43; background: #efca7d; font: inherit; font-size: .58rem; font-weight: 700; white-space: nowrap; }.tabletop-strip .undo-action { width: 100%; min-height: 1.7rem; }.undo-action span { font-size: .9rem; line-height: 0; }.undo-action:disabled { border-color: rgb(255 255 255 / 18%); color: #9fb0ad; background: rgb(255 255 255 / 7%); }
   .turn-banner { min-height: 4.4rem; display: flex; align-items: center; justify-content: space-between; gap: 1rem; padding: .55rem 1.1rem; border: 1px solid rgb(239 202 125 / 35%); border-radius: 1rem; background: linear-gradient(100deg, rgb(13 48 51 / 96%), rgb(28 76 75 / 92%)); box-shadow: 0 .8rem 2rem rgb(35 21 9 / 22%); }
   .turn-banner p, .section-kicker { margin: 0; color: #efca7d; font-size: .68rem; font-weight: 700; letter-spacing: .14em; text-transform: uppercase; }
   .turn-banner h1 { margin: .1rem 0 0; font: 700 clamp(1.65rem, 3vw, 2.5rem)/.95 'Cormorant Garamond', serif; }
@@ -594,6 +609,7 @@
   .turn-token { display: grid; grid-template-columns: 1.8rem auto; gap: 0 .55rem; align-items: center; }
   .turn-token .player-dot { grid-row: 1 / 3; }
   .turn-token small { color: #bdd0ca; }
+  .turn-banner > .undo-action { flex: 0 0 auto; min-height: 2.5rem; }
   .player-dot { width: 1.7rem; height: 1.7rem; display: inline-block; border: 3px solid #f0cd80; border-radius: 50%; box-shadow: inset 0 0 0 2px #fffaf0; }
   .ruby { background: #a63e3a; }.saffron { background: #c98c28; }.teal { background: #28796f; }.indigo { background: #43588f; }.plum { background: #73466e; }
   .ruby-route { display: grid; grid-template-columns: 1fr; gap: .5rem; margin: .9rem 0; }
