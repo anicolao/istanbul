@@ -1,0 +1,1 @@
+import{t as e}from"../chunks/CgIgJov0.js";export{e as component};
