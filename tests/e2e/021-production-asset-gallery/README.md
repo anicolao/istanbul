@@ -134,6 +134,7 @@ The reviewer opens the dedicated gallery without creating a game and walks every
 **Verifications:**
 
 - [x] Market demands resets to its first complete rendered-component page
+- [x] Each demand uses five circular resource portraits over the printed medallion positions
 
 ## 14. The reviewer opens all six Small MarketDemand states
 
@@ -144,6 +145,7 @@ The reviewer opens the dedicated gallery without creating a game and walks every
 **Verifications:**
 
 - [x] The next exact rendered-state slice replaces the prior page without scrolling
+- [x] The second demand set preserves all five circular resource overlays
 
 ## 15. The reviewer opens the goods, money, and ruby GameArt components
 
