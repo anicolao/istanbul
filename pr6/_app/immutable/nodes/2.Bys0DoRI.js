@@ -1,0 +1,1 @@
+import{t as e}from"../chunks/CoySxq3D.js";export{e as component};
