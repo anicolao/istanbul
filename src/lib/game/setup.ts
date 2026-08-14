@@ -133,6 +133,22 @@ function pathDistance(board: number[], first: number, second: number) {
   return Math.abs(Math.floor(a / 4) - Math.floor(b / 4)) + Math.abs(a % 4 - b % 4);
 }
 
+function shuffleDemandStack(values: string[], random: ReturnType<typeof createRandom>): string[] {
+  const pool = [...values];
+  const result: string[] = [];
+  let permutation = random.nextInt(720);
+  for (let remaining = pool.length; remaining > 0; remaining -= 1) {
+    const factorial = remaining <= 2 ? 1 : Array.from({ length: remaining - 1 }, (_, index) => index + 1).reduce((product, value) => product * value, 1);
+    const index = Math.floor(permutation / factorial);
+    permutation %= factorial;
+    result.push(pool.splice(index, 1)[0]);
+  }
+  // Demand stacks formerly contained five tiles. Keep four setup-stream draws
+  // per stack so adding the sixth printed face does not move seeded public NPCs.
+  for (let draw = 1; draw < 4; draw += 1) random.nextInt(1);
+  return result;
+}
+
 export function createBoard(layout: LayoutKind, random: ReturnType<typeof createRandom>): number[] {
   if (layout !== 'random') return [...printedLayouts[layout]];
   for (;;) {
@@ -148,8 +164,8 @@ export function createSetup(room: RoomProjection, seed: string, epoch = 1): Game
   const shuffledCards = shuffle(bonusCards.map(({ id }) => id), random);
   const playerCards = shuffledCards.slice(0, room.seats.length);
   const remainingCards = shuffledCards.slice(room.seats.length);
-  const largeDemand = shuffle(demandTiles.filter(({ market }) => market === 'large').map(({ id }) => id), random);
-  const smallDemand = shuffle(demandTiles.filter(({ market }) => market === 'small').map(({ id }) => id), random);
+  const largeDemand = shuffleDemandStack(demandTiles.filter(({ market }) => market === 'large').map(({ id }) => id), random);
+  const smallDemand = shuffleDemandStack(demandTiles.filter(({ market }) => market === 'small').map(({ id }) => id), random);
   const governorRoll = rollDice(random);
   const smugglerRoll = rollDice(random);
   const allowedRequirements = room.seats.length === 2 ? [2, 4] : room.seats.length === 3 ? [2, 3, 4] : [2, 3, 4, 5];

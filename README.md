@@ -121,7 +121,7 @@ log from crossing a retained dice result.
 Scenario 021 opens the standalone production gallery, enlarges a live
 `LocationTile`, and then reviews every page of locations, `PlayerTray` states,
 merchants, assistants, family members, `BonusCard` faces, `MarketDemand` states,
-and public components. It checks all 83 rendered states and the complete
+and public components. It checks all 85 rendered states and the complete
 73-asset backing manifest by stable ID, verifies the expected renderer and
 representative props, proves every nested image loaded, and captures the
 responsive result after every input.

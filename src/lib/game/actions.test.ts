@@ -112,20 +112,20 @@ describe('deterministic economy actions', () => {
   it('sells only owned depicted Demand slots, pays the exact table, and rotates the stack', () => {
     const game = createSetup(room(), 'market-sale');
     const player = game.players[0];
-    game.largeDemand = ['demand-large-1', ...game.largeDemand.filter((id) => id !== 'demand-large-1')];
-    player.goods = { fabric: 2, spice: 1, fruit: 1, jewelry: 0 };
+    game.largeDemand = ['demand-large-4', ...game.largeDemand.filter((id) => id !== 'demand-large-4')];
+    player.goods = { fabric: 1, spice: 1, fruit: 0, jewelry: 2 };
     player.lira = 0;
     const nextDemand = game.largeDemand[1];
     expect(sellAtMarket(game, player, 10, [0, 1, 2, 3])).toBe('Sold 4 goods for 18 Lira.');
     expect(player).toMatchObject({ lira: 18, goods: { fabric: 0, spice: 0, fruit: 0, jewelry: 0 } });
-    expect(game.largeDemand).toEqual([nextDemand, ...game.largeDemand.slice(1, -1), 'demand-large-1']);
+    expect(game.largeDemand).toEqual([nextDemand, ...game.largeDemand.slice(1, -1), 'demand-large-4']);
     expect(sellAtMarket(game, player, 10, [0])).toBeNull();
     expect(sellAtMarket(game, player, 12, [0])).toBeNull();
 
     const smallGame = createSetup(room(), 'small-market-sale');
     const smallPlayer = smallGame.players[0];
-    smallGame.smallDemand = ['demand-small-1', ...smallGame.smallDemand.filter((id) => id !== 'demand-small-1')];
-    smallPlayer.goods = { fabric: 2, spice: 2, fruit: 0, jewelry: 0 };
+    smallGame.smallDemand = ['demand-small-5', ...smallGame.smallDemand.filter((id) => id !== 'demand-small-5')];
+    smallPlayer.goods = { fabric: 1, spice: 1, fruit: 2, jewelry: 0 };
     smallPlayer.lira = 0;
     expect(sellAtMarket(smallGame, smallPlayer, 11, [0, 1, 2, 3])).toBe('Sold 4 goods for 14 Lira.');
     expect(smallPlayer.lira).toBe(14);
