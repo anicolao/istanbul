@@ -1,7 +1,7 @@
 # MVP design
 
-> Implementation status: complete. Scenarios 001–014 exercise every slice
-> below, culminating in shared-table and accessible responsive play.
+> Implementation status: complete. Scenarios 001–019 exercise every slice and
+> subsequent production refinement, including append-only action undo.
 
 ## Outcome
 
@@ -82,6 +82,8 @@ end
   trigger seat, remaining seats, rankings, winners
 diagnostics
   rejected event IDs and stable reasons
+undo
+  latest active event, author, information boundary, immutable undo log
 ```
 
 Persist stable identifiers and player intent only. Do not persist a mutable
@@ -105,11 +107,22 @@ Keep the first schema small and expand it only with a vertical slice:
 | `encounter/resolved` | Commit catch rewards and optional encounter choices |
 | `bonus/played` | Identify an owned card and a legal timing/target choice |
 | `turn/ended` | Close a turn after every mandatory choice is resolved |
+| `action/undone` | Suppress the latest reversible authored action during replay while retaining both events |
 | `game/rematched` | Start a fresh epoch while retaining the room roster |
 
 Do not force every place into a generic untyped payload. Use a discriminated
 TypeScript union for action choices, and add explicit events if a later slice
 shows that one event cannot express a recoverable finite-choice boundary.
+
+Undo never edits or deletes history. An `action/undone` payload names the latest
+still-active gameplay event. Replay retains the original event and the undo in
+the accepted log, omits the target's state transition, and exposes the previous
+action as the next candidate. The target's original author must author the
+undo; on a dedicated tabletop, this naturally keeps public actions on the
+tabletop and private Bonus actions on the owning phone. Stale, duplicate,
+out-of-order, cross-player, and non-latest targets are diagnosed and ignored.
+Any accepted event that draws a card or rolls dice is a hard boundary: neither
+that event nor anything beneath it can be undone.
 
 ## Delivery contract
 
@@ -150,7 +163,8 @@ Required fixture families include:
 - turn closure, end trigger, final-round seats, and all tie-break levels;
 - full-state versus masked-player selectors;
 - replay equivalence, idempotent duplicates, stale/concurrent events, malformed
-  payloads, and version incompatibility.
+  payloads, version incompatibility, repeated undo, alternate replay, undo
+  authorization, concurrent undo, and every hidden-information boundary.
 
 Firestore Security Rules tests run separately in Node against the emulator with
 file parallelism disabled. They prove authenticated room reads, own-UID event

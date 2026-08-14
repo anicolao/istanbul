@@ -72,6 +72,8 @@
     eventCount: projection.acceptedEventIds.length,
     diagnosticCount: projection.diagnostics.length,
     recovery: { notice: recoveryNotice, pendingRetryId, incompatible: projection.diagnostics.some(({ reason }) => reason === 'invalid-envelope') },
+    undo: projection.undo,
+    undoLog: projection.undoLog,
     seatCount: room?.seats.length ?? 0,
     maxPlayers: room?.maxPlayers ?? null,
     layout: room?.layout ?? null,
@@ -462,6 +464,18 @@
     }
   }
 
+  async function undoLastAction() {
+    if (!repository || !projection.undo || projection.undo.actorUid !== userUid || projection.undo.blockedReason || actionPending) return;
+    actionPending = true;
+    try {
+      await repository.append('action/undone', { targetEventId: projection.undo.targetEventId });
+      selectedPlace = null;
+      selectedBonus = null;
+    } finally {
+      actionPending = false;
+    }
+  }
+
   async function grantE2eResources() {
     if (!repository || actionPending || import.meta.env.VITE_USE_FIREBASE_EMULATORS !== 'true') return;
     actionPending = true;
@@ -672,7 +686,7 @@
         {game} {room} userUid={userUid} {selectedPlace} selectedBonus={null} {boardScale} tabletopControls
         onInspectPlace={inspectPlace} onInspectBonus={() => {}} onMove={(destination, assistantAction) => void moveTo(destination, assistantAction)} onPayMerchants={() => void payMerchants()}
         onTakeAction={(choice) => void takePlaceAction(choice)} onResolveEncounter={(choice) => void resolveEncounter(choice)} onUseMosqueAbility={(choice) => void useMosqueAbility(choice)} onPlayBonus={() => {}}
-        onGrantE2eResources={() => {}} onRematch={() => { if (room.tabletopOwned) void rematch(); }} onEndTurn={() => void endTurn()}
+        onGrantE2eResources={() => {}} onRematch={() => { if (room.tabletopOwned) void rematch(); }} onEndTurn={() => void endTurn()} onUndo={() => void undoLastAction()} undo={projection.undo} undoLog={projection.undoLog} undoPending={actionPending}
         onZoomIn={() => boardScale = 1} onFit={() => boardScale = 1} {e2eResourceReview}
       />
     {:else}<SharedTableLobby {room} invitationFor={() => makeInviteUrl(room.roomCode)} layoutNames={layoutNames} canConfigure={isHost && room.tabletopOwned} canStart={isHost && allReady} {actionPending} onConfigure={(layout) => void configureRoom(layout)} onStart={() => void startGame()} />{/if}
@@ -683,6 +697,7 @@
         onPlayBonus={(cardId, choice) => void playBonus(cardId, choice)}
         onTakePrivateAction={(choice) => void takePrivatePlaceAction(choice)}
         onResolvePrivateEncounter={(cardId) => void resolvePrivateGovernor(cardId)}
+        onUndo={() => void undoLastAction()} undo={projection.undo} undoLog={projection.undoLog} undoPending={actionPending}
       />
     {:else}<GameTable
       {game}
@@ -702,6 +717,10 @@
       onGrantE2eResources={() => void grantE2eResources()}
       onRematch={() => void rematch()}
       onEndTurn={() => void endTurn()}
+      onUndo={() => void undoLastAction()}
+      undo={projection.undo}
+      undoLog={projection.undoLog}
+      undoPending={actionPending}
       onZoomIn={() => boardScale = 1}
       onFit={() => boardScale = 1}
       {e2eResourceReview}

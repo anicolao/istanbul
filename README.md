@@ -30,6 +30,8 @@ browser-level tracer bullets verified with Playwright.
   every base-game route to a ruby.
 - Correct two-player neutral merchants and six-ruby target.
 - Reconnect and replay from a complete immutable event history.
+- Undo reversible actions by appending attributed undo events, with hard
+  boundaries whenever a card draw or die roll reveals new information.
 - Ordinary network play on phone, tablet, and desktop.
 - A dedicated `/tabletop/` route that creates and owns the room, renders every
   public game control on the shared display, and leaves only private Bonus-card
@@ -85,11 +87,16 @@ Mosque powers, payments, turn completion, and rematches. It starts with everyone
 present and replaces every claimed and unclaimed lobby position with the
 privacy-safe public bazaar. Phones become compact private Bonus-card controllers;
 Caravansary card selection and Governor card payment stay there because they
-depend on hand identities. Reloading its retained URL reopens the same room. The MVP is
-complete: its final slice adds roving keyboard
-navigation and focus transfer, live turn announcements, 44 px touch actions,
+depend on hand identities. Reloading its retained URL reopens the same room. The
+MVP is complete: its final slice adds roving keyboard navigation and focus
+transfer, live turn announcements, 44 px touch actions,
 safe-area insets, reduced-motion behaviour, labelled non-colour cues, and
 responsive play at every target viewport in [MVP_DESIGN.md](MVP_DESIGN.md).
+Players can now walk backward through their latest authored actions—including
+movement, Bonus-card plays, payments, trades, and turn completion—and replay a
+different choice. Each rollback is itself retained in immutable history. The
+control visibly locks at Caravansary and other card draws, dice rolls, and
+random token relocations because revealed information cannot be unseen.
 
 Each numbered directory under [`tests/e2e`](tests/e2e) is a generated,
 screenshot-by-screenshot play-by-play. Its README names the acting user, shows
@@ -99,6 +106,9 @@ at the direct tabletop URL, follows Ada and Bora scanning its QR codes on
 private phones, plays Ada's private Bonus card on her phone, then performs the
 movement, Warehouse action, and clockwise handoff on the tabletop before reload,
 without omitting an interaction.
+Scenario 019 follows a complete undo story: Ada plays, undoes, and replays a
+Bonus card; reverses a Small Market sale and movement; restores her private hand
+and assistant; and finally sees undo lock immediately after a Tea House roll.
 
 The local verification entry point is:
 
