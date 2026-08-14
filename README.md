@@ -30,8 +30,10 @@ browser-level tracer bullets verified with Playwright.
   every base-game route to a ruby.
 - Correct two-player neutral merchants and six-ruby target.
 - Reconnect and replay from a complete immutable event history.
-- Undo reversible actions by appending attributed undo events, with hard
-  boundaries whenever a card draw or die roll reveals new information.
+- Review the current turn before passing, undo its entire reversible suffix,
+  or open the game log and roll back directly to any reachable action. Every
+  rollback is an attributed append-only event, with hard boundaries whenever a
+  card draw or die roll reveals new information.
 - Ordinary network play on phone, tablet, and desktop.
 - A dedicated `/tabletop/` route that creates and owns the room, renders every
   public game control on the shared display, and leaves only private Bonus-card
@@ -109,6 +111,10 @@ without omitting an interaction.
 Scenario 019 follows a complete undo story: Ada plays, undoes, and replays a
 Bonus card; reverses a Small Market sale and movement; restores her private hand
 and assistant; and finally sees undo lock immediately after a Tea House roll.
+Scenario 020 expands that story into turn review and direct history navigation:
+Ada undoes three actions with one event, replays them, rewinds straight to an
+earlier movement, and proves that grey information barriers prevent the game
+log from crossing a retained dice result.
 
 The local verification entry point is:
 

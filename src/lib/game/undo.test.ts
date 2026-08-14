@@ -41,7 +41,7 @@ describe('append-only undo replay', () => {
     });
     expect(afterFillUndo.acceptedEventIds).toHaveLength(8);
     expect(afterFillUndo.undo).toMatchObject({ targetEventId: moved.id, actorUid: 'host', label: 'move to Place 4', blockedReason: null });
-    expect(afterFillUndo.undoLog).toEqual([{ eventId: undoFill.id, targetEventId: filled.id, actorUid: 'host', label: 'warehouse fill' }]);
+    expect(afterFillUndo.undoLog).toEqual([{ eventId: undoFill.id, targetEventId: filled.id, actorUid: 'host', label: 'warehouse fill', actionCount: 1 }]);
 
     const undoMove = event(9, 'host', 'action/undone', { targetEventId: moved.id });
     const restored = replayEvents([...startedGame(), moved, filled, undoFill, undoMove]);
@@ -64,6 +64,38 @@ describe('append-only undo replay', () => {
     expect(projection.diagnostics).toEqual([]);
   });
 
+  it('rolls back an authored reversible suffix with one immutable event', () => {
+    const moved = event(6, 'host', 'turn/moved', { destination: 4, assistantAction: 'drop' });
+    const filled = event(7, 'host', 'place/action-taken', { choice: { kind: 'warehouse-fill', good: 'fruit' } });
+    const rollback = event(8, 'host', 'action/undone', { targetEventId: moved.id });
+    const projection = replayEvents([...startedGame(), moved, filled, rollback]);
+
+    expect(projection.game).toMatchObject({ phase: 'movement', players: [{ merchantPlace: 7, goods: { fruit: 0 }, assistantsCarried: 4 }, {}] });
+    expect(projection.acceptedEventIds).toHaveLength(8);
+    expect(projection.undoLog).toEqual([{ eventId: rollback.id, targetEventId: moved.id, actorUid: 'host', label: 'move to Place 4', actionCount: 2 }]);
+    expect(projection.gameLog.map(({ label, active }) => ({ label, active }))).toEqual([
+      { label: 'move to Place 4', active: false },
+      { label: 'warehouse fill', active: false }
+    ]);
+  });
+
+  it('exposes only actions above revealed information as direct rollback targets', () => {
+    const setup = startedGame();
+    const moved = event(6, 'host', 'turn/moved', { destination: 9, assistantAction: 'drop' });
+    const roll = event(7, 'host', 'place/action-taken', { choice: { kind: 'tea-house-wager', wager: 7 } });
+    const declineGovernor = event(8, 'host', 'encounter/resolved', { choice: { kind: 'governor-visit', accept: false } });
+    const projection = replayEvents([...setup, moved, roll, declineGovernor]);
+
+    expect(projection.gameLog).toMatchObject([
+      { eventId: moved.id, blockedReason: 'Cannot cross: dice were rolled', rollbackCount: 0 },
+      { eventId: roll.id, barrierReason: 'dice were rolled', blockedReason: 'dice were rolled', rollbackCount: 0 },
+      { eventId: declineGovernor.id, blockedReason: null, rollbackCount: 1, rollbackActorUids: ['host'] }
+    ]);
+    const restored = replayEvents([...setup, moved, roll, declineGovernor, event(9, 'host', 'action/undone', { targetEventId: declineGovernor.id })]);
+    expect(restored.game).toMatchObject({ phase: 'encounters', lastRoll: { place: 9 } });
+    expect(restored.undo).toMatchObject({ targetEventId: roll.id, blockedReason: 'dice were rolled' });
+  });
+
   it('contains stale, unauthorized, and duplicate undo attempts deterministically', () => {
     const moved = event(6, 'host', 'turn/moved', { destination: 4, assistantAction: 'drop' });
     const filled = event(7, 'host', 'place/action-taken', { choice: { kind: 'warehouse-fill', good: 'fruit' } });
@@ -71,7 +103,7 @@ describe('append-only undo replay', () => {
       ...startedGame(),
       moved,
       filled,
-      event(8, 'host', 'action/undone', { targetEventId: moved.id }),
+      event(8, 'host', 'action/undone', { targetEventId: 'missing-action' }),
       event(9, 'guest', 'action/undone', { targetEventId: filled.id }),
       event(10, 'host', 'action/undone', { targetEventId: filled.id }),
       event(11, 'host', 'action/undone', { targetEventId: filled.id })

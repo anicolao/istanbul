@@ -74,6 +74,7 @@
     recovery: { notice: recoveryNotice, pendingRetryId, incompatible: projection.diagnostics.some(({ reason }) => reason === 'invalid-envelope') },
     undo: projection.undo,
     undoLog: projection.undoLog,
+    gameLog: projection.gameLog,
     seatCount: room?.seats.length ?? 0,
     maxPlayers: room?.maxPlayers ?? null,
     layout: room?.layout ?? null,
@@ -465,10 +466,16 @@
   }
 
   async function undoLastAction() {
-    if (!repository || !projection.undo || projection.undo.actorUid !== userUid || projection.undo.blockedReason || actionPending) return;
+    if (!repository || !projection.undo || !projection.undo.actorUids.includes(userUid) || projection.undo.blockedReason || actionPending) return;
+    await rollbackTo(projection.undo.targetEventId);
+  }
+
+  async function rollbackTo(targetEventId: string) {
+    const target = projection.gameLog.find((entry) => entry.eventId === targetEventId);
+    if (!repository || !target || !target.active || target.blockedReason || !target.rollbackActorUids.includes(userUid) || actionPending) return;
     actionPending = true;
     try {
-      await repository.append('action/undone', { targetEventId: projection.undo.targetEventId });
+      await repository.append('action/undone', { targetEventId });
       selectedPlace = null;
       selectedBonus = null;
     } finally {
@@ -686,7 +693,7 @@
         {game} {room} userUid={userUid} {selectedPlace} selectedBonus={null} {boardScale} tabletopControls
         onInspectPlace={inspectPlace} onInspectBonus={() => {}} onMove={(destination, assistantAction) => void moveTo(destination, assistantAction)} onPayMerchants={() => void payMerchants()}
         onTakeAction={(choice) => void takePlaceAction(choice)} onResolveEncounter={(choice) => void resolveEncounter(choice)} onUseMosqueAbility={(choice) => void useMosqueAbility(choice)} onPlayBonus={() => {}}
-        onGrantE2eResources={() => {}} onRematch={() => { if (room.tabletopOwned) void rematch(); }} onEndTurn={() => void endTurn()} onUndo={() => void undoLastAction()} undo={projection.undo} undoLog={projection.undoLog} undoPending={actionPending}
+        onGrantE2eResources={() => {}} onRematch={() => { if (room.tabletopOwned) void rematch(); }} onEndTurn={() => void endTurn()} onUndo={() => void undoLastAction()} onRollback={(targetEventId) => void rollbackTo(targetEventId)} undo={projection.undo} undoLog={projection.undoLog} gameLog={projection.gameLog} undoPending={actionPending}
         onZoomIn={() => boardScale = 1} onFit={() => boardScale = 1} {e2eResourceReview}
       />
     {:else}<SharedTableLobby {room} invitationFor={() => makeInviteUrl(room.roomCode)} layoutNames={layoutNames} canConfigure={isHost && room.tabletopOwned} canStart={isHost && allReady} {actionPending} onConfigure={(layout) => void configureRoom(layout)} onStart={() => void startGame()} />{/if}
@@ -697,7 +704,7 @@
         onPlayBonus={(cardId, choice) => void playBonus(cardId, choice)}
         onTakePrivateAction={(choice) => void takePrivatePlaceAction(choice)}
         onResolvePrivateEncounter={(cardId) => void resolvePrivateGovernor(cardId)}
-        onUndo={() => void undoLastAction()} undo={projection.undo} undoLog={projection.undoLog} undoPending={actionPending}
+        onUndo={() => void undoLastAction()} onRollback={(targetEventId) => void rollbackTo(targetEventId)} undo={projection.undo} undoLog={projection.undoLog} gameLog={projection.gameLog} undoPending={actionPending}
       />
     {:else}<GameTable
       {game}
@@ -718,8 +725,10 @@
       onRematch={() => void rematch()}
       onEndTurn={() => void endTurn()}
       onUndo={() => void undoLastAction()}
+      onRollback={(targetEventId) => void rollbackTo(targetEventId)}
       undo={projection.undo}
       undoLog={projection.undoLog}
+      gameLog={projection.gameLog}
       undoPending={actionPending}
       onZoomIn={() => boardScale = 1}
       onFit={() => boardScale = 1}
