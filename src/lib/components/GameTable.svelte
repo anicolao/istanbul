@@ -15,14 +15,13 @@
   import type { EncounterChoice } from '$lib/game/encounters';
   import { ownsMosqueAbility, type MosqueAbilityChoice } from '$lib/game/mosques';
   import { currentSultanCost, sultanCostSequence } from '$lib/game/ruby-routes';
-  import { locationStateSummary } from '$lib/game/location-state';
   import type { BonusChoice } from '$lib/game/bonus';
   import type { ReplayProjection, RoomProjection } from '$lib/game/protocol';
   import type { GameSetup } from '$lib/game/setup';
-  import type { PlayerColorName } from '$lib/game/art';
   import GameArt from './GameArt.svelte';
+  import BonusCard from './BonusCard.svelte';
   import GameLog from './GameLog.svelte';
-  import LocationState from './LocationState.svelte';
+  import LocationTile from './LocationTile.svelte';
   import PlayerTray from './PlayerTray.svelte';
 
   let {
@@ -190,14 +189,6 @@
     onInspectBonus(cardId);
   }
 
-  function assistants(placeId: number) {
-    return game.players.flatMap((player) => Array.from({ length: player.assistantsByPlace[placeId] ?? 0 }, () => player));
-  }
-
-  function families(placeId: number) {
-    return game.players.filter(({ familyPlace }) => familyPlace === placeId);
-  }
-
   function toggleRecall(placeId: number) {
     recallSelection = recallSelection.includes(placeId)
       ? recallSelection.filter((place) => place !== placeId)
@@ -294,42 +285,22 @@
       <div class="board-viewport" data-e2e-fit>
         <div class="board" style={`--board-scale: ${boardScale}`} data-testid="bazaar-board" data-e2e-fit>
           {#each game.board as placeId, index}
-            {@const place = placeById.get(placeId)!}
-            {@const here = occupants(placeId)}
-            {@const stateSummary = locationStateSummary(game, placeId)}
-            <button
-              class:selected={selectedPlace === placeId}
-              class:reachable={reachable.includes(placeId)}
-              class:departed={game.lastMovement?.from === placeId}
-              class:arrived={game.lastMovement?.to === placeId}
-              class:has-encounter={placeId === game.governorPlace || placeId === game.smugglerPlace}
-              class={`place family-${place.family}`}
-              style={`--row: ${Math.floor(index / 4)}; --column: ${index % 4}`}
-              aria-label={`${place.id} ${place.name}. ${place.action} Current state: ${stateSummary}.${reachable.includes(placeId) ? ' Reachable this turn.' : ''}${here.length ? ` Merchants: ${here.map(({ name }) => name).join(', ')}.` : ''}`}
-              aria-pressed={selectedPlace === placeId}
-              data-place-id={placeId}
-              tabindex={(keyboardPlace || game.board[0]) === placeId ? 0 : -1}
+            <LocationTile
+              {game}
+              {placeId}
+              {index}
+              selected={selectedPlace === placeId}
+              reachable={reachable.includes(placeId)}
+              departed={game.lastMovement?.from === placeId}
+              arrived={game.lastMovement?.to === placeId}
+              tabIndex={(keyboardPlace || game.board[0]) === placeId ? 0 : -1}
               onfocus={() => keyboardPlace = placeId}
               onkeydown={(event) => {
                 if (event.key.startsWith('Arrow')) { event.preventDefault(); moveBoardFocus(index, event.key); }
                 else if (event.key === 'Enter' || event.key === ' ') { event.preventDefault(); void inspectPlaceFromKeyboard(placeId); }
               }}
               onclick={(event) => inspectPlace(event, placeId)}
-            >
-              <GameArt kind="location" place={place.id} class="place-art" />
-              <span class="place-shade"></span>
-              {#if [5, 6, 7, 8, 10, 11, 12, 13, 14, 15, 16].includes(place.id)}<LocationState {game} placeId={place.id} />{/if}
-              <span class="place-number">{place.id}</span>
-              <strong>{place.shortName}</strong>
-              <span class="occupants" aria-hidden="true">
-                {#each here as merchant}<GameArt kind="piece" piece="merchant" color={merchant.color as PlayerColorName} class="merchant" label={`${merchant.name}'s merchant`} />{/each}
-                {#each assistants(placeId) as assistant}<GameArt kind="piece" piece="assistant" color={assistant.color as PlayerColorName} class="assistant" label={`${assistant.name}'s assistant`} />{/each}
-                {#each placeId === 12 ? [] : families(placeId) as family}<GameArt kind="piece" piece="family" color={family.color as PlayerColorName} class="family-member" label={`${family.name}'s family member`} />{/each}
-                {#each game.neutralMerchants.filter(({ place: neutralPlace }) => neutralPlace === placeId), index}<GameArt kind="piece" piece="neutral-merchant" class="merchant neutral" label={`Neutral merchant ${index + 1}`} />{/each}
-              </span>
-              {#if placeId === game.governorPlace}<GameArt kind="piece" piece="governor" class="encounter governor-piece" label="Governor" />{/if}
-              {#if placeId === game.smugglerPlace}<GameArt kind="piece" piece="smuggler" class="encounter smuggler-piece" label="Smuggler" />{/if}
-            </button>
+            />
           {/each}
         </div>
       </div>
@@ -342,13 +313,13 @@
         <p class="section-kicker">{inspectedPileSource === 'deck' ? 'Top of Bonus draw pile' : 'Top of Bonus discard pile'}</p>
         <h2 data-testid="pile-card-title">{inspectedPileCard.title}</h2>
         <p class="mobile-card-text">{inspectedPileCard.text}</p>
-        <div class="large-card public-card-detail" data-testid="pile-card-detail"><GameArt kind="card" effect={inspectedPileCard.effect} class="card-face" /><span>Bonus</span><strong>{inspectedPileCard.title}</strong><p>{inspectedPileCard.text}</p></div>
+        <BonusCard card={inspectedPileCard} class="large-card public-card-detail" testId="pile-card-detail" />
         <p class="pile-source-note">{inspectedPileSource === 'deck' ? `${game.bonusDrawPile.length} cards remain in the draw pile.` : `${game.bonusDiscard.length} cards are in the discard pile.`}</p>
       {:else if selectedBonusManifest}
         <p class="section-kicker">Private Bonus card</p>
         <h2>{selectedBonusManifest.title}</h2>
         <p class="mobile-card-text">{selectedBonusManifest.text}</p>
-        <div class="large-card" data-testid="illustrated-bonus-card"><GameArt kind="card" effect={selectedBonusManifest.effect} class="card-face" /><span>Bonus</span><strong>{selectedBonusManifest.title}</strong><p>{selectedBonusManifest.text}</p></div>
+        <BonusCard card={selectedBonusManifest} class="large-card" testId="illustrated-bonus-card" />
         {#if localIsCurrent}
           <div class="bonus-play" aria-label={`Play ${selectedBonusManifest.title}`}>
             {#if selectedBonusManifest.effect === 'gain-good'}
@@ -646,23 +617,6 @@
   .zoom-button span::after { rotate: 90deg; }
   .board-viewport { container-type: size; flex: 1; min-height: 0; display: grid; place-items: center; overflow: hidden; padding: 2.4rem 1.2rem 1rem; }
   .board { --board-ratio: 1.42; --board-limit: 42rem; --board-scale: 1; width: min(calc(100% / var(--board-scale) - .75rem), calc(var(--board-limit) / var(--board-scale)), calc(100cqh * var(--board-ratio) / var(--board-scale) - .75rem)); aspect-ratio: var(--board-ratio); display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); grid-template-rows: repeat(4, minmax(0, 1fr)); gap: .42rem; scale: var(--board-scale); transform-origin: center; transition: scale .2s ease; }
-  .place { position: relative; min-width: 0; min-height: 0; display: grid; grid-template-columns: 1fr; grid-template-rows: auto 1fr; gap: .15rem; align-items: start; overflow: hidden; padding: .42rem; border: 1px solid rgb(255 250 240 / 60%); border-radius: .55rem; color: #fffaf0; text-align: left; background: #173f43; box-shadow: 0 .35rem .7rem rgb(0 0 0 / 30%); cursor: pointer; }
-  .place :global(.place-art), .place-shade { position: absolute; inset: 0; }
-  .place :global(.place-art) { z-index: 0; transition: scale .25s ease; }.place:hover :global(.place-art), .place:focus-visible :global(.place-art) { scale: 1.05; }
-  .place-shade { z-index: 1; background: linear-gradient(to bottom, rgb(5 25 27 / 88%) 0, rgb(5 25 27 / 34%) 27%, transparent 52%, rgb(5 25 27 / 42%) 100%); pointer-events: none; }
-  .place:focus-visible { outline: 4px solid #fff2a8; outline-offset: 2px; box-shadow: 0 0 0 7px #173f43, 0 .35rem .7rem rgb(0 0 0 / 30%); }
-  .place::after { position: absolute; inset: 0; border: 3px solid transparent; border-radius: inherit; content: ''; pointer-events: none; }
-  .place.selected::after { border-color: #e2574f; box-shadow: inset 0 0 0 2px #fff7d6; }
-  .place.reachable { border-color: #f4cf75; box-shadow: 0 0 0 2px rgb(244 207 117 / 45%), 0 .35rem .7rem rgb(0 0 0 / 30%); }
-  .place.reachable::before { position: absolute; inset: .2rem; border: 1px dashed #a56823; border-radius: .35rem; content: ''; pointer-events: none; }
-  .place.departed { animation: departure-pulse .45s ease-out; }.place.arrived { animation: arrival-pulse .6s ease-out; }
-  .place-number { position: absolute; z-index: 4; top: .28rem; right: .3rem; width: 1.45rem; height: 1.45rem; display: grid; place-items: center; border: 1px solid #efca7d; border-radius: 50%; color: #fffaf0; background: rgb(10 44 47 / 92%); font-size: .72rem; font-weight: 700; }
-  .place > strong { position: relative; z-index: 3; max-width: calc(100% - 1.7rem); align-self: start; overflow: hidden; text-shadow: 0 1px 3px #000; font-size: clamp(.72rem, 1.1vw, .94rem); line-height: 1; text-overflow: ellipsis; white-space: nowrap; }
-  .occupants { position: absolute; z-index: 3; inset-block: 0; right: .38rem; left: .38rem; height: 2.8rem; display: flex; gap: .18rem; align-items: center; justify-content: center; margin-block: auto; pointer-events: none; }
-  .place.has-encounter .occupants { padding-right: 0; }
-  .occupants :global(.merchant), .occupants :global(.family-member), .occupants :global(.assistant) { flex: 0 0 auto; filter: drop-shadow(0 .12rem .1rem #0009); }
-  .occupants :global(.merchant) { width: 2.8rem; height: 2.8rem; }.occupants :global(.family-member) { width: 2.35rem; height: 2.35rem; }.occupants :global(.assistant) { width: 2.35rem; height: 2.35rem; }.occupants :global(.merchant.neutral) { background-color: transparent; }
-  .place :global(.encounter) { position: absolute; z-index: 3; inset-block: 0; right: .25rem; width: 2.4rem; height: 2.4rem; margin-block: auto; filter: drop-shadow(0 .12rem .1rem #0009); }
   .pile-source-note { color: #627572; font-size: .72rem; font-weight: 700; }
   .governor { background: #744c8b; }.smuggler { background: #263235; }:global(.governor-piece), :global(.smuggler-piece) { background-color: transparent; }
   .board-caption { margin: 0; padding: .28rem .7rem; color: #d3dfd8; font-size: .62rem; text-align: center; text-transform: capitalize; background: rgb(5 29 31 / 58%); }
@@ -690,13 +644,10 @@
   .mosque-offers { display: grid; grid-template-columns: 1fr; gap: .5rem; margin-top: .65rem; }.mosque-offers article { min-width: 0; display: grid; grid-template-columns: minmax(5.5rem, 38%) 1fr; grid-template-rows: auto auto 1fr auto; gap: .25rem .65rem; padding: .55rem; border: 2px solid currentColor; border-radius: .55rem; background: #f1e5cc; }:global(.mosque-tile-art) { grid-row: 1 / 5; width: 100%; aspect-ratio: 1; border-radius: .45rem; box-shadow: 0 .35rem .55rem #4b2c2244; }.mosque-offers article > span { font-size: .58rem; font-weight: 700; letter-spacing: .1em; text-transform: uppercase; }.mosque-offers article > strong { font: 700 1.05rem 'Cormorant Garamond', serif; }.mosque-offers article > small { min-height: 2.4rem; color: #526b68; font-size: .57rem; }.mosque-offers article > b { padding: .45rem; border-radius: .35rem; color: #fffaf0; text-align: center; background: currentColor; font-size: .62rem; }.mosque-offers .turn-action { margin-top: auto; font-size: .6rem; }
   .yellow-recall { display: grid; grid-template-columns: 4.4rem 1fr; gap: .4rem .65rem; align-items: center; margin-top: .7rem; padding: .55rem; border: 2px solid #b88618; border-radius: .55rem; color: #173f43; background: linear-gradient(115deg, #f6e7b3, #f1e5cc); box-shadow: inset 0 0 0 1px #fff7d6; }.yellow-recall :global(.yellow-power-art) { grid-row: 1 / 3; width: 4.4rem; height: 4.4rem; border-radius: .42rem; box-shadow: 0 .25rem .45rem #4b2c2255; }.yellow-recall-copy { display: grid; gap: .15rem; }.yellow-recall strong { color: #9a7115; font: 700 1.1rem 'Cormorant Garamond', serif; }.yellow-recall span { font-size: .6rem; }.yellow-recall-actions { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: .3rem; }.yellow-recall .turn-action { min-height: 2.2rem; margin: 0; padding: .35rem; font-size: .62rem; }
   .private-choice-callout { display: grid; grid-template-columns: 3.3rem 1fr; gap: .2rem .6rem; align-items: center; margin-top: .65rem; padding: .6rem; border: 2px solid #744c8b; border-radius: .55rem; background: #eee4f2; }.private-choice-callout :global(.private-card-back) { grid-row: 1 / 3; width: 3.3rem; height: 4.5rem; }.private-choice-callout strong { color: #633f76; font: 700 1.05rem 'Cormorant Garamond', serif; }.private-choice-callout span { color: #526b68; font-size: .62rem; }
-  .large-card { position: relative; min-height: 13rem; display: flex; flex-direction: column; justify-content: space-between; overflow: hidden; padding: 1rem; border: 2px solid #d49d42; border-radius: .8rem; color: #fffaf0; background: #173f43; box-shadow: 0 .8rem 1.4rem #4b2c2240; }.large-card::after { position: absolute; inset: 0; background: linear-gradient(to bottom, transparent 20%, rgb(5 25 27 / 22%) 42%, rgb(5 25 27 / 96%) 100%); content: ''; }.large-card :global(.card-face) { position: absolute; inset: 0; width: 100%; height: 100%; }.large-card > span, .large-card strong, .large-card p { position: relative; z-index: 1; text-shadow: 0 1px 3px #000; }.large-card > span { font-size: .65rem; letter-spacing: .15em; text-transform: uppercase; }.large-card strong { margin-top: auto; font: 700 1.5rem/1 'Cormorant Garamond', serif; }.large-card p { margin: .35rem 0 0; font-size: .78rem; }
   .mobile-card-text { display: none; }
   .player-rail { display: grid; grid-template-columns: repeat(var(--players, 2), minmax(0, 1fr)); grid-auto-flow: column; gap: .5rem; }
   .player-rail article { position: relative; min-width: 0; overflow: hidden; padding: 0; border: 1px solid rgb(239 202 125 / 55%); border-radius: .65rem; color: #fffaf0; background: #24170f; }.player-rail article.local { outline: 2px solid #e7b64c; outline-offset: -2px; }
   .player-rail.many { grid-template-columns: repeat(var(--players, 2), minmax(11rem, 1fr)); overflow-x: auto; }
-  @keyframes departure-pulse { from { filter: brightness(1.45); } to { filter: none; } }
-  @keyframes arrival-pulse { 0% { translate: 0 -.25rem; filter: brightness(1.7); } 100% { translate: 0; filter: none; } }
   @media (min-width: 721px) {
     .inspector.decision { padding: .7rem; }
     .inspector.decision h2 { margin: .1rem 0 .35rem; font-size: 1.55rem; }
@@ -729,15 +680,15 @@
     .play-area.mobile-board-open:has(.inspector.decision) .board-shell { display: flex; }
     .play-area.mobile-board-open:has(.inspector.decision) .inspector { display: none; }
     .mobile-view-switch { grid-column: 1; display: grid; grid-template-columns: 1fr 1fr; gap: .25rem; padding: .2rem; border: 1px solid #efca7d66; border-radius: .65rem; background: #0b292c; }.mobile-view-switch button { min-height: 2.2rem; border: 0; border-radius: .45rem; color: #bdd0ca; background: transparent; font-size: .68rem; font-weight: 700; }.mobile-view-switch button.active { color: #173f43; background: #efca7d; }
-    .board-viewport { padding: 2.1rem .4rem .35rem; }.board { --board-ratio: 1.18; --board-limit: 100%; gap: .25rem; }.game-table.many .board { --board-ratio: 1.42; }.place { padding: .24rem; border-radius: .38rem; }.place > strong { display: -webkit-box; max-width: calc(100% - 1.25rem); overflow: hidden; font-size: .58rem; line-height: .88; white-space: normal; -webkit-box-orient: vertical; -webkit-line-clamp: 2; line-clamp: 2; }.place-number { width: 1.05rem; height: 1.05rem; font-size: .5rem; }.occupants { right: .12rem; left: .12rem; height: 1.5rem; gap: .02rem; }.occupants :global(.merchant) { width: 1.4rem; height: 1.4rem; }.occupants :global(.assistant), .occupants :global(.family-member) { width: 1.18rem; height: 1.18rem; }.place :global(.encounter) { right: .1rem; width: 1.2rem; height: 1.2rem; }
-    .inspector { min-height: 5.5rem; max-height: none; display: grid; grid-template-columns: auto 1fr; gap: .2rem .7rem; align-content: start; padding: .55rem .7rem; }.inspector .section-kicker, .inspector h2, .inspector > p { grid-column: 2; }.inspector h2 { margin: 0; font-size: 1.35rem; }.inspector > p:not(.section-kicker) { margin: 0; font-size: .65rem; }.inspector-glyph { grid-column: 1; grid-row: 1 / 4; width: 3rem; height: 3rem; }.inspector dl { grid-column: 1 / -1; display: flex; gap: .8rem; margin: 0; }.inspector dl div { padding: .15rem 0; border: 0; font-size: .55rem; }.inspector .turn-action, .inspector .skip-link, .inspector .wheelbarrow-track, .inspector .crate-track, .inspector .recall-list, .inspector .action-balance, .inspector .mail-track, .inspector .caravan-sources, .inspector .card-preview, .inspector .discard-choice, .inspector .demand-card, .inspector .market-revenue, .inspector .basic-good-choice, .inspector .wager-control, .inspector .dice-result, .inspector .encounter-choices, .inspector .encounter-history, .inspector .mosque-ability-card, .inspector .dice-adjustments, .inspector .mosque-offers, .inspector .yellow-recall, .inspector .turn-log, .inspector .turn-completion-actions { grid-column: 1 / -1; margin-top: .2rem; }.inspector .turn-action { min-height: 2.75rem; }.inspector .skip-link { min-height: 2.75rem; }.recall-list { grid-template-columns: 1fr 1fr; }.encounter-ledger, .supply-ledger { display: none; }.inspector .large-card { grid-column: 1; grid-row: 1 / 5; width: 5.1rem; min-height: 7rem; padding: .35rem; display: flex; }.inspector .large-card strong, .inspector .large-card p { display: none; }.inspector .large-card > span { margin-top: auto; font-size: .45rem; }.mobile-card-text { display: block; }.encounter-choices { grid-template-columns: 1fr 1fr; }.encounter-choices section { padding: .4rem; }.encounter-choices section > div { grid-template-columns: 1fr; }.mosque-offers article > small { min-height: auto; }.dice-adjustments { grid-template-columns: 1fr 1fr; }
+    .board-viewport { padding: 2.1rem .4rem .35rem; }.board { --board-ratio: 1.18; --board-limit: 100%; gap: .25rem; }.game-table.many .board { --board-ratio: 1.42; }
+    .inspector { min-height: 5.5rem; max-height: none; display: grid; grid-template-columns: auto 1fr; gap: .2rem .7rem; align-content: start; padding: .55rem .7rem; }.inspector .section-kicker, .inspector h2, .inspector > p { grid-column: 2; }.inspector h2 { margin: 0; font-size: 1.35rem; }.inspector > p:not(.section-kicker) { margin: 0; font-size: .65rem; }.inspector-glyph { grid-column: 1; grid-row: 1 / 4; width: 3rem; height: 3rem; }.inspector dl { grid-column: 1 / -1; display: flex; gap: .8rem; margin: 0; }.inspector dl div { padding: .15rem 0; border: 0; font-size: .55rem; }.inspector .turn-action, .inspector .skip-link, .inspector .wheelbarrow-track, .inspector .crate-track, .inspector .recall-list, .inspector .action-balance, .inspector .mail-track, .inspector .caravan-sources, .inspector .card-preview, .inspector .discard-choice, .inspector .demand-card, .inspector .market-revenue, .inspector .basic-good-choice, .inspector .wager-control, .inspector .dice-result, .inspector .encounter-choices, .inspector .encounter-history, .inspector .mosque-ability-card, .inspector .dice-adjustments, .inspector .mosque-offers, .inspector .yellow-recall, .inspector .turn-log, .inspector .turn-completion-actions { grid-column: 1 / -1; margin-top: .2rem; }.inspector .turn-action { min-height: 2.75rem; }.inspector .skip-link { min-height: 2.75rem; }.recall-list { grid-template-columns: 1fr 1fr; }.encounter-ledger, .supply-ledger { display: none; }.inspector :global(.large-card) { grid-column: 1; grid-row: 1 / 5; width: 5.1rem; min-height: 7rem; padding: .35rem; display: flex; }.inspector :global(.large-card strong), .inspector :global(.large-card p) { display: none; }.inspector :global(.large-card > span) { margin-top: auto; font-size: .45rem; }.mobile-card-text { display: block; }.encounter-choices { grid-template-columns: 1fr 1fr; }.encounter-choices section { padding: .4rem; }.encounter-choices section > div { grid-template-columns: 1fr; }.mosque-offers article > small { min-height: auto; }.dice-adjustments { grid-template-columns: 1fr 1fr; }
     .inspector:has(.turn-log) { gap: .1rem .4rem; padding: .35rem .5rem; }.inspector:has(.turn-log) .turn-log { gap: .18rem; margin: .2rem 0; }.inspector:has(.turn-log) .turn-log li { padding: .25rem .35rem; }.inspector:has(.turn-log) .turn-completion-actions { gap: .3rem; }.inspector:has(.turn-log) .turn-action, .inspector:has(.turn-log) .undo-turn { min-height: 2.2rem; margin: 0; padding: .3rem; font-size: .62rem; }.inspector:has(.turn-log) .dice-result { margin-top: .1rem; }.inspector:has(.turn-log) .dice-result span { width: 1.9rem; height: 1.9rem; }
-    .inspector:has(.public-card-detail) { grid-template-columns: 4.6rem minmax(0, 1fr); grid-template-rows: auto auto 1fr auto; align-content: start; }
-    .inspector:has(.public-card-detail) > .section-kicker { grid-column: 2; grid-row: 1; }
-    .inspector:has(.public-card-detail) > h2 { grid-column: 2; grid-row: 2; min-width: 0; }
-    .inspector:has(.public-card-detail) > .mobile-card-text { grid-column: 2; grid-row: 3; }
-    .inspector:has(.public-card-detail) > .public-card-detail { grid-column: 1; grid-row: 1 / 4; width: 4.6rem; min-height: 6.4rem; }
-    .inspector:has(.public-card-detail) > .pile-source-note { grid-column: 1 / -1; grid-row: 4; margin-top: .15rem; }
+    .inspector:has(:global(.public-card-detail)) { grid-template-columns: 4.6rem minmax(0, 1fr); grid-template-rows: auto auto 1fr auto; align-content: start; }
+    .inspector:has(:global(.public-card-detail)) > .section-kicker { grid-column: 2; grid-row: 1; }
+    .inspector:has(:global(.public-card-detail)) > h2 { grid-column: 2; grid-row: 2; min-width: 0; }
+    .inspector:has(:global(.public-card-detail)) > .mobile-card-text { grid-column: 2; grid-row: 3; }
+    .inspector:has(:global(.public-card-detail)) > :global(.public-card-detail) { grid-column: 1; grid-row: 1 / 4; width: 4.6rem; min-height: 6.4rem; }
+    .inspector:has(:global(.public-card-detail)) > .pile-source-note { grid-column: 1 / -1; grid-row: 4; margin-top: .15rem; }
     .inspector.route-planner { position: relative; display: block; height: 8rem; max-height: 8rem; padding: 0; }.route-planner .section-kicker { position: absolute; top: .55rem; left: 1.4rem; margin: 0; }.route-planner h2 { position: absolute; top: 1.45rem; left: 1.4rem; margin: 0; }.route-planner > p:not(.section-kicker) { position: absolute; top: 3.15rem; right: .7rem; left: 1.4rem; margin: 0; line-height: .82rem; }.route-planner .supply-ledger { position: absolute; right: .7rem; bottom: .45rem; left: .7rem; display: flex; justify-content: space-between; margin: 0 !important; }
     .inspector.route-planner:has(.yellow-recall) { height: 9rem; max-height: 9rem; padding: .4rem; }.route-planner:has(.yellow-recall) > .section-kicker, .route-planner:has(.yellow-recall) > h2, .route-planner:has(.yellow-recall) > p, .route-planner:has(.yellow-recall) > .encounter-ledger, .route-planner:has(.yellow-recall) > .supply-ledger { display: none; }.route-planner .yellow-recall { height: 100%; grid-template-columns: 4.5rem minmax(0, 1fr); grid-template-rows: auto 1fr; margin: 0; padding: .35rem; }.route-planner .yellow-recall :global(.yellow-power-art) { width: 4.5rem; height: 4.5rem; }.route-planner .yellow-recall-actions { align-content: start; }.route-planner .yellow-recall .turn-action { min-height: 2.35rem; }
     .inspector.decision:has(.encounter-choices) > p:not(.section-kicker) { display: none; }
@@ -752,10 +703,9 @@
     .turn-banner { min-height: 2.8rem; padding: .25rem .6rem; }.turn-banner h1 { font-size: 1.25rem; }.turn-banner p { font-size: .5rem; }.turn-token { font-size: .62rem; }
     .play-area { grid-template-columns: minmax(0, 1.35fr) minmax(14rem, .65fr); gap: .3rem; }
     .board-viewport { padding: .25rem; }.board { --board-ratio: 1.42; --board-limit: 25rem; gap: .2rem; }.board-tools, .board-caption, .e2e-resources { display: none; }
-    .place { padding: .2rem; }.place > strong { font-size: .52rem; }.occupants { height: 1.35rem; }.occupants :global(.merchant) { width: 1.25rem; height: 1.25rem; }.occupants :global(.assistant), .occupants :global(.family-member) { width: 1.05rem; height: 1.05rem; }
-    .inspector { padding: .35rem; overflow: hidden; }.inspector h2 { margin: 0; font-size: 1.15rem; }.inspector > p:not(.section-kicker) { margin: .2rem 0; font-size: .58rem; }.inspector:not(.route-planner) > p:not(.section-kicker), .inspector:not(.route-planner):not(.decision) dl { display: none; }.inspector-glyph, .encounter-ledger, .supply-ledger { display: none; }.inspector .large-card { display: flex; }.inspector .turn-action { min-height: 2.75rem; margin-top: .15rem; }.inspector.decision .mail-track { margin: .15rem 0; }.inspector.decision .mail-column i { min-height: 1.25rem; }.inspector.decision .mail-column b.lower { top: 1.65rem; }.inspector.decision .skip-link { min-height: 2.2rem; margin-top: .1rem; }
+    .inspector { padding: .35rem; overflow: hidden; }.inspector h2 { margin: 0; font-size: 1.15rem; }.inspector > p:not(.section-kicker) { margin: .2rem 0; font-size: .58rem; }.inspector:not(.route-planner) > p:not(.section-kicker), .inspector:not(.route-planner):not(.decision) dl { display: none; }.inspector-glyph, .encounter-ledger, .supply-ledger { display: none; }.inspector :global(.large-card) { display: flex; }.inspector .turn-action { min-height: 2.75rem; margin-top: .15rem; }.inspector.decision .mail-track { margin: .15rem 0; }.inspector.decision .mail-column i { min-height: 1.25rem; }.inspector.decision .mail-column b.lower { top: 1.65rem; }.inspector.decision .skip-link { min-height: 2.2rem; margin-top: .1rem; }
     .player-rail { grid-template-columns: repeat(2, minmax(0, 15rem)); justify-content: center; gap: .25rem; }.player-rail.many { grid-template-columns: repeat(var(--players, 2), minmax(0, 1fr)); }.player-rail article { padding: 0; }.player-rail :global(.hand), .player-rail :global(.masked-hand) { display: none; }
   }
   @media (pointer: coarse) { .turn-action, .skip-link, .board-tools button, .hand button { min-height: 2.75rem; } }
-  @media (prefers-reduced-motion: reduce) { .board { transition: none; }.place.departed, .place.arrived { animation: none; } }
+  @media (prefers-reduced-motion: reduce) { .board { transition: none; } }
 </style>

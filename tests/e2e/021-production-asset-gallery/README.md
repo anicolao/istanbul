@@ -1,6 +1,6 @@
-# Reviewing every Istanbul production asset
+# Reviewing every Istanbul production component
 
-The reviewer opens the dedicated gallery without creating a game, inspects the first board square at full size, and then walks every page of board squares, player mats, people and markers, Bonus cards, composed Market demand tiles, and physical components. Stable review IDs, exact category totals, loaded production images, responsive pagination, and the no-scroll/no-clipping contract are checked after every input so any visual feedback can name the precise asset that needs improvement.
+The reviewer opens the dedicated gallery without creating a game and walks every page of live locations, player trays, playing pieces, Bonus cards, Market demands, and physical components. Locations are the same rectangular, titled, rounded LocationTile instances used on the board; their status apparatus and occupants come from a deterministic game projection. Trays use PlayerTray, rules cards use BonusCard, and demands use MarketDemand. Stable review IDs, renderer names, representative props, loaded production images, responsive pagination, and the no-scroll/no-clipping contract are checked after every input.
 
 ## 1. The reviewer opens the complete production gallery
 
@@ -10,9 +10,9 @@ The reviewer opens the dedicated gallery without creating a game, inspects the f
 
 **Verifications:**
 
-- [x] The gallery declares all 73 source assets and 10 composed demand tiles
-- [x] All six category totals are immediately visible
-- [x] The first six numbered board squares load at review size
+- [x] The gallery declares 83 rendered review states backed by the complete 73-asset manifest
+- [x] All six logical-component category totals are immediately visible
+- [x] The first six numbered locations are real LocationTile components with public state
 
 ## 2. The reviewer enlarges the Wainwright board square
 
@@ -22,8 +22,8 @@ The reviewer opens the dedicated gallery without creating a game, inspects the f
 
 **Verifications:**
 
-- [x] The modal names the stable review reference and source file
-- [x] The unmasked full board-square image is loaded
+- [x] The modal names the stable review reference, renderer, and representative props
+- [x] The full component is rectangular, rounded, titled, and backed by loaded production art
 
 ## 3. The reviewer closes the enlarged board square
 
@@ -33,7 +33,7 @@ The reviewer opens the dedicated gallery without creating a game, inspects the f
 
 **Verifications:**
 
-- [x] The unclipped first Place page returns
+- [x] The unclipped first LocationTile page returns
 
 ## 4. The reviewer advances to board squares seven through twelve
 
@@ -43,7 +43,7 @@ The reviewer opens the dedicated gallery without creating a game, inspects the f
 
 **Verifications:**
 
-- [x] The next exact inventory slice replaces the prior page without scrolling
+- [x] The next exact rendered-state slice replaces the prior page without scrolling
 
 ## 5. The reviewer advances to the final four board squares
 
@@ -53,27 +53,27 @@ The reviewer opens the dedicated gallery without creating a game, inspects the f
 
 **Verifications:**
 
-- [x] The next exact inventory slice replaces the prior page without scrolling
+- [x] The next exact rendered-state slice replaces the prior page without scrolling
 
-## 6. The reviewer opens all five player mats
+## 6. The reviewer opens five live PlayerTray states
 
-**The art reviewer** — The reviewer opens all five player mats
+**The art reviewer** — The reviewer opens five live PlayerTray states
 
-![The reviewer opens all five player mats](./screenshots/005-reviewer-opens-player-mats-desktop.png)
-
-**Verifications:**
-
-- [x] Player mats resets to its first complete review page
-
-## 7. The reviewer opens the first player-piece page
-
-**The art reviewer** — The reviewer opens the first player-piece page
-
-![The reviewer opens the first player-piece page](./screenshots/006-reviewer-opens-player-pieces-desktop.png)
+![The reviewer opens five live PlayerTray states](./screenshots/005-reviewer-opens-player-mats-desktop.png)
 
 **Verifications:**
 
-- [x] People & markers resets to its first complete review page
+- [x] Player trays resets to its first complete rendered-component page
+
+## 7. The reviewer opens the first GameArt playing-piece page
+
+**The art reviewer** — The reviewer opens the first GameArt playing-piece page
+
+![The reviewer opens the first GameArt playing-piece page](./screenshots/006-reviewer-opens-player-pieces-desktop.png)
+
+**Verifications:**
+
+- [x] Playing pieces resets to its first complete rendered-component page
 
 ## 8. The reviewer advances through assistants and family members
 
@@ -83,7 +83,7 @@ The reviewer opens the dedicated gallery without creating a game, inspects the f
 
 **Verifications:**
 
-- [x] The next exact inventory slice replaces the prior page without scrolling
+- [x] The next exact rendered-state slice replaces the prior page without scrolling
 
 ## 9. The reviewer advances through family and neutral figures
 
@@ -93,7 +93,7 @@ The reviewer opens the dedicated gallery without creating a game, inspects the f
 
 **Verifications:**
 
-- [x] The next exact inventory slice replaces the prior page without scrolling
+- [x] The next exact rendered-state slice replaces the prior page without scrolling
 
 ## 10. The reviewer reaches the first-player and dice markers
 
@@ -103,7 +103,7 @@ The reviewer opens the dedicated gallery without creating a game, inspects the f
 
 **Verifications:**
 
-- [x] The next exact inventory slice replaces the prior page without scrolling
+- [x] The next exact rendered-state slice replaces the prior page without scrolling
 
 ## 11. The reviewer opens the first six Bonus-card faces
 
@@ -113,7 +113,7 @@ The reviewer opens the dedicated gallery without creating a game, inspects the f
 
 **Verifications:**
 
-- [x] Bonus cards resets to its first complete review page
+- [x] Bonus cards resets to its first complete rendered-component page
 
 ## 12. The reviewer reaches every remaining face, back, and deck image
 
@@ -123,17 +123,17 @@ The reviewer opens the dedicated gallery without creating a game, inspects the f
 
 **Verifications:**
 
-- [x] The next exact inventory slice replaces the prior page without scrolling
+- [x] The next exact rendered-state slice replaces the prior page without scrolling
 
-## 13. The reviewer opens all Large Market demands and the first Small Market demand
+## 13. The reviewer opens all Large MarketDemand states and the first Small Market state
 
-**The art reviewer** — The reviewer opens all Large Market demands and the first Small Market demand
+**The art reviewer** — The reviewer opens all Large MarketDemand states and the first Small Market state
 
-![The reviewer opens all Large Market demands and the first Small Market demand](./screenshots/012-reviewer-opens-large-demand-tiles-desktop.png)
+![The reviewer opens all Large MarketDemand states and the first Small Market state](./screenshots/012-reviewer-opens-large-demand-tiles-desktop.png)
 
 **Verifications:**
 
-- [x] Demand tiles resets to its first complete review page
+- [x] Market demands resets to its first complete rendered-component page
 
 ## 14. The reviewer reaches the remaining Small Market demands
 
@@ -143,17 +143,17 @@ The reviewer opens the dedicated gallery without creating a game, inspects the f
 
 **Verifications:**
 
-- [x] The next exact inventory slice replaces the prior page without scrolling
+- [x] The next exact rendered-state slice replaces the prior page without scrolling
 
-## 15. The reviewer opens the goods, money, and ruby components
+## 15. The reviewer opens the goods, money, and ruby GameArt components
 
-**The art reviewer** — The reviewer opens the goods, money, and ruby components
+**The art reviewer** — The reviewer opens the goods, money, and ruby GameArt components
 
-![The reviewer opens the goods, money, and ruby components](./screenshots/014-reviewer-opens-goods-and-rubies-desktop.png)
+![The reviewer opens the goods, money, and ruby GameArt components](./screenshots/014-reviewer-opens-goods-and-rubies-desktop.png)
 
 **Verifications:**
 
-- [x] Components resets to its first complete review page
+- [x] Physical components resets to its first complete rendered-component page
 
 ## 16. The reviewer advances through upgrades, markers, and the first Mosque powers
 
@@ -163,7 +163,7 @@ The reviewer opens the dedicated gallery without creating a game, inspects the f
 
 **Verifications:**
 
-- [x] The next exact inventory slice replaces the prior page without scrolling
+- [x] The next exact rendered-state slice replaces the prior page without scrolling
 
 ## 17. The reviewer advances through the remaining powers and public tracks
 
@@ -173,7 +173,7 @@ The reviewer opens the dedicated gallery without creating a game, inspects the f
 
 **Verifications:**
 
-- [x] The next exact inventory slice replaces the prior page without scrolling
+- [x] The next exact rendered-state slice replaces the prior page without scrolling
 
 ## 18. The reviewer reaches the final ruby and goods supplies
 
@@ -183,7 +183,7 @@ The reviewer opens the dedicated gallery without creating a game, inspects the f
 
 **Verifications:**
 
-- [x] The next exact inventory slice replaces the prior page without scrolling
+- [x] The next exact rendered-state slice replaces the prior page without scrolling
 
 ## 19. The reviewer enlarges the final goods-supply component
 
@@ -193,5 +193,5 @@ The reviewer opens the dedicated gallery without creating a game, inspects the f
 
 **Verifications:**
 
-- [x] The last source asset has a stable reference and exact path
-- [x] The final production component loads at full review size
+- [x] The last review state names its stable reference and exact GameArt props
+- [x] The final logical component loads at full review size

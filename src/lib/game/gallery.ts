@@ -137,12 +137,12 @@ const demandItems: GalleryItem[] = demandTiles.map((tile) => ({
 }));
 
 export const galleryCategories: Array<{ id: GalleryCategoryId; label: string; description: string; items: GalleryItem[] }> = [
-  { id: 'places', label: 'Board squares', description: 'All sixteen numbered bazaar scenes.', items: placeItems },
-  { id: 'mats', label: 'Player mats', description: 'The five colour-keyed player trays.', items: matItems },
-  { id: 'pieces', label: 'People & markers', description: 'Merchants, assistants, family members, and neutral figures.', items: pieceItems },
-  { id: 'bonus', label: 'Bonus cards', description: 'Ten effect faces, the private back, and the draw deck.', items: bonusItems },
-  { id: 'demands', label: 'Demand tiles', description: 'Every Large and Small Market goods combination.', items: demandItems },
-  { id: 'components', label: 'Components', description: 'Goods, money, rubies, powers, tracks, and supplies.', items: componentItems }
+  { id: 'places', label: 'Locations', description: 'All sixteen live LocationTile states, including titles, pieces, and public apparatus.', items: placeItems },
+  { id: 'mats', label: 'Player trays', description: 'Five representative PlayerTray states with live goods, powers, money, and rubies.', items: matItems },
+  { id: 'pieces', label: 'Playing pieces', description: 'The GameArt components used for merchants, assistants, family members, and neutral figures.', items: pieceItems },
+  { id: 'bonus', label: 'Bonus cards', description: 'Rendered BonusCard rules faces plus the private back and draw deck.', items: bonusItems },
+  { id: 'demands', label: 'Market demands', description: 'Every live MarketDemand goods combination.', items: demandItems },
+  { id: 'components', label: 'Physical components', description: 'The GameArt goods, money, rubies, powers, tracks, and supplies composed into game UI.', items: componentItems }
 ];
 
 export const rawGalleryItems = galleryCategories.filter(({ id }) => id !== 'demands').flatMap(({ items }) => items);

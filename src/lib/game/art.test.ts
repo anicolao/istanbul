@@ -28,7 +28,7 @@ describe('production art manifest', () => {
     expect(existsSync(resolve(process.cwd(), 'static', asset))).toBe(true);
   });
 
-  it('exposes every source asset and every composed demand tile in the review gallery', () => {
+  it('backs the rendered review catalogue with every source asset and demand state', () => {
     expect(rawGalleryItems).toHaveLength(73);
     expect(new Set(rawGalleryItems.map(({ assetPath }) => assetPath))).toEqual(new Set(assets));
     expect(Object.fromEntries(galleryCategories.map(({ id, items }) => [id, items.length]))).toEqual({
