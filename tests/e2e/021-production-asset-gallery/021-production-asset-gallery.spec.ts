@@ -49,8 +49,20 @@ test('the production gallery renders the same logical components used during pla
   await chooseCategory('Bonus cards', 'reviewer-opens-first-bonus-faces', 'The reviewer opens the first six Bonus-card faces', ['bonus-gain-good', 'bonus-gain-lira', 'bonus-repeat-sultan', 'bonus-repeat-post', 'bonus-repeat-gemstone', 'bonus-return-family']);
   await nextPage('reviewer-opens-remaining-bonus-art', 'The reviewer reaches every remaining face, back, and deck image', ['bonus-stay', 'bonus-long-move', 'bonus-wild-small-market', 'bonus-return-assistant', 'bonus-card-back', 'bonus-deck-face']);
 
-  await chooseCategory('Market demands', 'reviewer-opens-large-demand-tiles', 'The reviewer opens all six Large MarketDemand states', ['demand-large-1', 'demand-large-2', 'demand-large-3', 'demand-large-4', 'demand-large-5', 'demand-large-6']);
-  await nextPage('reviewer-opens-small-demand-tiles', 'The reviewer opens all six Small MarketDemand states', ['demand-small-1', 'demand-small-2', 'demand-small-3', 'demand-small-4', 'demand-small-5', 'demand-small-6']);
+  await chooseCategory('Market demands', 'reviewer-opens-large-demand-tiles', 'The reviewer opens all six Large MarketDemand states', ['demand-large-1', 'demand-large-2', 'demand-large-3', 'demand-large-4', 'demand-large-5', 'demand-large-6'], async () => {
+    const demands = page.locator('[data-component="MarketDemand"]');
+    await expect(demands).toHaveCount(6);
+    await expect(demands.first()).toHaveAttribute('data-good-layout', 'circular-overlay');
+    await expect(demands.first().locator('[data-demand-slot]')).toHaveCount(5);
+    await expect(demands.first().locator('[data-demand-slot="1"]')).toHaveCSS('border-radius', /50%/);
+    await expectDemandGeometry(demands);
+  });
+  await nextPage('reviewer-opens-small-demand-tiles', 'The reviewer opens all six Small MarketDemand states', ['demand-small-1', 'demand-small-2', 'demand-small-3', 'demand-small-4', 'demand-small-5', 'demand-small-6'], async () => {
+    const demands = page.locator('[data-component="MarketDemand"]');
+    await expect(demands).toHaveCount(6);
+    await expect(demands.first().locator('[data-demand-slot]')).toHaveCount(5);
+    await expectDemandGeometry(demands);
+  });
 
   await chooseCategory('Physical components', 'reviewer-opens-goods-and-rubies', 'The reviewer opens the goods, money, and ruby GameArt components', ['component-fabric', 'component-spice', 'component-fruit', 'component-jewelry', 'component-lira', 'component-ruby']);
   await nextPage('reviewer-opens-upgrades-and-first-powers', 'The reviewer advances through upgrades, markers, and the first Mosque powers', ['component-wheelbarrow', 'component-die', 'component-mail', 'component-bonus-deck', 'component-mosque-fabric', 'component-mosque-spice']);
@@ -68,17 +80,19 @@ test('the production gallery renders the same logical components used during pla
 
   reviewer.generateDocs();
 
-  async function chooseCategory(name: string, id: string, description: string, expectedIds: string[]) {
+  async function chooseCategory(name: string, id: string, description: string, expectedIds: string[], check?: () => Promise<void>) {
     await page.getByRole('navigation', { name: 'Asset categories' }).getByRole('button', { name: new RegExp(name) }).click();
     await reviewer.step(id, { description, verifications: [
-      { spec: `${name} resets to its first complete rendered-component page`, check: async () => { await expect(page.getByRole('button', { name: 'Previous asset page' })).toBeDisabled(); await expectComponentPage(page.locator('.asset-grid'), expectedIds); } }
+      { spec: `${name} resets to its first complete rendered-component page`, check: async () => { await expect(page.getByRole('button', { name: 'Previous asset page' })).toBeDisabled(); await expectComponentPage(page.locator('.asset-grid'), expectedIds); } },
+      ...(check ? [{ spec: 'Each demand uses five circular resource portraits over the printed medallion positions', check }] : [])
     ] });
   }
 
-  async function nextPage(id: string, description: string, expectedIds: string[]) {
+  async function nextPage(id: string, description: string, expectedIds: string[], check?: () => Promise<void>) {
     await page.getByRole('button', { name: 'Next asset page' }).click();
     await reviewer.step(id, { description, verifications: [
-      { spec: 'The next exact rendered-state slice replaces the prior page without scrolling', check: async () => expectComponentPage(page.locator('.asset-grid'), expectedIds) }
+      { spec: 'The next exact rendered-state slice replaces the prior page without scrolling', check: async () => expectComponentPage(page.locator('.asset-grid'), expectedIds) },
+      ...(check ? [{ spec: 'The second demand set preserves all five circular resource overlays', check }] : [])
     ] });
   }
 });
@@ -112,4 +126,34 @@ async function loadedBackgrounds(locator: Locator) {
     if (image.complete) return image.naturalWidth > 0;
     return loaded;
   })));
+}
+
+async function expectDemandGeometry(demands: Locator) {
+  const expectedCenters = [[.5, .2875], [.285, .4125], [.72, .4125], [.3925, .6425], [.6225, .6425]];
+  for (const demand of await demands.all()) {
+    const geometry = await demand.evaluate((board) => {
+      const boardBox = board.getBoundingClientRect();
+      const style = getComputedStyle(board);
+      const borderLeft = Number.parseFloat(style.borderLeftWidth);
+      const borderTop = Number.parseFloat(style.borderTopWidth);
+      const contentWidth = boardBox.width - borderLeft - Number.parseFloat(style.borderRightWidth);
+      const contentHeight = boardBox.height - borderTop - Number.parseFloat(style.borderBottomWidth);
+      return Array.from(board.querySelectorAll<HTMLElement>('[data-demand-slot]')).map((slot) => {
+        const slotBox = slot.getBoundingClientRect();
+        return {
+          diameter: slotBox.width / contentWidth,
+          center: [
+            (slotBox.left + slotBox.width / 2 - boardBox.left - borderLeft) / contentWidth,
+            (slotBox.top + slotBox.height / 2 - boardBox.top - borderTop) / contentHeight
+          ]
+        };
+      });
+    });
+    expect(geometry).toHaveLength(5);
+    for (const [index, slot] of geometry.entries()) {
+      expect(slot.diameter).toBeCloseTo(.19, 2);
+      expect(slot.center[0]).toBeCloseTo(expectedCenters[index][0], 2);
+      expect(slot.center[1]).toBeCloseTo(expectedCenters[index][1], 2);
+    }
+  }
 }

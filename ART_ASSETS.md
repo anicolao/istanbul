@@ -32,8 +32,9 @@ raw-file browser. It renders 85 representative states through the same logical
 Svelte boundaries used by live play: `LocationTile` composes location art,
 titles, rounded framing, occupants, encounters, and `LocationState` apparatus;
 `PlayerTray` composes mats and player resources; `BonusCard` includes its live
-rules treatment; `MarketDemand` composes its background and goods; physical
-pieces use `GameArt`. The deterministic gallery projection makes changing
+rules treatment; `MarketDemand` places five circular, cropped goods portraits
+over the generated market medallion; physical pieces use `GameArt`. The
+deterministic gallery projection makes changing
 Post Office, Caravansary, Market, Mosque, Palace, Police, Fountain, player-tray,
 and encounter state visible without requiring a room.
 
