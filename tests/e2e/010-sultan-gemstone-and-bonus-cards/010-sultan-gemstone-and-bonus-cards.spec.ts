@@ -163,7 +163,7 @@ test('ruby routes escalate and Bonus cards resolve at reviewed timing windows', 
     await page.getByRole('button', { name: 'Repeat for 6 goods' }).click();
     await ada.step('host-repeats-palace-at-new-cost', { description: 'Ada repeats Sultan’s Palace at six goods', verifications: [
       { spec: 'A fourth ruby and the seven-good next cost are public', check: async () => expectState(page, { eventCount: 22, game: { rubyTracks: { sultanIndex: 7, sultanRubies: 5 }, players: [{ goods: { fabric: 2, spice: 1, fruit: 0, jewelry: 1 }, rubies: 4 }, {}] } }) },
-      { spec: 'The completion copy records both Palace deliveries', check: async () => expect(page.getByRole('complementary')).toContainText("Repeated Sultan's Palace") }
+      { spec: 'The completion copy records both Palace deliveries', check: async () => expect(page.locator('.inspector')).toContainText("Repeated Sultan's Palace") }
     ] });
     await page.reload();
     await ada.step('host-reloads-completed-repeat', { description: 'Ada reloads the completed repeat decision', verifications: [

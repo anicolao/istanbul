@@ -1,5 +1,6 @@
 <script lang="ts">
   import { tick } from 'svelte';
+  import { MediaQuery } from 'svelte/reactivity';
   import { base } from '$app/paths';
   import { bonusCards, demandTiles, mosqueTiles, places, type Good } from '$lib/game/manifests';
   import { legalDestinations, requiredAssistantAction, type AssistantAction } from '$lib/game/movement';
@@ -73,6 +74,8 @@
 
   const placeById = new Map(places.map((place) => [place.id, place]));
   const bonusById = new Map(bonusCards.map((card) => [card.id, card]));
+  const desktopViewport = new MediaQuery('(min-width: 961px) and (min-height: 600px)');
+  const tableLayout = $derived(tabletopControls || desktopViewport.current);
   const currentPlayer = $derived(game.players[game.turnSeat]);
   const localPlayer = $derived(tabletopControls ? currentPlayer : game.players.find((player) => player.uid === userUid) ?? currentPlayer);
   const selectedPlaceManifest = $derived(selectedPlace ? placeById.get(selectedPlace) : null);
@@ -253,7 +256,7 @@
   }
 </script>
 
-<section class:many={game.players.length > 3} class:display-only={displayOnly} class:tabletop={tabletopControls} class="game-table" aria-labelledby="game-title" style={`--courtyard: url('${artUrl}')`} data-e2e-fit data-e2e-no-scroll>
+<section class:many={game.players.length > 3} class:display-only={displayOnly} class:table-layout={tableLayout} class:tabletop={tabletopControls} class="game-table" aria-labelledby="game-title" style={`--courtyard: url('${artUrl}')`} data-e2e-fit data-e2e-no-scroll>
   <p class="visually-hidden" aria-live="polite" aria-atomic="true" data-testid="turn-announcement">Turn {game.turnNumber}. {currentPlayer.name}. {game.phase.replace('-', ' ')}. {currentPlayer.uid === userUid ? 'Your action.' : 'Waiting for this merchant.'}</p>
   <header class="turn-banner" data-e2e-fit data-e2e-no-scroll>
     <div><p>{game.phase === 'game-over' ? `Game ${game.epoch} · final ranking` : game.phase === 'final-bonus' ? 'Final Bonus cards' : `Turn ${game.turnNumber} · ${game.phase.replace('-', ' ')}`}</p><h1 id="game-title">{game.phase === 'game-over' ? `${game.end.winnerUids.length > 1 ? 'The merchants share the victory.' : `${game.end.rankings[0]?.name} wins the ruby race.`}` : game.phase === 'final-bonus' ? `${currentPlayer.name} makes final trades.` : game.phase === 'movement' ? `${currentPlayer.name} surveys the bazaar.` : game.phase === 'merchant-payment' ? `${currentPlayer.name} meets another merchant.` : game.phase === 'family-action' ? `${currentPlayer.name} sends family to ${actionPlace.name}.` : game.phase === 'mosque-ability' ? `${currentPlayer.name} considers a Mosque ability.` : game.phase === 'encounters' ? `${currentPlayer.name} resolves bazaar encounters.` : game.phase === 'turn-end' ? `${currentPlayer.name} completed ${actionPlace.name}.` : `${currentPlayer.name} arrives at ${actionPlace.name}.`}</h1>{#if game.lastMovement?.paymentBlocked}<small class="turn-notice">{game.players.find((player) => player.uid === game.lastMovement?.playerUid)?.name} could not pay {game.lastMovement.paymentTotal} Lira; that turn ended immediately.</small>{:else if tabletopControls && game.bonusLog.length}<small class="turn-notice">{game.bonusLog.at(-1)?.summary}</small>{/if}</div>
@@ -552,14 +555,14 @@
           seat={index + 1}
           starting={index === game.startingSeat}
           local={!tabletopControls && player.uid === userUid}
-          compact={tabletopControls}
+          compact={tableLayout}
           {selectedBonus}
           onInspectBonus={inspectBonus}
         />
       </article>
     {/each}
   </section>
-  {#if tabletopControls}<footer class="tabletop-strip" data-e2e-fit data-e2e-no-scroll><strong>Istanbul tabletop</strong><span>{room.roomCode} · {room.layout.replace('-', ' ')}</span></footer>{/if}
+  {#if tableLayout}<footer class="tabletop-strip" data-e2e-fit data-e2e-no-scroll><strong>{tabletopControls ? 'Istanbul tabletop' : 'Istanbul'}</strong><span>{room.roomCode} · {room.layout.replace('-', ' ')}</span></footer>{/if}
 </section>
 
 <style>
@@ -568,18 +571,20 @@
   .game-table.display-only .board { --board-limit: 92rem; }
   .game-table.display-only .play-area { grid-template-columns: minmax(0, 3fr) minmax(19rem, 1fr); }
   .game-table.display-only .player-rail article { padding: clamp(.55rem, 1vw, 1.2rem); }
-  .game-table.tabletop { display: grid; grid-template-columns: clamp(13rem, 17vw, 20rem) minmax(0, 1fr) clamp(18rem, 22vw, 28rem); grid-template-rows: auto minmax(0, 1fr) auto; gap: .45rem; }
-  .tabletop .turn-banner { grid-column: 1; grid-row: 1; min-height: 0; gap: .35rem; padding: .4rem .55rem; border-radius: .65rem; }
-  .tabletop .turn-banner > div:first-child { min-width: 0; }.tabletop .turn-banner h1 { overflow: hidden; font-size: clamp(1rem, 1.3vw, 1.35rem); line-height: 1; text-overflow: ellipsis; white-space: nowrap; }.tabletop .turn-banner p { font-size: .48rem; }.tabletop .turn-notice { overflow: hidden; font-size: .48rem; text-overflow: ellipsis; white-space: nowrap; }
-  .tabletop .turn-token { flex: 0 0 auto; grid-template-columns: 1.2rem; gap: .08rem; justify-items: center; font-size: .48rem; }.tabletop .turn-token .player-dot { grid-row: auto; width: 1.15rem; height: 1.15rem; border-width: 2px; }.tabletop .turn-token small { display: none; }
-  .tabletop .play-area { display: contents; }
-  .tabletop .play-area > .mobile-view-switch { display: none; }
-  .tabletop .board-shell { grid-column: 2; grid-row: 1 / 4; }
-  .tabletop .board { --board-limit: 100%; }
-  .tabletop .inspector { grid-column: 3; grid-row: 1 / 4; }
-  .tabletop .player-rail { grid-column: 1; grid-row: 2; min-height: 0; grid-template-columns: 1fr; grid-auto-flow: row; grid-auto-rows: minmax(0, 1fr); align-content: center; gap: .3rem; overflow: hidden; }
-  .tabletop .player-rail.many { grid-template-columns: repeat(2, minmax(0, 1fr)); grid-auto-flow: row; grid-auto-rows: auto; overflow: hidden; }
-  .tabletop .player-rail article { min-width: 0; min-height: 0; display: grid; place-items: center; overflow: hidden; padding: 0; border: 0; aspect-ratio: 1; background: transparent; }
+  .game-table.table-layout { display: grid; grid-template-columns: clamp(13rem, 17vw, 20rem) minmax(0, 1fr) clamp(18rem, 22vw, 28rem); grid-template-rows: auto minmax(0, 1fr) auto; gap: .45rem; }
+  .table-layout .turn-banner { grid-column: 1; grid-row: 1; min-height: 0; gap: .35rem; padding: .4rem .55rem; border-radius: .65rem; }
+  .table-layout .turn-banner > div:first-child { min-width: 0; }.table-layout .turn-banner h1 { overflow: hidden; font-size: clamp(1rem, 1.3vw, 1.35rem); line-height: 1; text-overflow: ellipsis; white-space: nowrap; }.table-layout .turn-banner p { font-size: .48rem; }.table-layout .turn-notice { overflow: hidden; font-size: .48rem; text-overflow: ellipsis; white-space: nowrap; }
+  .table-layout .turn-token { flex: 0 0 auto; grid-template-columns: 1.2rem; gap: .08rem; justify-items: center; font-size: .48rem; }.table-layout .turn-token .player-dot { grid-row: auto; width: 1.15rem; height: 1.15rem; border-width: 2px; }.table-layout .turn-token small { display: none; }
+  .table-layout .play-area { display: contents; }
+  .table-layout .play-area > .mobile-view-switch { display: none; }
+  .table-layout .board-shell { grid-column: 2; grid-row: 1 / 4; }
+  .table-layout .board { --board-limit: 100%; }
+  .table-layout .inspector { grid-column: 3; grid-row: 1 / 4; }
+  .table-layout .play-area:has(.inspector.finish) .board-shell { display: none; }
+  .table-layout .inspector.finish { grid-column: 2 / 4; }
+  .table-layout .player-rail { grid-column: 1; grid-row: 2; min-height: 0; grid-template-columns: 1fr; grid-auto-flow: row; grid-auto-rows: minmax(0, 1fr); align-content: center; gap: .3rem; overflow: hidden; }
+  .table-layout .player-rail.many { grid-template-columns: repeat(2, minmax(0, 1fr)); grid-auto-flow: row; grid-auto-rows: auto; overflow: hidden; }
+  .table-layout .player-rail article { min-width: 0; min-height: 0; display: grid; place-items: center; overflow: hidden; padding: 0; border: 0; aspect-ratio: 1; background: transparent; }
   .tabletop-strip { grid-column: 1; grid-row: 3; min-width: 0; display: flex; justify-content: space-between; gap: .4rem; overflow: hidden; padding: .32rem .5rem; border: 1px solid rgb(239 202 125 / 35%); border-radius: .55rem; color: #d3dfd8; background: rgb(5 29 31 / 78%); font-size: .48rem; letter-spacing: .04em; text-transform: uppercase; }
   .tabletop-strip strong, .tabletop-strip span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
   .turn-banner { min-height: 4.4rem; display: flex; align-items: center; justify-content: space-between; gap: 1rem; padding: .55rem 1.1rem; border: 1px solid rgb(239 202 125 / 35%); border-radius: 1rem; background: linear-gradient(100deg, rgb(13 48 51 / 96%), rgb(28 76 75 / 92%)); box-shadow: 0 .8rem 2rem rgb(35 21 9 / 22%); }
@@ -687,12 +692,12 @@
   @media (max-width: 720px) {
     .inspector .next-route-cost { grid-column: 1 / -1; margin-top: .2rem; }
     .game-table { gap: .4rem; }
-    .game-table.tabletop { display: grid; grid-template-columns: 1fr 1fr; grid-template-rows: auto minmax(0, 1fr) auto auto; gap: .3rem; }
-    .tabletop .turn-banner { grid-column: 1 / 3; grid-row: 1; }
-    .tabletop .board-shell { grid-column: 1 / 3; grid-row: 2; }
-    .tabletop .inspector { grid-column: 1 / 3; grid-row: 3; }
-    .tabletop .player-rail, .tabletop .player-rail.many { grid-column: 1 / 3; grid-row: 4; grid-template-columns: repeat(var(--players, 2), minmax(0, 1fr)); grid-auto-flow: row; grid-auto-rows: auto; overflow: hidden; }
-    .tabletop .player-rail article { aspect-ratio: 1; }
+    .game-table.table-layout { display: grid; grid-template-columns: 1fr 1fr; grid-template-rows: auto minmax(0, 1fr) auto auto; gap: .3rem; }
+    .table-layout .turn-banner { grid-column: 1 / 3; grid-row: 1; }
+    .table-layout .board-shell { grid-column: 1 / 3; grid-row: 2; }
+    .table-layout .inspector { grid-column: 1 / 3; grid-row: 3; }
+    .table-layout .player-rail, .table-layout .player-rail.many { grid-column: 1 / 3; grid-row: 4; grid-template-columns: repeat(var(--players, 2), minmax(0, 1fr)); grid-auto-flow: row; grid-auto-rows: auto; overflow: hidden; }
+    .table-layout .player-rail article { aspect-ratio: 1; }
     .tabletop-strip { display: none; }
     .game-table.display-only .play-area { grid-template-columns: 1fr; }
     .turn-banner { min-height: 3.4rem; padding: .35rem .6rem; }.turn-banner h1 { font-size: 1.45rem; }.turn-token { font-size: .7rem; }.turn-token small { font-size: .55rem; }
