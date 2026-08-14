@@ -282,7 +282,13 @@ test('mail, private card trading, and both demand markets remain exact through r
       { spec: 'The exact distinct Large Market sale summary is visible', check: async () => expect(page.getByText('Sold 1 good for 3 Lira.', { exact: true })).toBeVisible() },
       { spec: 'Large Demand rotates independently', check: async () => expectState(page, { eventCount: 25, game: { phase: 'turn-end', largeDemand: [...largeState.game.largeDemand.slice(1), largeId], smallDemand: [...smallState.game.smallDemand.slice(1), smallId], players: [{ lira: 9 }, {}] } }) },
       { spec: 'Large Market tile exposes the newly rotated five-good demand', check: async () => expect(page.getByTestId('place-state-10')).toHaveAttribute('data-state-summary', `Current Large Market demand: ${nextLargeDemand.goods.join(', ')}`) },
-      { spec: 'Bora observes the same public market state', check: async () => { const host = await readState(page); const guest = await readState(boraPage); expect(guest.game.largeDemand).toEqual(host.game.largeDemand); expect(guest.game.players).toEqual(host.game.players); } }
+      { spec: 'Bora observes the same public market state', check: async () => {
+        const host = await readState(page);
+        await expect.poll(async () => {
+          const guest = await readState(boraPage);
+          return { largeDemand: guest.game.largeDemand, players: guest.game.players };
+        }).toEqual({ largeDemand: host.game.largeDemand, players: host.game.players });
+      } }
     ] });
 
     await page.reload();
@@ -296,7 +302,25 @@ test('mail, private card trading, and both demand markets remain exact through r
     await ada.step('host-ends-large-market-turn', { description: 'Ada passes the fully replayed economy turn', verifications: [
       { spec: 'Bora begins turn eight', check: async () => expect(page.getByRole('heading', { name: 'Bora surveys the bazaar.' })).toBeVisible() },
       { spec: 'Twenty-six canonical events close with no diagnostics', check: async () => expectState(page, { eventCount: 26, diagnosticCount: 0, game: { currentTurn: 'Bora', turnNumber: 8, phase: 'movement', postOfficeLower: [true, true, false, false], bonusDrawCount: 21 } }) },
-      { spec: 'Both browsers project identical public players, Demand, mail, and discard', check: async () => { const host = await readState(page); const guest = await readState(boraPage); expect(guest.game.players).toEqual(host.game.players); expect(guest.game.largeDemand).toEqual(host.game.largeDemand); expect(guest.game.smallDemand).toEqual(host.game.smallDemand); expect(guest.game.postOfficeLower).toEqual(host.game.postOfficeLower); expect(guest.game.bonusDiscard).toEqual(host.game.bonusDiscard); } }
+      { spec: 'Both browsers project identical public players, Demand, mail, and discard', check: async () => {
+        const host = await readState(page);
+        await expect.poll(async () => {
+          const guest = await readState(boraPage);
+          return {
+            players: guest.game.players,
+            largeDemand: guest.game.largeDemand,
+            smallDemand: guest.game.smallDemand,
+            postOfficeLower: guest.game.postOfficeLower,
+            bonusDiscard: guest.game.bonusDiscard
+          };
+        }).toEqual({
+          players: host.game.players,
+          largeDemand: host.game.largeDemand,
+          smallDemand: host.game.smallDemand,
+          postOfficeLower: host.game.postOfficeLower,
+          bonusDiscard: host.game.bonusDiscard
+        });
+      } }
     ] });
 
     ada.generateDocs();
