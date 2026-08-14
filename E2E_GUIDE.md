@@ -93,6 +93,10 @@ The initial suite follows the MVP's vertical slices:
 19. `019-undo-actions` proves append-only rollback of a private Bonus play,
     market trade, and movement; alternate replay; observer convergence; and a
     visible lock after newly revealed dice.
+20. `020-turn-log-and-direct-rollback` proves the completed-turn review, a
+    three-action Undo Turn event, direct rollback to an earlier action from the
+    immutable game log, grey unavailable history, and rollback of an action
+    above—without crossing—a retained dice barrier.
 
 Scenario numbers are stable once merged. Add the next number for a new coherent
 story; do not renumber existing scenarios to make room.
@@ -426,28 +430,32 @@ write a desired projection or resolution event.
 
 Undo scenarios use the same repository, subscription, and reducer path as every
 other action. They must never delete an event, write a snapshot, mutate a prior
-payload, or inject compensating resources. Clicking Undo appends one
-`action/undone` event naming the latest still-active gameplay event.
+payload, or inject compensating resources. Clicking Undo, Undo Turn, or a game
+log rollback target appends one `action/undone` event. Its target names the
+start of the active same-player suffix that replay will omit.
 
 Browser proof must establish all of the following:
 
 - the original action and undo both remain counted in immutable history;
 - replay restores the exact prior public state and the owner's exact private
   hand, while an observer independently converges;
-- repeated undo walks backward one active action at a time and permits a new
-  legal choice to be replayed;
-- only the target action's original author can append its undo, so tabletop
-  public actions remain on the tabletop and private Bonus actions remain on the
-  owning phone;
-- stale, duplicate, non-latest, concurrent, and cross-player undo events are
-  contained with deterministic diagnostics; and
+- the turn-end review lists each active action, Undo Turn removes the longest
+  reachable suffix in one event, and a new legal line can be replayed;
+- the full game log retains grey already-undone rows and offers one-step rollback
+  at every active reachable row, with the exact number of affected actions;
+- authorization covers the action's original author and, for one logical
+  player's public tabletop suffix, the controlling tabletop;
+- stale, duplicate, concurrent, unauthorized, already-undone, setup-crossing,
+  turn-crossing, and boundary-crossing undo events are contained with
+  deterministic diagnostics; and
 - drawing any card or rolling any die—including encounter and neutral-token
   relocation—visibly locks the control and prevents rollback past the revealed
   information.
 
-Assert the exact card, goods, Lira, assistant, Demand, phase, event count, undo
-log, and boundary reason where applicable. A screenshot after each input must
-make the available target or lock reason legible without clipping.
+Assert the exact card, goods, Lira, assistant, Demand, phase, event count, active
+game-log rows, suffix size, undo log, authorization, and boundary reason where
+applicable. A screenshot after each input must make every available target,
+grey unavailable action, or lock reason legible without clipping.
 
 ## Local workflow
 

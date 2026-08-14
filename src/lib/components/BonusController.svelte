@@ -7,6 +7,7 @@
   import type { GameSetup } from '$lib/game/setup';
   import type { ReplayProjection } from '$lib/game/protocol';
   import GameArt from './GameArt.svelte';
+  import GameLog from './GameLog.svelte';
 
   let {
     game,
@@ -17,8 +18,10 @@
     onTakePrivateAction,
     onResolvePrivateEncounter,
     onUndo,
+    onRollback,
     undo,
     undoLog,
+    gameLog,
     undoPending = false
   }: {
     game: GameSetup;
@@ -29,8 +32,10 @@
     onTakePrivateAction: (choice: PlaceActionChoice) => void;
     onResolvePrivateEncounter: (cardId: string) => void;
     onUndo: () => void;
+    onRollback: (targetEventId: string) => void;
     undo: ReplayProjection['undo'];
     undoLog: ReplayProjection['undoLog'];
+    gameLog: ReplayProjection['gameLog'];
     undoPending?: boolean;
   } = $props();
 
@@ -54,10 +59,10 @@
   const privateActionPlace = $derived(game.phase === 'family-action' && game.pending?.kind === 'family-action' ? game.pending.destination : currentPlayer.merchantPlace);
   const atCaravansary = $derived(isCurrent && (game.phase === 'action' || game.phase === 'family-action') && privateActionPlace === 6);
   const governorCardPayment = $derived(isCurrent && game.phase === 'encounters' && game.pending?.kind === 'encounters' && game.pending.governor === 'payment');
-  const canUndo = $derived(Boolean(undo && undo.actorUid === userUid && !undo.blockedReason && !undoPending));
-  const undoText = $derived(!undo ? 'Nothing to undo' : undo.blockedReason ? `Undo locked · ${undo.blockedReason}` : undo.actorUid === userUid ? `Undo ${undo.label}` : 'Waiting for the tabletop action');
+  const canUndo = $derived(Boolean(undo && undo.actorUids.includes(userUid) && !undo.blockedReason && !undoPending));
+  const undoText = $derived(!undo ? 'Nothing to undo' : undo.blockedReason ? `Undo locked · ${undo.blockedReason}` : undo.actorUids.includes(userUid) ? `Undo ${undo.label}` : 'Waiting for the tabletop action');
   const undoButtonText = $derived(undo?.blockedReason ? '↶ Locked' : '↶ Undo');
-  const privateStatus = $derived(undo?.blockedReason ? `Undo locked · ${undo.blockedReason}` : undo?.actorUid === userUid ? `Can undo · ${undo.label}` : undoLog.length ? `Last log: Undid ${undoLog.at(-1)?.label}` : isCurrent ? `${game.phase.replace('-', ' ')} · make public choices on the tabletop` : `${currentPlayer.name} is using the tabletop`);
+  const privateStatus = $derived(undo?.blockedReason ? `Undo locked · ${undo.blockedReason}` : undo?.actorUids.includes(userUid) ? `Can undo · ${undo.label}` : undoLog.length ? `Last log: Undid ${undoLog.at(-1)?.label}` : isCurrent ? `${game.phase.replace('-', ' ')} · make public choices on the tabletop` : `${currentPlayer.name} is using the tabletop`);
 
   function setCaravanSource(index: 0 | 1, source: CardSource) {
     caravanSources = index === 0 ? [source, caravanSources[1]] : [caravanSources[0], source];
@@ -78,7 +83,7 @@
 
 <section class="private-controller" aria-labelledby="private-title" data-e2e-fit data-e2e-no-scroll>
   <header>
-    <div><p>Private phone · {player.name}</p><button class="private-undo" aria-label={undoText} disabled={!canUndo} onclick={onUndo}>{undoButtonText}</button></div>
+    <div><p>Private phone · {player.name}</p><span class="private-history"><button class="private-undo" aria-label={undoText} disabled={!canUndo} onclick={onUndo}>{undoButtonText}</button><GameLog entries={gameLog} players={game.players} {userUid} pending={undoPending} {onRollback} /></span></div>
     <h1 id="private-title">Your Bonus cards</h1>
     <span>{privateStatus}</span>
   </header>
@@ -131,7 +136,7 @@
 
 <style>
   .private-controller { height: 100%; min-height: 0; display: flex; flex-direction: column; gap: .65rem; color: #fffaf0; }
-  header { padding: .7rem 1rem; border: 1px solid #efca7d66; border-radius: 1rem; background: linear-gradient(110deg, #11383b, #205954); } header > div { display: flex; align-items: center; justify-content: space-between; gap: .5rem; } header p, header span { margin: 0; color: #efca7d; font-size: .64rem; } header p { font-weight: 700; letter-spacing: .12em; text-transform: uppercase; } h1 { margin: .1rem 0; font: 700 2rem/.95 'Cormorant Garamond', serif; }.private-undo { min-height: 1.75rem; padding: .2rem .55rem; border: 1px solid #efca7d; border-radius: .4rem; color: #173f43; background: #efca7d; font-size: .58rem; font-weight: 700; white-space: nowrap; }.private-undo:disabled { border-color: #ffffff33; color: #a6bab5; background: #ffffff0d; }
+  header { padding: .7rem 1rem; border: 1px solid #efca7d66; border-radius: 1rem; background: linear-gradient(110deg, #11383b, #205954); } header > div { display: flex; align-items: center; justify-content: space-between; gap: .5rem; } header p, header > span { margin: 0; color: #efca7d; font-size: .64rem; } header p { font-weight: 700; letter-spacing: .12em; text-transform: uppercase; } h1 { margin: .1rem 0; font: 700 2rem/.95 'Cormorant Garamond', serif; }.private-history { display: flex; gap: .3rem; }.private-undo { min-height: 1.75rem; padding: .2rem .55rem; border: 1px solid #efca7d; border-radius: .4rem; color: #173f43; background: #efca7d; font-size: .58rem; font-weight: 700; white-space: nowrap; }.private-undo:disabled { border-color: #ffffff33; color: #a6bab5; background: #ffffff0d; }
   .private-workspace { min-height: 0; flex: 1; display: grid; grid-template-rows: auto minmax(0, 1fr); gap: .55rem; }
   .private-hand { min-height: 5.1rem; display: grid; grid-template-columns: repeat(auto-fit, minmax(7rem, 1fr)); gap: .45rem; padding: .45rem; overflow: hidden; border: 1px solid #c98948; border-radius: .75rem; background: #24170f; }.private-hand button { min-width: 0; display: grid; grid-template-columns: 2.8rem 1fr; grid-template-rows: auto 1fr; gap: .15rem .4rem; align-items: center; overflow: hidden; padding: .3rem; border: 1px solid #c98948; border-radius: .5rem; color: #fffaf0; text-align: left; background: #173f43; }.private-hand button[aria-pressed='true'] { outline: 2px solid #efca7d; }.private-hand :global(.hand-art) { grid-row: 1 / 3; width: 2.8rem; height: 3.8rem; border-radius: .25rem; }.private-hand span { color: #efca7d; font-size: .5rem; text-transform: uppercase; }.private-hand strong { overflow: hidden; font-size: .67rem; text-overflow: ellipsis; }.private-hand p { margin: auto; color: #cabda8; font-size: .75rem; }
   .private-decision { min-height: 0; overflow: hidden; padding: .8rem; border-radius: .9rem; color: #173f43; background: #fffaf0; }.kicker { margin: 0; color: #a43b32; font-size: .6rem; font-weight: 700; letter-spacing: .12em; text-transform: uppercase; }.private-decision h2 { margin: .2rem 0 .5rem; font: 700 1.55rem 'Cormorant Garamond', serif; }.private-decision > p:not(.kicker), .large-card p { font-size: .7rem; line-height: 1.3; }.large-card { position: relative; min-height: 9rem; display: grid; align-content: end; overflow: hidden; padding: .7rem; border-radius: .65rem; color: #fff; background: #173f43; }.large-card::after { position: absolute; inset: 0; background: linear-gradient(transparent, #09292dee); content: ''; }.large-card :global(.card-art) { position: absolute; inset: 0; width: 100%; height: 100%; }.large-card strong, .large-card p { position: relative; z-index: 1; margin: .2rem 0; text-shadow: 0 1px 2px #000; }.large-card strong { font: 700 1.25rem 'Cormorant Garamond', serif; }

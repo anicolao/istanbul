@@ -1,7 +1,8 @@
 # MVP design
 
-> Implementation status: complete. Scenarios 001–019 exercise every slice and
-> subsequent production refinement, including append-only action undo.
+> Implementation status: complete. Scenarios 001–020 exercise every slice and
+> subsequent production refinement, including append-only suffix rollback,
+> turn review, and direct game-log navigation.
 
 ## Outcome
 
@@ -83,7 +84,8 @@ end
 diagnostics
   rejected event IDs and stable reasons
 undo
-  latest active event, author, information boundary, immutable undo log
+  active action history, reachable suffixes, authors, information boundaries,
+  immutable undo log
 ```
 
 Persist stable identifiers and player intent only. Do not persist a mutable
@@ -107,22 +109,25 @@ Keep the first schema small and expand it only with a vertical slice:
 | `encounter/resolved` | Commit catch rewards and optional encounter choices |
 | `bonus/played` | Identify an owned card and a legal timing/target choice |
 | `turn/ended` | Close a turn after every mandatory choice is resolved |
-| `action/undone` | Suppress the latest reversible authored action during replay while retaining both events |
+| `action/undone` | Suppress a reachable reversible action and its active authored suffix during replay while retaining every event |
 | `game/rematched` | Start a fresh epoch while retaining the room roster |
 
 Do not force every place into a generic untyped payload. Use a discriminated
 TypeScript union for action choices, and add explicit events if a later slice
 shows that one event cannot express a recoverable finite-choice boundary.
 
-Undo never edits or deletes history. An `action/undone` payload names the latest
-still-active gameplay event. Replay retains the original event and the undo in
-the accepted log, omits the target's state transition, and exposes the previous
-action as the next candidate. The target's original author must author the
-undo; on a dedicated tabletop, this naturally keeps public actions on the
-tabletop and private Bonus actions on the owning phone. Stale, duplicate,
-out-of-order, cross-player, and non-latest targets are diagnosed and ignored.
-Any accepted event that draws a card or rolls dice is a hard boundary: neither
-that event nor anything beneath it can be undone.
+Undo never edits or deletes history. An `action/undone` payload names any
+reachable active gameplay event. Replay retains every original event and the
+undo in the accepted log, but omits the target and each later active action in
+the same player's contiguous suffix. Turn review chooses the earliest reachable
+action so one event restores the whole reversible turn; the game log exposes
+every reachable target for direct rollback. A player's action author—or the
+shared tabletop controlling that player's public actions—must author the undo.
+Another player's action, a setup or rematch boundary, and any event that draws a
+card or rolls dice terminate the suffix. Those barrier events and everything
+beneath them remain visible, grey, and unavailable. Stale, duplicate,
+out-of-order, unauthorized, already-undone, and boundary-crossing targets are
+diagnosed and ignored.
 
 ## Delivery contract
 

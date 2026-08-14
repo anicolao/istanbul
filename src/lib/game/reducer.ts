@@ -34,13 +34,25 @@ const emptyProjection = (): ReplayProjection => ({
   acceptedEventIds: [],
   diagnostics: [],
   undo: null,
-  undoLog: []
+  undoLog: [],
+  gameLog: []
 });
 
-interface UndoTarget {
+interface ActionRecord {
   event: CanonicalEvent;
   label: string;
+  summary: string;
+  dice: [number, number] | null;
+  turnNumber: number;
+  epoch: number;
+  ownerUid: string;
+}
+
+interface RollbackPlan {
+  target: ActionRecord;
+  actions: ActionRecord[];
   blockedReason: string | null;
+  actorUids: string[];
 }
 
 const gameplayEventTypes = new Set([
@@ -64,6 +76,33 @@ function undoLabel(event: CanonicalEvent): string {
   return `${String(choice?.kind ?? 'Place action').replaceAll('-', ' ')}`;
 }
 
+function actionResult(state: ReplayProjection, event: CanonicalEvent): { summary: string; dice: [number, number] | null } {
+  const game = state.game;
+  if (!game) return { summary: undoLabel(event), dice: null };
+  if (event.type === 'turn/moved') {
+    const movement = game.lastMovement;
+    return {
+      summary: movement
+        ? `Moved ${movement.distance} space${movement.distance === 1 ? '' : 's'} from Place ${movement.from} to Place ${movement.to} and ${movement.assistantAction === 'pick-up' ? 'picked up' : 'left'} an assistant.`
+        : undoLabel(event),
+      dice: null
+    };
+  }
+  if (event.type === 'place/action-taken' || event.type === 'mosque/ability-used') {
+    return {
+      summary: game.lastAction?.summary ?? undoLabel(event),
+      dice: game.lastRoll?.playerUid === event.actorUid ? game.lastRoll.dice : null
+    };
+  }
+  if (event.type === 'encounter/resolved') {
+    const encounter = game.encounterLog.at(-1);
+    return { summary: encounter?.summary ?? undoLabel(event), dice: encounter?.dice ?? null };
+  }
+  if (event.type === 'bonus/played') return { summary: game.bonusLog.at(-1)?.summary ?? undoLabel(event), dice: null };
+  if (event.type === 'turn/ended') return { summary: 'Ended the turn and passed clockwise.', dice: null };
+  return { summary: undoLabel(event), dice: null };
+}
+
 export function revealedInformationReason(event: CanonicalEvent): string | null {
   const choice = event.payload.choice as Record<string, unknown> | undefined;
   if (event.type === 'place/action-taken') {
@@ -84,13 +123,53 @@ export function revealedInformationReason(event: CanonicalEvent): string | null 
   return null;
 }
 
-function latestUndoTarget(activeEvents: CanonicalEvent[]): UndoTarget | null {
+function rollbackPlan(
+  activeEvents: CanonicalEvent[],
+  actionById: Map<string, ActionRecord>,
+  targetEventId: string,
+  room: ReplayProjection['room']
+): RollbackPlan | null {
+  const targetIndex = activeEvents.findIndex(({ id }) => id === targetEventId);
+  const target = actionById.get(targetEventId);
+  if (targetIndex < 0 || !target) return null;
+
+  const actions: ActionRecord[] = [];
+  let blockedReason: string | null = null;
+  for (const event of activeEvents.slice(targetIndex)) {
+    if (event.type === 'game/started' || event.type === 'game/rematched' || event.type.startsWith('e2e/')) {
+      blockedReason = 'A later game or reviewed setup is a rollback boundary';
+      break;
+    }
+    const action = actionById.get(event.id);
+    if (!action) continue;
+    actions.push(action);
+    if (action.ownerUid !== target.ownerUid) {
+      blockedReason = 'Another merchant has acted since then';
+      break;
+    }
+    const revealed = revealedInformationReason(event);
+    if (revealed) {
+      blockedReason = event.id === target.event.id ? revealed : `Cannot cross: ${revealed}`;
+      break;
+    }
+  }
+
+  const actionActors = [...new Set(actions.map(({ event }) => event.actorUid))];
+  const tabletopHost = room?.mode === 'shared-table' && room.tabletopOwned ? room.hostUid : null;
+  const actorUids = blockedReason
+    ? []
+    : actionActors.length === 1
+      ? [...new Set([...actionActors, ...(tabletopHost ? [tabletopHost] : [])])]
+      : tabletopHost
+        ? [tabletopHost]
+        : [];
+  return { target, actions, blockedReason, actorUids };
+}
+
+function latestAction(activeEvents: CanonicalEvent[], actionById: Map<string, ActionRecord>): ActionRecord | null {
   for (let index = activeEvents.length - 1; index >= 0; index -= 1) {
-    const event = activeEvents[index];
-    if (event.type === 'game/started' || event.type === 'game/rematched') return null;
-    if (event.type.startsWith('e2e/')) return null;
-    if (!gameplayEventTypes.has(event.type)) continue;
-    return { event, label: undoLabel(event), blockedReason: revealedInformationReason(event) };
+    const action = actionById.get(activeEvents[index].id);
+    if (action) return action;
   }
   return null;
 }
@@ -125,6 +204,8 @@ export function replayEvents(events: unknown[]): ReplayProjection {
   const seen = new Set<string>();
   const validEvents: CanonicalEvent[] = [];
   const activeEvents: CanonicalEvent[] = [];
+  const actionRecords: ActionRecord[] = [];
+  const actionById = new Map<string, ActionRecord>();
 
   for (const value of events) {
     if (!isCanonicalEvent(value)) {
@@ -142,27 +223,31 @@ export function replayEvents(events: unknown[]): ReplayProjection {
     seen.add(event.id);
     if (event.type === 'action/undone') {
       const targetEventId = stringField(event.payload, 'targetEventId');
-      const target = latestUndoTarget(activeEvents);
-      if (!targetEventId || !target || target.event.id !== targetEventId) {
+      const plan = targetEventId ? rollbackPlan(activeEvents, actionById, targetEventId, state.room) : null;
+      if (!targetEventId || !plan) {
         reject(state, event, 'stale-undo-target');
         continue;
       }
-      if (target.event.actorUid !== event.actorUid) {
+      if (plan.blockedReason) {
+        reject(state, event, plan.actions.some(({ event: actionEvent }) => revealedInformationReason(actionEvent)) ? 'undo-revealed-information' : 'stale-undo-target');
+        continue;
+      }
+      if (!plan.actorUids.includes(event.actorUid)) {
         reject(state, event, 'undo-not-authorized');
         continue;
       }
-      if (target.blockedReason) {
-        reject(state, event, 'undo-revealed-information');
-        continue;
+      const removedIds = new Set(plan.actions.map(({ event: actionEvent }) => actionEvent.id));
+      for (let index = activeEvents.length - 1; index >= 0; index -= 1) {
+        if (removedIds.has(activeEvents[index].id)) activeEvents.splice(index, 1);
       }
-      activeEvents.splice(activeEvents.indexOf(target.event), 1);
       const acceptedEventIds = [...state.acceptedEventIds, event.id];
       const diagnostics = [...state.diagnostics];
       const undoLog = [...state.undoLog, {
         eventId: event.id,
         targetEventId,
         actorUid: event.actorUid,
-        label: target.label
+        label: plan.target.label,
+        actionCount: plan.actions.length
       }];
       state = rebuildActiveProjection(activeEvents);
       state.acceptedEventIds = acceptedEventIds;
@@ -170,19 +255,54 @@ export function replayEvents(events: unknown[]): ReplayProjection {
       state.undoLog = undoLog;
       continue;
     }
+    const actionContext = gameplayEventTypes.has(event.type) && state.game
+      ? {
+          turnNumber: state.game.turnNumber,
+          epoch: state.game.epoch,
+          ownerUid: state.game.players[state.game.turnSeat]?.uid ?? event.actorUid
+        }
+      : null;
     const accepted = applyEvent(state, event);
     if (accepted) {
       state.acceptedEventIds.push(event.id);
       activeEvents.push(event);
+      if (actionContext) {
+        const record = { event, label: undoLabel(event), ...actionResult(state, event), ...actionContext };
+        actionRecords.push(record);
+        actionById.set(event.id, record);
+      }
     }
   }
 
-  const target = latestUndoTarget(activeEvents);
-  state.undo = target ? {
+  const activeIds = new Set(activeEvents.map(({ id }) => id));
+  state.gameLog = actionRecords.map((record) => {
+    const active = activeIds.has(record.event.id);
+    const plan = active ? rollbackPlan(activeEvents, actionById, record.event.id, state.room) : null;
+    return {
+      eventId: record.event.id,
+      actorUid: record.event.actorUid,
+      ownerUid: record.ownerUid,
+      label: record.label,
+      summary: record.summary,
+      dice: record.dice,
+      turnNumber: record.turnNumber,
+      epoch: record.epoch,
+      active,
+      barrierReason: revealedInformationReason(record.event),
+      blockedReason: active ? plan?.blockedReason ?? null : 'Already undone',
+      rollbackCount: active && !plan?.blockedReason ? plan?.actions.length ?? 0 : 0,
+      rollbackActorUids: active && !plan?.blockedReason ? plan?.actorUids ?? [] : []
+    };
+  });
+
+  const target = latestAction(activeEvents, actionById);
+  const targetPlan = target ? rollbackPlan(activeEvents, actionById, target.event.id, state.room) : null;
+  state.undo = target && targetPlan ? {
     targetEventId: target.event.id,
     actorUid: target.event.actorUid,
+    actorUids: targetPlan.actorUids,
     label: target.label,
-    blockedReason: target.blockedReason
+    blockedReason: targetPlan.blockedReason
   } : null;
 
   return state;

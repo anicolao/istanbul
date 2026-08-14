@@ -291,7 +291,7 @@ Ada sends her family member from Police Station to fill the Fabric Warehouse. Bo
 
 **Verifications:**
 
-- [x] The complete encounter ledger returns
+- [x] The complete encounter history returns inside the turn log
 - [x] Both token positions, resources, and private hand replay exactly
 - [x] The turn cannot repeat any completed encounter
 

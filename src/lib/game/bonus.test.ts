@@ -21,7 +21,7 @@ function fixture(effect: string): [ReplayProjection, GameSetup, string] {
   if (deckIndex >= 0) game.bonusDrawPile.splice(deckIndex, 1);
   for (const player of game.players) player.bonusHand = [];
   game.players[0].bonusHand = [cardId];
-  return [{ room: room(), game, acceptedEventIds: [], diagnostics: [], undo: null, undoLog: [] }, game, cardId];
+  return [{ room: room(), game, acceptedEventIds: [], diagnostics: [], undo: null, undoLog: [], gameLog: [] }, game, cardId];
 }
 
 describe('Bonus card timing contract', () => {

@@ -52,6 +52,7 @@ export interface ReplayProjection {
   undo: {
     targetEventId: string;
     actorUid: string;
+    actorUids: string[];
     label: string;
     blockedReason: string | null;
   } | null;
@@ -60,6 +61,22 @@ export interface ReplayProjection {
     targetEventId: string;
     actorUid: string;
     label: string;
+    actionCount: number;
+  }>;
+  gameLog: Array<{
+    eventId: string;
+    actorUid: string;
+    ownerUid: string;
+    label: string;
+    summary: string;
+    dice: [number, number] | null;
+    turnNumber: number;
+    epoch: number;
+    active: boolean;
+    barrierReason: string | null;
+    blockedReason: string | null;
+    rollbackCount: number;
+    rollbackActorUids: string[];
   }>;
 }
 

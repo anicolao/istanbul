@@ -125,7 +125,7 @@ test('Police dispatch, family catches, Governor, and Smuggler survive immutable 
     const completed = await readState(boraPage);
     await boraPage.reload();
     await bora.step('guest-reloads-complete-encounters', { description: 'Bora reloads before ending the encounter turn', verifications: [
-      { spec: 'The complete encounter ledger returns', check: async () => expect(boraPage.getByLabel('Resolved encounters').locator('article')).toHaveCount(4) },
+      { spec: 'The complete encounter history returns inside the turn log', check: async () => { const turnLog = boraPage.getByRole('list', { name: "Bora's turn actions" }); for (const encounter of completed.game.encounterLog) await expect(turnLog.getByText(encounter.summary, { exact: true })).toBeVisible(); } },
       { spec: 'Both token positions, resources, and private hand replay exactly', check: async () => expectState(boraPage, { eventCount: 15, diagnosticCount: 0, game: { phase: 'turn-end', governorPlace: completed.game.governorPlace, smugglerPlace: completed.game.smugglerPlace, encounterLog: completed.game.encounterLog, localHand: completed.game.localHand, players: completed.game.players } }) },
       { spec: 'The turn cannot repeat any completed encounter', check: async () => { await expect(boraPage.getByRole('button', { name: 'Visit the Governor' })).toHaveCount(0); await expect(boraPage.getByLabel('Smuggler encounter')).toHaveCount(0); } }
     ] });
