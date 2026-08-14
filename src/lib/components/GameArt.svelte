@@ -87,6 +87,7 @@
   title={label}
   aria-hidden={label ? undefined : 'true'}
   data-art-kind={kind}
+  data-component="GameArt"
 ></span>
 
 <style>

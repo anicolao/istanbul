@@ -27,15 +27,23 @@ or absent from the static bundle. The browser journey in
 real seeded table while DOM and replay-state assertions prove the visuals do
 not alter or hide canonical game information.
 
-The standalone `/gallery/` route turns that manifest into a production review
-room. It groups all 73 source images into board squares, player mats, people and
-markers, Bonus cards, and components; it also renders all 10 Market demand
-compositions from their real backgrounds and goods icons. Six items fit on
-each fixed page at phone and desktop sizes, every item opens unmasked at review
-size, and every card carries a stable reference plus its exact source path.
-Scenario 021 walks the entire inventory, validates every expected ID and loaded
-image in the DOM, enforces the no-scroll/no-clipping contract, and captures an
-exact screenshot after every reviewer action.
+The standalone `/gallery/` route is a production component review room, not a
+raw-file browser. It renders 83 representative states through the same logical
+Svelte boundaries used by live play: `LocationTile` composes location art,
+titles, rounded framing, occupants, encounters, and `LocationState` apparatus;
+`PlayerTray` composes mats and player resources; `BonusCard` includes its live
+rules treatment; `MarketDemand` composes its background and goods; physical
+pieces use `GameArt`. The deterministic gallery projection makes changing
+Post Office, Caravansary, Market, Mosque, Palace, Police, Fountain, player-tray,
+and encounter state visible without requiring a room.
+
+Six rendered states fit on each fixed page at phone and desktop sizes. Every
+item opens at review size and carries a stable reference, renderer name, and
+representative props. Scenario 021 walks the entire catalogue, validates every
+renderer and nested loaded image, enforces the no-scroll/no-clipping contract,
+and captures an exact screenshot after every reviewer action. The typed art
+manifest remains unit-tested separately to guarantee all 73 underlying files
+ship, but source files are never presented as though they were the finished UI.
 
 ## Live location state
 

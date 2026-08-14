@@ -2,8 +2,8 @@
 
 > Implementation status: complete. Scenarios 001–021 exercise every slice and
 > subsequent production refinement, including append-only suffix rollback,
-> turn review, direct game-log navigation, and a complete production-asset
-> review gallery.
+> turn review, direct game-log navigation, and a complete production-component
+> review gallery backed by the same Svelte components as live play.
 
 ## Outcome
 
@@ -14,7 +14,10 @@ browser controls, and finish with the official round completion and tie-breaks.
 Every client can reload and reconstruct the same game from immutable history.
 
 The MVP includes ordinary phone/tablet/desktop play, a dedicated `/tabletop/`
-route, and a standalone `/gallery/` production review room. The tabletop
+route, and a standalone `/gallery/` production component review room. The gallery
+renders deterministic live state through shared `LocationTile`, `PlayerTray`,
+`BonusCard`, `MarketDemand`, and `GameArt` boundaries rather than exposing raw
+art files as a substitute for the game UI. The tabletop
 creates and owns an empty room, displays QR invitations,
 owns layout, start, and all public gameplay, and never consumes a merchant seat.
 Scanned phones hold player identities, readiness, private Bonus cards, and only

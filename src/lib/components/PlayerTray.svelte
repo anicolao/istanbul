@@ -34,7 +34,7 @@
 </script>
 
 {#if compact}
-  <div class="compact-tray" data-testid={`player-tray-${player.uid}`} data-player-color={player.color} data-e2e-fit data-e2e-no-scroll>
+  <div class="compact-tray" data-testid={`player-tray-${player.uid}`} data-player-color={player.color} data-component="PlayerTray" data-e2e-fit data-e2e-no-scroll>
     <header>
       {#if starting}<GameArt kind="piece" piece="first-player" class="compact-first-player" />{:else}<span class={`player-dot ${player.color}`}></span>{/if}
       <span><strong>{player.name}{local ? ' · you' : ''}</strong><small>{starting ? 'Start player' : `Seat ${seat}`}</small></span>
@@ -70,7 +70,7 @@
     {/if}
   </div>
 {:else}
-<div class="tray-stage" data-testid={`player-tray-${player.uid}`} data-player-color={player.color} data-e2e-fit>
+<div class="tray-stage" data-testid={`player-tray-${player.uid}`} data-player-color={player.color} data-component="PlayerTray" data-e2e-fit>
   <GameArt kind="mat" color={player.color as PlayerColorName} class="player-mat-art" />
 
   <div class="tray-name">
