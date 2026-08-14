@@ -38,6 +38,9 @@ browser-level tracer bullets verified with Playwright.
 - A dedicated `/tabletop/` route that creates and owns the room, renders every
   public game control on the shared display, and leaves only private Bonus-card
   information and decisions on each player's phone.
+- A dedicated `/gallery/` review route that inventories every production image
+  and every composed Market demand, with stable references and full-size views
+  for precise art feedback.
 - Keyboard, pointer, touch, reduced-motion, and screen-reader-friendly play.
 
 The bazaar board follows the physical tabletop hierarchy: every Place name is
@@ -115,6 +118,11 @@ Scenario 020 expands that story into turn review and direct history navigation:
 Ada undoes three actions with one event, replays them, rewinds straight to an
 earlier movement, and proves that grey information barriers prevent the game
 log from crossing a retained dice result.
+Scenario 021 opens the standalone production gallery, enlarges a board square,
+and then reviews every page of board squares, player mats, merchants,
+assistants, family members, Bonus cards, Market demands, and public components.
+It checks all 73 source assets and all 10 composed demand tiles by stable ID,
+proves each image loaded, and captures the responsive result after every input.
 
 The local verification entry point is:
 
@@ -143,7 +151,9 @@ for all 16 Places, every Bonus-card effect, five sets of merchants, assistants,
 family members and physical trays, neutral characters, goods, Mosque and demand tiles,
 Lira, dice, wheelbarrows, tracks, supplies, and rubies. See
 [ART_ASSETS.md](ART_ASSETS.md) for the complete inventory and source-atlas
-workflow. Each tray is a functional organizer whose goods, extensions, rubies,
+workflow. Open `/gallery/` in any deployment to inspect that exact manifest by
+category, enlarge an item, and cite its stable review reference when providing
+feedback. Each tray is a functional organizer whose goods, extensions, rubies,
 money, cards, and acquired square Mosque powers sit in matching visible wells.
 Every Place also displays its current public state with physical arrangements:
 mail windows, decks and discards, demands, Mosque costs and rewards, ruby-track
