@@ -36,10 +36,32 @@ test('original production art communicates the complete tabletop', async ({ brow
           await expect(page.locator('[data-art-kind="piece"].smuggler-piece')).toHaveCount(1);
           expect((await loadedBackgrounds(page.locator('[data-art-kind="piece"]'))).every(Boolean)).toBe(true);
         } },
-        { spec: 'Both colour-keyed physical trays and every resource token are real loaded images', check: async () => {
-          await expect(page.locator('[data-art-kind="mat"]')).toHaveCount(2);
+        { spec: 'Both player displays and every resource token use loaded production art', check: async () => {
+          await expect(page.locator('[data-art-kind="mat"]')).toHaveCount(testInfo.project.name === 'phone' ? 2 : 0);
+          await expect(page.locator('.compact-tray')).toHaveCount(testInfo.project.name === 'phone' ? 0 : 2);
           expect(await page.locator('[data-art-kind="component"]').count()).toBeGreaterThanOrEqual(46);
           expect((await loadedBackgrounds(page.locator('[data-art-kind="mat"], [data-art-kind="component"]'))).every(Boolean)).toBe(true);
+        } },
+        { spec: 'Desktop uses the tabletop composition while phones retain their focused stacked view', check: async () => {
+          if (testInfo.project.name === 'phone') {
+            await expect(page.locator('.game-table')).not.toHaveClass(/table-layout/);
+            return;
+          }
+          await expect(page.locator('.game-table')).toHaveClass(/table-layout/);
+          const positions = await page.locator('.game-table').evaluate((table) => {
+            const rail = table.querySelector('.player-rail')!.getBoundingClientRect();
+            const board = table.querySelector('.board-shell')!.getBoundingClientRect();
+            const inspector = table.querySelector('.inspector')!.getBoundingClientRect();
+            const panels = [...table.querySelectorAll('.player-rail > article')].map((panel) => panel.getBoundingClientRect());
+            return {
+              playersLeftOfBoard: rail.right < board.left,
+              plannerRightOfBoard: board.right < inspector.left,
+              squarePanels: panels.every((panel) => Math.abs(panel.width - panel.height) < 2)
+            };
+          });
+          expect(positions).toEqual({ playersLeftOfBoard: true, plannerRightOfBoard: true, squarePanels: true });
+          await expect(page.getByLabel('Ada resources').getByLabel('Private Bonus hand')).toBeVisible();
+          await expect(page.getByLabel('Bora resources').getByLabel('Private Bonus hand')).toHaveCount(0);
         } },
         { spec: 'Each tray aligns goods, extensions, rubies, money, cards, and four power recesses', check: async () => {
           await expect(page.locator('[data-testid^="player-tray-"]')).toHaveCount(2);
@@ -106,8 +128,13 @@ test('original production art communicates the complete tabletop', async ({ brow
           await expect(cardButton).toHaveAttribute('aria-pressed', 'true');
         } },
         { spec: 'Ada’s hand remains a graphical card back with no private face exposed', check: async () => {
-          await expect(boraPage.locator('.masked-hand [data-art-kind="card-back"]')).toHaveCount(1);
-          await expect(boraPage.getByText('Bonus hand · 1 hidden card')).toBeVisible();
+          if (testInfo.project.name === 'phone') {
+            await expect(boraPage.locator('.masked-hand [data-art-kind="card-back"]')).toHaveCount(1);
+            await expect(boraPage.getByText('Bonus hand · 1 hidden card')).toBeVisible();
+          } else {
+            await expect(boraPage.getByLabel('Ada resources').getByLabel('1 Bonus cards')).toBeVisible();
+            await expect(boraPage.getByLabel('Ada resources').getByLabel('Private Bonus hand')).toHaveCount(0);
+          }
         } },
         { spec: 'Card inspection is local view state and adds no immutable event', check: async () => expectState(boraPage, { eventCount: 5, diagnosticCount: 0, game: { phase: 'movement', selectedBonus: expect.any(String), opponentHandCounts: [1] } }) }
       ]
