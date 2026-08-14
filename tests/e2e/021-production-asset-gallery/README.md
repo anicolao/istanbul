@@ -10,7 +10,7 @@ The reviewer opens the dedicated gallery without creating a game and walks every
 
 **Verifications:**
 
-- [x] The gallery declares 83 rendered review states backed by the complete 73-asset manifest
+- [x] The gallery declares 85 rendered review states backed by the complete 73-asset manifest
 - [x] All six logical-component category totals are immediately visible
 - [x] The first six numbered locations are real LocationTile components with public state
 
@@ -125,21 +125,21 @@ The reviewer opens the dedicated gallery without creating a game and walks every
 
 - [x] The next exact rendered-state slice replaces the prior page without scrolling
 
-## 13. The reviewer opens all Large MarketDemand states and the first Small Market state
+## 13. The reviewer opens all six Large MarketDemand states
 
-**The art reviewer** — The reviewer opens all Large MarketDemand states and the first Small Market state
+**The art reviewer** — The reviewer opens all six Large MarketDemand states
 
-![The reviewer opens all Large MarketDemand states and the first Small Market state](./screenshots/012-reviewer-opens-large-demand-tiles-desktop.png)
+![The reviewer opens all six Large MarketDemand states](./screenshots/012-reviewer-opens-large-demand-tiles-desktop.png)
 
 **Verifications:**
 
 - [x] Market demands resets to its first complete rendered-component page
 
-## 14. The reviewer reaches the remaining Small Market demands
+## 14. The reviewer opens all six Small MarketDemand states
 
-**The art reviewer** — The reviewer reaches the remaining Small Market demands
+**The art reviewer** — The reviewer opens all six Small MarketDemand states
 
-![The reviewer reaches the remaining Small Market demands](./screenshots/013-reviewer-opens-small-demand-tiles-desktop.png)
+![The reviewer opens all six Small MarketDemand states](./screenshots/013-reviewer-opens-small-demand-tiles-desktop.png)
 
 **Verifications:**
 

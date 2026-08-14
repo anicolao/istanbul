@@ -28,7 +28,7 @@ real seeded table while DOM and replay-state assertions prove the visuals do
 not alter or hide canonical game information.
 
 The standalone `/gallery/` route is a production component review room, not a
-raw-file browser. It renders 83 representative states through the same logical
+raw-file browser. It renders 85 representative states through the same logical
 Svelte boundaries used by live play: `LocationTile` composes location art,
 titles, rounded framing, occupants, encounters, and `LocationState` apparatus;
 `PlayerTray` composes mats and player resources; `BonusCard` includes its live

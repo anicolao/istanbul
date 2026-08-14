@@ -78,7 +78,7 @@
 <main data-e2e-layout data-gallery-raw-count={rawGalleryItems.length} data-gallery-composite-count={galleryCategories.find(({ id }) => id === 'demands')?.items.length} data-gallery-rendered-count={galleryCategories.flatMap(({ items }) => items).length}>
   <header class="gallery-header" data-e2e-fit data-e2e-no-scroll>
     <a class="brand" href={`${base}/`} aria-label="Back to Istanbul"><span aria-hidden="true"></span>Istanbul</a>
-    <div><p>Production review room</p><h1>Component gallery</h1><small>83 rendered states · shared with live play</small></div>
+    <div><p>Production review room</p><h1>Component gallery</h1><small>85 rendered states · shared with live play</small></div>
     <p class="manifest-status" role="status" data-status="synced"><i></i>Components live</p>
   </header>
 

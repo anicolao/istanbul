@@ -81,16 +81,18 @@ export const mosqueTiles: MosqueTileManifest[] = (Object.keys(mosqueAbility) as 
 export interface DemandTileManifest { id: string; market: 'large' | 'small'; goods: Good[]; }
 
 export const demandTiles: DemandTileManifest[] = [
-  { id: 'demand-large-1', market: 'large', goods: ['fabric', 'fabric', 'spice', 'fruit', 'jewelry'] },
-  { id: 'demand-large-2', market: 'large', goods: ['fabric', 'spice', 'spice', 'fruit', 'jewelry'] },
-  { id: 'demand-large-3', market: 'large', goods: ['fabric', 'spice', 'fruit', 'fruit', 'jewelry'] },
-  { id: 'demand-large-4', market: 'large', goods: ['fabric', 'spice', 'fruit', 'jewelry', 'jewelry'] },
-  { id: 'demand-large-5', market: 'large', goods: ['fabric', 'spice', 'fruit', 'jewelry', 'fabric'] },
-  { id: 'demand-small-1', market: 'small', goods: ['fabric', 'fabric', 'spice', 'spice', 'fruit'] },
-  { id: 'demand-small-2', market: 'small', goods: ['spice', 'spice', 'fruit', 'fruit', 'jewelry'] },
-  { id: 'demand-small-3', market: 'small', goods: ['fruit', 'fruit', 'jewelry', 'jewelry', 'fabric'] },
-  { id: 'demand-small-4', market: 'small', goods: ['jewelry', 'jewelry', 'fabric', 'fabric', 'spice'] },
-  { id: 'demand-small-5', market: 'small', goods: ['fabric', 'spice', 'fruit', 'jewelry', 'spice'] }
+  { id: 'demand-large-1', market: 'large', goods: ['jewelry', 'jewelry', 'jewelry', 'fabric', 'fruit'] },
+  { id: 'demand-large-2', market: 'large', goods: ['fruit', 'jewelry', 'jewelry', 'fabric', 'fabric'] },
+  { id: 'demand-large-3', market: 'large', goods: ['spice', 'jewelry', 'jewelry', 'fabric', 'fabric'] },
+  { id: 'demand-large-4', market: 'large', goods: ['fabric', 'jewelry', 'jewelry', 'spice', 'fruit'] },
+  { id: 'demand-large-5', market: 'large', goods: ['fabric', 'fabric', 'fabric', 'jewelry', 'jewelry'] },
+  { id: 'demand-large-6', market: 'large', goods: ['jewelry', 'jewelry', 'jewelry', 'fabric', 'spice'] },
+  { id: 'demand-small-1', market: 'small', goods: ['jewelry', 'fabric', 'spice', 'fruit', 'fruit'] },
+  { id: 'demand-small-2', market: 'small', goods: ['fruit', 'fruit', 'fruit', 'fabric', 'spice'] },
+  { id: 'demand-small-3', market: 'small', goods: ['spice', 'spice', 'spice', 'fabric', 'fruit'] },
+  { id: 'demand-small-4', market: 'small', goods: ['jewelry', 'fruit', 'fruit', 'spice', 'spice'] },
+  { id: 'demand-small-5', market: 'small', goods: ['fabric', 'fruit', 'fruit', 'spice', 'spice'] },
+  { id: 'demand-small-6', market: 'small', goods: ['jewelry', 'fabric', 'fruit', 'spice', 'spice'] }
 ];
 
 export const playerColors = ['ruby', 'saffron', 'teal', 'indigo', 'plum'] as const;

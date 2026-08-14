@@ -36,7 +36,7 @@ describe('production art manifest', () => {
       mats: 5,
       pieces: 20,
       bonus: 12,
-      demands: 10,
+      demands: 12,
       components: 20
     });
   });

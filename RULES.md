@@ -4,7 +4,8 @@ This is an implementation-oriented summary of Rüdiger Dorn's 2014 **Istanbul**
 base game, not a replacement for the published rulebook. It records turn order,
 player-count changes, visibility, deterministic choices, and edge cases needed
 by the browser implementation. The Mocha & Baksheesh and Letters & Seals
-expansions are not included.
+expansions are not included. Component inventory follows the Big Box base-game
+printing, including its six Demand tiles for each Market.
 
 ## Goal
 
@@ -31,7 +32,7 @@ The player with the most rubies then wins, subject to the tie-breaks below.
 | Wheelbarrow extensions | 15 |
 | Bonus cards | 26 |
 | Mosque tiles | 16 |
-| Demand tiles: 5 light and 5 dark | 10 |
+| Demand tiles: 6 light and 6 dark | 12 |
 | Mail indicators | 4 |
 | Rubies | 32 |
 | Six-sided dice | 2 |
@@ -46,7 +47,7 @@ member, and four goods indicators. Coin denominations have no rules meaning,
 so the digital state can store each player's Lira as one public integer.
 
 The implementation must give every finite, stateful component a stable instance
-ID. Versioned manifests must preserve the exact 26-card deck, ten Demand tiles,
+ID. Versioned manifests must preserve the exact 26-card deck, twelve Demand tiles,
 sixteen Mosque tiles, ruby tracks, Post Office track, and printed layout data.
 Fungible Lira and goods may be aggregate counters, but replay must conserve
 every card, tile, assistant, extension, and ruby.
@@ -125,8 +126,8 @@ materialized state.
    ruby costs five goods in a two- or three-player game and four goods in a
    four- or five-player game. Empty spaces expose the current increasing cost.
 7. Put all four Mail indicators in the upper Post Office row.
-8. Shuffle the five dark Demand tiles into a face-up stack at Large Market 10
-   and the five light tiles into a face-up stack at Small Market 11. The top
+8. Shuffle the six dark Demand tiles into a face-up stack at Large Market 10
+   and the six light tiles into a face-up stack at Small Market 11. The top
    tile is the current demand.
 9. Roll two dice separately for the Governor and Smuggler. Put each on the
    Place whose large number equals the roll total.
