@@ -57,7 +57,7 @@ test('ruby routes escalate and Bonus cards resolve at reviewed timing windows', 
     await page.getByRole('button', { name: 'Review ruby routes with supplied resources' }).click();
     await ada.step('host-supplies-reviewed-resources', { description: 'Ada supplies reviewed ruby-route resources', verifications: [
       { spec: 'The resource rail shows 35 Lira, capacity three, and three of each good', check: async () => expectState(page, { eventCount: 6, diagnosticCount: 0, game: { players: [{ lira: 35, capacity: 3, extensions: 1, goods: { fabric: 3, spice: 3, fruit: 3, jewelry: 3 } }, {}], rubyTracks: { gemstonePrice: 15, gemstoneRubies: 10, sultanIndex: 5, sultanRubies: 5 } } }) },
-      { spec: 'All supplied cards are real reviewed manifest instances', check: async () => expect(page.getByLabel('Ada resources').getByText('Private hand')).toBeVisible() }
+      { spec: 'All eight supplied cards are real reviewed manifest instances in the private dock', check: async () => expect(page.getByRole('navigation', { name: 'Private Bonus hand' }).getByRole('button', { name: /Inspect Bonus card/ })).toHaveCount(8) }
     ] });
 
     await inspectAndPlayBonus(ada, page, /Inspect Bonus card: A swift passage/, 'Play for a 3–4 space move', 'long-move', 'A swift passage', 6, 7);

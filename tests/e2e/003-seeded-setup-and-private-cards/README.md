@@ -119,6 +119,7 @@ Ada and Bora prepare an ordinary two-player room entirely through visible contro
 **Verifications:**
 
 - [x] The illustrated board contains exactly sixteen accessible Place buttons
+- [x] On desktop, Ada’s private hand occupies its own dock and does not cover her player tray
 - [x] Long Path begins 16, 2, 8, 11 and both merchants occupy Fountain 7
 - [x] The sixth event derives a deterministic movement-phase setup with private hand masking
 

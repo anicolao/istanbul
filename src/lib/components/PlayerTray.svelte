@@ -62,16 +62,6 @@
         <span aria-label={`${player.bonusHand.length} Bonus cards`}><BonusCard reverse="card-back" compact mini class="tray-card-indicator" /><b>{player.bonusHand.length}</b>{#if !local}<em class="visually-hidden">Bonus hand · {player.bonusHand.length} hidden card{player.bonusHand.length === 1 ? '' : 's'}</em>{/if}</span>
       </footer>
     </aside>
-    {#if local}
-      <nav class="hand compact-hand" style={`--hand-count: ${Math.max(1, player.bonusHand.length)}`} aria-label="Private Bonus hand" data-e2e-fit data-e2e-no-scroll>
-        <span class="visually-hidden">Private hand</span>
-        {#each player.bonusHand as cardId}
-          <button aria-label={`Inspect Bonus card: ${bonusById.get(cardId)?.title}`} aria-pressed={selectedBonus === cardId} onclick={() => onInspectBonus(cardId)}>
-            <BonusCard card={bonusById.get(cardId)!} compact class="tray-hand-card" artClass="hand-card-art" />
-          </button>
-        {/each}
-      </nav>
-    {/if}
   </div>
 {:else}
 <div class="tray-stage" data-testid={`player-tray-${player.uid}`} data-player-color={player.color} data-component="PlayerTray" data-e2e-fit>
@@ -122,7 +112,7 @@
 </div>
 
 {#if local}
-  <div class="hand" data-e2e-fit data-e2e-no-scroll><span>Private hand</span>{#each player.bonusHand as cardId}<button aria-label={`Inspect Bonus card: ${bonusById.get(cardId)?.title}`} aria-pressed={selectedBonus === cardId} onclick={() => onInspectBonus(cardId)}><BonusCard card={bonusById.get(cardId)!} compact class="tray-hand-card" artClass="hand-card-art" /></button>{/each}</div>
+  <div class="hand" role="navigation" aria-label="Private Bonus hand" data-e2e-fit data-e2e-no-scroll><span>Private hand</span>{#each player.bonusHand as cardId}<button aria-label={`Inspect Bonus card: ${bonusById.get(cardId)?.title}`} aria-pressed={selectedBonus === cardId} onclick={() => onInspectBonus(cardId)}><BonusCard card={bonusById.get(cardId)!} compact class="tray-hand-card" artClass="hand-card-art" /></button>{/each}</div>
 {:else}
   <p class="masked-hand" data-e2e-fit data-e2e-no-scroll><BonusCard reverse="card-back" compact class="masked-card-art" />Bonus hand · {player.bonusHand.length} hidden card{player.bonusHand.length === 1 ? '' : 's'}</p>
 {/if}
@@ -167,9 +157,6 @@
   .compact-tray footer > span:first-child :global(.game-art) { width: 62%; height: auto; aspect-ratio: 1; }
   .compact-tray footer > span:last-child :global(.tray-card-indicator) { width: 52%; }
   .compact-tray footer b { position: absolute; right: 7%; bottom: 6%; width: 29%; min-width: 0; aspect-ratio: 1; display: grid; place-items: center; border: 1px solid #f2d68d; border-radius: 50%; background: #a13c38; font-size: clamp(.25rem, 2.8cqi, .45rem); line-height: 1; }
-  .compact-tray .compact-hand { position: absolute; z-index: 2; right: 4%; bottom: 3%; left: 4%; height: 45%; min-width: 0; min-height: 0; display: grid; grid-template-columns: repeat(var(--hand-count), minmax(0, 1fr)); gap: 1%; overflow: hidden; margin: 0; padding: 1%; border: 1px solid rgb(239 202 125 / 72%); border-radius: 3%; background: rgb(5 29 31 / 94%); box-shadow: 0 -.2rem .7rem rgb(0 0 0 / 35%); }
-  .compact-tray .compact-hand button { width: 100%; min-width: 0; min-height: 0; display: grid; place-items: end center; overflow: hidden; padding: 0; border: 0; background: transparent; }
-  .compact-tray .compact-hand :global(.tray-hand-card) { width: min(100%, 22cqi); }
   .tray-stage { position: relative; width: 100%; aspect-ratio: 853 / 250; min-height: 0; overflow: hidden; color: #fffaf0; text-shadow: 0 1px 2px #000; }
   :global(.player-mat-art) { position: absolute; z-index: 0; inset: 0; opacity: 1; filter: none; }
   .tray-stage > :not(:global(.player-mat-art)) { position: absolute; z-index: 1; }

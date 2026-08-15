@@ -60,7 +60,8 @@ test('original production art communicates the complete tabletop', async ({ brow
             };
           });
           expect(positions).toEqual({ playersLeftOfBoard: true, plannerRightOfBoard: true, squarePanels: true });
-          await expect(page.getByLabel('Ada resources').getByLabel('Private Bonus hand')).toBeVisible();
+          await expect(page.getByRole('navigation', { name: 'Private Bonus hand' })).toBeVisible();
+          await expect(page.getByLabel('Ada resources').getByLabel('Private Bonus hand')).toHaveCount(0);
           await expect(page.getByLabel('Bora resources').getByLabel('Private Bonus hand')).toHaveCount(0);
         } },
         { spec: 'Each tray aligns goods, extensions, rubies, money, cards, and four power recesses', check: async () => {
@@ -124,7 +125,7 @@ test('original production art communicates the complete tabletop', async ({ brow
         } },
         { spec: 'The exact private title and rules text stay in semantic HTML over the artwork', check: async () => {
           await expect(boraPage.getByRole('heading', { name: cardName })).toBeVisible();
-          await expect(boraPage.getByText('Private Bonus card')).toBeVisible();
+          await expect(boraPage.getByText('Private Bonus card', { exact: true })).toBeVisible();
           await expect(cardButton).toHaveAttribute('aria-pressed', 'true');
         } },
         { spec: 'Ada’s hand remains a graphical card back with no private face exposed', check: async () => {

@@ -124,7 +124,7 @@ export async function expectInterfaceToFit(page: Page) {
     }
 
     if (root.dataset.tabletopRoute === 'true') {
-      const privateControls = root.querySelectorAll('.hand, [aria-label^="Inspect Bonus card:"]');
+      const privateControls = root.querySelectorAll('.hand, [data-component="PrivateBonusHand"], [aria-label^="Inspect Bonus card:"]');
       if (privateControls.length) failures.push(`tabletop exposes ${privateControls.length} private hand element(s)`);
     }
 
