@@ -121,7 +121,7 @@ Ada opens a two-player table with the reviewed 15-Lira Dealer and five-good Pala
 **Verifications:**
 
 - [x] The resource rail shows 35 Lira, capacity three, and three of each good
-- [x] All supplied cards are real reviewed manifest instances
+- [x] All eight supplied cards are real reviewed manifest instances in the private dock
 
 ## 12. Ada inspects A swift passage
 

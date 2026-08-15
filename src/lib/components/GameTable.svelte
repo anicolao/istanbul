@@ -24,6 +24,7 @@
   import GameLog from './GameLog.svelte';
   import LocationTile from './LocationTile.svelte';
   import PlayerTray from './PlayerTray.svelte';
+  import PrivateBonusHand from './PrivateBonusHand.svelte';
   import SultanOffer from './SultanOffer.svelte';
   import TeaHousePayoffs from './TeaHousePayoffs.svelte';
 
@@ -542,6 +543,10 @@
     </aside>
   </div>
 
+  {#if tableLayout && !tabletopControls && !displayOnly}
+    <PrivateBonusHand cards={localPlayer.bonusHand} selected={selectedBonus} onInspect={inspectBonus} class="desktop-private-hand" />
+  {/if}
+
   <section class:hidden-at-finish={game.phase === 'game-over'} class:many={game.players.length > 3} class="player-rail" aria-label="Player resources" style={`--players: ${game.players.length}`} data-e2e-fit data-e2e-no-scroll>
     {#each game.players as player, index}
       <article class:local={!tabletopControls && player.uid === userUid} aria-label={`${player.name} resources`} data-player-color={player.color} data-e2e-fit data-e2e-no-scroll>
@@ -575,6 +580,8 @@
   .table-layout .board-shell { grid-column: 2; grid-row: 1 / 4; }
   .table-layout .board { --board-limit: 100%; }
   .table-layout .inspector { grid-column: 3; grid-row: 1 / 4; }
+  .table-layout:not(.tabletop) .inspector { grid-row: 1 / 3; }
+  .table-layout :global(.desktop-private-hand) { grid-column: 3; grid-row: 3; height: clamp(6.5rem, 17vh, 8.5rem); }
   .table-layout .play-area:has(.inspector.finish) .board-shell { display: none; }
   .table-layout .inspector.finish { grid-column: 2 / 4; }
   .table-layout .player-rail { grid-column: 1; grid-row: 2; min-height: 0; grid-template-columns: 1fr; grid-auto-flow: row; grid-auto-rows: minmax(0, 1fr); align-content: center; gap: .3rem; overflow: hidden; }
@@ -672,6 +679,7 @@
     .table-layout .turn-banner { grid-column: 1 / 3; grid-row: 1; }
     .table-layout .board-shell { grid-column: 1 / 3; grid-row: 2; }
     .table-layout .inspector { grid-column: 1 / 3; grid-row: 3; }
+    .table-layout :global(.desktop-private-hand) { display: none; }
     .table-layout .player-rail, .table-layout .player-rail.many { grid-column: 1 / 3; grid-row: 4; grid-template-columns: repeat(var(--players, 2), minmax(0, 1fr)); grid-auto-flow: row; grid-auto-rows: auto; overflow: hidden; }
     .table-layout .player-rail article { aspect-ratio: 1; }
     .tabletop-strip { display: none; }

@@ -124,6 +124,23 @@ test('a ready room becomes an exact seeded board with private hands', async ({ b
       description: 'Ada commits the setup seed and opens all sixteen Places',
       verifications: [
         { spec: 'The illustrated board contains exactly sixteen accessible Place buttons', check: async () => expect(page.getByTestId('bazaar-board').getByRole('button')).toHaveCount(16) },
+        { spec: 'On desktop, Ada’s private hand occupies its own dock and does not cover her player tray', check: async () => {
+          if (testInfo.project.name !== 'desktop') return;
+          const hand = page.locator('[data-component="PrivateBonusHand"]');
+          const tray = page.getByRole('article', { name: 'Ada resources' }).locator('[data-component="PlayerTray"]');
+          await expect(hand).toBeVisible();
+          await expect(tray.locator('[aria-label="Private Bonus hand"]')).toHaveCount(0);
+          const handBox = await hand.boundingBox();
+          const trayBox = await tray.boundingBox();
+          expect(handBox).not.toBeNull();
+          expect(trayBox).not.toBeNull();
+          expect(
+            handBox!.x < trayBox!.x + trayBox!.width
+            && handBox!.x + handBox!.width > trayBox!.x
+            && handBox!.y < trayBox!.y + trayBox!.height
+            && handBox!.y + handBox!.height > trayBox!.y
+          ).toBe(false);
+        } },
         { spec: 'Long Path begins 16, 2, 8, 11 and both merchants occupy Fountain 7', check: async () => { const labels = await page.getByTestId('bazaar-board').getByRole('button').allTextContents(); expect(labels.slice(0, 4).join(' ')).toContain('16'); expect(labels.slice(0, 4).join(' ')).toContain('Gem Dealer'); await expect(page.getByRole('button', { name: /7 Fountain.*Merchants: Ada, Bora/ })).toBeVisible(); } },
         { spec: 'The sixth event derives a deterministic movement-phase setup with private hand masking', check: async () => expectState(page, { screen: 'game', eventCount: 6, diagnosticCount: 0, game: { seed, board: [16, 2, 8, 11, 15, 7, 6, 4, 3, 5, 12, 1, 10, 9, 14, 13], turnNumber: 1, phase: 'movement', opponentHandCounts: [1], selectedPlace: null, boardScale: 1 } }) }
       ]
@@ -174,7 +191,7 @@ test('a ready room becomes an exact seeded board with private hands', async ({ b
     await bora.step('guest-inspects-private-card', {
       description: 'Bora opens his dealt Bonus card in the private inspector',
       verifications: [
-        { spec: 'The selected card title and complete rules text are visible to Bora', check: async () => { const title = (boraCardLabel ?? '').replace('Inspect Bonus card: ', ''); await expect(boraCardButton).toHaveAttribute('aria-pressed', 'true'); await expect(boraPage.getByText('Private Bonus card')).toBeVisible(); await expect(boraPage.getByRole('heading', { name: title })).toBeVisible(); await expect(boraPage.getByText(title, { exact: true })).toHaveCount(3); } },
+        { spec: 'The selected card title and complete rules text are visible to Bora', check: async () => { const title = (boraCardLabel ?? '').replace('Inspect Bonus card: ', ''); await expect(boraCardButton).toHaveAttribute('aria-pressed', 'true'); await expect(boraPage.getByText('Private Bonus card', { exact: true })).toBeVisible(); await expect(boraPage.getByRole('heading', { name: title })).toBeVisible(); await expect(boraPage.getByText(title, { exact: true })).toHaveCount(3); } },
         { spec: 'Ada remains represented as one hidden opponent card', check: async () => expect(boraPage.getByText('Bonus hand · 1 hidden card')).toBeVisible() },
         { spec: 'Selecting the private card changes no canonical event or public setup', check: async () => { const state = await readState(boraPage); expect(state.eventCount).toBe(6); expect(state.game.selectedBonus).toBe(state.game.localHand[0]); expect(state.game.opponentHandCounts).toEqual([1]); } }
       ]
@@ -183,7 +200,7 @@ test('a ready room becomes an exact seeded board with private hands', async ({ b
     await ada.step('host-cannot-see-guest-card', {
       description: 'Ada’s observer view continues to mask Bora’s private card',
       verifications: [
-        { spec: 'No private-card inspector opens in Ada’s browser', check: async () => expect(page.getByText('Private Bonus card')).toHaveCount(0) },
+        { spec: 'No private-card inspector opens in Ada’s browser', check: async () => expect(page.getByText('Private Bonus card', { exact: true })).toHaveCount(0) },
         { spec: 'Bora remains exactly one hidden card in Ada’s DOM', check: async () => expect(page.getByText('Bonus hand · 1 hidden card')).toBeVisible() },
         { spec: 'Ada’s serialized selector contains only her card ID and Bora’s count', check: async () => { const host = await readState(page); const guest = await readState(boraPage); expect(JSON.stringify(host.game)).not.toContain(guest.game.localHand[0]); expect(host.game.opponentHandCounts).toEqual([1]); } }
       ]
