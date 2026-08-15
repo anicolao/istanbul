@@ -132,6 +132,7 @@ Ada and Bora narrate every input from room creation through deterministic dice a
 
 **Verifications:**
 
+- [x] The shared payoff display shows both wager outcomes
 - [x] The default wager is a visible 7 Lira
 - [x] The wager button truthfully names 7
 - [x] Movement alone adds no Lira or roll

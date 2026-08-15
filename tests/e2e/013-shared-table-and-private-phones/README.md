@@ -189,7 +189,7 @@ The dedicated /tabletop route creates and owns an empty shared-table room. Ada a
 
 **Verifications:**
 
-- [x] Ada’s public player mat shows 7 Lira and zero Bonus cards without revealing the spent title
+- [x] Ada’s public player mat shows 7 Lira and zero Bonus cards while the spent card becomes the public discard
 - [x] The public log describes the effect while movement still belongs to the tabletop
 
 ## 18. Ada selects Fruit Warehouse on the shared tabletop

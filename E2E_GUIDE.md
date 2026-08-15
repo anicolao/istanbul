@@ -100,7 +100,7 @@ The initial suite follows the MVP's vertical slices:
 21. `021-production-asset-gallery` proves the standalone review route renders
     all 83 review states through the same `LocationTile`, `PlayerTray`,
     `BonusCard`, `MarketDemand`, and `GameArt` components used during play. It
-    validates the complete 73-asset backing manifest, renderer and representative
+    validates the complete 71-asset backing manifest, renderer and representative
     props for every stable ID, nested image loading, a titled rectangular rounded
     location, and full visibility on phone and desktop after every action.
 

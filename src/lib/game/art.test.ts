@@ -29,7 +29,7 @@ describe('production art manifest', () => {
   });
 
   it('backs the rendered review catalogue with every source asset and demand state', () => {
-    expect(rawGalleryItems).toHaveLength(73);
+    expect(rawGalleryItems).toHaveLength(71);
     expect(new Set(rawGalleryItems.map(({ assetPath }) => assetPath))).toEqual(new Set(assets));
     expect(Object.fromEntries(galleryCategories.map(({ id, items }) => [id, items.length]))).toEqual({
       places: 16,
@@ -37,7 +37,7 @@ describe('production art manifest', () => {
       pieces: 20,
       bonus: 12,
       demands: 12,
-      components: 20
+      components: 18
     });
   });
 });

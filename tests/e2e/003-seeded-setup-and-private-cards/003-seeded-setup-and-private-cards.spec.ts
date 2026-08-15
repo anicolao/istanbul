@@ -143,7 +143,7 @@ test('a ready room becomes an exact seeded board with private hands', async ({ b
       description: 'Ada inspects Fountain 7 before planning movement',
       verifications: [
         { spec: 'The Fountain tile is selected and its full action is visible', check: async () => { await expect(page.getByRole('button', { name: /7 Fountain/ })).toHaveAttribute('aria-pressed', 'true'); await expect(page.getByRole('heading', { name: 'Fountain' })).toBeVisible(); await expect(page.getByText('Return any number of assistants to the merchant.')).toBeVisible(); } },
-        { spec: 'The inspector reports row two, column two and both merchants', check: async () => { await expect(page.getByText('Row 2, column 2')).toBeVisible(); await expect(page.getByText('Ada, Bora')).toBeVisible(); } },
+        { spec: 'The inspector DOM reports row two, column two and both merchants', check: async () => { await expect(page.locator('.inspector dl')).toContainText('Row 2, column 2'); await expect(page.locator('.inspector dl')).toContainText('Ada, Bora'); } },
         { spec: 'Inspection changes local view state without appending an event', check: async () => expectState(page, { eventCount: 6, game: { selectedPlace: 7, selectedBonus: null, boardScale: 1 } }) }
       ]
     });

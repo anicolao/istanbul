@@ -30,6 +30,7 @@ test('Tea House wagers and Black Market goods use seeded replayable dice', async
 
     await page.getByRole('button', { name: 'Move here and leave an assistant' }).click();
     await ada.step('host-arrives-tea-house', { description: 'Ada arrives at Tea House before declaring', verifications: [
+      { spec: 'The shared payoff display shows both wager outcomes', check: async () => { const payoffs = page.locator('.inspector [data-component="TeaHousePayoffs"]'); await expect(payoffs.locator('[data-outcome="success"]')).toContainText('≥ wager'); await expect(payoffs.locator('[data-outcome="failure"]')).toContainText('×2'); } },
       { spec: 'The default wager is a visible 7 Lira', check: async () => expect(page.getByLabel('Tea House wager')).toHaveValue('7') },
       { spec: 'The wager button truthfully names 7', check: async () => expect(page.getByRole('button', { name: 'Wager 7 and roll both dice' })).toBeEnabled() },
       { spec: 'Movement alone adds no Lira or roll', check: async () => expectState(page, { eventCount: 6, game: { phase: 'action', lastRoll: null, players: [{ merchantPlace: 9, lira: 2 }, {}] } }) }

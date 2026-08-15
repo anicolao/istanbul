@@ -13,7 +13,7 @@ import { bonusCards, demandTiles, places, type BonusCardManifest, type Good } fr
 export type GalleryCategoryId = 'places' | 'mats' | 'pieces' | 'bonus' | 'demands' | 'components';
 export type GalleryComponent = Good | 'lira' | 'ruby' | 'wheelbarrow' | 'die' | 'mail' | 'bonus-deck'
   | 'mosque-fabric' | 'mosque-spice' | 'mosque-fruit' | 'mosque-jewelry'
-  | 'sultan-track' | 'demand-large' | 'demand-small' | 'gemstone-track' | 'ruby-supply' | 'goods-supply';
+  | 'demand-large' | 'demand-small' | 'ruby-supply' | 'goods-supply';
 
 export type GalleryItem = {
   id: string;
@@ -46,8 +46,8 @@ const placeItems: GalleryItem[] = places.map((place) => ({
 
 const matItems: GalleryItem[] = playerColorNames.map((color) => ({
   id: `mat-${color}`,
-  title: `${titleCase(color)} player mat`,
-  detail: 'Goods tracks, wheelbarrow extensions, ruby wells, purse, Bonus cards, and Mosque powers.',
+  title: `${titleCase(color)} tabletop tray`,
+  detail: 'Five-level goods wheelbarrow, three capacity extensions, ruby wells, purse, Bonus cards, and Mosque powers.',
   assetPath: playerMatArt[color],
   category: 'mats',
   kind: 'mat',
@@ -102,15 +102,13 @@ const componentDefinitions: Array<[GalleryComponent, string, string, string]> = 
   ['wheelbarrow', 'Wheelbarrow extension', 'Goods-capacity upgrade tile.', componentArt.wheelbarrow],
   ['die', 'Single die', 'Result marker for individual dice.', componentArt.die],
   ['mail', 'Mail indicator', 'Post Office track cube.', componentArt.mail],
-  ['bonus-deck', 'Bonus deck marker', 'Small public pile icon.', componentArt.bonusDeck],
+  ['bonus-deck', 'Bonus deck marker', 'Small public pile icon.', bonusCardArt.deck],
   ['mosque-fabric', 'Red Mosque power', 'Dice adjustment power tile.', componentArt.mosque.fabric],
   ['mosque-spice', 'Green Mosque power', 'Warehouse extra-good power tile.', componentArt.mosque.spice],
   ['mosque-fruit', 'Yellow Mosque power', 'Assistant recall power tile.', componentArt.mosque.fruit],
   ['mosque-jewelry', 'Blue Mosque power', 'Fifth-assistant power tile.', componentArt.mosque.jewelry],
-  ['sultan-track', 'Sultan goods track', 'Goods-cost apparatus for ruby deliveries.', componentArt.sultanTrack],
   ['demand-large', 'Large Market demand base', 'Background used beneath the five live demand goods.', componentArt.demandLarge],
   ['demand-small', 'Small Market demand base', 'Background used beneath the five live demand goods.', componentArt.demandSmall],
-  ['gemstone-track', 'Gemstone price track', 'Escalating Lira-cost apparatus.', componentArt.gemstoneTrack],
   ['ruby-supply', 'Ruby supply', 'Public ruby presentation.', componentArt.rubySupply],
   ['goods-supply', 'Goods supply', 'Public mixed-goods presentation.', componentArt.goodsSupply]
 ];
@@ -140,9 +138,9 @@ export const galleryCategories: Array<{ id: GalleryCategoryId; label: string; de
   { id: 'places', label: 'Locations', description: 'All sixteen live LocationTile states, including titles, pieces, and public apparatus.', items: placeItems },
   { id: 'mats', label: 'Player trays', description: 'Five representative PlayerTray states with live goods, powers, money, and rubies.', items: matItems },
   { id: 'pieces', label: 'Playing pieces', description: 'The GameArt components used for merchants, assistants, family members, and neutral figures.', items: pieceItems },
-  { id: 'bonus', label: 'Bonus cards', description: 'Rendered BonusCard rules faces plus the private back and draw deck.', items: bonusItems },
+  { id: 'bonus', label: 'Bonus cards', description: 'Every complete rules face at hand, phone, and responsive desktop-inspector sizes, plus the private back and draw deck.', items: bonusItems },
   { id: 'demands', label: 'Market demands', description: 'Every live MarketDemand goods combination.', items: demandItems },
-  { id: 'components', label: 'Physical components', description: 'The GameArt goods, money, rubies, powers, tracks, and supplies composed into game UI.', items: componentItems }
+  { id: 'components', label: 'Physical components', description: 'The GameArt goods, money, rubies, powers, demand bases, and supplies composed into game UI.', items: componentItems }
 ];
 
 export const rawGalleryItems = galleryCategories.filter(({ id }) => id !== 'demands').flatMap(({ items }) => items);
