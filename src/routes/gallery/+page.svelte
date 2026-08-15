@@ -4,6 +4,7 @@
   import '@fontsource/cormorant-garamond/700.css';
   import { base } from '$app/paths';
   import BonusCard from '$lib/components/BonusCard.svelte';
+  import BonusCardShowcase from '$lib/components/BonusCardShowcase.svelte';
   import GameArt from '$lib/components/GameArt.svelte';
   import LocationTile from '$lib/components/LocationTile.svelte';
   import MarketDemand from '$lib/components/MarketDemand.svelte';
@@ -13,6 +14,7 @@
   import { galleryCategories, rawGalleryItems, type GalleryCategoryId, type GalleryItem } from '$lib/game/gallery';
 
   const pageSize = 6;
+  const renderedCount = galleryCategories.flatMap(({ items }) => items).length;
   let categoryId = $state<GalleryCategoryId>('places');
   let page = $state(0);
   let selected = $state<GalleryItem | null>(null);
@@ -40,19 +42,26 @@
   function rendererName(item: GalleryItem) {
     if (item.kind === 'location') return 'LocationTile';
     if (item.kind === 'mat') return 'PlayerTray';
-    if (item.kind === 'card') return 'BonusCard';
+    if (item.kind === 'card' || item.kind === 'card-back' || item.kind === 'card-deck') return 'BonusCardShowcase';
     if (item.kind === 'demand') return 'MarketDemand';
+    if (item.kind === 'component' && item.component === 'bonus-deck') return 'BonusCard';
     return 'GameArt';
   }
 
   function rendererProps(item: GalleryItem) {
     if (item.kind === 'location') return `placeId=${item.place} · projection=production-component-gallery`;
     if (item.kind === 'mat') return `color=${item.color} · state=representative-play`;
-    if (item.kind === 'card') return `effect=${item.effect} · rules-text=visible`;
+    if (item.kind === 'card') return `effect=${item.effect} · rules-text=visible · aspect=1:2`;
+    if (item.kind === 'card-back' || item.kind === 'card-deck') return `kind=${item.kind} · aspect=1:2`;
     if (item.kind === 'demand') return `market=${item.market} · goods=${item.goods.join(',')}`;
     if (item.kind === 'piece') return `piece=${item.piece}${item.color ? ` · color=${item.color}` : ''}`;
+    if (item.kind === 'component' && item.component === 'bonus-deck') return 'reverse=card-deck · aspect=1:2';
     if (item.kind === 'component') return `component=${item.component}`;
-    return `kind=${item.kind}`;
+    return 'production component';
+  }
+
+  function gameArtComponent(item: GalleryItem) {
+    return item.kind === 'component' && item.component !== 'bonus-deck' ? item.component : undefined;
   }
 </script>
 
@@ -64,12 +73,13 @@
     <div class:large class="location-component"><LocationTile game={galleryGame} placeId={item.place} index={item.place - 1} tabIndex={-1} onclick={() => selected = item} /></div>
   {:else if item.kind === 'mat'}
     {@const player = galleryGame.players.find(({ color }) => color === item.color)!}
-    <div class:large class="tray-component"><PlayerTray {player} seat={galleryGame.players.indexOf(player) + 1} starting={player.uid === galleryGame.players[galleryGame.startingSeat].uid} local={false} selectedBonus={null} onInspectBonus={() => {}} /></div>
+    <div class:large class="tray-component"><PlayerTray {player} seat={galleryGame.players.indexOf(player) + 1} starting={player.uid === galleryGame.players[galleryGame.startingSeat].uid} local={false} compact selectedBonus={null} onInspectBonus={() => {}} /></div>
   {:else if item.kind === 'piece'}<GameArt kind="piece" piece={item.piece} color={item.color} class={large ? 'gallery-art gallery-art-large' : 'gallery-art'} label={item.title} />
-  {:else if item.kind === 'card'}<div class:large class="bonus-component"><BonusCard card={bonusByEffect.get(item.effect)!} compact /></div>
-  {:else if item.kind === 'card-back'}<GameArt kind="card-back" class={large ? 'gallery-art gallery-art-large' : 'gallery-art'} label={item.title} />
-  {:else if item.kind === 'card-deck'}<GameArt kind="card-deck" class={large ? 'gallery-art gallery-art-large' : 'gallery-art'} label={item.title} />
-  {:else if item.kind === 'component'}<GameArt kind="component" component={item.component} class={large ? 'gallery-art gallery-art-large' : 'gallery-art'} label={item.title} />
+  {:else if item.kind === 'card'}<BonusCardShowcase card={bonusByEffect.get(item.effect)!} {large} />
+  {:else if item.kind === 'card-back'}<BonusCardShowcase reverse="card-back" label={item.title} {large} />
+  {:else if item.kind === 'card-deck'}<BonusCardShowcase reverse="card-deck" label={item.title} {large} />
+  {:else if item.kind === 'component' && item.component === 'bonus-deck'}<BonusCard reverse="card-deck" label={item.title} class={large ? 'physical-deck physical-deck-large' : 'physical-deck'} />
+  {:else if item.kind === 'component'}<GameArt kind="component" component={gameArtComponent(item)} class={large ? 'gallery-art gallery-art-large' : 'gallery-art'} label={item.title} />
   {:else}
     <MarketDemand market={item.market} goods={item.goods} label={`${item.title}: ${item.detail}`} review />
   {/if}
@@ -78,7 +88,7 @@
 <main data-e2e-layout data-gallery-raw-count={rawGalleryItems.length} data-gallery-composite-count={galleryCategories.find(({ id }) => id === 'demands')?.items.length} data-gallery-rendered-count={galleryCategories.flatMap(({ items }) => items).length}>
   <header class="gallery-header" data-e2e-fit data-e2e-no-scroll>
     <a class="brand" href={`${base}/`} aria-label="Back to Istanbul"><span aria-hidden="true"></span>Istanbul</a>
-    <div><p>Production review room</p><h1>Component gallery</h1><small>85 rendered states · shared with live play</small></div>
+    <div><p>Production review room</p><h1>Component gallery</h1><small>{renderedCount} rendered states · shared with live play</small></div>
     <p class="manifest-status" role="status" data-status="synced"><i></i>Components live</p>
   </header>
 
@@ -132,13 +142,26 @@
   .gallery-panel { min-height: 0; display: grid; grid-template-rows: auto minmax(0, 1fr); gap: .45rem; overflow: hidden; padding: .6rem; border: 1px solid #efca7d55; border-radius: 1rem; background: #fffaf0; box-shadow: 0 1rem 3rem #0004; }.gallery-panel > header { min-width: 0; display: flex; align-items: end; justify-content: space-between; gap: 1rem; }.gallery-panel > header p, .gallery-panel h2 { margin: 0; }.gallery-panel > header p { color: #637976; font-size: .58rem; }.gallery-panel h2 { font: 700 clamp(1.35rem, 2.3vw, 2rem)/1 'Cormorant Garamond', serif; }.gallery-panel > header > strong { color: #a43b32; font-size: .72rem; white-space: nowrap; }.gallery-panel > header > strong span { color: #738481; }
   .asset-grid { min-height: 0; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); grid-template-rows: repeat(2, minmax(0, 1fr)); gap: .55rem; overflow: hidden; }.asset-card { position: relative; min-width: 0; min-height: 0; display: grid; grid-template-columns: minmax(0, 1fr) auto; grid-template-rows: minmax(0, 1fr) auto; gap: .25rem .5rem; overflow: hidden; padding: .38rem; border: 1px solid #d1b574; border-radius: .65rem; color: #173f43; text-align: left; background: #efe0bd; }.asset-card:has(.inspect-component:hover), .asset-card:has(.inspect-component:focus-visible) { border-color: #a43b32; outline: 2px solid #a43b32; outline-offset: -2px; }.asset-preview { grid-column: 1 / -1; min-height: 0; display: grid; place-items: center; overflow: hidden; border-radius: .42rem; background: radial-gradient(circle, #fff9e8, #cdb485); }.asset-copy { min-width: 0; display: grid; }.asset-copy strong, .asset-copy small { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }.asset-copy strong { font-size: .67rem; }.asset-copy small { color: #5f706d; font-size: .5rem; }.asset-card code { align-self: end; color: #995145; font-size: .47rem; white-space: nowrap; }.inspect-component { position: absolute; z-index: 8; top: .65rem; right: .65rem; min-height: 1.6rem; padding: .2rem .5rem; border: 1px solid #efca7d; border-radius: 1rem; color: #fffaf0; background: #173f43e8; font-size: .5rem; font-weight: 700; }
   :global(.gallery-art) { width: 94%; height: 94%; background-size: contain !important; }.asset-preview > :global(.card) { width: min(45%, 6.8rem); height: 96%; }.asset-preview > :global(.mat) { width: 96%; height: 96%; }.asset-preview > :global(.piece) { width: 72%; height: 92%; }.asset-preview > :global(.component) { width: 70%; height: 86%; }
-  .location-component { width: 94%; max-height: 96%; aspect-ratio: 1.42; }.location-component.large { width: min(94%, 42rem); }
-  .tray-component { width: 96%; display: grid; align-content: center; overflow: hidden; }.tray-component.large { width: min(98%, 50rem); }
-  .bonus-component { width: min(46%, 7rem); max-height: 96%; }.bonus-component.large { width: min(44%, 17rem); }
+  .asset-preview > :global(.physical-deck) { width: min(42%, 5.4rem); }
+  .asset-preview > :global(.gallery-art[data-piece='merchant']),
+  .review-art > :global(.gallery-art[data-piece='merchant']) { width: auto; height: 92%; aspect-ratio: 251 / 314; }
+  .asset-preview > :global(.gallery-art[data-piece='assistant']),
+  .review-art > :global(.gallery-art[data-piece='assistant']) { width: auto; height: 72%; aspect-ratio: 4 / 5; }
+  .asset-preview > :global(.gallery-art[data-piece='family']),
+  .review-art > :global(.gallery-art[data-piece='family']) { width: auto; height: 66%; aspect-ratio: 1; }
+  .asset-preview > :global(.gallery-art[data-piece='merchant']),
+  .review-art > :global(.gallery-art[data-piece='merchant']) { background-position: center; background-size: contain !important; }
+  .asset-preview > :global(.gallery-art[data-piece='assistant']),
+  .review-art > :global(.gallery-art[data-piece='assistant']) { background-position: center; background-size: contain !important; }
+  .asset-preview > :global(.gallery-art[data-piece='family']),
+  .review-art > :global(.gallery-art[data-piece='family']) { background-position: center; background-size: contain !important; }
+  .location-component { width: min(94%, 19.625rem); max-height: 96%; aspect-ratio: 1.42; }.location-component.large { width: min(94%, 19.625rem); }
+  .tray-component { width: min(96%, 17rem); aspect-ratio: 1; display: grid; align-content: center; overflow: hidden; }.tray-component.large { width: min(88%, 34rem); }
   .gallery-pagination { min-width: 0; display: grid; grid-template-columns: 7rem 1fr 7rem; gap: .55rem; align-items: center; overflow: hidden; }.gallery-pagination button { min-height: 2.35rem; padding: .3rem .6rem; border: 1px solid #efca7d; border-radius: .5rem; color: #173f43; background: #efca7d; font-size: .63rem; font-weight: 700; }.gallery-pagination button:disabled { border-color: #ffffff2c; color: #829793; background: #ffffff0b; cursor: not-allowed; }.gallery-pagination span { overflow: hidden; color: #c7d8d4; font-size: .61rem; text-align: center; text-overflow: ellipsis; white-space: nowrap; }
   .review-backdrop { position: fixed; z-index: 20; inset: 0; display: grid; place-items: center; padding: clamp(.5rem, 2vw, 1.5rem); background: #031719e8; backdrop-filter: blur(6px); }.review-dialog { width: min(54rem, 100%); height: min(46rem, 100%); display: grid; grid-template-rows: auto minmax(0, 1fr) auto; gap: .55rem; overflow: hidden; padding: clamp(.7rem, 2vw, 1.2rem); border: 1px solid #efca7d; border-radius: 1rem; color: #173f43; background: #fffaf0; box-shadow: 0 2rem 6rem #000a; }.review-dialog > header { display: flex; align-items: start; justify-content: space-between; gap: 1rem; }.review-dialog header p, .review-dialog h2, .review-dialog footer p { margin: 0; }.review-dialog header p { color: #a43b32; font-size: .58rem; font-weight: 700; letter-spacing: .12em; text-transform: uppercase; }.review-dialog h2 { font: 700 clamp(1.65rem, 4vw, 2.6rem)/1 'Cormorant Garamond', serif; }.review-dialog header button { width: 2.3rem; height: 2.3rem; border: 1px solid #b99a6b; border-radius: 50%; color: #173f43; background: #fff; font-size: 1.4rem; }.review-art { min-height: 0; display: grid; place-items: center; overflow: hidden; border: 1px solid #d9c28e; border-radius: .75rem; background: radial-gradient(circle, #fff, #dfc797); }.review-art :global(.gallery-art-large) { width: 94%; height: 94%; background-size: contain !important; }.review-art > :global(.card) { width: min(48%, 17rem); }.review-art > :global(.piece), .review-art > :global(.component) { width: min(65%, 25rem); }.review-dialog footer { min-width: 0; display: grid; grid-template-columns: 1fr auto; gap: .7rem; align-items: center; }.review-dialog footer p { color: #4f6663; font-size: .68rem; }.review-dialog footer code { max-width: 26rem; overflow: hidden; padding: .3rem .45rem; border-radius: .3rem; color: #8d4138; background: #eadbbd; font-size: .54rem; text-overflow: ellipsis; white-space: nowrap; }
+  .review-art > :global(.physical-deck-large) { width: min(36%, 13rem); }
   @media (max-width: 600px) {
-    main { gap: .4rem; padding: .45rem; }.gallery-header { grid-template-columns: auto 1fr; gap: .55rem; padding: .4rem .55rem; }.brand { font-size: 1rem; }.gallery-header h1 { font-size: 1.55rem; }.gallery-header small { font-size: .5rem; }.manifest-status { grid-column: 1 / -1; position: absolute; top: .65rem; right: .8rem; font-size: .5rem; }.category-nav { grid-template-columns: repeat(3, minmax(0, 1fr)); gap: .25rem; }.category-nav button { min-height: 1.85rem; padding: .2rem .35rem; }.category-nav strong { font-size: .52rem; }.gallery-panel { gap: .25rem; padding: .4rem; }.gallery-panel > header p { display: none; }.gallery-panel h2 { font-size: 1.2rem; }.asset-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); grid-template-rows: repeat(3, minmax(0, 1fr)); gap: .3rem; }.asset-card { gap: .12rem .2rem; padding: .25rem; border-radius: .45rem; }.asset-copy strong { font-size: .56rem; }.asset-copy small { font-size: .43rem; }.asset-card code { max-width: 4.6rem; overflow: hidden; font-size: .4rem; text-overflow: ellipsis; }.inspect-component { top: .4rem; right: .4rem; min-height: 1.2rem; padding: .12rem .3rem; font-size: .4rem; }.asset-preview > :global(.card) { width: min(54%, 4rem); }.asset-preview > :global(.piece) { width: 78%; }.location-component { width: 98%; }.bonus-component { width: min(48%, 4rem); }.gallery-pagination { grid-template-columns: 5.6rem 1fr 5.6rem; gap: .25rem; }.gallery-pagination button { min-height: 2rem; font-size: .52rem; }.gallery-pagination span { font-size: .5rem; }.review-dialog { height: min(42rem, 100%); padding: .6rem; }.review-dialog footer { grid-template-columns: 1fr; gap: .25rem; }.review-dialog footer p { font-size: .58rem; }.review-dialog footer code { max-width: 100%; }.review-art > :global(.card) { width: min(70%, 13rem); }.review-art > :global(.piece), .review-art > :global(.component) { width: 78%; }
+    main { gap: .4rem; padding: .45rem; }.gallery-header { grid-template-columns: auto 1fr; gap: .55rem; padding: .4rem .55rem; }.brand { font-size: 1rem; }.gallery-header h1 { font-size: 1.55rem; }.gallery-header small { font-size: .5rem; }.manifest-status { grid-column: 1 / -1; position: absolute; top: .65rem; right: .8rem; font-size: .5rem; }.category-nav { grid-template-columns: repeat(3, minmax(0, 1fr)); gap: .25rem; }.category-nav button { min-height: 1.85rem; padding: .2rem .35rem; }.category-nav strong { font-size: .52rem; }.gallery-panel { gap: .25rem; padding: .4rem; }.gallery-panel > header p { display: none; }.gallery-panel h2 { font-size: 1.2rem; }.asset-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); grid-template-rows: repeat(3, minmax(0, 1fr)); gap: .3rem; }.asset-card { gap: .12rem .2rem; padding: .25rem; border-radius: .45rem; }.asset-copy strong { font-size: .56rem; }.asset-copy small { font-size: .43rem; }.asset-card code { max-width: 4.6rem; overflow: hidden; font-size: .4rem; text-overflow: ellipsis; }.inspect-component { top: .4rem; right: .4rem; min-height: 1.2rem; padding: .12rem .3rem; font-size: .4rem; }.asset-preview > :global(.card) { width: min(54%, 4rem); }.asset-preview > :global(.piece) { width: 78%; }.location-component { width: 98%; }.gallery-pagination { grid-template-columns: 5.6rem 1fr 5.6rem; gap: .25rem; }.gallery-pagination button { min-height: 2rem; font-size: .52rem; }.gallery-pagination span { font-size: .5rem; }.review-dialog { height: min(42rem, 100%); padding: .6rem; }.review-dialog footer { grid-template-columns: 1fr; gap: .25rem; }.review-dialog footer p { font-size: .58rem; }.review-dialog footer code { max-width: 100%; }.review-art > :global(.card) { width: min(70%, 13rem); }.review-art > :global(.piece), .review-art > :global(.component) { width: 78%; }
   }
   @media (prefers-reduced-motion: reduce) { *, *::before, *::after { transition: none !important; animation: none !important; } }
 </style>

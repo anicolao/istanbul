@@ -176,6 +176,7 @@ Ada opens a two-player table with the reviewed 15-Lira Dealer and five-good Pala
 
 **Verifications:**
 
+- [x] The composed Dealer display shows current and next prices
 - [x] The reviewed starting price is 15 Lira
 - [x] Payment leaves 33 Lira and relocates the neutral merchant
 
@@ -321,7 +322,7 @@ Ada opens a two-player table with the reviewed 15-Lira Dealer and five-good Pala
 
 **Verifications:**
 
-- [x] The two-player track demands five goods
+- [x] The two-player offer demands five goods and previews the sixth
 - [x] The exposed Palace index remains exact
 
 ## 30. Ada assigns fruit to the first Palace wild cost

@@ -27,7 +27,7 @@ export function createGalleryGame() {
   game.largeDemand = ['demand-large-4', ...game.largeDemand.filter((id) => id !== 'demand-large-4')];
   game.smallDemand = ['demand-small-2', ...game.smallDemand.filter((id) => id !== 'demand-small-2')];
   game.bonusDiscard = [game.bonusDrawPile.shift()!];
-  game.rubyTracks.sultanIndex = 3;
+  game.rubyTracks.sultanIndex = 6;
   game.rubyTracks.gemstonePrice = 18;
   game.governorPlace = 8;
   game.smugglerPlace = 11;
@@ -38,14 +38,15 @@ export function createGalleryGame() {
     player.assistantsCarried = Math.max(1, 4 - index);
     player.assistantsByPlace = index === 0 ? { 2: 1, 7: 2 } : index === 1 ? { 5: 1 } : index === 2 ? { 10: 1 } : index === 3 ? { 13: 1 } : { 15: 1 };
     player.familyPlace = [12, 6, 12, 9, 16][index];
-    player.goods = {
-      fabric: (index + 1) % 5,
-      spice: (index + 2) % 5,
-      fruit: (index + 3) % 5,
-      jewelry: index % 4
-    };
     player.capacity = Math.min(5, 2 + index);
     player.extensions = Math.min(3, index);
+    player.goods = [
+      { fabric: 1, spice: 2, fruit: 0, jewelry: 2 },
+      { fabric: 2, spice: 3, fruit: 1, jewelry: 0 },
+      { fabric: 3, spice: 4, fruit: 2, jewelry: 1 },
+      { fabric: 4, spice: 5, fruit: 3, jewelry: 2 },
+      { fabric: 5, spice: 4, fruit: 5, jewelry: 3 }
+    ][index];
     player.lira = [7, 12, 18, 24, 31][index];
     player.rubies = index + 1;
     player.mosqueTileIds = [

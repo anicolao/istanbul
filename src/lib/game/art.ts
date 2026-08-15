@@ -17,14 +17,14 @@ export const locationArt = Object.fromEntries(
 ) as Record<number, string>;
 
 export const pieceArt = {
-  merchant: Object.fromEntries(playerColorNames.map((color) => [color, `art/game/pieces/merchant-${color}.webp`])) as Record<PlayerColorName, string>,
-  assistant: Object.fromEntries(playerColorNames.map((color) => [color, `art/game/pieces/assistant-${color}.webp`])) as Record<PlayerColorName, string>,
-  family: Object.fromEntries(playerColorNames.map((color) => [color, `art/game/pieces/family-${color}.webp`])) as Record<PlayerColorName, string>,
-  neutralMerchant: 'art/game/pieces/neutral-merchant.webp',
-  governor: 'art/game/pieces/governor.webp',
-  smuggler: 'art/game/pieces/smuggler.webp',
-  firstPlayer: 'art/game/pieces/first-player.webp',
-  dicePair: 'art/game/pieces/dice-pair.webp'
+  merchant: Object.fromEntries(playerColorNames.map((color) => [color, `art/game/pieces/merchant-${color}-transparent.png`])) as Record<PlayerColorName, string>,
+  assistant: Object.fromEntries(playerColorNames.map((color) => [color, `art/game/pieces/assistant-${color}-transparent.png`])) as Record<PlayerColorName, string>,
+  family: Object.fromEntries(playerColorNames.map((color) => [color, `art/game/pieces/family-${color}-transparent.png`])) as Record<PlayerColorName, string>,
+  neutralMerchant: 'art/game/pieces/neutral-merchant-transparent.png',
+  governor: 'art/game/pieces/governor-transparent.png',
+  smuggler: 'art/game/pieces/smuggler-transparent.png',
+  firstPlayer: 'art/game/pieces/first-player-transparent.png',
+  dicePair: 'art/game/pieces/dice-pair-transparent.png'
 } as const;
 
 export type PieceKind = 'merchant' | 'assistant' | 'family';
@@ -49,29 +49,35 @@ export const playerMatArt = Object.fromEntries(
 ) as Record<PlayerColorName, string>;
 
 export const componentArt = {
-  fabric: 'art/game/components/fabric.webp',
-  spice: 'art/game/components/spice.webp',
-  fruit: 'art/game/components/fruit.webp',
-  jewelry: 'art/game/components/jewelry.webp',
-  lira: 'art/game/components/lira.webp',
-  ruby: 'art/game/components/ruby.webp',
-  wheelbarrow: 'art/game/components/wheelbarrow-extension.webp',
-  die: 'art/game/components/die.webp',
-  mail: 'art/game/components/mail-marker.webp',
-  bonusDeck: 'art/game/components/bonus-deck.webp',
+  fabric: 'art/game/components/transparent/fabric.png',
+  spice: 'art/game/components/transparent/spice.png',
+  fruit: 'art/game/components/transparent/fruit.png',
+  jewelry: 'art/game/components/transparent/jewelry.png',
+  lira: 'art/game/components/transparent/lira.png',
+  ruby: 'art/game/components/transparent/ruby.png',
+  wheelbarrow: 'art/game/components/transparent/wheelbarrow.png',
+  die: 'art/game/components/transparent/die.png',
+  mail: 'art/game/components/transparent/mail.png',
   mosque: {
-    fabric: 'art/game/components/mosque-fabric.webp',
-    spice: 'art/game/components/mosque-spice.webp',
-    fruit: 'art/game/components/mosque-fruit.webp',
-    jewelry: 'art/game/components/mosque-jewelry.webp'
+    fabric: 'art/game/components/transparent/mosque-fabric.png',
+    spice: 'art/game/components/transparent/mosque-spice.png',
+    fruit: 'art/game/components/transparent/mosque-fruit.png',
+    jewelry: 'art/game/components/transparent/mosque-jewelry.png'
   } satisfies Record<Good, string>,
-  sultanTrack: 'art/game/components/sultan-track.webp',
-  demandLarge: 'art/game/components/demand-large.webp',
-  demandSmall: 'art/game/components/demand-small.webp',
-  gemstoneTrack: 'art/game/components/gemstone-track.webp',
-  rubySupply: 'art/game/components/ruby-supply.webp',
-  goodsSupply: 'art/game/components/goods-supply.webp'
+  demandLarge: 'art/game/components/transparent/demand-large.png',
+  demandSmall: 'art/game/components/transparent/demand-small.png',
+  rubySupply: 'art/game/components/transparent/ruby-supply.png',
+  goodsSupply: 'art/game/components/transparent/goods-supply.png'
 } as const;
+
+/** Pre-filtered source sizes for dense tray UI, avoiding unstable browser downsampling of 1254px art into ~20–50px wells. */
+export const compactComponentArt: Record<Good | 'ruby', string> = {
+  fabric: 'art/game/components/tray/fabric.png',
+  spice: 'art/game/components/tray/spice.png',
+  fruit: 'art/game/components/tray/fruit.png',
+  jewelry: 'art/game/components/tray/jewelry.png',
+  ruby: 'art/game/components/tray/ruby.png'
+};
 
 export function artPath(basePath: string, asset: string) {
   return `${basePath}/${asset}`;

@@ -31,9 +31,9 @@ test('original production art communicates the complete tabletop', async ({ brow
           expect(await loadedBackgrounds(tiles)).toEqual(Array(16).fill(true));
         } },
         { spec: 'The board uses graphical merchant, assistant, Governor, and Smuggler pieces', check: async () => {
-          await expect(page.locator('.occupants [data-art-kind="piece"].merchant')).toHaveCount(5);
-          await expect(page.locator('[data-art-kind="piece"].governor-piece')).toHaveCount(1);
-          await expect(page.locator('[data-art-kind="piece"].smuggler-piece')).toHaveCount(1);
+          await expect(page.locator('.occupants .merchant [data-art-kind="piece"]')).toHaveCount(5);
+          await expect(page.locator('.governor-piece [data-art-kind="piece"]')).toHaveCount(1);
+          await expect(page.locator('.smuggler-piece [data-art-kind="piece"]')).toHaveCount(1);
           expect((await loadedBackgrounds(page.locator('[data-art-kind="piece"]'))).every(Boolean)).toBe(true);
         } },
         { spec: 'Both player displays and every resource token use loaded production art', check: async () => {
@@ -75,11 +75,11 @@ test('original production art communicates the complete tabletop', async ({ brow
         } },
         { spec: 'Only Places with relevant live public state expose a large physical apparatus', check: async () => {
           const states = page.locator('.location-state');
-          await expect(states).toHaveCount(11);
+          await expect(states).toHaveCount(12);
           const summaries = await states.evaluateAll((elements) => elements.map((element) => element.getAttribute('data-state-summary') ?? ''));
           expect(summaries.every((summary) => summary.length > 12)).toBe(true);
-          expect(new Set(summaries).size).toBe(11);
-          expect(await states.evaluateAll((elements) => elements.map((element) => Number(element.getAttribute('data-testid')?.replace('place-state-', ''))).sort((a, b) => a - b))).toEqual([5, 6, 7, 8, 10, 11, 12, 13, 14, 15, 16]);
+          expect(new Set(summaries).size).toBe(12);
+          expect(await states.evaluateAll((elements) => elements.map((element) => Number(element.getAttribute('data-testid')?.replace('place-state-', ''))).sort((a, b) => a - b))).toEqual([5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16]);
           await expect(page.locator('[data-testid="place-state-5"]')).toHaveAttribute('data-state-summary', /Exposed mail:/);
           await expect(page.locator('[data-testid="place-state-6"]')).toHaveAttribute('data-state-summary', /Bonus cards in draw pile; 0 in discard/);
           await expect(page.locator('[data-testid="place-state-14"]')).toHaveAttribute('data-state-summary', /required, pay 1.*required, pay 1/);
@@ -129,7 +129,7 @@ test('original production art communicates the complete tabletop', async ({ brow
         } },
         { spec: 'Ada’s hand remains a graphical card back with no private face exposed', check: async () => {
           if (testInfo.project.name === 'phone') {
-            await expect(boraPage.locator('.masked-hand [data-art-kind="card-back"]')).toHaveCount(1);
+            await expect(boraPage.locator('.masked-hand [data-card-side="card-back"]')).toHaveCount(1);
             await expect(boraPage.getByText('Bonus hand · 1 hidden card')).toBeVisible();
           } else {
             await expect(boraPage.getByLabel('Ada resources').getByLabel('1 Bonus cards')).toBeVisible();

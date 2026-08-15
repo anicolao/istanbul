@@ -74,6 +74,7 @@ test('ruby routes escalate and Bonus cards resolve at reviewed timing windows', 
     ] });
     await page.getByRole('button', { name: 'Pay 2 Lira and continue' }).click();
     await ada.step('host-pays-dealer-neutral', { description: 'Ada pays the neutral merchant at Gemstone Dealer', verifications: [
+      { spec: 'The composed Dealer display shows current and next prices', check: async () => { const offer = page.locator('[data-component="GemstoneOffer"].panel'); await expect(offer).toBeVisible(); expect(await offer.locator('[data-price]').evaluateAll((slots) => slots.map((slot) => slot.getAttribute('data-price')))).toEqual(['15', '16', '17']); } },
       { spec: 'The reviewed starting price is 15 Lira', check: async () => expect(page.getByRole('button', { name: 'Pay 15 Lira for 1 ruby' })).toBeEnabled() },
       { spec: 'Payment leaves 33 Lira and relocates the neutral merchant', check: async () => expectState(page, { eventCount: 9, game: { phase: 'action', rubyTracks: { gemstonePrice: 15 }, players: [{ lira: 33 }, {}] } }) }
     ] });
@@ -110,7 +111,7 @@ test('ruby routes escalate and Bonus cards resolve at reviewed timing windows', 
     ] });
     await page.getByRole('button', { name: 'Move here and leave an assistant' }).click();
     await ada.step('host-arrives-palace', { description: 'Ada arrives at Sultan’s Palace', verifications: [
-      { spec: 'The two-player track demands five goods', check: async () => { await expect(page.getByLabel('Current Sultan goods cost').locator('.good')).toHaveCount(5); await expect(page.getByLabel('Sultan wild good 1')).toBeVisible(); } },
+      { spec: 'The two-player offer demands five goods and previews the sixth', check: async () => { const offer = page.getByLabel(/^Current Sultan goods cost:/); await expect(offer.locator('[data-sultan-good]')).toHaveCount(5); expect((await offer.locator('[data-sultan-good]').evaluateAll((slots) => slots.reduce((total, slot) => total + Number(slot.getAttribute('data-required')), 0)))).toBe(5); await expect(offer.locator('[data-sultan-good] b')).toHaveCount(0); await expect(offer.locator('[data-sultan-next="jewelry"]')).toBeVisible(); await expect(page.getByLabel('Sultan wild good 1')).toBeVisible(); } },
       { spec: 'The exposed Palace index remains exact', check: async () => expectState(page, { eventCount: 17, game: { phase: 'action', activeBonusEffects: [], rubyTracks: { sultanIndex: 5, sultanRubies: 5 } } }) }
     ] });
     await page.getByLabel('Sultan wild good 1').selectOption('fruit');

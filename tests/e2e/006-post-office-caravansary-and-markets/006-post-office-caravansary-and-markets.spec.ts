@@ -226,7 +226,7 @@ test('mail, private card trading, and both demand markets remain exact through r
     const cardToDiscard = secondBoraState.game.localHand[0] as string;
     await boraPage.getByRole('button', { name: 'Reveal 2 chosen cards' }).click();
     await bora.step('guest-reveals-mixed-cards', { description: 'Bora reveals the face-up discard and face-down draw together', verifications: [
-      { spec: 'The revealed pair contains the known discard plus one newly revealed draw', check: async () => { await expect(boraPage.getByLabel('Revealed chosen cards').getByText(bonusById.get(originalBoraCard)!.title, { exact: true })).toBeVisible(); await expect(boraPage.getByLabel('Revealed chosen cards').locator('[data-art-kind="card"]')).toHaveCount(2); } },
+      { spec: 'The revealed pair contains the known discard plus one newly revealed draw', check: async () => { await expect(boraPage.getByLabel('Revealed chosen cards').locator('[data-bonus-text="title"]', { hasText: bonusById.get(originalBoraCard)!.title })).toHaveCount(1); await expect(boraPage.getByLabel('Revealed chosen cards').locator('[data-art-kind="card"]')).toHaveCount(2); } },
       { spec: 'Reveal still appends no event', check: async () => expectState(boraPage, { eventCount: 21, game: { localHand: secondBoraState.game.localHand, bonusDiscard: [originalBoraCard] } }) }
     ] });
     await boraPage.getByRole('radio', { name: new RegExp(cardToDiscard) }).check();

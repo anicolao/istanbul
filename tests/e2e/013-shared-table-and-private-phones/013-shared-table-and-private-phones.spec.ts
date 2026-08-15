@@ -96,7 +96,7 @@ test('a dedicated tabletop controls public play while phones contain private Bon
 
     await adaPage.getByRole('button', { name: /Inspect Bonus card: A profitable bargain/ }).click();
     await ada.step('ada-inspects-private-bonus', { description: 'Ada privately inspects her Bonus card', verifications: [
-      { spec: 'Only Ada’s phone reveals the card title, artwork, rules, and enabled play control', check: async () => { await expect(adaPage.getByRole('heading', { name: 'A profitable bargain' })).toBeVisible(); await expect(adaPage.getByText('Gain 5 Lira.')).toBeVisible(); await expect(adaPage.getByRole('button', { name: 'Play to gain 5 Lira' })).toBeEnabled(); } },
+      { spec: 'Only Ada’s phone reveals the card title, artwork, rules, and enabled play control', check: async () => { await expect(adaPage.getByRole('heading', { name: 'A profitable bargain' })).toBeVisible(); await expect(adaPage.locator('.private-decision [data-component="BonusCard"]')).toContainText('Gain 5 Lira.'); await expect(adaPage.getByRole('button', { name: 'Play to gain 5 Lira' })).toBeEnabled(); } },
       { spec: 'The tabletop still contains no private title or card face', check: async () => { await expect(page.getByText('A profitable bargain')).toHaveCount(0); await expect(page.locator('.hand')).toHaveCount(0); } },
       { spec: 'Private inspection is local and appends no event', check: async () => expectState(adaPage, { eventCount: 6, game: { selectedBonus: 'bonus-gain-lira-4', phase: 'movement' } }) }
     ] });
@@ -107,7 +107,7 @@ test('a dedicated tabletop controls public play while phones contain private Bon
       { spec: 'Only the Bonus-card event is appended and Ada gains exactly 5 Lira', check: async () => expectState(adaPage, { eventCount: 7, diagnosticCount: 0, game: { phase: 'movement', players: [{ lira: 7 }, {}], localHand: [] } }) }
     ] });
     await table.step('tabletop-reflects-private-bonus', { description: 'The tabletop reflects the public consequence of Ada’s card', verifications: [
-      { spec: 'Ada’s public player mat shows 7 Lira and zero Bonus cards without revealing the spent title', check: async () => { const adaTray = page.getByLabel('Ada resources'); await expect(adaTray.getByLabel('7 Lira', { exact: true })).toBeVisible(); await expect(adaTray.getByLabel('0 Bonus cards', { exact: true })).toBeVisible(); await expect(page.getByText('A profitable bargain')).toHaveCount(0); } },
+      { spec: 'Ada’s public player mat shows 7 Lira and zero Bonus cards while the spent card becomes the public discard', check: async () => { const adaTray = page.getByLabel('Ada resources'); await expect(adaTray.getByLabel('7 Lira', { exact: true })).toBeVisible(); await expect(adaTray.getByLabel('0 Bonus cards', { exact: true })).toBeVisible(); await expect(page.getByTestId('place-state-6')).toHaveAttribute('data-state-summary', /1 in discard, topped by A profitable bargain/); } },
       { spec: 'The public log describes the effect while movement still belongs to the tabletop', check: async () => { await expect(page.getByText('Played a Bonus card to gain 5 Lira.', { exact: true })).toBeVisible(); await expectState(page, { eventCount: 7, game: { phase: 'movement', players: [{ lira: 7 }, {}], localHand: [] } }); } }
     ] });
 

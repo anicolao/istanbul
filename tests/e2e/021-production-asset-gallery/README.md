@@ -10,9 +10,10 @@ The reviewer opens the dedicated gallery without creating a game and walks every
 
 **Verifications:**
 
-- [x] The gallery declares 85 rendered review states backed by the complete 73-asset manifest
+- [x] The gallery declares 83 rendered review states backed by the complete 71-asset manifest
 - [x] All six logical-component category totals are immediately visible
 - [x] The first six numbered locations are real LocationTile components with public state
+- [x] Board merchants use the shared glowing PlayingPiece renderer
 
 ## 2. The reviewer enlarges the Wainwright board square
 
@@ -44,6 +45,7 @@ The reviewer opens the dedicated gallery without creating a game and walks every
 **Verifications:**
 
 - [x] The next exact rendered-state slice replaces the prior page without scrolling
+- [x] The page satisfies its shared-component geometry and rendering contract
 
 ## 5. The reviewer advances to the final four board squares
 
@@ -54,6 +56,7 @@ The reviewer opens the dedicated gallery without creating a game and walks every
 **Verifications:**
 
 - [x] The next exact rendered-state slice replaces the prior page without scrolling
+- [x] The page satisfies its shared-component geometry and rendering contract
 
 ## 6. The reviewer opens five live PlayerTray states
 
@@ -64,6 +67,7 @@ The reviewer opens the dedicated gallery without creating a game and walks every
 **Verifications:**
 
 - [x] Player trays resets to its first complete rendered-component page
+- [x] The page satisfies its shared-component geometry and rendering contract
 
 ## 7. The reviewer opens the first GameArt playing-piece page
 
@@ -134,7 +138,7 @@ The reviewer opens the dedicated gallery without creating a game and walks every
 **Verifications:**
 
 - [x] Market demands resets to its first complete rendered-component page
-- [x] Each demand uses five circular resource portraits over the printed medallion positions
+- [x] The page satisfies its shared-component geometry and rendering contract
 
 ## 14. The reviewer opens all six Small MarketDemand states
 
@@ -145,7 +149,7 @@ The reviewer opens the dedicated gallery without creating a game and walks every
 **Verifications:**
 
 - [x] The next exact rendered-state slice replaces the prior page without scrolling
-- [x] The second demand set preserves all five circular resource overlays
+- [x] The page satisfies its shared-component geometry and rendering contract
 
 ## 15. The reviewer opens the goods, money, and ruby GameArt components
 
@@ -156,6 +160,7 @@ The reviewer opens the dedicated gallery without creating a game and walks every
 **Verifications:**
 
 - [x] Physical components resets to its first complete rendered-component page
+- [x] The page satisfies its shared-component geometry and rendering contract
 
 ## 16. The reviewer advances through upgrades, markers, and the first Mosque powers
 
@@ -166,32 +171,24 @@ The reviewer opens the dedicated gallery without creating a game and walks every
 **Verifications:**
 
 - [x] The next exact rendered-state slice replaces the prior page without scrolling
+- [x] The page satisfies its shared-component geometry and rendering contract
 
-## 17. The reviewer advances through the remaining powers and public tracks
+## 17. The reviewer advances through the remaining powers, demand bases, and public supplies
 
-**The art reviewer** — The reviewer advances through the remaining powers and public tracks
+**The art reviewer** — The reviewer advances through the remaining powers, demand bases, and public supplies
 
-![The reviewer advances through the remaining powers and public tracks](./screenshots/016-reviewer-opens-powers-and-public-tracks-desktop.png)
-
-**Verifications:**
-
-- [x] The next exact rendered-state slice replaces the prior page without scrolling
-
-## 18. The reviewer reaches the final ruby and goods supplies
-
-**The art reviewer** — The reviewer reaches the final ruby and goods supplies
-
-![The reviewer reaches the final ruby and goods supplies](./screenshots/017-reviewer-opens-public-supplies-desktop.png)
+![The reviewer advances through the remaining powers, demand bases, and public supplies](./screenshots/016-reviewer-opens-powers-and-public-supplies-desktop.png)
 
 **Verifications:**
 
 - [x] The next exact rendered-state slice replaces the prior page without scrolling
+- [x] The page satisfies its shared-component geometry and rendering contract
 
-## 19. The reviewer enlarges the final goods-supply component
+## 18. The reviewer enlarges the final goods-supply component
 
 **The art reviewer** — The reviewer enlarges the final goods-supply component
 
-![The reviewer enlarges the final goods-supply component](./screenshots/018-reviewer-enlarges-final-component-desktop.png)
+![The reviewer enlarges the final goods-supply component](./screenshots/017-reviewer-enlarges-final-component-desktop.png)
 
 **Verifications:**
 

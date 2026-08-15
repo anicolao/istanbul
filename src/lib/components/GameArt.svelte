@@ -2,7 +2,7 @@
   import { base } from '$app/paths';
   import {
     artPath,
-    bonusCardArt,
+    compactComponentArt,
     componentArt,
     locationArt,
     pieceArt,
@@ -10,24 +10,24 @@
     type PieceKind,
     type PlayerColorName
   } from '$lib/game/art';
-  import type { BonusCardManifest, Good } from '$lib/game/manifests';
+  import type { Good } from '$lib/game/manifests';
 
   let {
     kind,
     place,
     piece,
     color,
-    effect,
     component,
+    renderSize = 'full',
     label,
     class: className = ''
   }: {
-    kind: 'location' | 'piece' | 'card' | 'card-back' | 'card-deck' | 'mat' | 'component';
+    kind: 'location' | 'piece' | 'mat' | 'component';
     place?: number;
     piece?: PieceKind | 'neutral-merchant' | 'governor' | 'smuggler' | 'first-player' | 'dice-pair';
     color?: PlayerColorName;
-    effect?: BonusCardManifest['effect'];
-    component?: Good | 'lira' | 'ruby' | 'wheelbarrow' | 'die' | 'mail' | 'bonus-deck' | 'mosque-fabric' | 'mosque-spice' | 'mosque-fruit' | 'mosque-jewelry' | 'sultan-track' | 'demand-large' | 'demand-small' | 'gemstone-track' | 'ruby-supply' | 'goods-supply';
+    component?: Good | 'lira' | 'ruby' | 'wheelbarrow' | 'die' | 'mail' | 'mosque-fabric' | 'mosque-spice' | 'mosque-fruit' | 'mosque-jewelry' | 'demand-large' | 'demand-small' | 'ruby-supply' | 'goods-supply';
+    renderSize?: 'full' | 'compact';
     label?: string;
     class?: string;
   } = $props();
@@ -42,15 +42,12 @@
     wheelbarrow: componentArt.wheelbarrow,
     die: componentArt.die,
     mail: componentArt.mail,
-    'bonus-deck': componentArt.bonusDeck,
     'mosque-fabric': componentArt.mosque.fabric,
     'mosque-spice': componentArt.mosque.spice,
     'mosque-fruit': componentArt.mosque.fruit,
     'mosque-jewelry': componentArt.mosque.jewelry,
-    'sultan-track': componentArt.sultanTrack,
     'demand-large': componentArt.demandLarge,
     'demand-small': componentArt.demandSmall,
-    'gemstone-track': componentArt.gemstoneTrack,
     'ruby-supply': componentArt.rubySupply,
     'goods-supply': componentArt.goodsSupply
   } as const;
@@ -58,10 +55,10 @@
   const asset = $derived.by(() => {
     if (kind === 'location' && place) return locationArt[place];
     if (kind === 'mat' && color) return playerMatArt[color];
-    if (kind === 'card' && effect) return bonusCardArt[effect];
-    if (kind === 'card-back') return bonusCardArt.back;
-    if (kind === 'card-deck') return bonusCardArt.deck;
-    if (kind === 'component' && component) return componentPaths[component];
+    if (kind === 'component' && component) {
+      if (renderSize === 'compact' && component in compactComponentArt) return compactComponentArt[component as Good | 'ruby'];
+      return componentPaths[component];
+    }
     if (kind === 'piece' && piece) {
       if ((piece === 'merchant' || piece === 'assistant' || piece === 'family') && color) return pieceArt[piece][color];
       if (piece === 'neutral-merchant') return pieceArt.neutralMerchant;
@@ -78,7 +75,6 @@
   class={`game-art ${className}`}
   class:location={kind === 'location'}
   class:piece={kind === 'piece'}
-  class:card={kind === 'card' || kind === 'card-back' || kind === 'card-deck'}
   class:mat={kind === 'mat'}
   class:component={kind === 'component'}
   style={`--game-art: url('${artPath(base, asset)}')`}
@@ -87,12 +83,14 @@
   title={label}
   aria-hidden={label ? undefined : 'true'}
   data-art-kind={kind}
+  data-art-resolution={renderSize}
+  data-piece={kind === 'piece' ? piece : undefined}
+  data-color={kind === 'piece' ? color : undefined}
   data-component="GameArt"
 ></span>
 
 <style>
   .game-art { display: inline-block; background-image: var(--game-art); background-position: center; background-repeat: no-repeat; background-size: cover; }
   .piece, .component { background-size: contain; }
-  .card { aspect-ratio: 1 / 1.5; }
   .location, .mat { width: 100%; height: 100%; }
 </style>

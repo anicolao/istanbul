@@ -51,7 +51,7 @@ export async function expectInterfaceToFit(page: Page) {
           if (
             rect.left < bounds.left - tolerance || rect.top < bounds.top - tolerance
             || rect.right > bounds.right + tolerance || rect.bottom > bounds.bottom + tolerance
-          ) return label(ancestor);
+          ) return `${label(ancestor)} (${bounds.left.toFixed(1)},${bounds.top.toFixed(1)}–${bounds.right.toFixed(1)},${bounds.bottom.toFixed(1)}) outside ${rect.left.toFixed(1)},${rect.top.toFixed(1)}–${rect.right.toFixed(1)},${rect.bottom.toFixed(1)}`;
         }
         ancestor = ancestor.parentElement;
       }
@@ -95,7 +95,11 @@ export async function expectInterfaceToFit(page: Page) {
         element.scrollWidth > element.clientWidth + tolerance
         || element.scrollHeight > element.clientHeight + tolerance
       ) {
-        failures.push(`${label(element)} clips or scrolls: ${element.scrollWidth}×${element.scrollHeight} inside ${element.clientWidth}×${element.clientHeight}`);
+        const childBounds = Array.from(element.children).map((child) => {
+          const bounds = child.getBoundingClientRect();
+          return `${label(child as HTMLElement)} ${bounds.left.toFixed(1)},${bounds.top.toFixed(1)}–${bounds.right.toFixed(1)},${bounds.bottom.toFixed(1)}`;
+        }).join('; ');
+        failures.push(`${label(element)} clips or scrolls: ${element.scrollWidth}×${element.scrollHeight} inside ${element.clientWidth}×${element.clientHeight}; children: ${childBounds}`);
       }
       if (element.scrollLeft !== 0 || element.scrollTop !== 0) {
         failures.push(`${label(element)} is internally scrolled to ${element.scrollLeft},${element.scrollTop}`);
@@ -113,7 +117,7 @@ export async function expectInterfaceToFit(page: Page) {
         if (
           bounds.left < statusBounds.left - tolerance || bounds.top < statusBounds.top - tolerance
           || bounds.right > statusBounds.right + tolerance || bounds.bottom > statusBounds.bottom + tolerance
-        ) failures.push(`${label(content)} leaves ${label(statusArea)} status area`);
+        ) failures.push(`${label(content)} ${bounds.left.toFixed(1)},${bounds.top.toFixed(1)}–${bounds.right.toFixed(1)},${bounds.bottom.toFixed(1)} leaves ${label(statusArea)} status area ${statusBounds.left.toFixed(1)},${statusBounds.top.toFixed(1)}–${statusBounds.right.toFixed(1)},${statusBounds.bottom.toFixed(1)}`);
         const contentClippingAncestor = clippedByAncestor(content);
         if (contentClippingAncestor) failures.push(`${label(content)} status content is clipped by ${contentClippingAncestor}`);
       }

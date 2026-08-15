@@ -143,7 +143,7 @@ Ada and Bora prepare an ordinary two-player room entirely through visible contro
 **Verifications:**
 
 - [x] The Fountain tile is selected and its full action is visible
-- [x] The inspector reports row two, column two and both merchants
+- [x] The inspector DOM reports row two, column two and both merchants
 - [x] Inspection changes local view state without appending an event
 
 ## 13. Ada confirms the courtyard board already fits completely
