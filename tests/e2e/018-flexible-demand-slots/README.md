@@ -1,6 +1,6 @@
 # Substituting goods directly on a Flexible Demand card
 
-Ada and Bora open a normal two-player bazaar. A visible emulator review control gives Ada the real Flexible Demand card and enough public stock to demonstrate it. Ada walks to Small Market, plays the private card, selects three printed demand slots, changes each slot’s payment dropdown, and commits one nine-Lira sale. Every input is followed by a screenshot and programmatic checks of the controls, immutable event history, goods payment, demand rotation, and consumed Bonus effect.
+Ada and Bora open a normal two-player bazaar. A visible emulator review control gives Ada four matching goods, one substitute, and the real Flexible Demand card. Ada walks to Small Market, sees every matching slot already selected and the useful card prominently offered, plays it in place, fills the one missing demand with her substitute, and commits a complete twenty-Lira sale. Every input is followed by a screenshot and programmatic checks of the controls, immutable event history, goods payment, demand rotation, and consumed Bonus effect.
 
 ## 1. Ada opens the private-table creator
 
@@ -120,7 +120,7 @@ Ada and Bora open a normal two-player bazaar. A visible emulator review control 
 
 **Verifications:**
 
-- [x] Ada has three of every good and the real Flexible Demand card
+- [x] Ada has four exact matches, one substitute, and the real Flexible Demand card
 - [x] Bora sees only Ada’s private hand count
 
 ## 12. Ada selects the adjacent Small Market
@@ -143,107 +143,56 @@ Ada and Bora open a normal two-player bazaar. A visible emulator review control 
 **Verifications:**
 
 - [x] All five ordinary demand slots are selectable before the card is played
+- [x] The four demand goods Ada owns are selected by default
+- [x] The pending default sale is worth fourteen Lira
+- [x] Flexible Demand is pictured prominently beside a direct play button
 - [x] No substitution dropdown exists before Flexible Demand is active
 - [x] Movement opens the action without rotating demand
 
-## 14. Ada inspects the private Flexible Demand card
+## 14. Ada plays the prominent card to enable substitutions
 
-**Ada, the first merchant** — Ada inspects the private Flexible Demand card
+**Ada, the first merchant** — Ada plays the prominent card to enable substitutions
 
-![Ada inspects the private Flexible Demand card](./screenshots/009-host-inspects-flexible-demand-desktop.png)
-
-**Verifications:**
-
-- [x] The illustrated card explains the any-mixture market effect
-- [x] The card is playable at the current Small Market
-- [x] Private inspection appends no event
-
-## 15. Ada enables substitutions on all five demand slots
-
-**Ada, the first merchant** — Ada enables substitutions on all five demand slots
-
-![Ada enables substitutions on all five demand slots](./screenshots/010-host-enables-slot-substitutions-desktop.png)
+![Ada plays the prominent card to enable substitutions](./screenshots/009-host-enables-slot-substitutions-desktop.png)
 
 **Verifications:**
 
 - [x] Each printed market good is now paired with its own payment dropdown
 - [x] Every dropdown defaults to the good printed in that slot
+- [x] The four affordable printed slots remain selected
 - [x] The Bonus event activates Flexible Demand without selling anything
 
-## 16. Ada selects demand slot 1
+## 15. Ada substitutes her extra fabric for the missing spice
 
-**Ada, the first merchant** — Ada selects demand slot 1
+**Ada, the first merchant** — Ada substitutes her extra fabric for the missing spice
 
-![Ada selects demand slot 1](./screenshots/011-host-selects-demand-slot-1-desktop.png)
-
-**Verifications:**
-
-- [x] Demand slot 1 is visibly selected
-- [x] The pending sale value updates without an event
-
-## 17. Ada sets slot 1 payment to jewelry
-
-**Ada, the first merchant** — Ada sets slot 1 payment to jewelry
-
-![Ada sets slot 1 payment to jewelry](./screenshots/012-host-substitutes-demand-slot-1-desktop.png)
+![Ada substitutes her extra fabric for the missing spice](./screenshots/010-host-substitutes-missing-spice-desktop.png)
 
 **Verifications:**
 
-- [x] The slot dropdown visibly reads jewelry
+- [x] The missing spice slot now names fabric as payment
 - [x] Changing a local payment choice writes no canonical event
 
-## 18. Ada selects demand slot 2
+## 16. Ada adds the substituted fifth slot to the sale
 
-**Ada, the first merchant** — Ada selects demand slot 2
+**Ada, the first merchant** — Ada adds the substituted fifth slot to the sale
 
-![Ada selects demand slot 2](./screenshots/013-host-selects-demand-slot-2-desktop.png)
-
-**Verifications:**
-
-- [x] Demand slot 2 is visibly selected
-- [x] The pending sale value updates without an event
-
-## 19. Ada sets slot 2 payment to spice
-
-**Ada, the first merchant** — Ada sets slot 2 payment to spice
-
-![Ada sets slot 2 payment to spice](./screenshots/014-host-substitutes-demand-slot-2-desktop.png)
+![Ada adds the substituted fifth slot to the sale](./screenshots/011-host-adds-substituted-slot-desktop.png)
 
 **Verifications:**
 
-- [x] The slot dropdown visibly reads spice
-- [x] Changing a local payment choice writes no canonical event
+- [x] All five demand slots are visibly selected
+- [x] The complete Small Market sale is worth twenty Lira
+- [x] The flexible sale is legal with exactly Ada’s five goods
 
-## 20. Ada selects demand slot 3
+## 17. Ada pays every good for the complete twenty-Lira sale
 
-**Ada, the first merchant** — Ada selects demand slot 3
+**Ada, the first merchant** — Ada pays every good for the complete twenty-Lira sale
 
-![Ada selects demand slot 3](./screenshots/015-host-selects-demand-slot-3-desktop.png)
-
-**Verifications:**
-
-- [x] Demand slot 3 is visibly selected
-- [x] The pending sale value updates without an event
-
-## 21. Ada sets slot 3 payment to fruit
-
-**Ada, the first merchant** — Ada sets slot 3 payment to fruit
-
-![Ada sets slot 3 payment to fruit](./screenshots/016-host-substitutes-demand-slot-3-desktop.png)
+![Ada pays every good for the complete twenty-Lira sale](./screenshots/012-host-sells-substituted-goods-desktop.png)
 
 **Verifications:**
 
-- [x] The slot dropdown visibly reads fruit
-- [x] Changing a local payment choice writes no canonical event
-
-## 22. Ada pays the three chosen substitutions for nine Lira
-
-**Ada, the first merchant** — Ada pays the three chosen substitutions for nine Lira
-
-![Ada pays the three chosen substitutions for nine Lira](./screenshots/017-host-sells-substituted-goods-desktop.png)
-
-**Verifications:**
-
-- [x] Exactly jewelry, spice, and fruit are paid once
-- [x] The completion record identifies a three-good flexible sale
+- [x] Exactly two fabric, two fruit, and one jewelry are paid
+- [x] The completion record identifies a five-good flexible sale
 - [x] The five-slot editor closes after the consumed effect rotates demand

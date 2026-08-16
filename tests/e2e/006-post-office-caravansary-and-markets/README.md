@@ -359,46 +359,36 @@ Ada and Bora narrate every input from an empty private room through seven ordina
 **Verifications:**
 
 - [x] Five depicted Demand slots are ordinary checkboxes
-- [x] No selection means the sale is disabled
+- [x] Every affordable matching slot is selected by default
+- [x] The default sale immediately shows its official Small Market value
+- [x] The maximum matching sale is ready without extra clicks
 - [x] The active Demand is still on top
 
-## 32. Ada selects one depicted fabric for the Small Market
+## 32. Ada accepts the default 3-good Small Market sale
 
-**Ada, the first merchant** — Ada selects one depicted fabric for the Small Market
+**Ada, the first merchant** — Ada accepts the default 3-good Small Market sale
 
-![Ada selects one depicted fabric for the Small Market](./screenshots/017-host-chooses-small-sale-desktop.png)
-
-**Verifications:**
-
-- [x] The chosen Demand slot is visibly checked
-- [x] One good earns the official 2 Lira
-- [x] Selection does not rotate or spend yet
-
-## 33. Ada completes the one-good Small Market sale
-
-**Ada, the first merchant** — Ada completes the one-good Small Market sale
-
-![Ada completes the one-good Small Market sale](./screenshots/018-host-sells-small-market-desktop.png)
+![Ada accepts the default 3-good Small Market sale](./screenshots/017-host-sells-small-market-desktop.png)
 
 **Verifications:**
 
-- [x] The completion panel reports the exact revenue
+- [x] The completion panel reports the exact default revenue
 - [x] The used Demand moves to the bottom
 - [x] Small Market tile replaces its five graphical demand goods
-- [x] Exactly the selected good was spent
+- [x] Exactly the default matching goods were spent
 
-## 34. Ada passes after rotating Small Market
+## 33. Ada passes after rotating Small Market
 
 **Ada, the first merchant** — Ada passes after rotating Small Market
 
-![Ada passes after rotating Small Market](./screenshots/019-host-ends-small-market-turn-desktop.png)
+![Ada passes after rotating Small Market](./screenshots/018-host-ends-small-market-turn-desktop.png)
 
 **Verifications:**
 
 - [x] Bora starts turn six
 - [x] The rotation remains canonical in movement
 
-## 35. Bora selects her placed Caravansary assistant
+## 34. Bora selects her placed Caravansary assistant
 
 **Bora, the second merchant** — Bora selects her placed Caravansary assistant
 
@@ -410,7 +400,7 @@ Ada and Bora narrate every input from an empty private room through seven ordina
 - [x] The CTA now offers assistant pick-up
 - [x] The public discard still holds Bora’s original card
 
-## 36. Bora returns and picks up the Caravansary assistant
+## 35. Bora returns and picks up the Caravansary assistant
 
 **Bora, the second merchant** — Bora returns and picks up the Caravansary assistant
 
@@ -421,7 +411,7 @@ Ada and Bora narrate every input from an empty private room through seven ordina
 - [x] The discard source is now enabled
 - [x] Bora carries three assistants after the pick-up
 
-## 37. Bora chooses the face-up discard as the first draw
+## 36. Bora chooses the face-up discard as the first draw
 
 **Bora, the second merchant** — Bora chooses the face-up discard as the first draw
 
@@ -434,7 +424,7 @@ Ada and Bora narrate every input from an empty private room through seven ordina
 - [x] The second draw-pile card remains graphically face down
 - [x] Changing a private source appends no event
 
-## 38. Bora reveals the face-up discard and face-down draw together
+## 37. Bora reveals the face-up discard and face-down draw together
 
 **Bora, the second merchant** — Bora reveals the face-up discard and face-down draw together
 
@@ -445,7 +435,7 @@ Ada and Bora narrate every input from an empty private room through seven ordina
 - [x] The revealed pair contains the known discard plus one newly revealed draw
 - [x] Reveal still appends no event
 
-## 39. Bora selects one current hand card for the exchange
+## 38. Bora selects one current hand card for the exchange
 
 **Bora, the second merchant** — Bora selects one current hand card for the exchange
 
@@ -457,7 +447,7 @@ Ada and Bora narrate every input from an empty private room through seven ordina
 - [x] The discard/deck exchange is enabled
 - [x] Bora still owns two canonical cards before committing
 
-## 40. Bora takes one discard and one deck card, then discards one
+## 39. Bora takes one discard and one deck card, then discards one
 
 **Bora, the second merchant** — Bora takes one discard and one deck card, then discards one
 
@@ -470,7 +460,7 @@ Ada and Bora narrate every input from an empty private room through seven ordina
 - [x] The mixed face-up and face-down draw is also an undo boundary
 - [x] Ada sees three hidden cards and no private title
 
-## 41. Bora passes after reclaiming the face-up card
+## 40. Bora passes after reclaiming the face-up card
 
 **Bora, the second merchant** — Bora passes after reclaiming the face-up card
 
@@ -481,11 +471,11 @@ Ada and Bora narrate every input from an empty private room through seven ordina
 - [x] Ada starts turn seven
 - [x] All private-card counts survive turn closure
 
-## 42. Ada selects Large Market two spaces away
+## 41. Ada selects Large Market two spaces away
 
 **Ada, the first merchant** — Ada selects Large Market two spaces away
 
-![Ada selects Large Market two spaces away](./screenshots/020-host-selects-large-market-desktop.png)
+![Ada selects Large Market two spaces away](./screenshots/019-host-selects-large-market-desktop.png)
 
 **Verifications:**
 
@@ -493,35 +483,24 @@ Ada and Bora narrate every input from an empty private room through seven ordina
 - [x] Ada can leave her last carried assistant
 - [x] Large Demand has not rotated yet
 
-## 43. Ada arrives at Large Market with remaining stock
+## 42. Ada arrives at Large Market with remaining stock
 
 **Ada, the first merchant** — Ada arrives at Large Market with remaining stock
 
-![Ada arrives at Large Market with remaining stock](./screenshots/021-host-arrives-large-market-desktop.png)
+![Ada arrives at Large Market with remaining stock](./screenshots/020-host-arrives-large-market-desktop.png)
 
 **Verifications:**
 
 - [x] Five Large Market slots are visible
-- [x] The sale begins disabled with zero selected
+- [x] Every remaining matching slot is selected by default
+- [x] The default selection shows the distinct Large Market payout
 - [x] Ada now has zero carried assistants but may finish this action
 
-## 44. Ada selects one depicted fabric for Large Market
+## 43. Ada accepts the default 1-good Large Market sale
 
-**Ada, the first merchant** — Ada selects one depicted fabric for Large Market
+**Ada, the first merchant** — Ada accepts the default 1-good Large Market sale
 
-![Ada selects one depicted fabric for Large Market](./screenshots/022-host-chooses-large-sale-desktop.png)
-
-**Verifications:**
-
-- [x] The Large Market slot is checked
-- [x] One good displays the distinct 3-Lira Large Market tier
-- [x] The local selection has not spent stock
-
-## 45. Ada completes the Large Market sale
-
-**Ada, the first merchant** — Ada completes the Large Market sale
-
-![Ada completes the Large Market sale](./screenshots/023-host-sells-large-market-desktop.png)
+![Ada accepts the default 1-good Large Market sale](./screenshots/021-host-sells-large-market-desktop.png)
 
 **Verifications:**
 
@@ -530,11 +509,11 @@ Ada and Bora narrate every input from an empty private room through seven ordina
 - [x] Large Market tile exposes the newly rotated five-good demand
 - [x] Bora observes the same public market state
 
-## 46. Ada reloads the completed Large Market turn
+## 44. Ada reloads the completed Large Market turn
 
 **Ada, the first merchant** — Ada reloads the completed Large Market turn
 
-![Ada reloads the completed Large Market turn](./screenshots/024-host-reloads-large-market-desktop.png)
+![Ada reloads the completed Large Market turn](./screenshots/022-host-reloads-large-market-desktop.png)
 
 **Verifications:**
 
@@ -542,11 +521,11 @@ Ada and Bora narrate every input from an empty private room through seven ordina
 - [x] Both Demand rotations and card exchange replay exactly
 - [x] End turn is the sole continuation
 
-## 47. Ada passes the fully replayed economy turn
+## 45. Ada passes the fully replayed economy turn
 
 **Ada, the first merchant** — Ada passes the fully replayed economy turn
 
-![Ada passes the fully replayed economy turn](./screenshots/025-host-ends-large-market-turn-desktop.png)
+![Ada passes the fully replayed economy turn](./screenshots/023-host-ends-large-market-turn-desktop.png)
 
 **Verifications:**
 

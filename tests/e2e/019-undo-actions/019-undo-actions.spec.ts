@@ -1,5 +1,7 @@
 import { expect, test } from '@playwright/test';
-import { demandTiles } from '../../../src/lib/game/manifests';
+import { marketRevenueFor } from '../../../src/lib/game/actions';
+import { demandTiles, type Good } from '../../../src/lib/game/manifests';
+import { defaultMarketSelection } from '../../../src/lib/game/market-selection';
 import { expectState, openTwoPlayerGame, readState } from '../helpers/game-journey';
 import { ScenarioJournal, TestStepHelper } from '../helpers/test-step-helper';
 
@@ -15,7 +17,7 @@ test('players undo reversible actions until newly revealed information locks his
   const bora = new TestStepHelper(boraPage, testInfo, journal, 'Bora, the second merchant');
   ada.setMetadata(
     'Undoing a turn without unseeing hidden information',
-    'Ada and Bora open a normal two-player bazaar. Ada plays and undoes a Bonus card, deliberately replays it, moves to Small Market, sells a good, and walks backward through the sale, movement, and card play one immutable undo event at a time. She then replays a different route to Tea House; rolling dice visibly locks undo at the information boundary. Every input is followed by a screenshot and programmatic checks of the controls, canonical log, replayed state, opponent convergence, private hand, goods, demand, assistants, and dice.'
+    'Ada and Bora open a normal two-player bazaar. Ada plays and undoes a Bonus card, deliberately replays it, moves to Small Market, accepts the maximum matching sale prepared for her, and walks backward through the sale, movement, and card play one immutable undo event at a time. She then replays a different route to Tea House; rolling dice visibly locks undo at the information boundary. Every input is followed by a screenshot and programmatic checks of the controls, canonical log, replayed state, opponent convergence, private hand, goods, demand, assistants, and dice.'
   );
 
   try {
@@ -72,21 +74,21 @@ test('players undo reversible actions until newly revealed information locks his
 
     await page.getByRole('button', { name: 'Move here and leave an assistant' }).click();
     const beforeSale = await readState(page);
+    const demand = demandTiles.find(({ id }) => id === beforeSale.game.smallDemand[0])!;
+    const beforeSaleGoods = beforeSale.game.players[0].goods as Record<Good, number>;
+    const saleSlots = defaultMarketSelection(demand.goods, beforeSaleGoods);
+    const saleRevenue = marketRevenueFor(11, saleSlots.length);
+    const afterSaleGoods = { ...beforeSaleGoods };
+    for (const slot of saleSlots) afterSaleGoods[demand.goods[slot]] -= 1;
     await ada.step('host-moves-to-small-market', { description: 'Ada moves to Small Market and leaves an assistant', verifications: [
       { spec: 'Movement is event ten and becomes the next undo target', check: async () => expectState(page, { eventCount: 10, diagnosticCount: 0, undo: { label: 'move to Place 11', blockedReason: null }, game: { phase: 'action', players: [{ merchantPlace: 11, assistantsCarried: 3, assistantsByPlace: { 11: 1 } }, {}] } }) },
-      { spec: 'The full five-slot demand is shown for a real sale', check: async () => expect(page.getByLabel('Small Market demand').getByRole('checkbox')).toHaveCount(5) }
+      { spec: 'The full five-slot demand is shown for a real sale', check: async () => expect(page.getByLabel('Small Market demand').getByRole('checkbox')).toHaveCount(5) },
+      { spec: 'Every matching good is already selected at the maximum payout', check: async () => { await expect(page.getByLabel('Small Market demand').getByRole('checkbox', { checked: true })).toHaveCount(saleSlots.length); await expect(page.getByText(`${saleSlots.length} selected · ${saleRevenue} Lira`)).toBeVisible(); } }
     ] });
 
-    const demand = demandTiles.find(({ id }) => id === beforeSale.game.smallDemand[0])!;
-    await page.getByLabel(`Sell demand slot 1: ${demand.goods[0]}`).check();
-    await ada.step('host-selects-market-good', { description: 'Ada selects the first depicted good for sale', verifications: [
-      { spec: 'The demand slot is visibly selected and worth two Lira', check: async () => { await expect(page.getByLabel(`Sell demand slot 1: ${demand.goods[0]}`)).toBeChecked(); await expect(page.getByText('1 selected · 2 Lira')).toBeVisible(); } },
-      { spec: 'A local checkbox does not alter canonical history', check: async () => expectState(page, { eventCount: 10 }) }
-    ] });
-
-    await page.getByRole('button', { name: 'Sell selected goods for 2 Lira' }).click();
-    await ada.step('host-sells-market-good', { description: 'Ada trades the selected good for two Lira', verifications: [
-      { spec: 'The sale spends one printed good, pays two Lira, and rotates demand', check: async () => expectState(page, { eventCount: 11, diagnosticCount: 0, undo: { label: 'market sell', blockedReason: null }, game: { phase: 'turn-end', smallDemand: [...beforeSale.game.smallDemand.slice(1), beforeSale.game.smallDemand[0]], players: [{ lira: 42, goods: { [demand.goods[0]]: 2 } }, {}] } }) },
+    await page.getByRole('button', { name: `Sell selected goods for ${saleRevenue} Lira` }).click();
+    await ada.step('host-sells-market-good', { description: `Ada accepts the prepared ${saleSlots.length}-good sale`, verifications: [
+      { spec: 'The sale spends every matching good, pays the maximum Lira, and rotates demand', check: async () => expectState(page, { eventCount: 11, diagnosticCount: 0, undo: { label: 'market sell', blockedReason: null }, game: { phase: 'turn-end', smallDemand: [...beforeSale.game.smallDemand.slice(1), beforeSale.game.smallDemand[0]], players: [{ lira: 40 + saleRevenue, goods: afterSaleGoods }, {}] } }) },
       { spec: 'Trading goods remains explicitly undoable', check: async () => expect(page.getByRole('button', { name: 'Undo market sell' })).toBeEnabled() }
     ] });
 

@@ -1,6 +1,6 @@
 # Undoing a turn without unseeing hidden information
 
-Ada and Bora open a normal two-player bazaar. Ada plays and undoes a Bonus card, deliberately replays it, moves to Small Market, sells a good, and walks backward through the sale, movement, and card play one immutable undo event at a time. She then replays a different route to Tea House; rolling dice visibly locks undo at the information boundary. Every input is followed by a screenshot and programmatic checks of the controls, canonical log, replayed state, opponent convergence, private hand, goods, demand, assistants, and dice.
+Ada and Bora open a normal two-player bazaar. Ada plays and undoes a Bonus card, deliberately replays it, moves to Small Market, accepts the maximum matching sale prepared for her, and walks backward through the sale, movement, and card play one immutable undo event at a time. She then replays a different route to Tea House; rolling dice visibly locks undo at the information boundary. Every input is followed by a screenshot and programmatic checks of the controls, canonical log, replayed state, opponent convergence, private hand, goods, demand, assistants, and dice.
 
 ## 1. Ada opens the private-table creator
 
@@ -202,34 +202,24 @@ Ada and Bora open a normal two-player bazaar. Ada plays and undoes a Bonus card,
 
 - [x] Movement is event ten and becomes the next undo target
 - [x] The full five-slot demand is shown for a real sale
+- [x] Every matching good is already selected at the maximum payout
 
-## 19. Ada selects the first depicted good for sale
+## 19. Ada accepts the prepared 5-good sale
 
-**Ada, the first merchant** — Ada selects the first depicted good for sale
+**Ada, the first merchant** — Ada accepts the prepared 5-good sale
 
-![Ada selects the first depicted good for sale](./screenshots/014-host-selects-market-good-desktop.png)
-
-**Verifications:**
-
-- [x] The demand slot is visibly selected and worth two Lira
-- [x] A local checkbox does not alter canonical history
-
-## 20. Ada trades the selected good for two Lira
-
-**Ada, the first merchant** — Ada trades the selected good for two Lira
-
-![Ada trades the selected good for two Lira](./screenshots/015-host-sells-market-good-desktop.png)
+![Ada accepts the prepared 5-good sale](./screenshots/014-host-sells-market-good-desktop.png)
 
 **Verifications:**
 
-- [x] The sale spends one printed good, pays two Lira, and rotates demand
+- [x] The sale spends every matching good, pays the maximum Lira, and rotates demand
 - [x] Trading goods remains explicitly undoable
 
-## 21. Ada reverses the market trade
+## 20. Ada reverses the market trade
 
 **Ada, the first merchant** — Ada reverses the market trade
 
-![Ada reverses the market trade](./screenshots/016-host-undoes-market-sale-desktop.png)
+![Ada reverses the market trade](./screenshots/015-host-undoes-market-sale-desktop.png)
 
 **Verifications:**
 
@@ -237,55 +227,55 @@ Ada and Bora open a normal two-player bazaar. Ada plays and undoes a Bonus card,
 - [x] The next undo now walks backward to movement
 - [x] Bora converges without a compensating money or goods mutation
 
-## 22. Ada reverses movement and recovers her assistant
+## 21. Ada reverses movement and recovers her assistant
 
 **Ada, the first merchant** — Ada reverses movement and recovers her assistant
 
-![Ada reverses movement and recovers her assistant](./screenshots/017-host-undoes-market-movement-desktop.png)
+![Ada reverses movement and recovers her assistant](./screenshots/016-host-undoes-market-movement-desktop.png)
 
 **Verifications:**
 
 - [x] The merchant, assistant stack, and movement phase match the pre-route state
 - [x] The earlier replacement Bonus play is now the latest active event
 
-## 23. Ada completes the rollback to her original reviewed turn
+## 22. Ada completes the rollback to her original reviewed turn
 
 **Ada, the first merchant** — Ada completes the rollback to her original reviewed turn
 
-![Ada completes the rollback to her original reviewed turn](./screenshots/018-host-undoes-replayed-bonus-desktop.png)
+![Ada completes the rollback to her original reviewed turn](./screenshots/017-host-undoes-replayed-bonus-desktop.png)
 
 **Verifications:**
 
 - [x] The private card and thirty-five Lira are restored after three consecutive undos
 - [x] No active player action remains above the reviewed fixture boundary
 
-## 24. Ada now chooses a different route to Tea House
+## 23. Ada now chooses a different route to Tea House
 
 **Ada, the first merchant** — Ada now chooses a different route to Tea House
 
-![Ada now chooses a different route to Tea House](./screenshots/019-host-selects-tea-house-desktop.png)
+![Ada now chooses a different route to Tea House](./screenshots/018-host-selects-tea-house-desktop.png)
 
 **Verifications:**
 
 - [x] Tea House is a legal two-space destination
 - [x] The planner offers the normal assistant drop
 
-## 25. Ada arrives at Tea House before any dice are exposed
+## 24. Ada arrives at Tea House before any dice are exposed
 
 **Ada, the first merchant** — Ada arrives at Tea House before any dice are exposed
 
-![Ada arrives at Tea House before any dice are exposed](./screenshots/020-host-arrives-tea-house-desktop.png)
+![Ada arrives at Tea House before any dice are exposed](./screenshots/019-host-arrives-tea-house-desktop.png)
 
 **Verifications:**
 
 - [x] The reversible move is event fifteen
 - [x] Undo remains enabled until the roll occurs
 
-## 26. Ada rolls at Tea House and reaches the information boundary
+## 25. Ada rolls at Tea House and reaches the information boundary
 
 **Ada, the first merchant** — Ada rolls at Tea House and reaches the information boundary
 
-![Ada rolls at Tea House and reaches the information boundary](./screenshots/021-host-rolls-and-locks-undo-desktop.png)
+![Ada rolls at Tea House and reaches the information boundary](./screenshots/020-host-rolls-and-locks-undo-desktop.png)
 
 **Verifications:**
 
