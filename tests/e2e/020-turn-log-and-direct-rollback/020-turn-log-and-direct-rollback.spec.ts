@@ -1,5 +1,7 @@
 import { expect, test } from '@playwright/test';
+import { marketRevenueFor } from '../../../src/lib/game/actions';
 import { bonusCards, demandTiles } from '../../../src/lib/game/manifests';
+import { defaultMarketSelection } from '../../../src/lib/game/market-selection';
 import { expectState, openTwoPlayerGame, readState } from '../helpers/game-journey';
 import { ScenarioJournal, TestStepHelper } from '../helpers/test-step-helper';
 
@@ -46,21 +48,19 @@ test('turn review and the game log roll back an authored suffix in one step', as
 
     await page.getByRole('button', { name: 'Move here and leave an assistant' }).click();
     const beforeFirstSale = await readState(page);
-    await ada.step('host-moves-first-small-market', { description: 'Ada moves and leaves an assistant at Small Market', verifications: [
-      { spec: 'The game log can now roll back two actions from the Bonus play', check: async () => expectState(page, { eventCount: 8, gameLog: [{ label: 'Bonus card play', rollbackCount: 2 }, { label: 'move to Place 11', rollbackCount: 1 }], game: { phase: 'action', players: [{ merchantPlace: 11, assistantsCarried: 3, assistantsByPlace: { 11: 1 } }, {}] } }) }
-    ] });
-
     const firstDemand = demandTiles.find(({ id }) => id === beforeFirstSale.game.smallDemand[0])!;
-    await page.getByLabel(`Sell demand slot 1: ${firstDemand.goods[0]}`).check();
-    await ada.step('host-selects-first-market-good', { description: 'Ada selects one printed good to sell', verifications: [
-      { spec: 'The sale preview is two Lira and does not append an event', check: async () => { await expect(page.getByText('1 selected · 2 Lira')).toBeVisible(); await expectState(page, { eventCount: 8 }); } }
+    const firstSaleSlots = defaultMarketSelection(firstDemand.goods, beforeFirstSale.game.players[0].goods);
+    const firstSaleRevenue = marketRevenueFor(11, firstSaleSlots.length);
+    await ada.step('host-moves-first-small-market', { description: 'Ada moves and leaves an assistant at Small Market', verifications: [
+      { spec: 'The game log can now roll back two actions from the Bonus play', check: async () => expectState(page, { eventCount: 8, gameLog: [{ label: 'Bonus card play', rollbackCount: 2 }, { label: 'move to Place 11', rollbackCount: 1 }], game: { phase: 'action', players: [{ merchantPlace: 11, assistantsCarried: 3, assistantsByPlace: { 11: 1 } }, {}] } }) },
+      { spec: 'Every matching demand slot is preselected at the maximum payout', check: async () => { await expect(page.getByLabel('Small Market demand').getByRole('checkbox', { checked: true })).toHaveCount(firstSaleSlots.length); await expect(page.getByText(`${firstSaleSlots.length} selected · ${firstSaleRevenue} Lira`)).toBeVisible(); } }
     ] });
 
-    await page.getByRole('button', { name: 'Sell selected goods for 2 Lira' }).click();
+    await page.getByRole('button', { name: `Sell selected goods for ${firstSaleRevenue} Lira` }).click();
     await ada.step('host-reviews-completed-turn', { description: 'Ada completes the market sale and reviews the turn before passing', verifications: [
       { spec: 'The turn review lists Bonus play, movement, and sale in order', check: async () => { const log = page.getByRole('list', { name: "Ada's turn actions" }); await expect(log.getByRole('listitem')).toHaveCount(3); await expect(log).toContainText('Bonus card play'); await expect(log).toContainText('move to Place 11'); await expect(log).toContainText('market sell'); } },
       { spec: 'Undo Turn reaches the beginning of all three reversible actions', check: async () => expect(page.getByRole('button', { name: 'Undo turn back before Bonus card play' })).toContainText('3 actions') },
-      { spec: 'Canonical state contains three active actions and the rotated demand', check: async () => expectState(page, { eventCount: 9, gameLog: [{ rollbackCount: 3 }, { rollbackCount: 2 }, { rollbackCount: 1 }], game: { phase: 'turn-end', smallDemand: [...beforeFirstSale.game.smallDemand.slice(1), beforeFirstSale.game.smallDemand[0]], players: [{ lira: 42 }, {}] } }) }
+      { spec: 'Canonical state contains three active actions and the rotated demand', check: async () => expectState(page, { eventCount: 9, gameLog: [{ rollbackCount: 3 }, { rollbackCount: 2 }, { rollbackCount: 1 }], game: { phase: 'turn-end', smallDemand: [...beforeFirstSale.game.smallDemand.slice(1), beforeFirstSale.game.smallDemand[0]], players: [{ lira: 40 + firstSaleRevenue }, {}] } }) }
     ] });
 
     await page.getByRole('button', { name: 'Undo turn back before Bonus card play' }).click();
@@ -83,17 +83,16 @@ test('turn review and the game log roll back an authored suffix in one step', as
     ] });
     await page.getByRole('button', { name: 'Move here and leave an assistant' }).click();
     const beforeSecondSale = await readState(page);
-    await ada.step('host-replays-small-market-move', { description: 'Ada repeats the movement to Small Market', verifications: [
-      { spec: 'The replacement movement is the fifth logged action', check: async () => expectState(page, { eventCount: 12, gameLog: [{}, {}, {}, {}, { label: 'move to Place 11', active: true }], game: { phase: 'action', players: [{ merchantPlace: 11 }, {}] } }) }
-    ] });
     const secondDemand = demandTiles.find(({ id }) => id === beforeSecondSale.game.smallDemand[0])!;
-    await page.getByLabel(`Sell demand slot 1: ${secondDemand.goods[0]}`).check();
-    await ada.step('host-selects-second-market-good', { description: 'Ada selects the same one-slot sale pattern', verifications: [
-      { spec: 'Selection remains local at event twelve', check: async () => expectState(page, { eventCount: 12 }) }
+    const secondSaleSlots = defaultMarketSelection(secondDemand.goods, beforeSecondSale.game.players[0].goods);
+    const secondSaleRevenue = marketRevenueFor(11, secondSaleSlots.length);
+    await ada.step('host-replays-small-market-move', { description: 'Ada repeats the movement to Small Market', verifications: [
+      { spec: 'The replacement movement is the fifth logged action', check: async () => expectState(page, { eventCount: 12, gameLog: [{}, {}, {}, {}, { label: 'move to Place 11', active: true }], game: { phase: 'action', players: [{ merchantPlace: 11 }, {}] } }) },
+      { spec: 'The replayed market again prepares every matching good', check: async () => expect(page.getByLabel('Small Market demand').getByRole('checkbox', { checked: true })).toHaveCount(secondSaleSlots.length) }
     ] });
-    await page.getByRole('button', { name: 'Sell selected goods for 2 Lira' }).click();
+    await page.getByRole('button', { name: `Sell selected goods for ${secondSaleRevenue} Lira` }).click();
     await ada.step('host-completes-second-market-sale', { description: 'Ada completes the replayed market turn', verifications: [
-      { spec: 'The replacement sale reaches turn review at event thirteen', check: async () => expectState(page, { eventCount: 13, game: { phase: 'turn-end', players: [{ lira: 42 }, {}] } }) }
+      { spec: 'The replacement sale reaches turn review at event thirteen', check: async () => expectState(page, { eventCount: 13, game: { phase: 'turn-end', players: [{ lira: 40 + secondSaleRevenue }, {}] } }) }
     ] });
 
     await page.getByRole('button', { name: 'Game log' }).click();
