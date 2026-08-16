@@ -535,7 +535,8 @@ function applyEvent(state: ReplayProjection, event: CanonicalEvent): boolean {
     player.bonusHand.push(card);
     player.capacity = 3;
     player.extensions = 1;
-    player.goods = { fabric: 3, spice: 3, fruit: 3, jewelry: 3 };
+    player.goods = { fabric: 2, spice: 0, fruit: 2, jewelry: 1 };
+    game.smallDemand = ['demand-small-1', ...game.smallDemand.filter((id) => id !== 'demand-small-1')];
     return true;
   }
 

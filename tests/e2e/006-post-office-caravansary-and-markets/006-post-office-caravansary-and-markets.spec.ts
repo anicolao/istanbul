@@ -1,5 +1,7 @@
 import { expect, test } from '@playwright/test';
+import { marketRevenueFor } from '../../../src/lib/game/actions';
 import { bonusCards, demandTiles, type Good } from '../../../src/lib/game/manifests';
+import { defaultMarketSelection } from '../../../src/lib/game/market-selection';
 import { expectState, openTwoPlayerGame, readState } from '../helpers/game-journey';
 import { ScenarioJournal, TestStepHelper } from '../helpers/test-step-helper';
 
@@ -168,31 +170,29 @@ test('mail, private card trading, and both demand markets remain exact through r
     ] });
 
     await page.getByRole('button', { name: 'Move here and leave an assistant' }).click();
+    const smallState = await readState(page);
+    const smallId = smallState.game.smallDemand[0] as string;
+    const smallDemand = demandById.get(smallId)!;
+    const nextSmallDemand = demandById.get(smallState.game.smallDemand[1] as string)!;
+    const adaGoods = smallState.game.players[0].goods as Record<Good, number>;
+    const smallSlots = defaultMarketSelection(smallDemand.goods, adaGoods);
+    const smallRevenue = marketRevenueFor(11, smallSlots.length);
+    const afterSmallGoods = { ...adaGoods };
+    for (const slot of smallSlots) afterSmallGoods[smallDemand.goods[slot]] -= 1;
     await ada.step('host-arrives-small-market', { description: 'Ada arrives at Small Market with sale stock', verifications: [
       { spec: 'Five depicted Demand slots are ordinary checkboxes', check: async () => expect(page.getByLabel('Small Market demand').getByRole('checkbox')).toHaveCount(5) },
-      { spec: 'No selection means the sale is disabled', check: async () => expect(page.getByRole('button', { name: 'Sell selected goods for 0 Lira' })).toBeDisabled() },
+      { spec: 'Every affordable matching slot is selected by default', check: async () => { for (const [index, good] of smallDemand.goods.entries()) await expect(page.getByRole('checkbox', { name: `Sell demand slot ${index + 1}: ${good}` })).toBeChecked({ checked: smallSlots.includes(index) }); } },
+      { spec: 'The default sale immediately shows its official Small Market value', check: async () => expect(page.getByText(`${smallSlots.length} selected · ${smallRevenue} Lira`)).toBeVisible() },
+      { spec: 'The maximum matching sale is ready without extra clicks', check: async () => expect(page.getByRole('button', { name: `Sell selected goods for ${smallRevenue} Lira` })).toBeEnabled() },
       { spec: 'The active Demand is still on top', check: async () => expectState(page, { eventCount: 18, game: { phase: 'action' } }) }
     ] });
 
-    const smallState = await readState(page);
-    const smallId = smallState.game.smallDemand[0] as string;
-    const nextSmallDemand = demandById.get(smallState.game.smallDemand[1] as string)!;
-    const adaGoods = smallState.game.players[0].goods as Record<Good, number>;
-    const smallSlot = demandById.get(smallId)!.goods.findIndex((good) => adaGoods[good] > 0);
-    const smallGood = demandById.get(smallId)!.goods[smallSlot];
-    await page.getByRole('checkbox', { name: `Sell demand slot ${smallSlot + 1}: ${smallGood}` }).check();
-    await ada.step('host-chooses-small-sale', { description: `Ada selects one depicted ${smallGood} for the Small Market`, verifications: [
-      { spec: 'The chosen Demand slot is visibly checked', check: async () => expect(page.getByRole('checkbox', { name: `Sell demand slot ${smallSlot + 1}: ${smallGood}` })).toBeChecked() },
-      { spec: 'One good earns the official 2 Lira', check: async () => expect(page.getByText('1 selected · 2 Lira')).toBeVisible() },
-      { spec: 'Selection does not rotate or spend yet', check: async () => expectState(page, { eventCount: 18, game: { smallDemand: [smallId, ...smallState.game.smallDemand.slice(1)] } }) }
-    ] });
-
-    await page.getByRole('button', { name: 'Sell selected goods for 2 Lira' }).click();
-    await ada.step('host-sells-small-market', { description: 'Ada completes the one-good Small Market sale', verifications: [
-      { spec: 'The completion panel reports the exact revenue', check: async () => expect(page.getByText('Sold 1 good for 2 Lira.', { exact: true })).toBeVisible() },
-      { spec: 'The used Demand moves to the bottom', check: async () => expectState(page, { eventCount: 19, game: { phase: 'turn-end', smallDemand: [...smallState.game.smallDemand.slice(1), smallId], players: [{ lira: 6 }, {}] } }) },
+    await page.getByRole('button', { name: `Sell selected goods for ${smallRevenue} Lira` }).click();
+    await ada.step('host-sells-small-market', { description: `Ada accepts the default ${smallSlots.length}-good Small Market sale`, verifications: [
+      { spec: 'The completion panel reports the exact default revenue', check: async () => expect(page.getByText(`Sold ${smallSlots.length} good${smallSlots.length === 1 ? '' : 's'} for ${smallRevenue} Lira.`, { exact: true })).toBeVisible() },
+      { spec: 'The used Demand moves to the bottom', check: async () => expectState(page, { eventCount: 19, game: { phase: 'turn-end', smallDemand: [...smallState.game.smallDemand.slice(1), smallId], players: [{ lira: (smallState.game.players[0].lira as number) + smallRevenue }, {}] } }) },
       { spec: 'Small Market tile replaces its five graphical demand goods', check: async () => expect(page.getByTestId('place-state-11')).toHaveAttribute('data-state-summary', `Current Small Market demand: ${nextSmallDemand.goods.join(', ')}`) },
-      { spec: 'Exactly the selected good was spent', check: async () => { const after = await readState(page); expect(after.game.players[0].goods[smallGood]).toBe(adaGoods[smallGood] - 1); } }
+      { spec: 'Exactly the default matching goods were spent', check: async () => expectState(page, { game: { players: [{ goods: afterSmallGoods }, {}] } }) }
     ] });
 
     await page.getByRole('button', { name: 'End turn and pass clockwise' }).click();
@@ -258,29 +258,24 @@ test('mail, private card trading, and both demand markets remain exact through r
     ] });
 
     await page.getByRole('button', { name: 'Move here and leave an assistant' }).click();
+    const largeState = await readState(page);
+    const largeId = largeState.game.largeDemand[0] as string;
+    const largeDemand = demandById.get(largeId)!;
+    const nextLargeDemand = demandById.get(largeState.game.largeDemand[1] as string)!;
+    const remainingGoods = largeState.game.players[0].goods as Record<Good, number>;
+    const largeSlots = defaultMarketSelection(largeDemand.goods, remainingGoods);
+    const largeRevenue = marketRevenueFor(10, largeSlots.length);
     await ada.step('host-arrives-large-market', { description: 'Ada arrives at Large Market with remaining stock', verifications: [
       { spec: 'Five Large Market slots are visible', check: async () => expect(page.getByLabel('Large Market demand').getByRole('checkbox')).toHaveCount(5) },
-      { spec: 'The sale begins disabled with zero selected', check: async () => expect(page.getByRole('button', { name: 'Sell selected goods for 0 Lira' })).toBeDisabled() },
+      { spec: 'Every remaining matching slot is selected by default', check: async () => { for (const [index, good] of largeDemand.goods.entries()) await expect(page.getByRole('checkbox', { name: `Sell demand slot ${index + 1}: ${good}` })).toBeChecked({ checked: largeSlots.includes(index) }); } },
+      { spec: 'The default selection shows the distinct Large Market payout', check: async () => expect(page.getByText(`${largeSlots.length} selected · ${largeRevenue} Lira`)).toBeVisible() },
       { spec: 'Ada now has zero carried assistants but may finish this action', check: async () => expectState(page, { eventCount: 24, game: { phase: 'action', players: [{ merchantPlace: 10, assistantsCarried: 0 }, {}] } }) }
     ] });
 
-    const largeState = await readState(page);
-    const largeId = largeState.game.largeDemand[0] as string;
-    const nextLargeDemand = demandById.get(largeState.game.largeDemand[1] as string)!;
-    const remainingGoods = largeState.game.players[0].goods as Record<Good, number>;
-    const largeSlot = demandById.get(largeId)!.goods.findIndex((good) => remainingGoods[good] > 0);
-    const largeGood = demandById.get(largeId)!.goods[largeSlot];
-    await page.getByRole('checkbox', { name: `Sell demand slot ${largeSlot + 1}: ${largeGood}` }).check();
-    await ada.step('host-chooses-large-sale', { description: `Ada selects one depicted ${largeGood} for Large Market`, verifications: [
-      { spec: 'The Large Market slot is checked', check: async () => expect(page.getByRole('checkbox', { name: `Sell demand slot ${largeSlot + 1}: ${largeGood}` })).toBeChecked() },
-      { spec: 'One good displays the distinct 3-Lira Large Market tier', check: async () => expect(page.getByText('1 selected · 3 Lira')).toBeVisible() },
-      { spec: 'The local selection has not spent stock', check: async () => expectState(page, { eventCount: 24, game: { largeDemand: [largeId, ...largeState.game.largeDemand.slice(1)] } }) }
-    ] });
-
-    await page.getByRole('button', { name: 'Sell selected goods for 3 Lira' }).click();
-    await ada.step('host-sells-large-market', { description: 'Ada completes the Large Market sale', verifications: [
-      { spec: 'The exact distinct Large Market sale summary is visible', check: async () => expect(page.getByText('Sold 1 good for 3 Lira.', { exact: true })).toBeVisible() },
-      { spec: 'Large Demand rotates independently', check: async () => expectState(page, { eventCount: 25, game: { phase: 'turn-end', largeDemand: [...largeState.game.largeDemand.slice(1), largeId], smallDemand: [...smallState.game.smallDemand.slice(1), smallId], players: [{ lira: 9 }, {}] } }) },
+    await page.getByRole('button', { name: `Sell selected goods for ${largeRevenue} Lira` }).click();
+    await ada.step('host-sells-large-market', { description: `Ada accepts the default ${largeSlots.length}-good Large Market sale`, verifications: [
+      { spec: 'The exact distinct Large Market sale summary is visible', check: async () => expect(page.getByText(`Sold ${largeSlots.length} good${largeSlots.length === 1 ? '' : 's'} for ${largeRevenue} Lira.`, { exact: true })).toBeVisible() },
+      { spec: 'Large Demand rotates independently', check: async () => expectState(page, { eventCount: 25, game: { phase: 'turn-end', largeDemand: [...largeState.game.largeDemand.slice(1), largeId], smallDemand: [...smallState.game.smallDemand.slice(1), smallId], players: [{ lira: (largeState.game.players[0].lira as number) + largeRevenue }, {}] } }) },
       { spec: 'Large Market tile exposes the newly rotated five-good demand', check: async () => expect(page.getByTestId('place-state-10')).toHaveAttribute('data-state-summary', `Current Large Market demand: ${nextLargeDemand.goods.join(', ')}`) },
       { spec: 'Bora observes the same public market state', check: async () => {
         const host = await readState(page);

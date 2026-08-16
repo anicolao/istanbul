@@ -162,22 +162,13 @@ Ada reviews every action before passing, uses Undo Turn to erase a three-action 
 **Verifications:**
 
 - [x] The game log can now roll back two actions from the Bonus play
+- [x] Every matching demand slot is preselected at the maximum payout
 
-## 16. Ada selects one printed good to sell
-
-**Ada, the first merchant** — Ada selects one printed good to sell
-
-![Ada selects one printed good to sell](./screenshots/011-host-selects-first-market-good-desktop.png)
-
-**Verifications:**
-
-- [x] The sale preview is two Lira and does not append an event
-
-## 17. Ada completes the market sale and reviews the turn before passing
+## 16. Ada completes the market sale and reviews the turn before passing
 
 **Ada, the first merchant** — Ada completes the market sale and reviews the turn before passing
 
-![Ada completes the market sale and reviews the turn before passing](./screenshots/012-host-reviews-completed-turn-desktop.png)
+![Ada completes the market sale and reviews the turn before passing](./screenshots/011-host-reviews-completed-turn-desktop.png)
 
 **Verifications:**
 
@@ -185,124 +176,115 @@ Ada reviews every action before passing, uses Undo Turn to erase a three-action 
 - [x] Undo Turn reaches the beginning of all three reversible actions
 - [x] Canonical state contains three active actions and the rotated demand
 
-## 18. Ada uses one Undo Turn event to restore the reviewed starting position
+## 17. Ada uses one Undo Turn event to restore the reviewed starting position
 
 **Ada, the first merchant** — Ada uses one Undo Turn event to restore the reviewed starting position
 
-![Ada uses one Undo Turn event to restore the reviewed starting position](./screenshots/013-host-undoes-entire-turn-desktop.png)
+![Ada uses one Undo Turn event to restore the reviewed starting position](./screenshots/012-host-undoes-entire-turn-desktop.png)
 
 **Verifications:**
 
 - [x] The Bonus card, Lira, merchant, assistant, goods, and demand all return exactly
 - [x] Bora independently converges from the same single rollback event
 
-## 19. Ada selects the restored Bonus card for a second line
+## 18. Ada selects the restored Bonus card for a second line
 
 **Ada, the first merchant** — Ada selects the restored Bonus card for a second line
 
-![Ada selects the restored Bonus card for a second line](./screenshots/014-host-reselects-turn-bonus-desktop.png)
+![Ada selects the restored Bonus card for a second line](./screenshots/013-host-reselects-turn-bonus-desktop.png)
 
 **Verifications:**
 
 - [x] Selection changes no immutable state
 
-## 20. Ada replays the profitable bargain
+## 19. Ada replays the profitable bargain
 
 **Ada, the first merchant** — Ada replays the profitable bargain
 
-![Ada replays the profitable bargain](./screenshots/015-host-replays-turn-bonus-desktop.png)
+![Ada replays the profitable bargain](./screenshots/014-host-replays-turn-bonus-desktop.png)
 
 **Verifications:**
 
 - [x] A new active Bonus action follows the three inactive originals
 
-## 21. Ada selects Small Market again
+## 20. Ada selects Small Market again
 
 **Ada, the first merchant** — Ada selects Small Market again
 
-![Ada selects Small Market again](./screenshots/016-host-reselects-small-market-desktop.png)
+![Ada selects Small Market again](./screenshots/015-host-reselects-small-market-desktop.png)
 
 **Verifications:**
 
 - [x] The replacement route is reachable without a new event
 
-## 22. Ada repeats the movement to Small Market
+## 21. Ada repeats the movement to Small Market
 
 **Ada, the first merchant** — Ada repeats the movement to Small Market
 
-![Ada repeats the movement to Small Market](./screenshots/017-host-replays-small-market-move-desktop.png)
+![Ada repeats the movement to Small Market](./screenshots/016-host-replays-small-market-move-desktop.png)
 
 **Verifications:**
 
 - [x] The replacement movement is the fifth logged action
+- [x] The replayed market again prepares every matching good
 
-## 23. Ada selects the same one-slot sale pattern
-
-**Ada, the first merchant** — Ada selects the same one-slot sale pattern
-
-![Ada selects the same one-slot sale pattern](./screenshots/018-host-selects-second-market-good-desktop.png)
-
-**Verifications:**
-
-- [x] Selection remains local at event twelve
-
-## 24. Ada completes the replayed market turn
+## 22. Ada completes the replayed market turn
 
 **Ada, the first merchant** — Ada completes the replayed market turn
 
-![Ada completes the replayed market turn](./screenshots/019-host-completes-second-market-sale-desktop.png)
+![Ada completes the replayed market turn](./screenshots/017-host-completes-second-market-sale-desktop.png)
 
 **Verifications:**
 
 - [x] The replacement sale reaches turn review at event thirteen
 
-## 25. Ada opens the full immutable game log beside Undo
+## 23. Ada opens the full immutable game log beside Undo
 
 **Ada, the first merchant** — Ada opens the full immutable game log beside Undo
 
-![Ada opens the full immutable game log beside Undo](./screenshots/020-host-opens-direct-rollback-log-desktop.png)
+![Ada opens the full immutable game log beside Undo](./screenshots/018-host-opens-direct-rollback-log-desktop.png)
 
 **Verifications:**
 
 - [x] The dialog offers direct one-, two-, and three-action rollback points
 - [x] Previously undone actions remain visible as grey immutable history
 
-## 26. Ada restores the state before movement with one direct rollback event
+## 24. Ada restores the state before movement with one direct rollback event
 
 **Ada, the first merchant** — Ada restores the state before movement with one direct rollback event
 
-![Ada restores the state before movement with one direct rollback event](./screenshots/021-host-rolls-back-directly-to-movement-desktop.png)
+![Ada restores the state before movement with one direct rollback event](./screenshots/019-host-rolls-back-directly-to-movement-desktop.png)
 
 **Verifications:**
 
 - [x] Movement and sale are inactive while the Bonus play remains active
 - [x] The dialog closes after the atomic rollback
 
-## 27. Ada chooses Tea House as the replacement route
+## 25. Ada chooses Tea House as the replacement route
 
 **Ada, the first merchant** — Ada chooses Tea House as the replacement route
 
-![Ada chooses Tea House as the replacement route](./screenshots/022-host-selects-tea-after-direct-rollback-desktop.png)
+![Ada chooses Tea House as the replacement route](./screenshots/020-host-selects-tea-after-direct-rollback-desktop.png)
 
 **Verifications:**
 
 - [x] Tea House is selected with no event
 
-## 28. Ada moves to Tea House after the direct rollback
+## 26. Ada moves to Tea House after the direct rollback
 
 **Ada, the first merchant** — Ada moves to Tea House after the direct rollback
 
-![Ada moves to Tea House after the direct rollback](./screenshots/023-host-moves-tea-after-direct-rollback-desktop.png)
+![Ada moves to Tea House after the direct rollback](./screenshots/021-host-moves-tea-after-direct-rollback-desktop.png)
 
 **Verifications:**
 
 - [x] The move is reversible before dice are shown
 
-## 29. Ada rolls dice and reviews the visibly blocked turn history
+## 27. Ada rolls dice and reviews the visibly blocked turn history
 
 **Ada, the first merchant** — Ada rolls dice and reviews the visibly blocked turn history
 
-![Ada rolls dice and reviews the visibly blocked turn history](./screenshots/024-host-sees-grey-barrier-turn-log-desktop.png)
+![Ada rolls dice and reviews the visibly blocked turn history](./screenshots/022-host-sees-grey-barrier-turn-log-desktop.png)
 
 **Verifications:**
 
@@ -310,32 +292,32 @@ Ada reviews every action before passing, uses Undo Turn to erase a three-action 
 - [x] Undo Turn is disabled at the information boundary
 - [x] The canonical log exposes the same barrier reasons
 
-## 30. Ada passes, creating one reversible action above the dice barrier
+## 28. Ada passes, creating one reversible action above the dice barrier
 
 **Ada, the first merchant** — Ada passes, creating one reversible action above the dice barrier
 
-![Ada passes, creating one reversible action above the dice barrier](./screenshots/025-host-passes-above-dice-barrier-desktop.png)
+![Ada passes, creating one reversible action above the dice barrier](./screenshots/023-host-passes-above-dice-barrier-desktop.png)
 
 **Verifications:**
 
 - [x] Bora begins turn two while Ada owns the latest end-turn action
 - [x] Bora sees the same clockwise handoff
 
-## 31. Ada opens the log after passing the dice barrier
+## 29. Ada opens the log after passing the dice barrier
 
 **Ada, the first merchant** — Ada opens the log after passing the dice barrier
 
-![Ada opens the log after passing the dice barrier](./screenshots/026-host-opens-log-above-barrier-desktop.png)
+![Ada opens the log after passing the dice barrier](./screenshots/024-host-opens-log-above-barrier-desktop.png)
 
 **Verifications:**
 
 - [x] End turn is selectable but the roll and all earlier actions are grey
 
-## 32. Ada rolls back only the action above the barrier
+## 30. Ada rolls back only the action above the barrier
 
 **Ada, the first merchant** — Ada rolls back only the action above the barrier
 
-![Ada rolls back only the action above the barrier](./screenshots/027-host-restores-end-turn-only-desktop.png)
+![Ada rolls back only the action above the barrier](./screenshots/025-host-restores-end-turn-only-desktop.png)
 
 **Verifications:**
 
