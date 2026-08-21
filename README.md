@@ -35,9 +35,11 @@ browser-level tracer bullets verified with Playwright.
   rollback is an attributed append-only event, with hard boundaries whenever a
   card draw or die roll reveals new information.
 - Ordinary network play on phone, tablet, and desktop.
-- A dedicated `/tabletop/` route that creates and owns the room, renders every
-  public game control on the shared display, and leaves only private Bonus-card
-  information and decisions on each player's phone.
+- A dedicated `/tabletop/` route that creates and owns the room, presents eight
+  physical join positions around the display, renders every public game control
+  on the shared display, and leaves only private Bonus-card information and
+  decisions on each player's phone. One occupied position is chosen as Player 1
+  and play proceeds clockwise through the remaining occupied positions.
 - A dedicated `/gallery/` review route that renders the same logical Svelte
   components used during play—with representative state, stable references,
   renderer props, and full-size views for precise UI feedback.

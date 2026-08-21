@@ -13,6 +13,19 @@ export const manifestVersions = {
 
 export type RoomMode = 'personal-screens' | 'shared-table';
 export type LayoutKind = 'short-path' | 'long-path' | 'number-order' | 'random';
+export type TablePosition = 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8;
+
+export const tablePositions: TablePosition[] = [1, 2, 3, 4, 5, 6, 7, 8];
+export const tablePositionNames: Record<TablePosition, string> = {
+  1: 'Top-left corner',
+  2: 'Top edge',
+  3: 'Top-right corner',
+  4: 'Right edge',
+  5: 'Bottom-right corner',
+  6: 'Bottom edge',
+  7: 'Bottom-left corner',
+  8: 'Left edge'
+};
 
 export interface CanonicalEvent {
   id: string;
@@ -31,6 +44,7 @@ export interface Seat {
   uid: string;
   name: string;
   ready: boolean;
+  tablePosition?: TablePosition;
 }
 
 export interface RoomProjection {
@@ -98,6 +112,10 @@ export function isRoomCode(value: string): boolean {
 
 export function normalizeRoomCode(value: string): string {
   return value.toUpperCase().replace(/[^A-Z]/g, '').slice(0, 5);
+}
+
+export function isTablePosition(value: unknown): value is TablePosition {
+  return typeof value === 'number' && Number.isInteger(value) && tablePositions.includes(value as TablePosition);
 }
 
 export function isCanonicalEvent(value: unknown): value is CanonicalEvent {

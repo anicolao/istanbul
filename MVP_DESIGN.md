@@ -22,7 +22,10 @@ creates and owns an empty room, displays QR invitations,
 owns layout, start, and all public gameplay, and never consumes a merchant seat.
 Scanned phones hold player identities, readiness, private Bonus cards, and only
 the card-dependent Caravansary or Governor choices that cannot be public. It
-excludes both expansions and the optional neutral-assistant variant.
+offers eight physical positions at the corners and edge middles; setup chooses
+one occupied position as Player 1 and proceeds clockwise through the other
+occupied positions. It excludes both expansions and the optional
+neutral-assistant variant.
 
 ## Fixed technical decisions
 

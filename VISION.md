@@ -36,7 +36,9 @@ that blocks them. The UI assists understanding but never recommends an
 - In shared-table play, a large browser is the primary game controller: players
   gather around it for movement and every public action. Phones provide only
   private Bonus hands and choices that would reveal card identities. QR codes
-  make taking a seat fast.
+  at the four corners and four edge middles make taking a physical position
+  fast. Setup chooses one occupied position as Player 1, then orders the other
+  merchants clockwise rather than scrambling their places around the table.
 
 These modes project the same game state and append the same events. Shared-table
 mode is not a separate rules implementation.
