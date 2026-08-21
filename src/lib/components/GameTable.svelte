@@ -26,6 +26,7 @@
   import PlayerTray from './PlayerTray.svelte';
   import PrivateBonusHand from './PrivateBonusHand.svelte';
   import SultanOffer from './SultanOffer.svelte';
+  import TabletopPlayerPanel from './TabletopPlayerPanel.svelte';
   import TeaHousePayoffs from './TeaHousePayoffs.svelte';
 
   let {
@@ -547,21 +548,25 @@
     <PrivateBonusHand cards={localPlayer.bonusHand} selected={selectedBonus} onInspect={inspectBonus} class="desktop-private-hand" />
   {/if}
 
-  <section class:hidden-at-finish={game.phase === 'game-over'} class:many={game.players.length > 3} class="player-rail" aria-label="Player resources" style={`--players: ${game.players.length}`} data-e2e-fit data-e2e-no-scroll>
-    {#each game.players as player, index}
-      <article class:local={!tabletopControls && player.uid === userUid} aria-label={`${player.name} resources`} data-player-color={player.color} data-e2e-fit data-e2e-no-scroll>
-        <PlayerTray
-          {player}
-          seat={index + 1}
-          starting={index === game.startingSeat}
-          local={!tabletopControls && player.uid === userUid}
-          compact={tableLayout}
-          {selectedBonus}
-          onInspectBonus={inspectBonus}
-        />
-      </article>
-    {/each}
-  </section>
+  {#if tabletopControls}
+    <TabletopPlayerPanel {game} {room} />
+  {:else}
+    <section class:hidden-at-finish={game.phase === 'game-over'} class:many={game.players.length > 3} class="player-rail" aria-label="Player resources" style={`--players: ${game.players.length}`} data-e2e-fit data-e2e-no-scroll>
+      {#each game.players as player, index}
+        <article class:local={player.uid === userUid} aria-label={`${player.name} resources`} data-player-color={player.color} data-e2e-fit data-e2e-no-scroll>
+          <PlayerTray
+            {player}
+            seat={index + 1}
+            starting={index === game.startingSeat}
+            local={player.uid === userUid}
+            compact={tableLayout}
+            {selectedBonus}
+            onInspectBonus={inspectBonus}
+          />
+        </article>
+      {/each}
+    </section>
+  {/if}
   {#if tableLayout}<footer class="tabletop-strip" data-e2e-fit data-e2e-no-scroll><span class="table-identity"><strong>{tabletopControls ? 'Istanbul tabletop' : 'Istanbul'}</strong><i>{room.roomCode} · {room.layout.replace('-', ' ')}</i></span><span class="table-history-actions"><button class="undo-action" aria-label={undoText} disabled={!canUndo} onclick={onUndo}><span aria-hidden="true">↶</span>{undoButtonText}</button><GameLog entries={gameLog} players={game.players} {userUid} pending={undoPending} {onRollback} /></span><span class="undo-record" aria-live="polite">{undoStatusText}{undoLog.length ? ` · last log: ${undoLog.at(-1)?.label}` : ''}</span></footer>{/if}
 </section>
 
@@ -572,6 +577,7 @@
   .game-table.display-only .play-area { grid-template-columns: minmax(0, 3fr) minmax(19rem, 1fr); }
   .game-table.display-only .player-rail article { padding: clamp(.55rem, 1vw, 1.2rem); }
   .game-table.table-layout { display: grid; grid-template-columns: clamp(13rem, 17vw, 20rem) minmax(0, 1fr) clamp(18rem, 22vw, 28rem); grid-template-rows: auto minmax(0, 1fr) auto; gap: .45rem; }
+  .game-table.table-layout.tabletop { grid-template-columns: clamp(18rem, 22vw, 30rem) minmax(0, 1fr) clamp(18rem, 22vw, 28rem); }
   .table-layout .turn-banner { grid-column: 1; grid-row: 1; min-height: 0; gap: .35rem; padding: .4rem .55rem; border-radius: .65rem; }
   .table-layout .turn-banner > div:first-child { min-width: 0; }.table-layout .turn-banner h1 { overflow: hidden; font-size: clamp(1rem, 1.3vw, 1.35rem); line-height: 1; text-overflow: ellipsis; white-space: nowrap; }.table-layout .turn-banner p { font-size: .48rem; }.table-layout .turn-notice { overflow: hidden; font-size: .48rem; text-overflow: ellipsis; white-space: nowrap; }
   .table-layout .turn-token { flex: 0 0 auto; grid-template-columns: 1.2rem; gap: .08rem; justify-items: center; font-size: .48rem; }.table-layout .turn-token .player-dot { grid-row: auto; width: 1.15rem; height: 1.15rem; border-width: 2px; }.table-layout .turn-token small { display: none; }

@@ -1,6 +1,6 @@
 # Play Istanbul together on one tabletop with private Bonus phones
 
-The dedicated /tabletop route creates and owns an empty shared-table room. Ada and Bora scan its QR codes, join and ready on phones, then gather around the tabletop for every public choice. The phones render only each player’s private Bonus-card hand: Ada privately inspects and plays a card, while the tabletop immediately reflects its public consequence and remains the sole surface for movement and Place actions. Every input is followed by exact screenshots, DOM checks, fitted-interface checks, and serialized replay-state assertions.
+The dedicated /tabletop route arranges eight join positions around the display. Ada claims the top-left corner and Bora the bottom edge; setup chooses one occupied position as Player 1 and continues clockwise across the occupied positions. During play, the control column enlarges and duplicates the current upright player mat above a stacked clockwise card set. Phones retain only each player’s private Bonus-card hand while the tabletop owns every public choice. Every input is followed by exact screenshots, DOM checks, fitted-interface checks, and serialized replay-state assertions.
 
 ## 1. The tabletop opens empty room TABLE
 
@@ -10,7 +10,7 @@ The dedicated /tabletop route creates and owns an empty shared-table room. Ada a
 
 **Verifications:**
 
-- [x] The direct tabletop route creates five QR invitations without claiming a merchant seat
+- [x] The direct tabletop route creates eight physical-position invitations without claiming a merchant seat
 - [x] The tabletop owns the sole creation event and stays outside the roster
 - [x] The tabletop owns layout and start controls, with start disabled until two players join and ready
 
@@ -22,7 +22,7 @@ The dedicated /tabletop route creates and owns an empty shared-table room. Ada a
 
 **Verifications:**
 
-- [x] The QR opens only a private-controller join screen
+- [x] The QR opens its exact private-controller position
 - [x] Ada is not seated while the empty tabletop room replays
 
 ## 3. Ada enters her public merchant name
@@ -54,7 +54,7 @@ The dedicated /tabletop route creates and owns an empty shared-table room. Ada a
 
 **Verifications:**
 
-- [x] Ada occupies one public position while four invitations remain
+- [x] Ada occupies physical position one while seven invitations remain
 - [x] The tabletop remains seatless at the same two-event cursor
 
 ## 6. Bora scans an open tabletop QR
@@ -65,7 +65,7 @@ The dedicated /tabletop route creates and owns an empty shared-table room. Ada a
 
 **Verifications:**
 
-- [x] Bora sees the same private-controller join screen
+- [x] Bora receives the selected bottom-edge physical position
 - [x] Ada is present but Bora has not yet joined
 
 ## 7. Bora enters his public merchant name
@@ -87,7 +87,7 @@ The dedicated /tabletop route creates and owns an empty shared-table room. Ada a
 **Verifications:**
 
 - [x] Bora’s private phone shows both joined merchants
-- [x] The second join is event three
+- [x] The second join is event three and clockwise order skips the empty positions between them
 
 ## 9. The tabletop shows both joined merchants
 
@@ -97,7 +97,7 @@ The dedicated /tabletop route creates and owns an empty shared-table room. Ada a
 
 **Verifications:**
 
-- [x] Ada and Bora occupy public positions while three QR invitations remain
+- [x] Ada and Bora occupy distinct physical positions while six position invitations remain
 - [x] Start remains disabled until both private phones are ready
 
 ## 10. Ada readies on her private phone
@@ -130,9 +130,9 @@ The dedicated /tabletop route creates and owns an empty shared-table room. Ada a
 
 **Verifications:**
 
-- [x] The tabletop announces everyone present is ready
+- [x] The tabletop projects everyone present as ready
 - [x] Only the dedicated tabletop can now open the bazaar
-- [x] Three unclaimed QR positions remain visible until start
+- [x] Six unclaimed physical positions remain visible until start
 
 ## 13. The tabletop starts play and becomes the public bazaar
 
@@ -144,7 +144,7 @@ The dedicated /tabletop route creates and owns an empty shared-table room. Ada a
 
 - [x] The public board replaces every joined and unclaimed lobby position
 - [x] The sixth event starts Ada’s seeded movement turn
-- [x] No private Bonus hand appears in public DOM or state
+- [x] The current mat is enlarged upright and duplicated in the clockwise player-card stack without exposing private cards
 
 ## 14. Ada’s private phone receives the opening turn
 
@@ -189,7 +189,7 @@ The dedicated /tabletop route creates and owns an empty shared-table room. Ada a
 
 **Verifications:**
 
-- [x] Ada’s public player mat shows 7 Lira and zero Bonus cards while the spent card becomes the public discard
+- [x] Ada’s enlarged current-player mat shows 7 Lira and zero Bonus cards while the spent card becomes the public discard
 - [x] The public log describes the effect while movement still belongs to the tabletop
 
 ## 18. Ada selects Fruit Warehouse on the shared tabletop

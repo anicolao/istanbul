@@ -65,4 +65,24 @@ describe('base-game manifests and setup', () => {
     const distance = Math.abs(Math.floor(first.indexOf(8) / 4) - Math.floor(first.indexOf(9) / 4)) + Math.abs(first.indexOf(8) % 4 - first.indexOf(9) % 4);
     expect(distance).toBeGreaterThanOrEqual(3);
   });
+
+  it('starts at one random occupied tabletop position and continues clockwise', () => {
+    const tabletopRoom: RoomProjection = {
+      roomCode: 'CLOCK', hostUid: 'table', tabletopOwned: true, status: 'lobby', maxPlayers: 5,
+      layout: 'short-path', mode: 'shared-table',
+      seats: [
+        { uid: 'west', name: 'West', ready: true, tablePosition: 8 },
+        { uid: 'north', name: 'North', ready: true, tablePosition: 2 },
+        { uid: 'south-east', name: 'South East', ready: true, tablePosition: 5 }
+      ]
+    };
+    const setup = createSetup(tabletopRoom, 'clockwise-table');
+    const positions = setup.players.map((player) => tabletopRoom.seats.find(({ uid }) => uid === player.uid)!.tablePosition);
+    const playOrder = Array.from({ length: setup.players.length }, (_, offset) => positions[(setup.startingSeat + offset) % positions.length]);
+
+    expect(positions).toEqual([2, 5, 8]);
+    expect([[2, 5, 8], [5, 8, 2], [8, 2, 5]]).toContainEqual(playOrder);
+    expect(Array.from({ length: setup.players.length }, (_, offset) => setup.players[(setup.startingSeat + offset) % setup.players.length].lira)).toEqual([2, 3, 4]);
+    expect(createSetup(tabletopRoom, 'clockwise-table').startingSeat).toBe(setup.startingSeat);
+  });
 });
