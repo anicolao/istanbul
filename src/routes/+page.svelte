@@ -19,14 +19,18 @@
   import type { BonusChoice } from '$lib/game/bonus';
   import {
     isRoomCode,
+    isTablePosition,
     layoutNames,
     maxRoomPlayers,
     modeNames,
     normalizeRoomCode,
     schemaVersion,
+    tablePositionNames,
+    tablePositions,
     type CanonicalEvent,
     type LayoutKind,
-    type ReplayProjection
+    type ReplayProjection,
+    type TablePosition
   } from '$lib/game/protocol';
 
   let { tabletopRoute = false }: { tabletopRoute?: boolean } = $props();
@@ -46,7 +50,8 @@
   let joinCode = $state('');
   let selectedLayout = $state<LayoutKind>('short-path');
   let sharedDisplay = $state(false);
-  let requestedSeat = $state<number | null>(null);
+  let requestedSeat = $state<TablePosition | null>(null);
+  let selectedTablePosition = $state<TablePosition | null>(null);
   let actionPending = $state(false);
   let message = $state('');
   let recoveryNotice = $state('');
@@ -65,6 +70,9 @@
   const isHost = $derived(room?.hostUid === userUid);
   const sharedTablePhone = $derived(Boolean(room?.mode === 'shared-table' && localSeat && game && !tabletopRoute));
   const allReady = $derived(Boolean(room && room.seats.length >= 2 && room.seats.every((seat) => seat.ready)));
+  const selectedPositionAvailable = $derived(Boolean(
+    selectedTablePosition && !room?.seats.some((seat) => seat.tablePosition === selectedTablePosition)
+  ));
   const inviteUrl = $derived(room ? makeInviteUrl(room.roomCode) : '');
   const stateSummary = $derived(JSON.stringify({
     screen,
@@ -83,6 +91,7 @@
     tabletopRoute,
     sharedDisplay,
     ready: room?.seats.map((seat) => seat.ready) ?? [],
+    tablePositions: room?.seats.map((seat) => seat.tablePosition ?? null) ?? [],
     localSeat: localSeat?.name ?? null,
     game: game ? {
       epoch: game.epoch,
@@ -143,7 +152,8 @@
       const reviewedRoom = normalizeRoomCode(new URL(location.href).searchParams.get('room') ?? '');
       sharedDisplay = tabletopRoute;
       const seatParameter = Number(new URL(location.href).searchParams.get('seat'));
-      requestedSeat = Number.isInteger(seatParameter) && seatParameter > 0 ? seatParameter : null;
+      requestedSeat = isTablePosition(seatParameter) ? seatParameter : null;
+      selectedTablePosition = requestedSeat;
       if (recoveryReview && reviewedCacheCount > 0 && isRoomCode(reviewedRoom)) {
         const cached = readReplayCache(reviewedRoom).slice(0, reviewedCacheCount);
         localStorage.setItem(replayCacheKey(reviewedRoom), JSON.stringify({ version: 1, events: cached }));
@@ -303,11 +313,17 @@
   }
 
   async function joinRoom() {
-    if (!guestName.trim() || !repository || actionPending) return;
+    if (
+      !guestName.trim() || !repository || actionPending ||
+      (room?.tabletopOwned && (!selectedTablePosition || !selectedPositionAvailable))
+    ) return;
     actionPending = true;
     message = '';
     try {
-      await repository.append('player/joined', { name: guestName.trim() });
+      await repository.append('player/joined', {
+        name: guestName.trim(),
+        ...(room?.tabletopOwned ? { tablePosition: selectedTablePosition } : {})
+      });
     } catch (error) {
       message = error instanceof Error ? error.message : 'Could not join the room';
     } finally {
@@ -637,10 +653,22 @@
       <div class="join-panel">
         <p class="section-kicker">You were invited</p>
         <h1 id="join-room-title">{room.tabletopOwned ? 'Take a seat at the tabletop.' : `Take a seat at ${room.seats[0].name}’s table.`}</h1>
-        <p>The table is using the <strong>{layoutNames[room.layout]}</strong> layout.{requestedSeat ? ` This invitation is for controller seat ${requestedSeat}.` : ''} Your merchant name is public; Bonus cards stay private once play begins.</p>
+        <p>The table is using the <strong>{layoutNames[room.layout]}</strong> layout.{requestedSeat ? ` This invitation opens table position ${requestedSeat}, ${tablePositionNames[requestedSeat]}.` : ''} Your merchant name is public; Bonus cards stay private once play begins.</p>
         <form onsubmit={(event) => { event.preventDefault(); void joinRoom(); }}>
           <label>Your merchant name<input bind:value={guestName} maxlength="24" autocomplete="nickname" required /></label>
-          <button class="primary" type="submit" disabled={!guestName.trim() || actionPending || room.seats.length >= room.maxPlayers}>Join the room <svg class="button-arrow" aria-hidden="true" viewBox="0 0 16 16"><path d="M2 8h11M9 4l4 4-4 4" /></svg></button>
+          {#if room.tabletopOwned}
+            <fieldset class="table-position-picker">
+              <legend>Your physical position</legend>
+              {#each tablePositions as position}
+                {@const occupant = room.seats.find((seat) => seat.tablePosition === position)}
+                <label class:occupied={Boolean(occupant)} class:selected={selectedTablePosition === position}>
+                  <input type="radio" name="table-position" value={position} checked={selectedTablePosition === position} disabled={Boolean(occupant)} onchange={() => selectedTablePosition = position} />
+                  <strong>{position}</strong><span>{tablePositionNames[position]}</span><small>{occupant ? `${occupant.name} sits here` : 'Available'}</small>
+                </label>
+              {/each}
+            </fieldset>
+          {/if}
+          <button class="primary" type="submit" disabled={!guestName.trim() || actionPending || room.seats.length >= room.maxPlayers || (room.tabletopOwned && !selectedPositionAvailable)}>Join the room{room.tabletopOwned ? ` at position ${selectedTablePosition ?? '—'}` : ''} <svg class="button-arrow" aria-hidden="true" viewBox="0 0 16 16"><path d="M2 8h11M9 4l4 4-4 4" /></svg></button>
         </form>
         {#if message}<p class="error" role="alert">{message}</p>{/if}
       </div>
@@ -696,7 +724,7 @@
         onGrantE2eResources={() => {}} onRematch={() => { if (room.tabletopOwned) void rematch(); }} onEndTurn={() => void endTurn()} onUndo={() => void undoLastAction()} onRollback={(targetEventId) => void rollbackTo(targetEventId)} undo={projection.undo} undoLog={projection.undoLog} gameLog={projection.gameLog} undoPending={actionPending}
         onZoomIn={() => boardScale = 1} onFit={() => boardScale = 1} {e2eResourceReview}
       />
-    {:else}<SharedTableLobby {room} invitationFor={() => makeInviteUrl(room.roomCode)} layoutNames={layoutNames} canConfigure={isHost && room.tabletopOwned} canStart={isHost && allReady} {actionPending} onConfigure={(layout) => void configureRoom(layout)} onStart={() => void startGame()} />{/if}
+    {:else}<SharedTableLobby {room} invitationFor={(position) => makeInviteUrl(room.roomCode, { seat: position })} layoutNames={layoutNames} canConfigure={isHost && room.tabletopOwned} canStart={isHost && allReady} {actionPending} onConfigure={(layout) => void configureRoom(layout)} onStart={() => void startGame()} />{/if}
   {:else if screen === 'game' && room && game}
     {#if sharedTablePhone}
       <BonusController
@@ -801,6 +829,15 @@
   .room-ticket small { color: #496665; font-weight: 700; }
   .join-panel > p:not(.section-kicker,.error) { max-width: 35rem; color: #bdd0ca; line-height: 1.5; }
   .join-panel h1 { font-size: clamp(3rem, 5vw, 5rem); }
+  .table-position-picker { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: .4rem; margin: .55rem 0 0; padding: 0; border: 0; }
+  .table-position-picker legend { margin-bottom: .35rem; color: #efca7d; font-size: .72rem; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; }
+  .table-position-picker label { position: relative; min-width: 0; display: grid; grid-template-columns: 1.5rem 1fr; grid-template-rows: auto auto; gap: 0 .25rem; padding: .4rem; border: 1px solid rgb(255 250 240 / 24%); border-radius: .55rem; color: #fffaf0; background: rgb(255 255 255 / 7%); cursor: pointer; }
+  .table-position-picker label.selected { border-color: #efca7d; background: rgb(239 202 125 / 16%); }
+  .table-position-picker label.occupied { opacity: .42; cursor: not-allowed; }
+  .table-position-picker input { position: absolute; width: 1px; min-height: 1px; opacity: 0; }
+  .table-position-picker strong { grid-row: 1 / 3; width: 1.45rem; height: 1.45rem; display: grid; place-items: center; border: 1px solid #efca7d; border-radius: 50%; color: #efca7d; }
+  .table-position-picker span, .table-position-picker small { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .table-position-picker span { font-size: .62rem; }.table-position-picker small { color: #9cb4af; font-size: .5rem; }
   .lobby { width: min(76rem, 100%); min-height: calc(100svh - 9rem); margin: 0 auto; display: flex; flex-direction: column; }
   .lobby-heading { display: flex; align-items: center; justify-content: space-between; gap: 2rem; margin-bottom: 1.2rem; }
   .lobby-heading h1 { margin: .25rem 0 .3rem; font-size: clamp(3rem, 5vw, 5rem); }
@@ -864,6 +901,7 @@
     .room-ticket strong { font-size: 3.5rem; }
     .join-panel { justify-content: start; }
     .join-panel h1 { font-size: 2.7rem; }
+    .table-position-picker { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: .25rem; }.table-position-picker label { padding: .25rem; }.table-position-picker strong { width: 1.25rem; height: 1.25rem; font-size: .65rem; }
     .lobby { min-height: calc(100svh - 4.95rem); }
     .lobby-heading { margin-bottom: .55rem; }
     .lobby-heading h1 { font-size: 2.35rem; }
