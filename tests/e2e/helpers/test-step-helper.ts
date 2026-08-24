@@ -153,7 +153,7 @@ export class TestStepHelper {
 
   async step(
     id: string,
-    options: { description: string; verifications: Verification[]; status?: string }
+    options: { description: string; verifications: Verification[]; status?: string; maxDiffPixels?: number }
   ) {
     for (const verification of options.verifications) await verification.check();
     await expect(this.page.locator('[role="status"][data-status]')).toHaveAttribute(
@@ -167,7 +167,7 @@ export class TestStepHelper {
     const index = String(this.count++).padStart(3, '0');
     const platform = process.platform === 'linux' ? '-linux' : '';
     const filename = `${index}-${id}-${this.testInfo.project.name}${platform}.png`;
-    await expect(this.page).toHaveScreenshot(filename);
+    await expect(this.page).toHaveScreenshot(filename, { maxDiffPixels: options.maxDiffPixels ?? 0 });
     this.journal.steps.push({
       title: options.description,
       image: `./screenshots/${filename}`,

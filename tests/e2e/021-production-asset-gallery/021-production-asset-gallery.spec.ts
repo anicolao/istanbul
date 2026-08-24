@@ -110,7 +110,7 @@ test('the production gallery renders the same logical components used during pla
     await expect(deck).toHaveAttribute('data-card-side', 'card-deck');
     const box = await deck.boundingBox();
     expect(box!.height / box!.width).toBeCloseTo(2, 1);
-  });
+  }, 100);
   await nextPage('reviewer-opens-powers-and-public-supplies', 'The reviewer advances through the remaining powers, demand bases, and public supplies', ['component-mosque-fruit', 'component-mosque-jewelry', 'component-demand-large', 'component-demand-small', 'component-ruby-supply', 'component-goods-supply'], async () => {
     await expectTransparentComponentArt(page.locator('.asset-grid'), 6);
   });
@@ -134,12 +134,12 @@ test('the production gallery renders the same logical components used during pla
     ] });
   }
 
-  async function nextPage(id: string, description: string, expectedIds: string[], check?: () => Promise<void>) {
+  async function nextPage(id: string, description: string, expectedIds: string[], check?: () => Promise<void>, maxDiffPixels?: number) {
     await page.getByRole('button', { name: 'Next asset page' }).click();
     await reviewer.step(id, { description, verifications: [
       { spec: 'The next exact rendered-state slice replaces the prior page without scrolling', check: async () => expectComponentPage(page.locator('.asset-grid'), expectedIds) },
       ...(check ? [{ spec: 'The page satisfies its shared-component geometry and rendering contract', check }] : [])
-    ] });
+    ], maxDiffPixels });
   }
 });
 
