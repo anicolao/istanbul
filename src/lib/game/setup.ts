@@ -160,10 +160,13 @@ export function createBoard(layout: LayoutKind, random: ReturnType<typeof create
 export function createSetup(room: RoomProjection, seed: string, epoch = 1): GameSetup {
   const random = createRandom(seed);
   const board = createBoard(room.layout, random);
-  const startingSeat = random.nextInt(room.seats.length);
+  const orderedSeats = room.tabletopOwned
+    ? [...room.seats].sort((left, right) => (left.tablePosition ?? 9) - (right.tablePosition ?? 9))
+    : room.seats;
+  const startingSeat = random.nextInt(orderedSeats.length);
   const shuffledCards = shuffle(bonusCards.map(({ id }) => id), random);
-  const playerCards = shuffledCards.slice(0, room.seats.length);
-  const remainingCards = shuffledCards.slice(room.seats.length);
+  const playerCards = shuffledCards.slice(0, orderedSeats.length);
+  const remainingCards = shuffledCards.slice(orderedSeats.length);
   const largeDemand = shuffleDemandStack(demandTiles.filter(({ market }) => market === 'large').map(({ id }) => id), random);
   const smallDemand = shuffleDemandStack(demandTiles.filter(({ market }) => market === 'small').map(({ id }) => id), random);
   const governorRoll = rollDice(random);
@@ -173,7 +176,7 @@ export function createSetup(room: RoomProjection, seed: string, epoch = 1): Game
     good,
     mosqueTiles.filter(({ color, required }) => color === good && allowedRequirements.includes(required)).map(({ id }) => id)
   ])) as Record<Good, string[]>;
-  const players = room.seats.map((seat, seatIndex): SetupPlayer => ({
+  const players = orderedSeats.map((seat, seatIndex): SetupPlayer => ({
     uid: seat.uid,
     name: seat.name,
     color: playerColors[seatIndex],

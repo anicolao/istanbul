@@ -1,7 +1,9 @@
 import {
+  isTablePosition,
   canonicalSort,
   isCanonicalEvent,
   isRoomCode,
+  tablePositions,
   type CanonicalEvent,
   type LayoutKind,
   type ReplayProjection,
@@ -348,8 +350,21 @@ function applyEvent(state: ReplayProjection, event: CanonicalEvent): boolean {
 
   if (event.type === 'player/joined') {
     const name = stringField(event.payload, 'name');
+    const tablePosition = event.payload.tablePosition;
+    const dedicatedTabletop = state.room.tabletopOwned === true;
+    const resolvedTablePosition = dedicatedTabletop && tablePosition === undefined
+      ? tablePositions.find((position) => !state.room!.seats.some((seat) => seat.tablePosition === position))
+      : tablePosition;
     if (state.room.status !== 'lobby' || !name || name.length > 24) {
       reject(state, event, 'invalid-player-name');
+      return false;
+    }
+    if (
+      (dedicatedTabletop && !isTablePosition(resolvedTablePosition)) ||
+      (!dedicatedTabletop && tablePosition !== undefined) ||
+      (isTablePosition(resolvedTablePosition) && state.room.seats.some((seat) => seat.tablePosition === resolvedTablePosition))
+    ) {
+      reject(state, event, 'invalid-table-position');
       return false;
     }
     if (state.room.seats.some((seat) => seat.uid === event.actorUid)) {
@@ -360,7 +375,13 @@ function applyEvent(state: ReplayProjection, event: CanonicalEvent): boolean {
       reject(state, event, 'room-full');
       return false;
     }
-    state.room.seats.push({ uid: event.actorUid, name, ready: false });
+    state.room.seats.push({
+      uid: event.actorUid,
+      name,
+      ready: false,
+      ...(isTablePosition(resolvedTablePosition) ? { tablePosition: resolvedTablePosition } : {})
+    });
+    if (dedicatedTabletop) state.room.seats.sort((left, right) => left.tablePosition! - right.tablePosition!);
     return true;
   }
 
