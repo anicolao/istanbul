@@ -119,7 +119,7 @@ test('a dedicated tabletop controls public play while phones contain private Bon
 
     await page.getByRole('button', { name: 'Move here and leave an assistant' }).click();
     await table.step('tabletop-commits-public-move', { description: 'Ada commits movement on the shared tabletop', verifications: [
-      { spec: 'The tabletop opens the public Fruit Warehouse action', check: async () => { await expect(page.getByRole('heading', { name: 'Ada arrives at Fruit Warehouse.' })).toBeVisible(); await expect(page.getByRole('button', { name: 'Fill fruit to 2' })).toBeEnabled(); } },
+      { spec: 'The tabletop highlights Fruit Warehouse as the public control surface', check: async () => { await expect(page.getByRole('heading', { name: 'Ada arrives at Fruit Warehouse.' })).toBeVisible(); await expect(page.locator('[data-place-id="4"]')).toHaveAttribute('data-action-ready', 'true'); } },
       { spec: 'The tabletop-authored event records Ada’s assistant drop and no diagnostic', check: async () => expectState(page, { eventCount: 8, diagnosticCount: 0, game: { phase: 'action', lastMovement: { from: 7, to: 4, assistantAction: 'drop' }, players: [{ merchantPlace: 4, assistantsCarried: 3, assistantsByPlace: { 4: 1 }, lira: 7 }, {}] } }) }
     ] });
     await ada.step('ada-phone-awaits-public-action', { description: 'Ada’s phone remains private while the tabletop resolves Fruit Warehouse', verifications: [
@@ -127,7 +127,12 @@ test('a dedicated tabletop controls public play while phones contain private Bon
       { spec: 'Phone replay agrees with the tabletop at event eight', check: async () => expectState(adaPage, { eventCount: 8, diagnosticCount: 0, game: { currentTurn: 'Ada', phase: 'action', players: [{ merchantPlace: 4 }, {}] } }) }
     ] });
 
-    await page.getByRole('button', { name: 'Fill fruit to 2' }).click();
+    await page.locator('[data-place-id="4"]').click();
+    const fruitDialog = page.getByRole('dialog', { name: 'Fruit Warehouse' });
+    await expect(fruitDialog).toBeVisible();
+    await expect(fruitDialog).toContainText('facing Top-left corner');
+    await expectState(page, { eventCount: 8, game: { selectedPlace: 4, phase: 'action' } });
+    await fruitDialog.getByRole('button', { name: /^Fill to 2/ }).click();
     await table.step('tabletop-resolves-public-place', { description: 'Ada fills fruit from the shared tabletop', verifications: [
       { spec: 'The tabletop advances to the public end-turn decision', check: async () => expect(page.getByRole('button', { name: 'End turn and pass clockwise' })).toBeEnabled() },
       { spec: 'Fruit and the immutable public action are exact at event nine', check: async () => expectState(page, { eventCount: 9, diagnosticCount: 0, game: { phase: 'turn-end', players: [{ goods: { fruit: 2 }, lira: 7 }, {}] } }) }

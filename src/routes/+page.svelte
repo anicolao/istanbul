@@ -719,7 +719,7 @@
     {#if game}
       <GameTable
         {game} {room} userUid={userUid} {selectedPlace} selectedBonus={null} {boardScale} tabletopControls
-        onInspectPlace={inspectPlace} onInspectBonus={() => {}} onMove={(destination, assistantAction) => void moveTo(destination, assistantAction)} onPayMerchants={() => void payMerchants()}
+        onInspectPlace={inspectPlace} onDismissPlace={() => selectedPlace = null} onInspectBonus={() => {}} onMove={(destination, assistantAction) => void moveTo(destination, assistantAction)} onPayMerchants={() => void payMerchants()}
         onTakeAction={(choice) => void takePlaceAction(choice)} onResolveEncounter={(choice) => void resolveEncounter(choice)} onUseMosqueAbility={(choice) => void useMosqueAbility(choice)} onPlayBonus={() => {}}
         onGrantE2eResources={() => {}} onRematch={() => { if (room.tabletopOwned) void rematch(); }} onEndTurn={() => void endTurn()} onUndo={() => void undoLastAction()} onRollback={(targetEventId) => void rollbackTo(targetEventId)} undo={projection.undo} undoLog={projection.undoLog} gameLog={projection.gameLog} undoPending={actionPending}
         onZoomIn={() => boardScale = 1} onFit={() => boardScale = 1} {e2eResourceReview}
@@ -742,6 +742,7 @@
       {selectedBonus}
       {boardScale}
       onInspectPlace={inspectPlace}
+      onDismissPlace={() => selectedPlace = null}
       onInspectBonus={inspectBonus}
       onMove={(destination, assistantAction) => void moveTo(destination, assistantAction)}
       onPayMerchants={() => void payMerchants()}

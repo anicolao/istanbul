@@ -27,6 +27,7 @@
   import PrivateBonusHand from './PrivateBonusHand.svelte';
   import SultanOffer from './SultanOffer.svelte';
   import TabletopPlayerPanel from './TabletopPlayerPanel.svelte';
+  import TabletopPlaceActionDialog from './TabletopPlaceActionDialog.svelte';
   import TeaHousePayoffs from './TeaHousePayoffs.svelte';
 
   let {
@@ -37,6 +38,7 @@
     selectedBonus,
     boardScale,
     onInspectPlace,
+    onDismissPlace,
     onInspectBonus,
     onMove,
     onPayMerchants,
@@ -66,6 +68,7 @@
     selectedBonus: string | null;
     boardScale: number;
     onInspectPlace: (place: number) => void;
+    onDismissPlace: () => void;
     onInspectBonus: (cardId: string) => void;
     onMove: (destination: number, assistantAction: AssistantAction) => void;
     onPayMerchants: () => void;
@@ -114,6 +117,11 @@
     ? abilityPending.actionPlace
     : game.phase === 'turn-end' && game.lastAction ? game.lastAction.place : currentPlayer.merchantPlace);
   const actionPlace = $derived(placeById.get(actionPlaceId)!);
+  const currentTablePosition = $derived(room.seats.find(({ uid }) => uid === currentPlayer.uid)?.tablePosition);
+  const tabletopActionReady = $derived(Boolean(
+    tabletopControls && localIsCurrent && (game.phase === 'action' || game.phase === 'family-action')
+  ));
+  const tabletopActionDialogOpen = $derived(tabletopActionReady && selectedPlace === actionPlace.id);
   const merchantPending = $derived(game.pending?.kind === 'merchant-payment' ? game.pending : null);
   const encounterPending = $derived(game.pending?.kind === 'encounters' ? game.pending : null);
   const paymentNames = $derived(merchantPending?.recipientUids.map((uid) => game.players.find((player) => player.uid === uid)?.name ?? uid) ?? []);
@@ -144,7 +152,7 @@
   let previousPhase: typeof game.phase | undefined = $state();
   $effect(() => {
     if (previousPhase !== undefined && game.phase !== previousPhase) {
-      mobileBoardOpen = game.phase === 'movement';
+      mobileBoardOpen = game.phase === 'movement' || (tabletopControls && (game.phase === 'action' || game.phase === 'family-action'));
     }
     previousPhase = game.phase;
   });
@@ -297,6 +305,7 @@
               {index}
               selected={selectedPlace === placeId}
               reachable={reachable.includes(placeId)}
+              actionReady={tabletopActionReady && placeId === actionPlace.id}
               departed={game.lastMovement?.from === placeId}
               arrived={game.lastMovement?.to === placeId}
               tabIndex={(keyboardPlace || game.board[0]) === placeId ? 0 : -1}
@@ -412,7 +421,10 @@
         <p class="section-kicker">Place action ready</p>
         <h2>{actionPlace.name}</h2>
         <div class="inspector-glyph"><GameArt kind="location" place={actionPlace.id} /></div>
-        {#if actionPlace.id === 1}
+        {#if tabletopControls}
+          <p>The active Place is highlighted on the board. Tap the room to expand its controls and rotate them toward {currentPlayer.name}.</p>
+          <div class="board-control-callout"><GameArt kind="location" place={actionPlace.id} /><span><strong>Controls are on Place {actionPlace.id}</strong><small>No Place choice is made in this side panel.</small></span></div>
+        {:else if actionPlace.id === 1}
           <p>Pay 7 Lira to expand every goods track by one space. Completing all three extensions also claims a ruby.</p>
           <div class="wheelbarrow-track" aria-label={`${currentPlayer.extensions} of 3 wheelbarrow extensions`}>{#each Array(3) as _, index}<span class:filled={currentPlayer.extensions > index}><GameArt kind="component" component="wheelbarrow" class="track-art" /></span>{/each}</div>
           {#if localIsCurrent}<button class="turn-action" disabled={localPlayer.lira < 7 || localPlayer.extensions >= 3 || game.supplies.wheelbarrowExtensions < 1} onclick={() => onTakeAction({ kind: 'wainwright-buy' })}>Buy extension for 7 Lira</button><p class="action-balance">You have {localPlayer.lira} Lira · {game.supplies.wheelbarrowExtensions} extensions remain</p><button class="skip-link" onclick={onEndTurn}>Skip Wainwright and end turn</button>{:else}<p class="waiting-copy">Waiting for {currentPlayer.name} to choose.</p>{/if}
@@ -568,10 +580,22 @@
     </section>
   {/if}
   {#if tableLayout}<footer class="tabletop-strip" data-e2e-fit data-e2e-no-scroll><span class="table-identity"><strong>{tabletopControls ? 'Istanbul tabletop' : 'Istanbul'}</strong><i>{room.roomCode} · {room.layout.replace('-', ' ')}</i></span><span class="table-history-actions"><button class="undo-action" aria-label={undoText} disabled={!canUndo} onclick={onUndo}><span aria-hidden="true">↶</span>{undoButtonText}</button><GameLog entries={gameLog} players={game.players} {userUid} pending={undoPending} {onRollback} /></span><span class="undo-record" aria-live="polite">{undoStatusText}{undoLog.length ? ` · last log: ${undoLog.at(-1)?.label}` : ''}</span></footer>{/if}
+  {#if tabletopActionDialogOpen}
+    <TabletopPlaceActionDialog
+      {game}
+      player={currentPlayer}
+      placeId={actionPlace.id}
+      tablePosition={currentTablePosition}
+      boardIndex={game.board.indexOf(actionPlace.id)}
+      onAction={onTakeAction}
+      onSkip={onEndTurn}
+      onClose={onDismissPlace}
+    />
+  {/if}
 </section>
 
 <style>
-  .game-table { height: 100%; min-height: 0; display: flex; flex-direction: column; gap: .65rem; color: #fffaf0; }
+  .game-table { position: relative; height: 100%; min-height: 0; display: flex; flex-direction: column; gap: .65rem; color: #fffaf0; }
   .visually-hidden { position: fixed; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
   .game-table.display-only .board { --board-limit: 92rem; }
   .game-table.display-only .play-area { grid-template-columns: minmax(0, 3fr) minmax(19rem, 1fr); }
@@ -628,6 +652,7 @@
   .inspector h2 { margin: .15rem 0 .6rem; font: 700 1.8rem/1 'Cormorant Garamond', serif; }
   .inspector > p:not(.section-kicker) { color: #526b68; font-size: .84rem; line-height: 1.4; }
   .inspector-glyph { width: 5.2rem; height: 5.2rem; overflow: hidden; padding: 0; border: 3px solid #d49d42; border-radius: .65rem; background: #173f43; box-shadow: 0 .35rem .7rem #173f4333; }
+  .board-control-callout { display: grid; grid-template-columns: 4rem minmax(0, 1fr); gap: .7rem; align-items: center; margin-top: 1rem; padding: .7rem; border: 1px solid #d3b66e; border-radius: .7rem; background: #f1e3c1; }.board-control-callout :global(.game-art) { width: 4rem; height: 4rem; }.board-control-callout span { min-width: 0; display: grid; gap: .15rem; }.board-control-callout small { color: #647572; }
   .inspector dl { margin: 1rem 0 0; font-size: .72rem; }
   .inspector dl div { display: grid; gap: .1rem; padding: .5rem 0; border-top: 1px solid #d9cdb7; }.inspector dt { color: #73817e; }.inspector dd { margin: 0; font-weight: 700; }
   .encounter-ledger { display: grid; gap: .5rem; margin-top: 1rem; }.encounter-ledger span { display: flex; align-items: center; gap: .5rem; font-size: .75rem; font-weight: 700; }:global(.ledger-piece) { width: 2.15rem; height: 2.15rem; border-radius: .35rem; }
