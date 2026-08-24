@@ -211,7 +211,7 @@ The dedicated /tabletop route arranges eight join positions around the display. 
 
 **Verifications:**
 
-- [x] The tabletop opens the public Fruit Warehouse action
+- [x] The tabletop highlights Fruit Warehouse as the public control surface
 - [x] The tabletop-authored event records Ada’s assistant drop and no diagnostic
 
 ## 20. Ada’s phone remains private while the tabletop resolves Fruit Warehouse
