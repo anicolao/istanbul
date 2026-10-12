@@ -121,7 +121,7 @@ test('a dedicated tabletop controls public play while phones contain private Bon
       { spec: 'Phone replay agrees with the tabletop at event eight', check: async () => expectState(adaPage, { eventCount: 8, diagnosticCount: 0, game: { currentTurn: 'Ada', phase: 'turn-end', players: [{ merchantPlace: 4 }, {}] } }) }
     ] });
 
-    await page.locator('.zoom-tile').getByRole('button', { name: 'End turn →', exact: true }).click();
+    await page.locator('.zoom-tile').getByRole('button', { name: 'End turn', exact: true }).click();
     await table.step('tabletop-passes-public-turn', { description: 'Ada passes clockwise on the shared tabletop', verifications: [
       { spec: 'The turn controls and active mat now belong to Bora', check: async () => { await expect(page.getByRole('button', { name: 'Move your merchant', exact: true })).toBeVisible(); await expect(page.getByLabel('Bora resources', { exact: true })).toHaveAttribute('aria-current', 'true'); } },
       { spec: 'Bora begins event nine with no diagnostic', check: async () => expectState(page, { eventCount: 9, diagnosticCount: 0, game: { currentTurn: 'Bora', turnNumber: 2, phase: 'movement' } }) }

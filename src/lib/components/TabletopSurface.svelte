@@ -20,6 +20,7 @@
   import TabletopPlayerPanel from "./TabletopPlayerPanel.svelte";
   import TabletopPlaceActions from "./TabletopPlaceActions.svelte";
   import GameArt from "./GameArt.svelte";
+  import TabletopArrow from "./TabletopArrow.svelte";
   import BonusCard from "./BonusCard.svelte";
   let {
     game,
@@ -384,7 +385,7 @@
             <h1>{title}</h1>
             <button
               aria-label="Back to table"
-              onclick={() => (collapsed = true)}>↙</button
+              onclick={() => (collapsed = true)}><TabletopArrow back /></button
             >
           </header>
           <fieldset class="room-flow" disabled={undoPending}>
@@ -515,7 +516,8 @@
               >{#if canEnd}<button class="primary" onclick={onEndTurn}
                   >{game.phase === "final-bonus"
                     ? "Finish trading"
-                    : "End turn"} →</button
+                    : "End turn"}
+                  <TabletopArrow /></button
                 >{/if}
             </footer>
           </fieldset>

@@ -1,4 +1,5 @@
 <script lang="ts">
+  import TabletopArrow from "./TabletopArrow.svelte";
   import { base } from "$app/paths";
   import type { RoomProjection } from "$lib/game/protocol";
   import type { GameSetup } from "$lib/game/setup";
@@ -102,7 +103,7 @@
               : game.phase === "movement"
                 ? "Move your merchant"
                 : "Continue turn"}{#if canEnd}
-              →{/if}</button
+              <TabletopArrow />{/if}</button
           >{/if}
       </div>
       <div class="powers" aria-label={`${player.name} Mosque tiles`}>
