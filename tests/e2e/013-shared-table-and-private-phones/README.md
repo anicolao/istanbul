@@ -1,6 +1,6 @@
 # Play Istanbul together on one tabletop with private Bonus phones
 
-The dedicated /tabletop route arranges eight join positions around the display. Ada claims the top-left corner and Bora the bottom edge; setup chooses one occupied position as Player 1 and continues clockwise across the occupied positions. During play, the control column enlarges and duplicates the current upright player mat above a stacked clockwise card set. Phones retain only each player’s private Bonus-card hand while the tabletop owns every public choice. Every input is followed by exact screenshots, DOM checks, fitted-interface checks, and serialized replay-state assertions.
+The dedicated /tabletop route arranges eight join positions around the display. Ada claims the top-left corner and Bora the bottom edge; setup chooses one occupied position as Player 1 and continues clockwise across the occupied positions. During play, consistent mats remain at the occupied edges around a fixed board. A destination tap rotates and enlarges that room toward the active player and applies reversible arrival actions immediately. Phones retain only each player’s private Bonus-card hand while the tabletop owns every public choice. Every input is followed by exact screenshots, DOM checks, fitted-interface checks, and serialized replay-state assertions.
 
 ## 1. The tabletop opens empty room TABLE
 
@@ -200,7 +200,7 @@ The dedicated /tabletop route arranges eight join positions around the display. 
 
 **Verifications:**
 
-- [x] One room tap moves and immediately exposes its action without a dialog or inspector
+- [x] One room tap moves and fills the warehouse without a dialog or extra action click
 - [x] The tabletop-authored event records Ada’s assistant drop and no diagnostic
 
 ## 19. Ada’s phone remains private while the tabletop resolves Fruit Warehouse
@@ -214,29 +214,18 @@ The dedicated /tabletop route arranges eight join positions around the display. 
 - [x] The phone reports the public phase but renders no Warehouse action
 - [x] Phone replay agrees with the tabletop at event eight
 
-## 20. Ada fills fruit from the shared tabletop
-
-**The dedicated tabletop** — Ada fills fruit from the shared tabletop
-
-![Ada fills fruit from the shared tabletop](./screenshots/007-tabletop-resolves-public-place-desktop.png)
-
-**Verifications:**
-
-- [x] The tabletop advances to the public end-turn decision
-- [x] Fruit and the immutable public action are exact at event nine
-
-## 21. Ada passes clockwise on the shared tabletop
+## 20. Ada passes clockwise on the shared tabletop
 
 **The dedicated tabletop** — Ada passes clockwise on the shared tabletop
 
-![Ada passes clockwise on the shared tabletop](./screenshots/008-tabletop-passes-public-turn-desktop.png)
+![Ada passes clockwise on the shared tabletop](./screenshots/007-tabletop-passes-public-turn-desktop.png)
 
 **Verifications:**
 
 - [x] The turn controls and active mat now belong to Bora
-- [x] Bora begins event ten with no diagnostic
+- [x] Bora begins event nine with no diagnostic
 
-## 22. Bora privately inspects his Bonus card before using the tabletop
+## 21. Bora privately inspects his Bonus card before using the tabletop
 
 **Bora’s private phone** — Bora privately inspects his Bonus card before using the tabletop
 
@@ -248,23 +237,23 @@ The dedicated /tabletop route arranges eight join positions around the display. 
 - [x] Bora’s phone still has no board or public movement destination controls
 - [x] The tabletop does not reveal Bora’s title and private inspection adds no event
 
-## 23. The tabletop reloads its retained room
+## 22. The tabletop reloads its retained room
 
 **The dedicated tabletop** — The tabletop reloads its retained room
 
-![The tabletop reloads its retained room](./screenshots/009-tabletop-reloads-owned-room-desktop.png)
+![The tabletop reloads its retained room](./screenshots/008-tabletop-reloads-owned-room-desktop.png)
 
 **Verifications:**
 
 - [x] Reload preserves the tabletop URL and public bazaar instead of creating another room
-- [x] Table ownership and the ten-event cursor survive reload
+- [x] Table ownership and the nine-event cursor survive reload
 - [x] Reload restores working public controls without exposing private card identities
 
-## 24. Bora undoes a one-tap move without a confirmation
+## 23. Bora undoes a one-tap move without a confirmation
 
 **The dedicated tabletop** — Bora undoes a one-tap move without a confirmation
 
-![Bora undoes a one-tap move without a confirmation](./screenshots/010-tabletop-undoes-direct-move-desktop.png)
+![Bora undoes a one-tap move without a confirmation](./screenshots/009-tabletop-undoes-direct-move-desktop.png)
 
 **Verifications:**
 

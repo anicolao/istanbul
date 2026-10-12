@@ -1,5 +1,10 @@
 import { defineConfig } from '@playwright/test';
 
+const port = Number(process.env.ISTANBUL_E2E_PORT ?? 5189);
+// Optional local proxy keeps invitation screenshots stable when another app owns 5189.
+const proxy = process.env.ISTANBUL_E2E_PROXY;
+const browserPort = proxy ? 5189 : port;
+
 export default defineConfig({
   testDir: './tests/e2e',
   fullyParallel: false,
@@ -8,7 +13,7 @@ export default defineConfig({
   retries: 0,
   reporter: [['html', { open: 'never' }]],
   use: {
-    baseURL: 'http://127.0.0.1:5189',
+    baseURL: `http://127.0.0.1:${browserPort}`,
     trace: process.env.CI ? 'retain-on-failure' : 'off',
     serviceWorkers: 'block',
     deviceScaleFactor: 1,
@@ -16,6 +21,7 @@ export default defineConfig({
     locale: 'en-CA',
     actionTimeout: 15_000,
     launchOptions: {
+      ...(proxy ? { proxy: { server: proxy, bypass: '<-loopback>' } } : {}),
       args: [
         '--font-render-hinting=none',
         '--disable-font-subpixel-positioning',
@@ -53,8 +59,8 @@ export default defineConfig({
     }
   ],
   webServer: {
-    command: 'bun run dev:e2e',
-    url: 'http://127.0.0.1:5189',
+    command: `bun run dev:e2e --port ${port}`,
+    url: `http://127.0.0.1:${port}`,
     reuseExistingServer: false,
     env: {
       VITE_FIREBASE_API_KEY: 'e2e-api-key',

@@ -8,6 +8,8 @@ export type PlaceActionChoice =
   | { kind: 'warehouse-fill'; good: Exclude<Good, 'jewelry'> }
   | { kind: 'fountain-recall'; assistantPlaces: number[] }
   | { kind: 'post-office-collect' }
+  | { kind: 'caravansary-draw'; drawSources: [CardSource, CardSource] }
+  | { kind: 'caravansary-discard'; discardCardId: string }
   | { kind: 'caravansary-trade'; drawSources: [CardSource, CardSource]; discardCardId: string }
   | { kind: 'market-sell'; slotIndexes: number[]; wildGoods?: Good[] }
   | { kind: 'black-market-roll'; good: Exclude<Good, 'jewelry'> }
@@ -52,6 +54,8 @@ export function isPlaceActionChoice(value: unknown): value is PlaceActionChoice 
   if (choice.kind === 'fountain-recall') return Array.isArray(choice.assistantPlaces)
     && choice.assistantPlaces.every((place) => typeof place === 'number' && Number.isInteger(place));
   if (choice.kind === 'post-office-collect') return true;
+  if (choice.kind === 'caravansary-discard') return typeof choice.discardCardId === 'string';
+  if (choice.kind === 'caravansary-draw') return Array.isArray(choice.drawSources) && choice.drawSources.length === 2 && choice.drawSources.every(s => s === 'deck' || s === 'discard');
   if (choice.kind === 'caravansary-trade') return Array.isArray(choice.drawSources)
     && choice.drawSources.length === 2
     && choice.drawSources.every((source) => source === 'deck' || source === 'discard')

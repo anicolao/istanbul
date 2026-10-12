@@ -1,3 +1,4 @@
+import { arrivalAction } from './direct-actions';
 import {
   isTablePosition,
   canonicalSort,
@@ -21,6 +22,7 @@ import {
   resolveTeaHouse,
   sellAtMarket,
   tradeAtCaravansary,
+  previewCaravansary,
   warehouseGood
 } from './actions';
 import { catchFamily, drawBonus, isEncounterChoice, relocateEncounter } from './encounters';
@@ -108,7 +110,7 @@ function actionResult(state: ReplayProjection, event: CanonicalEvent): { summary
 export function revealedInformationReason(event: CanonicalEvent): string | null {
   const choice = event.payload.choice as Record<string, unknown> | undefined;
   if (event.type === 'place/action-taken') {
-    if (choice?.kind === 'caravansary-trade') return 'Bonus cards were revealed';
+    if (choice?.kind === 'caravansary-trade' || choice?.kind === 'caravansary-draw') return 'Bonus cards were revealed';
     if (choice?.kind === 'black-market-roll' || choice?.kind === 'tea-house-wager') return 'dice were rolled';
   }
   if (event.type === 'turn/merchant-paid' && Array.isArray(event.payload.neutralMerchantIds) && event.payload.neutralMerchantIds.length > 0) {
@@ -450,15 +452,21 @@ function applyEvent(state: ReplayProjection, event: CanonicalEvent): boolean {
   }
 
   if (event.type === 'turn/moved') {
-    return applyMovement(state, event);
+    const accepted = applyMovement(state, event);
+    if (accepted && event.payload.directAction === true) finishArrival(state, event);
+    return accepted;
   }
 
   if (event.type === 'turn/merchant-paid') {
-    return applyMerchantPayment(state, event);
+    const accepted = applyMerchantPayment(state, event);
+    if (accepted && event.payload.directAction === true) finishArrival(state, event);
+    return accepted;
   }
 
   if (event.type === 'place/action-taken') {
-    return applyPlaceAction(state, event);
+    const accepted = applyPlaceAction(state, event);
+    if (accepted && event.payload.directAction === true && state.game?.phase === 'family-action') finishArrival(state, event);
+    return accepted;
   }
 
   if (event.type === 'encounter/resolved') {
@@ -564,6 +572,17 @@ function applyEvent(state: ReplayProjection, event: CanonicalEvent): boolean {
   if (event.type === 'turn/ended') {
     const game = state.game;
     const player = game.players[game.turnSeat];
+    if (game.pending?.kind === 'caravansary-discard') { reject(state, event, 'caravansary-discard-required'); return false; }
+    if (event.payload.directAction === true && controlsPublicTable(state, event, player.uid)) {
+      if (game.pending?.kind === 'warehouse-extra') {
+        if (!game.pending.familyAction && game.players.some(p => p.uid !== player.uid && p.familyPlace === player.merchantPlace && p.familyPlace !== 12)) { reject(state, event, 'family-reward-required'); return false; }
+        if (!game.pending.familyAction) beginEncounters(game);
+        if (game.pending?.kind === 'warehouse-extra') { game.pending = null; game.phase = 'turn-end'; }
+      }
+      if (game.pending?.kind === 'encounters' && game.pending.governor !== 'payment' && game.pending.familyUids.length === 0) {
+        game.pending = null; game.phase = 'turn-end';
+      }
+    }
     if (game.phase === 'final-bonus') {
       if (!controlsPublicTable(state, event, player.uid) || !finishFinalBonusSeat(game)) {
         reject(state, event, 'final-bonus-cannot-end');
@@ -584,17 +603,28 @@ function applyEvent(state: ReplayProjection, event: CanonicalEvent): boolean {
   return false;
 }
 
+function finishArrival(state: ReplayProjection, event: CanonicalEvent) {
+  const game = state.game!;
+  // Human merchant tolls are reversible. Neutral relocation rolls still require a tap.
+  if (game.phase === 'merchant-payment' && game.pending?.kind === 'merchant-payment' && !game.pending.neutralMerchantIds.length) {
+    applyMerchantPayment(state, { ...event, payload: { recipientUids: game.pending.recipientUids, neutralMerchantIds: [] } });
+  }
+  const choice = arrivalAction(game);
+  if (choice) applyPlaceAction(state, { ...event, payload: { choice } });
+}
+
 function applyPlaceAction(state: ReplayProjection, event: CanonicalEvent): boolean {
   const game = state.game!;
   const player = game.players[game.turnSeat];
   const choice = event.payload.choice;
   const familyPending = game.phase === 'family-action' && game.pending?.kind === 'family-action' ? game.pending : null;
-  const familyAction = familyPending !== null;
+  const familyAction = familyPending !== null || (game.pending?.kind === 'caravansary-discard' && game.pending.familyAction);
   if ((game.phase !== 'action' && !familyAction) || !controlsPublicTable(state, event, player.uid) || !isPlaceActionChoice(choice)) {
     reject(state, event, 'invalid-place-action');
     return false;
   }
-  const actionPlace = familyPending?.destination ?? player.merchantPlace;
+  if (game.pending?.kind === 'caravansary-discard' && choice.kind !== 'caravansary-discard') { reject(state, event, 'caravansary-discard-required'); return false; }
+  const actionPlace = game.pending?.kind === 'caravansary-discard' ? 6 : familyPending?.destination ?? player.merchantPlace;
 
   let summary: string | null = null;
   if (choice.kind === 'police-send') {
@@ -643,6 +673,19 @@ function applyPlaceAction(state: ReplayProjection, event: CanonicalEvent): boole
   } else if (choice.kind === 'post-office-collect') {
     if (actionPlace !== 5) { reject(state, event, 'post-office-unavailable'); return false; }
     summary = collectPostOffice(game, player);
+  } else if (choice.kind === 'caravansary-draw') {
+    const cards = actionPlace === 6 ? previewCaravansary(game, choice.drawSources) : null;
+    if (!cards) { reject(state, event, 'invalid-caravansary-draw'); return false; }
+    for (const source of choice.drawSources) player.bonusHand.push((source === 'deck' ? game.bonusDrawPile.shift() : game.bonusDiscard.pop())!);
+    game.pending = { kind: 'caravansary-discard', familyAction };
+    game.phase = 'action';
+    game.lastAction = {playerUid:player.uid,place:6,kind:choice.kind,summary:'Drew two Bonus cards. Discard one.'};
+    return true;
+  } else if (choice.kind === 'caravansary-discard') {
+    const index=player.bonusHand.indexOf(choice.discardCardId);
+    if (game.pending?.kind !== 'caravansary-discard' || index<0) { reject(state, event, 'invalid-caravansary-discard'); return false; }
+    game.bonusDiscard.push(player.bonusHand.splice(index,1)[0]);
+    summary='Drew two Bonus cards and discarded one.';
   } else if (choice.kind === 'caravansary-trade') {
     if (actionPlace !== 6) { reject(state, event, 'caravansary-unavailable'); return false; }
     summary = tradeAtCaravansary(game, player, choice.drawSources, choice.discardCardId);
@@ -702,6 +745,7 @@ export function applyBonus(state: ReplayProjection, event: CanonicalEvent): bool
     reject(state, event, 'invalid-bonus-play');
     return false;
   }
+  if (game.pending?.kind === 'caravansary-discard') return rejectBonus(state,event,'caravansary-discard-required');
   const effect = bonusEffect(cardId);
   let summary: string | null = null;
 

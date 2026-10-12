@@ -384,7 +384,7 @@
     if (!repository) return;
     actionPending = true;
     try {
-      await repository.append('turn/moved', { destination, assistantAction });
+      await repository.append('turn/moved', { destination, assistantAction, ...(sharedDisplay ? { directAction: true } : {}) });
       selectedPlace = null;
     } finally {
       actionPending = false;
@@ -398,7 +398,8 @@
     try {
       await repository.append('turn/merchant-paid', {
         recipientUids: pending.recipientUids,
-        neutralMerchantIds: pending.neutralMerchantIds
+        neutralMerchantIds: pending.neutralMerchantIds,
+        ...(sharedDisplay ? { directAction: true } : {})
       });
       selectedPlace = null;
     } finally {
@@ -410,7 +411,7 @@
     if (!repository) return;
     actionPending = true;
     try {
-      await repository.append('turn/ended', {});
+      await repository.append('turn/ended', sharedDisplay ? { directAction: true } : {});
       selectedPlace = null;
     } finally {
       actionPending = false;
@@ -421,7 +422,7 @@
     if (!repository) return;
     actionPending = true;
     try {
-      await repository.append('place/action-taken', { choice: JSON.parse(JSON.stringify(choice)) as PlaceActionChoice });
+      await repository.append('place/action-taken', { choice: JSON.parse(JSON.stringify(choice)) as PlaceActionChoice, ...(sharedDisplay ? { directAction: true } : {}) });
       selectedPlace = null;
     } finally {
       actionPending = false;
@@ -430,12 +431,12 @@
 
   async function takePrivatePlaceAction(choice: PlaceActionChoice) {
     if (!repository || !game || !localSeat || game.players[game.turnSeat].uid !== userUid) return;
-    const privateActionPlace = game.phase === 'family-action' && game.pending?.kind === 'family-action' ? game.pending.destination : game.players[game.turnSeat].merchantPlace;
-    const privateCaravansary = choice.kind === 'caravansary-trade' && (game.phase === 'action' || game.phase === 'family-action') && privateActionPlace === 6;
+    const privateActionPlace = game.pending?.kind === 'caravansary-discard' ? 6 : game.phase === 'family-action' && game.pending?.kind === 'family-action' ? game.pending.destination : game.players[game.turnSeat].merchantPlace;
+    const privateCaravansary = ['caravansary-trade','caravansary-draw','caravansary-discard'].includes(choice.kind) && (game.phase === 'action' || game.phase === 'family-action') && privateActionPlace === 6;
     if (!privateCaravansary) return;
     actionPending = true;
     try {
-      await repository.append('place/action-taken', { choice: JSON.parse(JSON.stringify(choice)) as PlaceActionChoice });
+      await repository.append('place/action-taken', { choice: JSON.parse(JSON.stringify(choice)) as PlaceActionChoice, ...(sharedDisplay ? { directAction: true } : {}) });
     } finally {
       actionPending = false;
     }
@@ -455,6 +456,9 @@
     if (!repository) return;
     actionPending = true;
     try {
+      if (game?.pending?.kind === 'warehouse-extra' && !game.pending.familyAction) {
+        await repository.append('mosque/ability-used', { choice: { kind: 'warehouse-extra', good: null } });
+      }
       await repository.append('encounter/resolved', { choice });
     } finally {
       actionPending = false;

@@ -10,6 +10,10 @@
   import { ownsMosqueAbility } from "$lib/game/mosques";
   import { currentSultanCost } from "$lib/game/ruby-routes";
   import type { GameSetup, SetupPlayer } from "$lib/game/setup";
+  import { base } from "$app/paths";
+  import { locationArt, type PlayerColorName } from "$lib/game/art";
+  import { places } from "$lib/game/manifests";
+  import BonusCard from "./BonusCard.svelte";
   import GameArt from "./GameArt.svelte";
   let {
     game,
@@ -25,6 +29,7 @@
     onSkip: () => void;
   } = $props();
   const goods: Good[] = ["fabric", "spice", "fruit", "jewelry"];
+  let recalls = $state<number[]>([]);
   const warehouse = $derived(warehouseGood(placeId));
   const demand = $derived(
     demandTiles.find(
@@ -121,19 +126,44 @@
         >{/each}</button
     >
   {:else if placeId === 6}
-    <p>Choose your Bonus cards on your phone.</p>
+    <div class="private-draw">
+      <BonusCard reverse="card-deck" /><BonusCard reverse="card-back" />
+    </div>
+    <p>Draw and choose your cards on your phone.</p>
   {:else if placeId === 7}
+    <div class="assistants">
+      {#each Object.entries(player.assistantsByPlace) as [place, count]}{#each Array(count) as _, i}{@const n =
+            Number(place)}<button
+            class:selected={recalls.filter((p) => p === n).length > i}
+            aria-label={`Recall assistant ${i + 1} from ${places.find((p) => p.id === n)?.name}`}
+            onclick={() => {
+              const selected = recalls.filter((p) => p === n).length;
+              recalls =
+                selected === count
+                  ? recalls.filter((p) => p !== n)
+                  : [...recalls, n];
+            }}
+            ><GameArt
+              kind="piece"
+              piece="assistant"
+              color={player.color as PlayerColorName}
+            /><small>{places.find((p) => p.id === n)?.shortName}</small></button
+          >{/each}{/each}
+    </div>
     <button
-      class="offer primary"
+      disabled={!recalls.length}
+      onclick={() =>
+        onAction({ kind: "fountain-recall", assistantPlaces: recalls })}
+      >Recall selected</button
+    ><button
       onclick={() =>
         onAction({
           kind: "fountain-recall",
           assistantPlaces: Object.entries(player.assistantsByPlace).flatMap(
-            ([place, count]) => Array(count).fill(Number(place)),
+            ([p, n]) => Array(n).fill(Number(p)),
           ),
-        })}>Recall all assistants</button
+        })}>Recall all</button
     >
-    <p>Tap a room once per assistant to recall; tap again to clear.</p>
   {:else if placeId === 8}
     <p>Take a good and roll for jewelry.</p>
     {#each goods.slice(0, 3) as good}<button
@@ -174,11 +204,13 @@
             ><GameArt kind="component" component={payment[i]} /><span
               >{selected.includes(i) ? "✓" : "−"}</span
             ></button
-          >{#if flexible}<select
-              aria-label={`Payment for demand slot ${i + 1}`}
-              bind:value={wild[i]}
-              >{#each goods as option}<option value={option}>{option}</option
-                >{/each}</select
+          >{#if flexible}<button
+              aria-label={`Change payment for demand slot ${i + 1}`}
+              onclick={() =>
+                (wild[i] = goods[(goods.indexOf(wild[i] ?? good) + 1) % 4])}
+              ><GameArt kind="component" component={wild[i] ?? good} /><span
+                >↻</span
+              ></button
             >{/if}
         </div>{/each}
     </div>
@@ -193,11 +225,22 @@
         })}>Sell · {marketRevenueFor(placeId, selected.length)} Lira</button
     >
   {:else if placeId === 12}
-    <p>
-      {player.familyPlace === 12
-        ? "Tap a room to send your family there."
-        : "Your family is already in the bazaar."}
-    </p>
+    {#if player.familyPlace === 12}<div class="destinations">
+        {#each game.board as id}{@const target = places.find(
+            (p) => p.id === id,
+          )!}<button
+            aria-label={`Send family to ${target.name}`}
+            disabled={id === 12}
+            style={`background-image:url('${base}/${locationArt[id]}')`}
+            onclick={() => onAction({ kind: "police-send", destination: id })}
+            >{target.shortName}</button
+          >{/each}
+      </div>{:else}<GameArt
+        kind="piece"
+        piece="family"
+        color={player.color as PlayerColorName}
+      />
+      <p>Your family is already in the bazaar.</p>{/if}
   {:else if placeId === 13}
     <div class="cost">
       {#each cost as good, i}{#if good !== "any"}<GameArt
@@ -205,13 +248,14 @@
             component={good}
           />{:else}{@const index = cost
             .slice(0, i)
-            .filter((g) => g === "any").length}<select
-            aria-label={`Sultan wild good ${index + 1}`}
-            value={resolvedWild[index]}
-            onchange={(event) =>
-              (sultanWild[index] = event.currentTarget.value as Good)}
-            >{#each goods as option}<option value={option}>{option}</option
-              >{/each}</select
+            .filter((g) => g === "any").length}<button
+            aria-label={`Sultan wild good ${index + 1}: ${resolvedWild[index]}`}
+            onclick={() =>
+              (sultanWild[index] =
+                goods[(goods.indexOf(resolvedWild[index]) + 1) % 4])}
+            ><GameArt kind="component" component={resolvedWild[index]} /><span
+              >↻</span
+            ></button
           >{/if}{/each}<span>→</span><GameArt
         kind="component"
         component="ruby"
@@ -252,7 +296,6 @@
       ></button
     >
   {/if}
-  <button class="skip" onclick={onSkip}>Skip & end turn</button>
 </div>
 
 <style>
@@ -261,28 +304,28 @@
     align-items: center;
     justify-content: center;
     flex-wrap: wrap;
-    gap: 0.5em;
+    gap: 0.5cqw;
     width: 100%;
     min-width: 0;
   }
-  .choices p {
+  p {
     margin: 0;
-    max-width: 22em;
-    font-size: 0.9em;
+    font-size: 0.9cqw;
+    text-align: center;
   }
-  .choices small {
-    font-size: 0.75em;
+  small {
+    font-size: 0.75cqw;
   }
-  button,
-  select {
+  button {
     font: inherit;
+    font-size: 0.9cqw;
     color: #fff5da;
-    background: #194943;
-    border: 1px solid #8bac98;
-    border-radius: 0.5em;
-    padding: 0.5em 0.7em;
-    min-height: 2.75rem;
+    background: #194943e8;
+    border: 1px solid #b19759;
+    border-radius: 0.3cqw;
+    padding: 0.5cqw;
     cursor: pointer;
+    touch-action: manipulation;
   }
   button:disabled {
     opacity: 0.45;
@@ -297,23 +340,23 @@
   .offer {
     display: flex;
     align-items: center;
-    gap: 0.5em;
+    gap: 0.5cqw;
     text-align: left;
-    max-width: 47%;
+    max-width: 100%;
   }
   .offer > span {
     display: grid;
-    gap: 0.2em;
+    gap: 0.2cqw;
   }
   .offer b {
-    font-size: 0.8em;
+    font-size: 0.8cqw;
   }
   .offer :global(.game-art) {
-    width: 3em;
-    height: 3em;
+    width: 3cqw;
+    height: 3cqw;
     flex-shrink: 0;
   }
-  .offer .reward {
+  .reward {
     position: relative;
   }
   .reward b {
@@ -321,88 +364,92 @@
     bottom: 0;
     right: 0;
   }
-  .skip {
-    font-size: 0.8em;
-    background: transparent;
-    margin-left: auto;
-  }
   .wagers {
     display: grid;
     grid-template-columns: repeat(5, 1fr);
-    gap: 0.2em;
+    gap: 0.3cqw;
+    width: 100%;
   }
   .wagers button {
-    padding: 0.3em;
-    min-width: 2.75rem;
+    padding: 0.5cqw;
+    font-size: 1.3cqw;
   }
   .demand {
     display: flex;
-    gap: 0.25em;
+    gap: 0.35cqw;
+    width: 100%;
   }
   .demand > div {
+    flex: 1;
+    min-width: 0;
     display: grid;
-    gap: 0.2em;
+    gap: 0.2cqw;
   }
   .demand button {
     position: relative;
-    padding: 0.2em;
+    padding: 0.3cqw;
   }
   .demand :global(.game-art) {
-    width: 2.6em;
-    height: 2.6em;
+    width: 100%;
+    height: 4cqw;
   }
   .demand button span {
     position: absolute;
     bottom: 0;
-    right: 0.15em;
-  }
-  .demand select {
-    max-width: 5em;
-    font-size: 0.65em;
+    right: 0.15cqw;
   }
   .cost {
     display: flex;
     align-items: center;
-    gap: 0.2em;
+    gap: 0.25cqw;
+    flex-wrap: wrap;
   }
   .cost :global(.game-art) {
-    width: 2em;
-    height: 2em;
+    width: 2.7cqw;
+    height: 2.7cqw;
   }
-  .cost select {
-    max-width: 6em;
-    font-size: 0.8em;
-  }
-  button:focus-visible,
-  select:focus-visible {
-    outline: 3px solid white;
+  button:focus-visible {
+    outline: 2px solid white;
     outline-offset: 2px;
   }
-  @media (max-width: 600px) {
-    .choices {
-      gap: 0.3em;
-    }
-    button,
-    select {
-      min-height: 2.2rem;
-      padding: 0.3em;
-    }
-    .offer :global(.game-art) {
-      width: 2em;
-      height: 2em;
-    }
-    .demand :global(.game-art) {
-      width: 2em;
-      height: 2em;
-    }
-    .wagers button {
-      min-width: 2rem;
-    }
-    .skip {
-      margin-left: 0;
-    }
-    .offer {
-      max-width: 100%;
-    }
+  .private-draw {
+    display: flex;
+    gap: 0.7cqw;
+    width: 10cqw;
+  }
+  .private-draw :global(.bonus-card) {
+    width: 4.6cqw;
+  }
+  .destinations {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 0.35cqw;
+    width: 100%;
+  }
+  .destinations button {
+    height: 3.4cqw;
+    background-size: cover;
+    background-position: center;
+    text-shadow:
+      0 1px 3px #000,
+      0 0 5px #000;
+    font-size: 0.7cqw;
+    display: flex;
+    align-items: end;
+    justify-content: center;
+  }
+  .assistants {
+    display: flex;
+    gap: 0.4cqw;
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+  .assistants button {
+    display: grid;
+    justify-items: center;
+  }
+  .assistants :global(.game-art) {
+    width: 3cqw;
+    height: 3cqw;
   }
 </style>

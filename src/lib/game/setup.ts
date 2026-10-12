@@ -70,6 +70,9 @@ export interface GameSetup {
     ordinaryTurnCounts: number[];
   };
   pending: null | {
+    kind: 'caravansary-discard';
+    familyAction: boolean;
+  } | {
     kind: 'merchant-payment';
     recipientUids: string[];
     neutralMerchantIds: string[];
