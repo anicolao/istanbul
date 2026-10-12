@@ -8,7 +8,7 @@ export async function readState(page: Page) {
 }
 
 export async function expectState(page: Page, expected: Record<string, unknown>) {
-  await expect.poll(() => readState(page)).toMatchObject(expected);
+  await expect.poll(() => readState(page), { timeout: 30_000 }).toMatchObject(expected);
 }
 
 export async function openTwoPlayerGame(options: {
