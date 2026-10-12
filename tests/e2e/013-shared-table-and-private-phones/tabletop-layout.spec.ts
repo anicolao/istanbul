@@ -3,15 +3,17 @@ import { expect, test } from '@playwright/test';
 test('all sixteen room actions fit the real tabletop at each physical edge', async ({ page }, testInfo) => {
   test.setTimeout(120_000);
   await page.emulateMedia({reducedMotion:'reduce'});
-  for (const seat of [1, 4, 6, 8]) {
+  for (const seat of [1, 2, 4, 6, 8]) {
     for (let place = 1; place <= 16; place++) {
       await page.goto(`/mockups/tabletop/?place=${place}&seat=${seat}`);
       await expect(page.locator('.zoom-tile:not([inert])')).toBeVisible();
-      await expect(page.locator('.zoom-tile:not([inert])')).toHaveAttribute('style', new RegExp(`--facing: ?${seat === 1 ? -180 : seat === 4 ? -90 : seat === 8 ? 90 : 0}deg`));
+      await expect(page.locator('.zoom-tile:not([inert])')).toHaveAttribute('style', new RegExp(`--facing: ?${seat <= 3 ? -180 : seat === 4 ? -90 : seat === 8 ? 90 : 0}deg`));
       await expect(page.locator('.mat')).toHaveCount(5);
       await expect(page.getByRole('dialog')).toHaveCount(0);
       const problems = await page.evaluate(() => {
         const failures: string[] = [];
+        const matWidths=new Set(Array.from(document.querySelectorAll('.mat')).map(m=>getComputedStyle(m).width));
+        if(matWidths.size!==1)failures.push('Player mats have inconsistent sizes');
         for (const selector of ['.board', '.zoom-tile', '.choices', '.room-flow .content']) {
           for (const element of document.querySelectorAll<HTMLElement>(selector)) {
             const box = element.getBoundingClientRect();

@@ -214,7 +214,14 @@
                         1}
                     onclick={() => setCaravanSource(index as 0 | 1, "discard")}
                     ><BonusCard
-                      card={bonusById.get(game.bonusDiscard.at(-1) ?? "")}
+                      card={bonusById.get(
+                        game.bonusDiscard.at(
+                          -1 -
+                            caravanSources
+                              .slice(0, index)
+                              .filter((s) => s === "discard").length,
+                        ) ?? "",
+                      )}
                       reverse={game.bonusDiscard.length
                         ? undefined
                         : "card-back"}
