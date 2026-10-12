@@ -5,6 +5,7 @@
   import { replaceState } from '$app/navigation';
   import { onMount } from 'svelte';
   import { appTitle } from '$lib/app-metadata';
+  import { setStoredValue } from '$lib/browser-storage';
   import GameTable from '$lib/components/GameTable.svelte';
   import BonusController from '$lib/components/BonusController.svelte';
   import SharedTableLobby from '$lib/components/SharedTableLobby.svelte';
@@ -146,7 +147,7 @@
       requestedSeat = Number.isInteger(seatParameter) && seatParameter > 0 ? seatParameter : null;
       if (recoveryReview && reviewedCacheCount > 0 && isRoomCode(reviewedRoom)) {
         const cached = readReplayCache(reviewedRoom).slice(0, reviewedCacheCount);
-        localStorage.setItem(replayCacheKey(reviewedRoom), JSON.stringify({ version: 1, events: cached }));
+        setStoredValue(replayCacheKey(reviewedRoom), JSON.stringify({ version: 1, events: cached }));
       }
       userUid = services.user.uid;
       connectionStatus = 'synced';
@@ -555,7 +556,7 @@
     const source = [...events].reverse().find(({ actorUid }) => actorUid === userUid);
     if (!source) return;
     const { id, createdAt: _, ...data } = source;
-    localStorage.setItem(`istanbul:pending:${room.roomCode}:${userUid}`, JSON.stringify({ id, data }));
+    setStoredValue(`istanbul:pending:${room.roomCode}:${userUid}`, JSON.stringify({ id, data }));
     pendingRetryId = id;
     recoveryNotice = `Write ${id.slice(-6)} awaits same-ID confirmation`;
   }

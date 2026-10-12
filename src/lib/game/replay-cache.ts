@@ -1,4 +1,5 @@
 import { canonicalSort, isCanonicalEvent, type CanonicalEvent } from './protocol';
+import { getStoredValue, setStoredValue } from '$lib/browser-storage';
 
 const cacheVersion = 1;
 
@@ -13,7 +14,7 @@ export function replayCacheKey(roomCode: string) {
 
 export function readReplayCache(roomCode: string): CanonicalEvent[] {
   try {
-    const parsed = JSON.parse(localStorage.getItem(replayCacheKey(roomCode)) ?? 'null') as ReplayCache | null;
+    const parsed = JSON.parse(getStoredValue(replayCacheKey(roomCode)) ?? 'null') as ReplayCache | null;
     if (!parsed || parsed.version !== cacheVersion || !Array.isArray(parsed.events)) return [];
     return canonicalSort(parsed.events.filter(isCanonicalEvent));
   } catch {
@@ -23,7 +24,7 @@ export function readReplayCache(roomCode: string): CanonicalEvent[] {
 
 export function writeReplayCache(roomCode: string, events: CanonicalEvent[]) {
   const committed = canonicalSort(events.filter((event) => event.createdAt !== null));
-  localStorage.setItem(replayCacheKey(roomCode), JSON.stringify({ version: cacheVersion, events: committed }));
+  setStoredValue(replayCacheKey(roomCode), JSON.stringify({ version: cacheVersion, events: committed }));
 }
 
 export function mergeReplayEvents(...sources: CanonicalEvent[][]): CanonicalEvent[] {
