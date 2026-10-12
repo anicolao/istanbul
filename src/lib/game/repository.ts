@@ -9,6 +9,7 @@ import {
   type Timestamp,
   type Unsubscribe
 } from 'firebase/firestore';
+import { getStoredValue, removeStoredValue, setStoredValue } from '$lib/browser-storage';
 import { manifestVersions, reducerVersion, rulesEdition, schemaVersion, type CanonicalEvent } from './protocol';
 
 export interface EventRepository {
@@ -34,7 +35,7 @@ export function createEventRepository(db: Firestore, roomCode: string, actorUid:
   }
 
   function readPending(): PendingWrite | null {
-    try { return JSON.parse(localStorage.getItem(pendingKey) ?? 'null') as PendingWrite | null; } catch { return null; }
+    try { return JSON.parse(getStoredValue(pendingKey) ?? 'null') as PendingWrite | null; } catch { return null; }
   }
 
   async function send(pending: PendingWrite) {
@@ -55,7 +56,7 @@ export function createEventRepository(db: Firestore, roomCode: string, actorUid:
         && JSON.stringify(data?.manifestVersions) === JSON.stringify(pending.data.manifestVersions);
       if (!sameWrite) throw error;
     }
-    localStorage.removeItem(pendingKey);
+    removeStoredValue(pendingKey);
     return pending.id;
   }
 
@@ -65,9 +66,9 @@ export function createEventRepository(db: Firestore, roomCode: string, actorUid:
     if (existing) {
       throw new Error(`Pending event ${existing.id} must be retried before a new action`);
     }
-    const previous = Number(localStorage.getItem(sequenceKey) ?? '0');
+    const previous = Number(getStoredValue(sequenceKey) ?? '0');
     const clientSeq = String(previous + 1).padStart(6, '0');
-    localStorage.setItem(sequenceKey, String(previous + 1));
+    setStoredValue(sequenceKey, String(previous + 1));
     const id = `${actorUid}-${clientSeq}`;
     const pending: PendingWrite = { id, data: {
       actorUid,
@@ -79,7 +80,7 @@ export function createEventRepository(db: Firestore, roomCode: string, actorUid:
       schemaVersion,
       type
     } };
-    localStorage.setItem(pendingKey, JSON.stringify(pending));
+    setStoredValue(pendingKey, JSON.stringify(pending));
     activeWrite = send(pending);
     try { return await activeWrite; } finally { activeWrite = null; }
   }
