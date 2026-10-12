@@ -1,0 +1,1 @@
+import{t as e}from"../chunks/BFYfc_ct.js";export{e as component};
