@@ -1,26 +1,37 @@
-# Tabletop control-surface mock-ups
+# Shared tabletop design review
 
-This directory records the design study behind the production tabletop controls. All sixteen room overlays now use live game state and dispatch the same typed actions as the personal-screen controls.
+These captures render the same `TabletopSurface`, `TabletopPlayerPanel`, and
+`TabletopPlaceActions` components used by the live game. There is no separate
+mockup composition. The fixture contains five merchants with varied inventories.
 
-The player positions use a 3×3 ring with no center position:
+Open `/mockups/tabletop/?place=10&seat=6`; `place=1` through `16` selects a room,
+and `seat=1` through `8` chooses the active physical position. Preview actions
+are fixtures, not a saved game. Use `/tabletop/` for actual play.
 
-```text
-1 2 3   rotate 180° toward the top edge
-4 · 6   rotate +90° toward the left / −90° toward the right
-7 8 9   stay upright toward the bottom edge
-```
+The live interaction contract:
 
-The active room expands over its board position and uses the room artwork as the control backdrop. The persistent side inspector is absent. Text is retained only for the room name, concise rules reminder, and confirmation; choices themselves are represented by goods, cards, pieces, tracks, dice, tiles, room art, and currency.
+- One readable mat per merchant, at their physical seat. Goods show count and
+  capacity, alongside Lira, assistants, private-card count, and rubies.
+- Tap a reachable room to move. The room action appears immediately beside the
+  board, with no inspector, room-opening tap, or modal confirmation.
+- Tap the warehouse goods to fill, a Mosque tile to buy it, or a destination on
+  the existing board to send family. Market sales start with all matching goods.
+- Fountain room taps cycle the number of assistants to recall; Recall all is
+  available immediately. Yellow Mosque recalls also use the existing board.
+- Encounters and Mosque follow-up choices remain inline. Private Bonus-card
+  choices stay on the phone.
+- Undo and an inline game log remain available. End turn is explicit so the
+  merchant can still undo or play a Bonus card before passing.
+- The board and controls face the active seat; mats retain their physical place.
+  Narrow screens use a compact resource grid above the board.
 
-Run `bun run dev` and open `/mockups/tabletop/?place=1` to review the production room surfaces against fixture data. Change `place` from 1 through 16 and use `seat` from 1 through 8 to review every room and player-facing orientation without entering real gameplay.
+The browser layout sweep checks every room across four physical orientations at
+phone, desktop, and 4K sizes. The shared-table journey checks direct movement,
+immediate actions, private phones, handoff, reload, and one-tap undo.
 
-For example, open `/mockups/tabletop/?place=2&seat=1` for a top seat, `seat=4` for the right edge, or `seat=6` for the bottom edge. In a live tabletop game the active Place is highlighted; tapping it expands this surface over the board and faces it toward the active player.
-
-![Production Fabric Warehouse, top seat](production-fabric-warehouse-top-seat.png)
-
-![Production Fabric Warehouse, right seat](production-fabric-warehouse-right-seat.png)
-
-![Production Fabric Warehouse, bottom seat](production-fabric-warehouse-bottom-seat.png)
+![Warehouse, bottom seat](production-fabric-warehouse-bottom-seat.png)
+![Warehouse, right seat](production-fabric-warehouse-right-seat.png)
+![Warehouse, top seat](production-fabric-warehouse-top-seat.png)
 
 ## Room views
 
@@ -44,7 +55,7 @@ For example, open `/mockups/tabletop/?place=2&seat=1` for a top seat, `seat=4` f
 
    ![Post Office control mock-up](05-post-office.png)
 
-6. Caravansary — graphical deck/discard sources and keep/discard draft
+6. Caravansary — private-phone handoff
 
    ![Caravansary control mock-up](06-caravansary.png)
 
@@ -56,7 +67,7 @@ For example, open `/mockups/tabletop/?place=2&seat=1` for a top seat, `seat=4` f
 
    ![Black Market control mock-up](08-black-market.png)
 
-9. Tea House — circular wager dial, dice, and graphical outcomes
+9. Tea House — wager choices and direct roll
 
    ![Tea House control mock-up](09-tea-house.png)
 
@@ -68,7 +79,7 @@ For example, open `/mockups/tabletop/?place=2&seat=1` for a top seat, `seat=4` f
 
     ![Small Market control mock-up](11-small-market.png)
 
-12. Police Station — destination grid made from the actual room artwork
+12. Police Station — destination selection on the live board
 
     ![Police Station control mock-up](12-police-station.png)
 

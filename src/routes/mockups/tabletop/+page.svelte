@@ -1,4 +1,7 @@
 <script lang="ts">
+  import '@fontsource/atkinson-hyperlegible/400.css';
+  import '@fontsource/atkinson-hyperlegible/700.css';
+  import '@fontsource/cormorant-garamond/700.css';
   import { onMount } from 'svelte';
   import TabletopControlMockup from '$lib/components/mockups/TabletopControlMockup.svelte';
   import { isTablePosition, type TablePosition } from '$lib/game/protocol';
@@ -24,3 +27,5 @@
 <svelte:head><title>Tabletop controls mock-up · Istanbul</title><meta name="description" content="Design exploration for player-facing mats and graphical room controls." /></svelte:head>
 
 <TabletopControlMockup {activePlace} {previewPosition} onSelect={selectPlace} />
+
+<style>:global(body){margin:0;font-family:"Atkinson Hyperlegible",sans-serif;}</style>

@@ -14,6 +14,7 @@
     selected = false,
     reachable = false,
     actionReady = false,
+    actionHint,
     departed = false,
     arrived = false,
     tabIndex = 0,
@@ -27,6 +28,7 @@
     selected?: boolean;
     reachable?: boolean;
     actionReady?: boolean;
+    actionHint?: string;
     departed?: boolean;
     arrived?: boolean;
     tabIndex?: number;
@@ -42,7 +44,7 @@
   const stateSummary = $derived(locationStateSummary(game, placeId));
   const hasEncounter = $derived(placeId === game.governorPlace || placeId === game.smugglerPlace);
   const hasStateDisplay = $derived([5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16].includes(placeId));
-  const label = $derived(`${place.id} ${place.name}. ${place.action} Current state: ${stateSummary}.${reachable ? ' Reachable this turn.' : ''}${actionReady ? ' Active now; tap to use this room.' : ''}${merchants.length ? ` Merchants: ${merchants.map(({ name }) => name).join(', ')}.` : ''}`);
+  const label = $derived(`${place.id} ${place.name}. ${place.action} Current state: ${stateSummary}.${reachable ? ' Reachable this turn.' : ''}${actionHint ? ` ${actionHint}.` : actionReady ? ' Active now; tap to use this room.' : ''}${merchants.length ? ` Merchants: ${merchants.map(({ name }) => name).join(', ')}.` : ''}`);
 </script>
 
 <button
@@ -69,7 +71,7 @@
   {#if hasStateDisplay}<LocationState {game} {placeId} />{/if}
   <span class="place-number">{place.id}</span>
   <strong>{place.shortName}</strong>
-  {#if actionReady}<span class="action-ready-label">Tap to use</span>{/if}
+  {#if actionReady || actionHint}<span class="action-ready-label">{actionHint ?? "Tap to use"}</span>{/if}
   <span class="occupants" aria-hidden="true">
     {#each merchants as merchant}<PlayingPiece piece="merchant" color={merchant.color as PlayerColorName} class="merchant" label={`${merchant.name}'s merchant`} />{/each}
     {#each assistants as assistant}<PlayingPiece piece="assistant" color={assistant.color as PlayerColorName} class="assistant" label={`${assistant.name}'s assistant`} />{/each}

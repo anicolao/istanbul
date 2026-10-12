@@ -12,7 +12,7 @@ test('a full browser store never blocks creating or syncing a tabletop game', as
   await page.goto(`/tabletop/?e2eRoom=${roomCode}`);
 
   await expect(page.getByRole('status')).toHaveText('Firebase emulator ready');
-  await expect(page.getByRole('heading', { name: 'Scan. Join. Ready.' })).toBeVisible();
+  await expect(page.getByRole('heading', { name: 'Choose your place.' })).toBeVisible();
   await expect(page.getByText(roomCode, { exact: true })).toBeVisible();
   await expectState(page, {
     screen: 'shared-display',

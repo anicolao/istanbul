@@ -1,5 +1,6 @@
 <script lang="ts">
   import { tick } from 'svelte';
+  import TabletopSurface from './TabletopSurface.svelte';
   import { MediaQuery } from 'svelte/reactivity';
   import { base } from '$app/paths';
   import { bonusCards, demandTiles, mosqueTiles, places, type Good } from '$lib/game/manifests';
@@ -27,8 +28,6 @@
   import PlayerTray from './PlayerTray.svelte';
   import PrivateBonusHand from './PrivateBonusHand.svelte';
   import SultanOffer from './SultanOffer.svelte';
-  import TabletopPlayerPanel from './TabletopPlayerPanel.svelte';
-  import TabletopPlaceActionDialog from './TabletopPlaceActionDialog.svelte';
   import TeaHousePayoffs from './TeaHousePayoffs.svelte';
 
   let {
@@ -118,11 +117,9 @@
     ? abilityPending.actionPlace
     : game.phase === 'turn-end' && game.lastAction ? game.lastAction.place : currentPlayer.merchantPlace);
   const actionPlace = $derived(placeById.get(actionPlaceId)!);
-  const currentTablePosition = $derived(room.seats.find(({ uid }) => uid === currentPlayer.uid)?.tablePosition);
   const tabletopActionReady = $derived(Boolean(
     tabletopControls && localIsCurrent && (game.phase === 'action' || game.phase === 'family-action')
   ));
-  const tabletopActionDialogOpen = $derived(tabletopActionReady && selectedPlace === actionPlace.id);
   const merchantPending = $derived(game.pending?.kind === 'merchant-payment' ? game.pending : null);
   const encounterPending = $derived(game.pending?.kind === 'encounters' ? game.pending : null);
   const paymentNames = $derived(merchantPending?.recipientUids.map((uid) => game.players.find((player) => player.uid === uid)?.name ?? uid) ?? []);
@@ -301,6 +298,9 @@
   }
 </script>
 
+{#if tabletopControls}
+  <TabletopSurface {game} {room} {userUid} {onMove} {onPayMerchants} {onTakeAction} {onResolveEncounter} {onUseMosqueAbility} {onEndTurn} {onUndo} {onRollback} {onRematch} {undo} {gameLog} {undoPending} />
+{:else}
 <section class:many={game.players.length > 3} class:display-only={displayOnly} class:table-layout={tableLayout} class:tabletop={tabletopControls} class="game-table" aria-labelledby="game-title" style={`--courtyard: url('${artUrl}')`} data-e2e-fit data-e2e-no-scroll>
   <p class="visually-hidden" aria-live="polite" aria-atomic="true" data-testid="turn-announcement">Turn {game.turnNumber}. {currentPlayer.name}. {game.phase.replace('-', ' ')}. {currentPlayer.uid === userUid ? 'Your action.' : 'Waiting for this merchant.'}</p>
   <header class="turn-banner" data-e2e-fit data-e2e-no-scroll>
@@ -587,9 +587,6 @@
     <PrivateBonusHand cards={localPlayer.bonusHand} selected={selectedBonus} onInspect={inspectBonus} class="desktop-private-hand" />
   {/if}
 
-  {#if tabletopControls}
-    <TabletopPlayerPanel {game} {room} />
-  {:else}
     <section class:hidden-at-finish={game.phase === 'game-over'} class:many={game.players.length > 3} class="player-rail" aria-label="Player resources" style={`--players: ${game.players.length}`} data-e2e-fit data-e2e-no-scroll>
       {#each game.players as player, index}
         <article class:local={player.uid === userUid} aria-label={`${player.name} resources`} data-player-color={player.color} data-e2e-fit data-e2e-no-scroll>
@@ -605,21 +602,11 @@
         </article>
       {/each}
     </section>
-  {/if}
   {#if tableLayout}<footer class="tabletop-strip" data-e2e-fit data-e2e-no-scroll><span class="table-identity"><strong>{tabletopControls ? 'Istanbul tabletop' : 'Istanbul'}</strong><i>{room.roomCode} · {room.layout.replace('-', ' ')}</i></span><span class="table-history-actions"><button class="undo-action" aria-label={undoText} disabled={!canUndo} onclick={onUndo}><span aria-hidden="true">↶</span>{undoButtonText}</button><GameLog entries={gameLog} players={game.players} {userUid} pending={undoPending} {onRollback} /></span><span class="undo-record" aria-live="polite">{undoStatusText}{undoLog.length ? ` · last log: ${undoLog.at(-1)?.label}` : ''}</span></footer>{/if}
-  {#if tabletopActionDialogOpen}
-    <TabletopPlaceActionDialog
-      {game}
-      player={currentPlayer}
-      placeId={actionPlace.id}
-      tablePosition={currentTablePosition}
-      boardIndex={game.board.indexOf(actionPlace.id)}
-      onAction={onTakeAction}
-      onSkip={onEndTurn}
-      onClose={onDismissPlace}
-    />
-  {/if}
+
 </section>
+
+{/if}
 
 <style>
   .game-table { position: relative; height: 100%; min-height: 0; display: flex; flex-direction: column; gap: .65rem; color: #fffaf0; }

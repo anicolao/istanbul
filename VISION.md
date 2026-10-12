@@ -25,7 +25,8 @@ tiles, and rubies remain compact and never obscure the route.
 
 Selecting a merchant shows reachable places and the assistant consequence at
 each destination. Costs, capacity, player payments, and likely turn-ending
-conditions are visible before confirmation. Disabled actions state the rule
+conditions are visible before committing an action. Reversible actions happen
+directly and can be undone; they do not require a confirmation dialog. Disabled actions state the rule
 that blocks them. The UI assists understanding but never recommends an
 “optimal” move.
 
@@ -107,3 +108,14 @@ official licensed edition, or a competitive platform. It does not initially
 include expansions, AI opponents, ranked matchmaking, chat, moderation, or a
 server-authoritative anti-cheat system. Those concerns must not distort the
 small-room, faithful-base-game experience.
+
+### Shared-table play stays on the table
+
+Each merchant has one readable mat at their physical seat, with explicit goods,
+capacity, Lira, assistants, and rubies. The board and its inline action area face
+whoever is playing. Tap a reachable room to move; its action is immediately
+available. Police destinations and assistant recalls use the existing board.
+No persistent inspector, modal room expansion, or extra tap to open an action.
+Keep the board visible while trading, meeting other pieces, or using a Mosque
+power. Only private Bonus-card decisions move to the phone. Copy describes the
+player's choices and consequences, never the implementation or screen rotation.

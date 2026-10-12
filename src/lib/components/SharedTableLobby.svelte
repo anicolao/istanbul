@@ -19,7 +19,7 @@
 
 <section class="table-lobby" aria-labelledby="shared-table-title">
   <header>
-    <div><p>Dedicated tabletop · room {room.roomCode}</p><h1 id="shared-table-title">Choose your place.</h1><span class="table-instruction">Scan the invitation nearest your physical seat, then join and ready on your private controller.</span></div>
+    <div><p>Room {room.roomCode}</p><h1 id="shared-table-title">Choose your place.</h1><span class="table-instruction">Scan the code nearest you. Join and get ready on your phone.</span></div>
     <div class="room-code"><span>Join code</span><strong>{room.roomCode}</strong></div>
   </header>
 
@@ -30,23 +30,23 @@
         <span class="seat-number">Position {position} · {tablePositionNames[position]}</span>
         {#if seat}
           <div class="claimed-token">{seat.name.slice(0, 1).toUpperCase()}</div>
-          <h2>{seat.name}</h2><p>{seat.ready ? 'Ready at this position' : 'Planning at this position'}</p>
+          <h2>{seat.name}</h2><p>{seat.ready ? 'Ready' : 'Getting ready'}</p>
         {:else if room.seats.length < room.maxPlayers}
           <SeatQr url={invitationFor(position)} label={`Join position ${position}`} />
         {:else}
-          <div class="closed-position" aria-hidden="true">◆</div><h2>Table full</h2><p>This position remains open around the table.</p>
+          <div class="closed-position" aria-hidden="true">◆</div><h2>Table full</h2><p>Five merchants have joined.</p>
         {/if}
       </article>
     {/each}
 
     <section class="table-centre" aria-label="Tabletop game controls">
-      <div><p class="order-rule">Clockwise order</p><strong>A random occupied position becomes Player 1.</strong><span>Every later player follows clockwise around the table, skipping empty positions.</span></div>
+      <div><p class="order-rule">Clockwise order</p><strong>One merchant starts at random.</strong><span>Play continues clockwise.</span></div>
       <label>Table layout
         <select value={room.layout} onchange={(event) => onConfigure(event.currentTarget.value as LayoutKind)} disabled={!canConfigure || actionPending}>
           <option value="short-path">Short Path</option><option value="long-path">Long Path</option><option value="number-order">Number Order</option><option value="random">Seeded Random</option>
         </select>
       </label>
-      <p class="ready-copy"><strong>{layoutNames[room.layout]}</strong><span>{room.seats.length < 2 ? 'At least two merchants must join.' : canStart ? 'Everyone here is ready.' : 'Waiting for every joined merchant to ready.'}</span></p>
+      <p class="ready-copy"><strong>{layoutNames[room.layout]}</strong><span>{room.seats.length < 2 ? 'At least two merchants must join.' : canStart ? 'Everyone here is ready.' : 'Waiting for everyone to get ready.'}</span></p>
       <button onclick={onStart} disabled={!canStart || actionPending}>Open the bazaar</button>
     </section>
   </div>

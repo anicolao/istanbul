@@ -144,7 +144,7 @@ The dedicated /tabletop route arranges eight join positions around the display. 
 
 - [x] The public board replaces every joined and unclaimed lobby position
 - [x] The sixth event starts Ada’s seeded movement turn
-- [x] The current mat is enlarged upright and duplicated in the clockwise player-card stack without exposing private cards
+- [x] Every player has one readable mat at their seat without exposing private cards
 
 ## 14. Ada’s private phone receives the opening turn
 
@@ -189,32 +189,21 @@ The dedicated /tabletop route arranges eight join positions around the display. 
 
 **Verifications:**
 
-- [x] Ada’s enlarged current-player mat shows 7 Lira and zero Bonus cards while the spent card becomes the public discard
+- [x] Ada’s mat shows 7 Lira and zero Bonus cards while the spent card becomes the public discard
 - [x] The public log describes the effect while movement still belongs to the tabletop
 
-## 18. Ada selects Fruit Warehouse on the shared tabletop
-
-**The dedicated tabletop** — Ada selects Fruit Warehouse on the shared tabletop
-
-![Ada selects Fruit Warehouse on the shared tabletop](./screenshots/006-tabletop-inspects-public-route-desktop.png)
-
-**Verifications:**
-
-- [x] The tabletop presses the public Place and offers the normal assistant drop
-- [x] Route inspection stays local to the table and creates no event
-
-## 19. Ada commits movement on the shared tabletop
+## 18. Ada commits movement on the shared tabletop
 
 **The dedicated tabletop** — Ada commits movement on the shared tabletop
 
-![Ada commits movement on the shared tabletop](./screenshots/007-tabletop-commits-public-move-desktop.png)
+![Ada commits movement on the shared tabletop](./screenshots/006-tabletop-commits-public-move-desktop.png)
 
 **Verifications:**
 
-- [x] The tabletop highlights Fruit Warehouse as the public control surface
+- [x] One room tap moves and immediately exposes its action without a dialog or inspector
 - [x] The tabletop-authored event records Ada’s assistant drop and no diagnostic
 
-## 20. Ada’s phone remains private while the tabletop resolves Fruit Warehouse
+## 19. Ada’s phone remains private while the tabletop resolves Fruit Warehouse
 
 **Ada’s private phone** — Ada’s phone remains private while the tabletop resolves Fruit Warehouse
 
@@ -225,29 +214,29 @@ The dedicated /tabletop route arranges eight join positions around the display. 
 - [x] The phone reports the public phase but renders no Warehouse action
 - [x] Phone replay agrees with the tabletop at event eight
 
-## 21. Ada fills fruit from the shared tabletop
+## 20. Ada fills fruit from the shared tabletop
 
 **The dedicated tabletop** — Ada fills fruit from the shared tabletop
 
-![Ada fills fruit from the shared tabletop](./screenshots/008-tabletop-resolves-public-place-desktop.png)
+![Ada fills fruit from the shared tabletop](./screenshots/007-tabletop-resolves-public-place-desktop.png)
 
 **Verifications:**
 
 - [x] The tabletop advances to the public end-turn decision
 - [x] Fruit and the immutable public action are exact at event nine
 
-## 22. Ada passes clockwise on the shared tabletop
+## 21. Ada passes clockwise on the shared tabletop
 
 **The dedicated tabletop** — Ada passes clockwise on the shared tabletop
 
-![Ada passes clockwise on the shared tabletop](./screenshots/009-tabletop-passes-public-turn-desktop.png)
+![Ada passes clockwise on the shared tabletop](./screenshots/008-tabletop-passes-public-turn-desktop.png)
 
 **Verifications:**
 
-- [x] The narrow shared turn strip now gives Bora the tabletop
+- [x] The turn controls and active mat now belong to Bora
 - [x] Bora begins event ten with no diagnostic
 
-## 23. Bora privately inspects his Bonus card before using the tabletop
+## 22. Bora privately inspects his Bonus card before using the tabletop
 
 **Bora’s private phone** — Bora privately inspects his Bonus card before using the tabletop
 
@@ -259,14 +248,25 @@ The dedicated /tabletop route arranges eight join positions around the display. 
 - [x] Bora’s phone still has no board or public movement destination controls
 - [x] The tabletop does not reveal Bora’s title and private inspection adds no event
 
-## 24. The tabletop reloads its retained room
+## 23. The tabletop reloads its retained room
 
 **The dedicated tabletop** — The tabletop reloads its retained room
 
-![The tabletop reloads its retained room](./screenshots/010-tabletop-reloads-owned-room-desktop.png)
+![The tabletop reloads its retained room](./screenshots/009-tabletop-reloads-owned-room-desktop.png)
 
 **Verifications:**
 
 - [x] Reload preserves the tabletop URL and public bazaar instead of creating another room
 - [x] Table ownership and the ten-event cursor survive reload
 - [x] Reload restores working public controls without exposing private card identities
+
+## 24. Bora undoes a one-tap move without a confirmation
+
+**The dedicated tabletop** — Bora undoes a one-tap move without a confirmation
+
+![Bora undoes a one-tap move without a confirmation](./screenshots/010-tabletop-undoes-direct-move-desktop.png)
+
+**Verifications:**
+
+- [x] Undo restores the merchant, assistants, and movement phase
+- [x] The board remains usable without a modal or sidebar

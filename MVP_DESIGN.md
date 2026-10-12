@@ -24,7 +24,10 @@ Scanned phones hold player identities, readiness, private Bonus cards, and only
 the card-dependent Caravansary or Governor choices that cannot be public. It
 offers eight physical positions at the corners and edge middles; setup chooses
 one occupied position as Player 1 and proceeds clockwise through the other
-occupied positions. It excludes both expansions and the optional
+occupied positions. Shared-table gameplay uses perimeter resource mats and a
+player-facing board with inline actions. Movement is one tap, room actions are
+immediately available, and reversible choices rely on Undo rather than dialogs.
+It excludes both expansions and the optional
 neutral-assistant variant.
 
 ## Fixed technical decisions

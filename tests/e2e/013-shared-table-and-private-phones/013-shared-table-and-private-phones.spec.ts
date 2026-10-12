@@ -86,7 +86,7 @@ test('a dedicated tabletop controls public play while phones contain private Bon
     await table.step('tabletop-starts-public-bazaar', { description: 'The tabletop starts play and becomes the public bazaar', verifications: [
       { spec: 'The public board replaces every joined and unclaimed lobby position', check: async () => { await expect(page.getByTestId('bazaar-board').getByRole('button')).toHaveCount(16); await expect(page.getByTestId('seat-qr')).toHaveCount(0); await expect(page.getByText(/invitations open/)).toHaveCount(0); } },
       { spec: 'The sixth event starts Ada’s seeded movement turn', check: async () => expectState(page, { screen: 'shared-display', eventCount: 6, localSeat: null, game: { seed, currentTurn: 'Ada', phase: 'movement' } }) },
-      { spec: 'The current mat is enlarged upright and duplicated in the clockwise player-card stack without exposing private cards', check: async () => { await expect(page.getByLabel(/Current player resources:/)).toBeVisible(); await expect(page.locator('.player-card-stack > article')).toHaveCount(2); await expect(page.locator('.compact-tray')).toHaveCount(3); await expect(page.locator('.hand')).toHaveCount(0); await expect(page.getByRole('button', { name: /Inspect Bonus card:/ })).toHaveCount(0); expect((await readState(page)).game.localHand).toEqual([]); } }
+      { spec: 'Every player has one readable mat at their seat without exposing private cards', check: async () => { await expect(page.getByLabel('Ada resources', { exact: true })).toBeVisible(); await expect(page.locator('.mat')).toHaveCount(2); await expect(page.locator('.compact-tray')).toHaveCount(0); await expect(page.locator('.hand')).toHaveCount(0); await expect(page.getByRole('button', { name: /Inspect Bonus card:/ })).toHaveCount(0); expect((await readState(page)).game.localHand).toEqual([]); } }
     ] });
     await ada.step('ada-receives-private-turn', { description: 'Ada’s private phone receives the opening turn', verifications: [
       { spec: 'Ada sees only her private Bonus-card controller', check: async () => { await expect(adaPage.getByRole('heading', { name: 'Your Bonus cards' })).toBeVisible(); await expect(adaPage.getByRole('navigation', { name: 'Private Bonus hand' })).toBeVisible(); } },
@@ -107,19 +107,13 @@ test('a dedicated tabletop controls public play while phones contain private Bon
       { spec: 'Only the Bonus-card event is appended and Ada gains exactly 5 Lira', check: async () => expectState(adaPage, { eventCount: 7, diagnosticCount: 0, game: { phase: 'movement', players: [{ lira: 7 }, {}], localHand: [] } }) }
     ] });
     await table.step('tabletop-reflects-private-bonus', { description: 'The tabletop reflects the public consequence of Ada’s card', verifications: [
-      { spec: 'Ada’s enlarged current-player mat shows 7 Lira and zero Bonus cards while the spent card becomes the public discard', check: async () => { const adaTray = page.getByLabel('Current player resources: Ada'); await expect(adaTray.getByLabel('7 Lira', { exact: true })).toBeVisible(); await expect(adaTray.getByLabel('0 Bonus cards', { exact: true })).toBeVisible(); await expect(page.getByTestId('place-state-6')).toHaveAttribute('data-state-summary', /1 in discard, topped by A profitable bargain/); } },
+      { spec: 'Ada’s mat shows 7 Lira and zero Bonus cards while the spent card becomes the public discard', check: async () => { const adaTray = page.getByLabel('Ada resources', { exact: true }); await expect(adaTray.getByLabel('7 Lira', { exact: true })).toBeVisible(); await expect(adaTray.getByLabel('0 Bonus cards', { exact: true })).toBeVisible(); await expect(page.getByTestId('place-state-6')).toHaveAttribute('data-state-summary', /1 in discard, topped by A profitable bargain/); } },
       { spec: 'The public log describes the effect while movement still belongs to the tabletop', check: async () => { await expect(page.getByText('Played a Bonus card to gain 5 Lira.', { exact: true })).toBeVisible(); await expectState(page, { eventCount: 7, game: { phase: 'movement', players: [{ lira: 7 }, {}], localHand: [] } }); } }
     ] });
 
     await page.getByRole('button', { name: /^4 Fruit Warehouse.*Reachable/ }).click();
-    await table.step('tabletop-inspects-public-route', { description: 'Ada selects Fruit Warehouse on the shared tabletop', verifications: [
-      { spec: 'The tabletop presses the public Place and offers the normal assistant drop', check: async () => { await expect(page.getByRole('button', { name: /^4 Fruit Warehouse.*Reachable/ })).toHaveAttribute('aria-pressed', 'true'); await expect(page.getByRole('button', { name: 'Move here and leave an assistant' })).toBeEnabled(); } },
-      { spec: 'Route inspection stays local to the table and creates no event', check: async () => expectState(page, { eventCount: 7, game: { selectedPlace: 4, phase: 'movement' } }) }
-    ] });
-
-    await page.getByRole('button', { name: 'Move here and leave an assistant' }).click();
     await table.step('tabletop-commits-public-move', { description: 'Ada commits movement on the shared tabletop', verifications: [
-      { spec: 'The tabletop highlights Fruit Warehouse as the public control surface', check: async () => { await expect(page.getByRole('heading', { name: 'Ada arrives at Fruit Warehouse.' })).toBeVisible(); await expect(page.locator('[data-place-id="4"]')).toHaveAttribute('data-action-ready', 'true'); } },
+      { spec: 'One room tap moves and immediately exposes its action without a dialog or inspector', check: async () => { await expect(page.getByRole('heading', { name: 'Fruit Warehouse' })).toBeVisible(); await expect(page.getByRole('button', { name: 'Fill fruit to 2' })).toBeEnabled(); await expect(page.getByRole('dialog')).toHaveCount(0); await expect(page.locator('.inspector')).toHaveCount(0); } },
       { spec: 'The tabletop-authored event records Ada’s assistant drop and no diagnostic', check: async () => expectState(page, { eventCount: 8, diagnosticCount: 0, game: { phase: 'action', lastMovement: { from: 7, to: 4, assistantAction: 'drop' }, players: [{ merchantPlace: 4, assistantsCarried: 3, assistantsByPlace: { 4: 1 }, lira: 7 }, {}] } }) }
     ] });
     await ada.step('ada-phone-awaits-public-action', { description: 'Ada’s phone remains private while the tabletop resolves Fruit Warehouse', verifications: [
@@ -127,20 +121,15 @@ test('a dedicated tabletop controls public play while phones contain private Bon
       { spec: 'Phone replay agrees with the tabletop at event eight', check: async () => expectState(adaPage, { eventCount: 8, diagnosticCount: 0, game: { currentTurn: 'Ada', phase: 'action', players: [{ merchantPlace: 4 }, {}] } }) }
     ] });
 
-    await page.locator('[data-place-id="4"]').click();
-    const fruitDialog = page.getByRole('dialog', { name: 'Fruit Warehouse' });
-    await expect(fruitDialog).toBeVisible();
-    await expect(fruitDialog).toContainText('facing Top-left corner');
-    await expectState(page, { eventCount: 8, game: { selectedPlace: 4, phase: 'action' } });
-    await fruitDialog.getByRole('button', { name: /^Fill to 2/ }).click();
+    await page.getByRole('button', { name: 'Fill fruit to 2' }).click();
     await table.step('tabletop-resolves-public-place', { description: 'Ada fills fruit from the shared tabletop', verifications: [
-      { spec: 'The tabletop advances to the public end-turn decision', check: async () => expect(page.getByRole('button', { name: 'End turn and pass clockwise' })).toBeEnabled() },
+      { spec: 'The tabletop advances to the public end-turn decision', check: async () => expect(page.getByRole('button', { name: 'End turn', exact: true })).toBeEnabled() },
       { spec: 'Fruit and the immutable public action are exact at event nine', check: async () => expectState(page, { eventCount: 9, diagnosticCount: 0, game: { phase: 'turn-end', players: [{ goods: { fruit: 2 }, lira: 7 }, {}] } }) }
     ] });
 
-    await page.getByRole('button', { name: 'End turn and pass clockwise' }).click();
+    await page.getByRole('button', { name: 'End turn', exact: true }).click();
     await table.step('tabletop-passes-public-turn', { description: 'Ada passes clockwise on the shared tabletop', verifications: [
-      { spec: 'The narrow shared turn strip now gives Bora the tabletop', check: async () => { await expect(page.getByRole('heading', { name: 'Bora surveys the bazaar.' })).toBeVisible(); await expect(page.locator('.tabletop-strip')).toContainText('Istanbul tabletop'); } },
+      { spec: 'The turn controls and active mat now belong to Bora', check: async () => { await expect(page.getByRole('heading', { name: 'Choose your next room' })).toBeVisible(); await expect(page.getByLabel('Bora resources', { exact: true })).toHaveAttribute('aria-current', 'true'); } },
       { spec: 'Bora begins event ten with no diagnostic', check: async () => expectState(page, { eventCount: 10, diagnosticCount: 0, game: { currentTurn: 'Bora', turnNumber: 2, phase: 'movement' } }) }
     ] });
 
@@ -156,6 +145,14 @@ test('a dedicated tabletop controls public play while phones contain private Bon
       { spec: 'Reload preserves the tabletop URL and public bazaar instead of creating another room', check: async () => { expect(new URL(page.url()).pathname).toContain('/tabletop'); expect(new URL(page.url()).searchParams.get('room')).toBe(roomCode); await expect(page.getByTestId('bazaar-board')).toBeVisible(); } },
       { spec: 'Table ownership and the ten-event cursor survive reload', check: async () => expectState(page, { screen: 'shared-display', roomCode, tabletopOwned: true, tabletopRoute: true, eventCount: 10, diagnosticCount: 0, localSeat: null, game: { currentTurn: 'Bora', phase: 'movement' } }) },
       { spec: 'Reload restores working public controls without exposing private card identities', check: async () => { await expect(page.locator('.place.reachable').first()).toBeEnabled(); await expect(page.locator('.hand')).toHaveCount(0); await expect(page.getByText('A swift passage')).toHaveCount(0); } }
+    ] });
+    const beforeMove = (await readState(page)).game;
+    await page.locator('.place.reachable').first().click();
+    await expectState(page, { eventCount: 11, diagnosticCount: 0 });
+    await page.getByRole('button', { name: /^Undo / }).click();
+    await table.step('tabletop-undoes-direct-move', { description: 'Bora undoes a one-tap move without a confirmation', verifications: [
+      { spec: 'Undo restores the merchant, assistants, and movement phase', check: async () => { await expectState(page, { eventCount: 12, diagnosticCount: 0, game: { phase: 'movement', currentTurn: 'Bora' } }); const state = await readState(page); expect(state.game.players).toEqual(beforeMove.players); } },
+      { spec: 'The board remains usable without a modal or sidebar', check: async () => { await expect(page.getByRole('dialog')).toHaveCount(0); await expect(page.locator('.inspector')).toHaveCount(0); await expect(page.locator('.place.reachable').first()).toBeEnabled(); } }
     ] });
     table.generateDocs();
   } finally {

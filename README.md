@@ -40,6 +40,11 @@ browser-level tracer bullets verified with Playwright.
   on the shared display, and leaves only private Bonus-card information and
   decisions on each player's phone. One occupied position is chosen as Player 1
   and play proceeds clockwise through the remaining occupied positions.
+- Shared-table play uses one-tap movement, always-visible room actions, readable
+  mats at each physical seat, and an inline game log. Undo replaces confirmation
+  dialogs; random draws and rolls retain the existing information boundaries.
+  `/mockups/tabletop/?place=10&seat=6` renders the actual tabletop with fixture
+  state for reviewing all sixteen rooms and eight seats.
 - A dedicated `/gallery/` review route that renders the same logical Svelte
   components used during play—with representative state, stable references,
   renderer props, and full-size views for precise UI feedback.
