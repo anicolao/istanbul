@@ -1,0 +1,1 @@
+import{t as e}from"../chunks/fSgXRAmb.js";export{e as component};
