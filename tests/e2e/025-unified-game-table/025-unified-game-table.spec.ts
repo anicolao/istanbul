@@ -11,7 +11,7 @@ test('personal games use direct table actions, private cards, and a one-second r
     'One table for every screen',
     'Personal play uses the same illustrated board, mats, room actions and undo as the shared tabletop. Room artwork grows from its board position over one second. Private Bonus cards stay on their owner’s screen.'
   );
-  const room = info.project.name === 'phone' ? 'UNIFP' : 'UNIFD';
+  const room = `UNI${String.fromCharCode(70 + info.repeatEachIndex)}${info.project.name === 'phone' ? 'P' : 'D'}`;
   const guestContext = await browser.newContext({
     baseURL: String(info.project.use.baseURL),
     viewport: info.project.use.viewport
@@ -56,13 +56,48 @@ test('personal games use direct table actions, private cards, and a one-second r
       ]
     });
     const before = await readState(page);
+    // Svelte first creates a zero-duration delay animation, then starts the
+    // transition on a later frame. Capture creation so slow runners cannot
+    // observe only that placeholder or miss the completed transition.
+    const roomAnimations = await page.evaluateHandle(() => {
+      const captured: {
+        duration: EffectTiming['duration'];
+        transforms: string[];
+      }[] = [];
+      const animate = Element.prototype.animate;
+      Element.prototype.animate = function (...args) {
+        const animation = animate.apply(this, args);
+        if (this.matches('.zoom-tile')) {
+          const effect = animation.effect as KeyframeEffect;
+          captured.push({
+            duration: effect.getTiming().duration,
+            transforms: effect
+              .getKeyframes()
+              .map((frame) => String(frame.transform))
+          });
+        }
+        return animation;
+      };
+      return captured;
+    });
     await page.locator('[data-place-id="3"]').click();
-    const durations = await page
-      .locator('.zoom-tile:not([inert])')
-      .evaluate((el) =>
-        el.getAnimations().map((a) => a.effect?.getTiming().duration)
-      );
-    expect(durations).toContain(1000);
+    await expect
+      .poll(() =>
+        roomAnimations.evaluate((animations) =>
+          animations.map((animation) => animation.duration)
+        )
+      )
+      .toContain(1000);
+    const transforms = await roomAnimations.evaluate((animations) =>
+      animations
+        .filter((animation) => animation.duration === 1000)
+        .flatMap((animation) => animation.transforms)
+    );
+    expect(transforms.length).toBeGreaterThan(1);
+    expect(
+      transforms.every((transform) => !/scale\([^)]*,/.test(transform))
+    ).toBe(true);
+    await roomAnimations.dispose();
     const shape = await page.locator('.zoom-tile').evaluate((el) => {
       const source = document
         .querySelector('[data-place-id="3"]')!
@@ -70,20 +105,10 @@ test('personal games use direct table actions, private cards, and a one-second r
       const style = getComputedStyle(el);
       return {
         original: source.width / source.height,
-        expanded: parseFloat(style.width) / parseFloat(style.height),
-        transforms: el
-          .getAnimations()
-          .flatMap((a) =>
-            (a.effect as KeyframeEffect)
-              .getKeyframes()
-              .map((frame) => String(frame.transform))
-          )
+        expanded: parseFloat(style.width) / parseFloat(style.height)
       };
     });
     expect(shape.expanded).toBeCloseTo(shape.original, 2);
-    expect(
-      shape.transforms.every((transform) => !/scale\([^)]*,/.test(transform))
-    ).toBe(true);
     expect(
       await page
         .locator('.tabletop-surface')
