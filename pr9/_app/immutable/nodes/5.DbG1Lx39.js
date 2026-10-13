@@ -1,0 +1,1 @@
+import{at as e,ft as t}from"../chunks/C6kNvWvH.js";import"../chunks/xihTtKlq.js";import{t as n}from"../chunks/BXGoxqqA.js";var r=t({trailingSlash:()=>i}),i=`always`;e();function a(e){n(e,{tabletopRoute:!0})}export{a as component,r as universal};
