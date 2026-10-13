@@ -43,6 +43,25 @@ const setup = [
   event(6, "game/started", { seed: "direct-arrivals" }),
 ];
 describe("direct tabletop arrivals", () => {
+  it("transfers a lost tabletop session without changing the game or allowing a spectator takeover", () => {
+    const before = replayEvents(setup);
+    const bad = replayEvents([...setup, event(7, "table/host-transferred", { hostUid: "new-table" }, "stranger")]);
+    expect(bad.room?.hostUid).toBe("table");
+    expect(bad.diagnostics.at(-1)?.reason).toBe("host-only");
+    const transfer = event(7, "table/host-transferred", { hostUid: "new-table" });
+    const restored = replayEvents([...setup, transfer]);
+    expect(restored.room?.hostUid).toBe("new-table");
+    expect(restored.game).toEqual(before.game);
+    const moved = replayEvents([...setup, transfer, event(8, "turn/moved", { destination: 3, assistantAction: "drop", directAction: true }, "new-table")]);
+    expect(moved.diagnostics).toEqual([]);
+    expect(moved.game?.players[moved.game.turnSeat].merchantPlace).toBe(3);
+  });
+  it("treats archived repair markers as inert without affecting the restored turn", () => {
+    const before = replayEvents(setup);
+    const after = replayEvents([...setup, event(7, "action/archived", { reason: "Requested repair" })]);
+    expect(after.game).toEqual(before.game);
+    expect(after.diagnostics).toEqual([]);
+  });
   it("fills on arrival and rolls movement and goods back together", () => {
     const before = replayEvents(setup);
     expect(before.diagnostics).toEqual([]);

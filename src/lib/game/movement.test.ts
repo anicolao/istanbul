@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { manifestVersions, reducerVersion, rulesEdition, schemaVersion, type CanonicalEvent } from './protocol';
-import { gridDistance, legalDestinations } from './movement';
+import { gridDistance, legalDestinations, merchantToll } from './movement';
 import { replayEvents } from './reducer';
 
 function event(sequence: number, actorUid: string, type: string, payload: Record<string, unknown>): CanonicalEvent {
@@ -22,6 +22,18 @@ function startedGame(): CanonicalEvent[] {
 }
 
 describe('movement and the turn skeleton', () => {
+  it('quotes every merchant toll while exempting the Fountain and your own merchant', () => {
+    const game = replayEvents(startedGame()).game!;
+    const player = game.players[0];
+    player.merchantPlace = 14;
+    game.players[1].merchantPlace = 14;
+    game.neutralMerchants = [{ id: 'neutral-1', place: 14 }];
+    expect(merchantToll(game, player, 14)).toBe(4);
+    expect(merchantToll(game, player, 2)).toBe(0);
+    game.players[1].merchantPlace = 7;
+    game.neutralMerchants[0].place = 7;
+    expect(merchantToll(game, player, 7)).toBe(0);
+  });
   it('derives orthogonal one/two-space destinations with an available assistant', () => {
     const projection = replayEvents(startedGame());
     const game = projection.game!;

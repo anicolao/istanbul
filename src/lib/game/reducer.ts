@@ -355,6 +355,19 @@ function applyEvent(state: ReplayProjection, event: CanonicalEvent): boolean {
     return false;
   }
 
+  if (event.type === 'table/host-transferred') {
+    const hostUid = stringField(event.payload, 'hostUid');
+    if (!state.room.tabletopOwned || event.actorUid !== state.room.hostUid || !hostUid) {
+      reject(state, event, 'host-only');
+      return false;
+    }
+    state.room.hostUid = hostUid;
+    return true;
+  }
+
+  // Administrative history repairs retain same-ID markers so cached clients replace withdrawn events.
+  if (event.type === 'action/archived') return false;
+
   if (event.type === 'bot/added' || event.type === 'bot/removed') {
     if (state.room.status !== 'lobby' || event.actorUid !== state.room.hostUid) {
       reject(state, event, 'host-only'); return false;

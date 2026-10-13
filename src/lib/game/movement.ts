@@ -22,3 +22,10 @@ export function legalDestinations(game: GameSetup, player: SetupPlayer): number[
     return distance >= (longMove ? 3 : 1) && distance <= (longMove ? 4 : 2) && requiredAssistantAction(player, destination) !== null;
   });
 }
+
+/** Fountain arrivals are exempt from both player and neutral merchant tolls. */
+export function merchantToll(game: GameSetup, player: SetupPlayer, destination: number): number {
+  if (destination === 7) return 0;
+  return 2 * (game.players.filter(other => other.uid !== player.uid && other.merchantPlace === destination).length
+    + game.neutralMerchants.filter(merchant => merchant.place === destination).length);
+}

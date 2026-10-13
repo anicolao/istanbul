@@ -21,6 +21,7 @@
   const room = $derived<RoomProjection>({
     roomCode: "ARTVW",
     hostUid: "preview",
+    tabletopOwned: true,
     status: "playing",
     maxPlayers: 5,
     mode: "shared-table",

@@ -3,6 +3,7 @@
   import { places, bonusCards, type Good } from "$lib/game/manifests";
   import { locationArt, type PlayerColorName } from "$lib/game/art";
   import {
+    merchantToll,
     legalDestinations,
     requiredAssistantAction,
     type AssistantAction,
@@ -57,6 +58,8 @@
   } = $props();
   const goods: Good[] = ["fabric", "spice", "fruit", "jewelry"];
   const player = $derived(game.players[game.turnSeat]);
+  const canControl = $derived(userUid === player.uid || (room.tabletopOwned && userUid === room.hostUid));
+  const busy = $derived(undoPending || !canControl);
   const seat = $derived(tableSeat(game, room, game.turnSeat));
   const pending = $derived(game.pending);
   const activePlace = $derived(
@@ -164,7 +167,7 @@
     power = null;
   }
   function tapRoom(id: number, event: MouseEvent) {
-    if (undoPending) return;
+    if (busy) return;
     const card = (event.target as HTMLElement).closest<HTMLElement>(
       "[data-inspect-pile-card]",
     )?.dataset.inspectPileCard;
@@ -184,7 +187,7 @@
       const assistant = requiredAssistantAction(player, id);
       if (assistant) {
         open(id);
-        onMove(id, assistant);
+        if (merchantToll(game, player, id) <= player.lira) onMove(id, assistant);
       }
       return;
     }
@@ -339,12 +342,13 @@
     class="table"
     style={`--courtyard:url('${base}/art/bazaar-courtyard.png')`}
   >
+    {#if !canControl}<p class="table-hint">Watching this table · Play from the browser that opened it.</p>{/if}
     <TabletopPlayerPanel
       {game}
       {room}
       {canUndo}
       {canEnd}
-      busy={undoPending}
+      {busy}
       {onUndo}
       onEnd={onEndTurn}
       onPower={showPower}
@@ -353,7 +357,7 @@
     <fieldset
       class="board"
       aria-label="Bazaar"
-      disabled={undoPending}
+      disabled={busy}
       data-testid="bazaar-board"
     >
       {#each game.board as id, index}<LocationTile
@@ -388,7 +392,7 @@
               onclick={() => (collapsed = true)}><TabletopArrow back /></button
             >
           </header>
-          <fieldset class="room-flow" disabled={undoPending}>
+          <fieldset class="room-flow" disabled={busy}>
             <div class="content" aria-live="polite">
               {#if publicCard}<div class="public-card">
                   <BonusCard card={publicCard} />
@@ -408,6 +412,21 @@
                   }[power]}
                 </p>
                 <button onclick={() => (power = null)}>Back</button>
+              {:else if game.phase === "movement" && reachable.includes(zoom) && merchantToll(game, player, zoom) > player.lira}
+                <div class="components">
+                  {#each game.neutralMerchants.filter((merchant) => merchant.place === zoom) as merchant (merchant.id)}
+                    <GameArt kind="piece" piece="neutral-merchant" />
+                  {/each}
+                  {#each game.players.filter((other) => other.uid !== player.uid && other.merchantPlace === zoom) as other (other.uid)}
+                    <GameArt kind="piece" piece="merchant" color={other.color as PlayerColorName} />
+                  {/each}
+                </div>
+                <p>You have {player.lira} Lira; the merchants here require {merchantToll(game, player, zoom)}. Moving here ends your turn without an action.</p>
+                <button class="primary" onclick={() => {
+                  const assistant = requiredAssistantAction(player, zoom!);
+                  if (assistant) onMove(zoom!, assistant);
+                }}>Move here & lose this turn</button>
+                <button onclick={() => (collapsed = true)}>Choose another room</button>
               {:else if zoom !== activePlace || game.phase === "movement"}<p>
                   {places.find((p) => p.id === zoom)?.action}
                 </p>
@@ -545,7 +564,7 @@
         </header>
         {#each [...gameLog].reverse() as entry}<p class:undone={!entry.active}>
             {entry.summary}{#if entry.active && !entry.blockedReason && entry.rollbackActorUids.includes(userUid)}<button
-                disabled={undoPending}
+                disabled={busy}
                 onclick={() => {
                   onRollback(entry.eventId);
                   history = false;
