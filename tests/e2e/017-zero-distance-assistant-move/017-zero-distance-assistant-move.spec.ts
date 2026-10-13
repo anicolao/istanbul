@@ -26,7 +26,7 @@ test('the zero-distance Bonus move performs the normal assistant pickup or drop'
     await page.getByRole('button', { name: 'Review zero-distance Bonus move' }).click();
     await ada.step('host-opens-zero-move-position', { description: 'Ada opens the reviewed zero-distance position', verifications: [
       { spec: 'Ada is at Fruit Warehouse with exactly one assistant waiting there', check: async () => expectState(page, { eventCount: 6, diagnosticCount: 0, game: { phase: 'movement', players: [{ merchantPlace: 4, assistantsCarried: 3, assistantsByPlace: { 4: 1 } }, { merchantPlace: 2, assistantsCarried: 4, assistantsByPlace: {} }] } }) },
-      { spec: 'Both private hands contain a Work where you stand card without exposing the other title', check: async () => { const host = await readState(page); const guest = await readState(boraPage); expect(host.game.localHand).toContain('bonus-stay-1'); expect(guest.game.localHand).toContain('bonus-stay-2'); await expect(page.getByText('Bonus hand · 2 hidden cards')).toBeVisible(); } },
+      { spec: 'Both private hands contain a Work where you stand card without exposing the other title', check: async () => { const host = await readState(page); expect(host.game.localHand).toContain('bonus-stay-1'); await expect.poll(async () => (await readState(boraPage)).game.localHand).toContain('bonus-stay-2'); await expect(page.getByText('Bonus hand · 2 hidden cards')).toBeVisible(); } },
       { spec: 'Fruit Warehouse graphically holds Ada’s assistant beneath her merchant', check: async () => expect(page.getByLabel("Ada's assistant")).toBeVisible() }
     ] });
 
