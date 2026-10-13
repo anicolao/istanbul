@@ -1459,10 +1459,7 @@
     background: #102f32;
   }
   main.tabletop-game {
-    padding: max(0.35rem, env(safe-area-inset-top))
-      max(0.35rem, env(safe-area-inset-right))
-      max(0.35rem, env(safe-area-inset-bottom))
-      max(0.35rem, env(safe-area-inset-left));
+    padding: 0;
   }
   main.tabletop-game > .topbar {
     display: none;

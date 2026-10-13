@@ -232,18 +232,36 @@
     open();
     power = good;
   }
-  function tileZoom(
-    node: HTMLElement,
-    { id, angle }: { id: number; angle: number }
-  ) {
+  function fitRoom(node: HTMLElement, id: number, angle: number) {
     const table = node.parentElement!;
     const source = table.querySelector<HTMLElement>(`[data-place-id="${id}"]`)!;
     const origin = source.getBoundingClientRect();
     const bounds = table.getBoundingClientRect();
+    const sideways = Math.abs(angle % 180) === 90;
+    const scale = Math.min(
+      4,
+      ((sideways ? bounds.height : bounds.width) * 0.94) / origin.width,
+      ((sideways ? bounds.width : bounds.height) * 0.94) / origin.height
+    );
+    node.style.width = `${origin.width * scale}px`;
+    node.style.height = `${origin.height * scale}px`;
+    return { origin, bounds, scale };
+  }
+  function roomSize(
+    node: HTMLElement,
+    { id, angle }: { id: number; angle: number }
+  ) {
+    const observer = new ResizeObserver(() => fitRoom(node, id, angle));
+    observer.observe(node.parentElement!);
+    return { destroy: () => observer.disconnect() };
+  }
+  function tileZoom(
+    node: HTMLElement,
+    { id, angle }: { id: number; angle: number }
+  ) {
+    const { origin, bounds, scale } = fitRoom(node, id, angle);
     const dx = origin.left + origin.width / 2 - (bounds.left + node.offsetLeft);
     const dy = origin.top + origin.height / 2 - (bounds.top + node.offsetTop);
-    const sx = origin.width / node.offsetWidth;
-    const sy = origin.height / node.offsetHeight;
     const shortest = ((((angle + 180) % 360) + 360) % 360) - 180;
     return {
       duration: matchMedia('(prefers-reduced-motion: reduce)').matches
@@ -251,7 +269,7 @@
         : 1000,
       easing: cubicInOut,
       css: (t: number) =>
-        `transform:translate(-50%,-50%) translate(${dx * (1 - t)}px,${dy * (1 - t)}px) rotate(${shortest * t}deg) scale(${sx + (1 - sx) * t},${sy + (1 - sy) * t})`
+        `transform:translate(-50%,-50%) translate(${dx * (1 - t)}px,${dy * (1 - t)}px) rotate(${shortest * t}deg) scale(${1 / scale + (1 - 1 / scale) * t})`
     };
   }
 </script>
@@ -377,15 +395,12 @@
 <section
   class="tabletop-surface"
   class:personal
-  style={`--opponents:${Math.max(1, game.players.length - 1)}`}
+  style={`--opponents:${Math.max(1, game.players.length - 1)};--courtyard:url('${base}/art/bazaar-courtyard.png')`}
   aria-label="Shared Istanbul table"
   data-e2e-fit
   data-e2e-no-scroll
 >
-  <div
-    class="table"
-    style={`--courtyard:url('${base}/art/bazaar-courtyard.png')`}
-  >
+  <div class="table">
     {#if !canControl}<p class="table-hint">
         {personal
           ? `${player.name}’s turn`
@@ -444,6 +459,7 @@
           class="zoom-tile"
           aria-label={`${title} actions`}
           style={`--facing:${zoomAngle}deg;background-image:url('${base}/${locationArt[zoom]}')`}
+          use:roomSize={{ id: zoom, angle: zoomAngle }}
           in:tileZoom|global={{ id: zoom, angle: zoomAngle }}
         >
           <header>
@@ -770,7 +786,7 @@
   }
   @media (max-aspect-ratio: 1/1) {
     .personal .table {
-      width: min(100cqw, calc((100cqh - 56px) * 0.6));
+      width: min(100cqw, 60cqh);
       aspect-ratio: 3/5;
     }
     .personal :global(.mat) {
@@ -783,8 +799,7 @@
       height: 40%;
     }
     .personal .zoom-tile {
-      width: 94cqw;
-      height: 94cqw;
+      --choice-card-width: 12cqw;
       top: 48%;
     }
     .personal .hand-panel {
@@ -801,7 +816,6 @@
 
   .tabletop-surface {
     position: relative;
-    padding-bottom: 56px;
     box-sizing: border-box;
     width: 100%;
     height: 100%;
@@ -809,18 +823,17 @@
     display: grid;
     place-items: center;
     overflow: hidden;
-    background: #071b17;
+    background:
+      radial-gradient(ellipse at center, #17392dda, #091f1ae8),
+      var(--courtyard) center/cover;
     color: #f6e8c4;
     font-family: 'Atkinson Hyperlegible', sans-serif;
   }
   .table {
     position: relative;
-    width: min(100cqw, calc((100cqh - 56px) * 16 / 9));
+    width: min(100cqw, 177.7778cqh);
     aspect-ratio: 16/9;
     container-type: inline-size;
-    background:
-      radial-gradient(ellipse at center, #17392dda, #091f1ae8),
-      var(--courtyard) center/cover;
     isolation: isolate;
   }
   fieldset {
@@ -890,8 +903,7 @@
     z-index: 10;
     left: 50%;
     top: 49.5%;
-    width: 34cqw;
-    height: 34cqw;
+    box-sizing: border-box;
     transform: translate(-50%, -50%) rotate(var(--facing));
     background-size: cover;
     background-position: center;

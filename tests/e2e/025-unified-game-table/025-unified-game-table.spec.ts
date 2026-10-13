@@ -63,6 +63,32 @@ test('personal games use direct table actions, private cards, and a one-second r
         el.getAnimations().map((a) => a.effect?.getTiming().duration)
       );
     expect(durations).toContain(1000);
+    const shape = await page.locator('.zoom-tile').evaluate((el) => {
+      const source = document
+        .querySelector('[data-place-id="3"]')!
+        .getBoundingClientRect();
+      const style = getComputedStyle(el);
+      return {
+        original: source.width / source.height,
+        expanded: parseFloat(style.width) / parseFloat(style.height),
+        transforms: el
+          .getAnimations()
+          .flatMap((a) =>
+            (a.effect as KeyframeEffect)
+              .getKeyframes()
+              .map((frame) => String(frame.transform))
+          )
+      };
+    });
+    expect(shape.expanded).toBeCloseTo(shape.original, 2);
+    expect(
+      shape.transforms.every((transform) => !/scale\([^)]*,/.test(transform))
+    ).toBe(true);
+    expect(
+      await page
+        .locator('.tabletop-surface')
+        .evaluate((el) => getComputedStyle(el).paddingBottom)
+    ).toBe('0px');
     await expectState(page, {
       game: { players: [{ merchantPlace: 3, goods: { spice: 2 } }, {}] }
     });

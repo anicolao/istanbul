@@ -12,6 +12,13 @@ test('all sixteen room actions fit the real tabletop at each physical edge', asy
       await expect(page.getByRole('dialog')).toHaveCount(0);
       const problems = await page.evaluate(() => {
         const failures: string[] = [];
+        const zoom = document.querySelector<HTMLElement>('.zoom-tile')!;
+        const tile = document.querySelector<HTMLElement>('.place.selected')!;
+        if (tile) {
+          const original = tile.getBoundingClientRect();
+          const expanded = getComputedStyle(zoom);
+          if (Math.abs(parseFloat(expanded.width)/parseFloat(expanded.height)-original.width/original.height) > .01) failures.push('Room changes aspect ratio');
+        }
         const matWidths=new Set(Array.from(document.querySelectorAll('.mat')).map(m=>getComputedStyle(m).width));
         if(matWidths.size!==1)failures.push('Player mats have inconsistent sizes');
         for (const selector of ['.board', '.zoom-tile', '.choices', '.room-flow .content']) {

@@ -52,7 +52,7 @@
     gap: 0.5rem;
   }
   .card {
-    flex: 0 1 5rem;
+    flex: 0 1 var(--choice-card-width, 5rem);
     min-width: 0;
     padding: 0;
     border: 0;
