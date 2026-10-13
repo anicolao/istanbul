@@ -532,7 +532,9 @@ function applyEvent(state: ReplayProjection, event: CanonicalEvent): boolean {
   }
 
   if (event.type === 'bonus/played') {
-    return applyBonus(state, event);
+    const accepted = applyBonus(state, event);
+    if (accepted && event.payload.directAction === true && (event.payload.choice as { kind?: string })?.kind === 'stay') finishArrival(state, event);
+    return accepted;
   }
 
   if (event.type === 'e2e/resources-granted' && import.meta.env.VITE_USE_FIREBASE_EMULATORS === 'true') {

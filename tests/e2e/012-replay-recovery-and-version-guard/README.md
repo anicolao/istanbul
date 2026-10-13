@@ -112,121 +112,88 @@ Ada and Bora open a normal game, then Ada reloads from a deliberately retained s
 - [x] All sixteen Place controls are rendered
 - [x] Ada is the seeded first merchant at Fountain
 
-## 11. Ada selects Spice Warehouse before a connection break
-
-**Ada, host merchant** — Ada selects Spice Warehouse before a connection break
-
-![Ada selects Spice Warehouse before a connection break](./screenshots/006-host-selects-spice-before-recovery-desktop.png)
-
-**Verifications:**
-
-- [x] The adjacent warehouse route is visibly selected
-- [x] Route inspection remains local at event five
-
-## 12. Ada commits movement to Spice Warehouse
-
-**Ada, host merchant** — Ada commits movement to Spice Warehouse
-
-![Ada commits movement to Spice Warehouse](./screenshots/007-host-moves-spice-before-recovery-desktop.png)
-
-**Verifications:**
-
-- [x] The warehouse action panel appears
-- [x] Event six places Ada at Spice Warehouse
-
-## 13. Bora observes Ada’s seventh event on the live stream
-
-**Bora, guest merchant** — Bora observes Ada’s seventh event on the live stream
-
-![Bora observes Ada’s seventh event on the live stream](./screenshots/004-guest-observes-live-seventh-event-desktop.png)
-
-**Verifications:**
-
-- [x] The next clockwise turn is Bora’s
-- [x] Remote history contains seven accepted events
-
-## 14. Ada reloads the last verified local projection
+## 11. Ada reloads the last verified local projection
 
 **Ada, host merchant** — Ada reloads the last verified local projection
 
-![Ada reloads the last verified local projection](./screenshots/008-host-restores-six-event-cache-desktop.png)
+![Ada reloads the last verified local projection](./screenshots/006-host-restores-six-event-cache-desktop.png)
 
 **Verifications:**
 
 - [x] The recovery rail reports six cached events and catch-up
 - [x] The cached action phase is playable without invented history
 
-## 15. Ada catches the cache up to canonical live history
+## 12. Ada catches the cache up to canonical live history
 
 **Ada, host merchant** — Ada catches the cache up to canonical live history
 
-![Ada catches the cache up to canonical live history](./screenshots/009-host-catches-up-live-cursor-desktop.png)
+![Ada catches the cache up to canonical live history](./screenshots/007-host-catches-up-live-cursor-desktop.png)
 
 **Verifications:**
 
 - [x] The rail confirms all seven events are verified
 - [x] Cursor merge adds only the missing event
 
-## 16. Ada reloads the caught-up immutable projection
+## 13. Ada reloads the caught-up immutable projection
 
 **Ada, host merchant** — Ada reloads the caught-up immutable projection
 
-![Ada reloads the caught-up immutable projection](./screenshots/010-host-reloads-caught-up-projection-desktop.png)
+![Ada reloads the caught-up immutable projection](./screenshots/008-host-reloads-caught-up-projection-desktop.png)
 
 **Verifications:**
 
 - [x] Seven cached events are restored before another live cursor
 - [x] Public game projection is byte-equivalent after recovery
 
-## 17. Ada repeats live catch-up without duplicating an event
+## 14. Ada repeats live catch-up without duplicating an event
 
 **Ada, host merchant** — Ada repeats live catch-up without duplicating an event
 
-![Ada repeats live catch-up without duplicating an event](./screenshots/011-host-confirms-idempotent-cursor-desktop.png)
+![Ada repeats live catch-up without duplicating an event](./screenshots/009-host-confirms-idempotent-cursor-desktop.png)
 
 **Verifications:**
 
 - [x] The recovery rail remains at seven verified events
 - [x] Duplicate IDs remain one accepted event each
 
-## 18. Ada reviews an uncertain already-committed write
+## 15. Ada reviews an uncertain already-committed write
 
 **Ada, host merchant** — Ada reviews an uncertain already-committed write
 
-![Ada reviews an uncertain already-committed write](./screenshots/012-host-stages-same-id-retry-desktop.png)
+![Ada reviews an uncertain already-committed write](./screenshots/010-host-stages-same-id-retry-desktop.png)
 
 **Verifications:**
 
 - [x] The recovery rail offers the original sequence ID for retry
 - [x] Staging retry changes no accepted event or game state
 
-## 19. Ada confirms the write under its original immutable ID
+## 16. Ada confirms the write under its original immutable ID
 
 **Ada, host merchant** — Ada confirms the write under its original immutable ID
 
-![Ada confirms the write under its original immutable ID](./screenshots/013-host-confirms-same-id-retry-desktop.png)
+![Ada confirms the write under its original immutable ID](./screenshots/011-host-confirms-same-id-retry-desktop.png)
 
 **Verifications:**
 
 - [x] The rail reports the original sequence was retried
 - [x] Confirmation neither duplicates nor diagnoses the committed event
 
-## 20. Ada receives a stale concurrent turn event
+## 17. Ada receives a stale concurrent turn event
 
 **Ada, host merchant** — Ada receives a stale concurrent turn event
 
-![Ada receives a stale concurrent turn event](./screenshots/014-host-contains-stale-concurrent-event-desktop.png)
+![Ada receives a stale concurrent turn event](./screenshots/012-host-contains-stale-concurrent-event-desktop.png)
 
 **Verifications:**
 
 - [x] The rail explains that the stale event was contained
 - [x] The event is diagnosed, not accepted, and game state is unchanged
 
-## 21. Ada encounters history from a future schema
+## 18. Ada encounters history from a future schema
 
 **Ada, host merchant** — Ada encounters history from a future schema
 
-![Ada encounters history from a future schema](./screenshots/015-host-reviews-incompatible-history-desktop.png)
+![Ada encounters history from a future schema](./screenshots/013-host-reviews-incompatible-history-desktop.png)
 
 **Verifications:**
 

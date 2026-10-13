@@ -143,7 +143,9 @@ test('a dedicated tabletop controls public play while phones contain private Bon
     const beforeMove = (await readState(page)).game;
     await page.locator('.place.reachable').first().click();
     await expectState(page, { eventCount: 10, diagnosticCount: 0 });
-    await page.locator('.mat.active').getByRole('button', { name: /^Undo / }).click();
+    const undo = page.getByRole('navigation', { name: 'Game controls' }).getByRole('button', { name: /^Undo / });
+    expect((await undo.boundingBox())!.height).toBeGreaterThanOrEqual(44);
+    await undo.click();
     await table.step('tabletop-undoes-direct-move', { description: 'Bora undoes a one-tap move without a confirmation', verifications: [
       { spec: 'Undo restores the merchant, assistants, and movement phase', check: async () => { await expectState(page, { eventCount: 11, diagnosticCount: 0, game: { phase: 'movement', currentTurn: 'Bora' } }); const state = await readState(page); expect(state.game.players).toEqual(beforeMove.players); } },
       { spec: 'The board remains usable without a modal or sidebar', check: async () => { await expect(page.getByRole('dialog')).toHaveCount(0); await expect(page.locator('.inspector')).toHaveCount(0); await expect(page.locator('.place.reachable').first()).toBeEnabled(); } }
@@ -156,12 +158,12 @@ test('a dedicated tabletop controls public play while phones contain private Bon
     await expect(boraPage.getByRole('button',{name:'Draw two cards',exact:true})).toBeEnabled();
     await boraPage.getByRole('button',{name:'Draw two cards',exact:true}).click();
     await expect.poll(async ()=>(await readState(page)).game.pending?.kind).toBe('caravansary-discard');
-    await expect(boraPage.locator('.card-payments [data-component="BonusCard"]')).toHaveCount(3);
+    await expect(boraPage.locator('.card-choices [data-component="BonusCard"]')).toHaveCount(3);
     await expect(page.getByRole('button',{name:/^End turn/})).toHaveCount(0);
     await boraPage.reload();
-    await expect(boraPage.locator('.card-payments [data-component="BonusCard"]')).toHaveCount(3);
-    await expect(boraPage.getByRole('button',{name:/Undo locked/})).toBeDisabled();
-    await boraPage.locator('.card-payments button').first().click();
+    await expect(boraPage.locator('.card-choices [data-component="BonusCard"]')).toHaveCount(3);
+    await expect(boraPage.getByRole('button',{name:/Undo unavailable/})).toBeDisabled();
+    await boraPage.getByRole('button', { name: /^Discard / }).first().click();
     await expect.poll(async ()=>(await readState(page)).game.pending?.kind).not.toBe('caravansary-discard');
     await expectState(page,{diagnosticCount:0});
     table.generateDocs();

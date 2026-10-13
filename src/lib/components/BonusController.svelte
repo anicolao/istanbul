@@ -1,17 +1,19 @@
 <script lang="ts">
-  import { bonusCards, type Good } from "$lib/game/manifests";
+  import { bonusCards, type Good } from '$lib/game/manifests';
   import {
     previewCaravansary,
     type CardSource,
-    type PlaceActionChoice,
-  } from "$lib/game/actions";
-  import type { BonusChoice } from "$lib/game/bonus";
-  import { requiredAssistantAction } from "$lib/game/movement";
-  import { currentSultanCost } from "$lib/game/ruby-routes";
-  import type { GameSetup } from "$lib/game/setup";
-  import type { ReplayProjection } from "$lib/game/protocol";
-  import BonusCard from "./BonusCard.svelte";
-  import GameLog from "./GameLog.svelte";
+    type PlaceActionChoice
+  } from '$lib/game/actions';
+  import type { BonusChoice } from '$lib/game/bonus';
+  import { requiredAssistantAction } from '$lib/game/movement';
+  import { currentSultanCost } from '$lib/game/ruby-routes';
+  import type { GameSetup } from '$lib/game/setup';
+  import type { ReplayProjection } from '$lib/game/protocol';
+  import UndoButton from './UndoButton.svelte';
+  import BonusCardChoices from './BonusCardChoices.svelte';
+  import BonusCard from './BonusCard.svelte';
+  import GameLog from './GameLog.svelte';
 
   let {
     game,
@@ -27,6 +29,8 @@
     undoLog,
     gameLog,
     undoPending = false,
+    embedded = false,
+    flowOnly = false
   }: {
     game: GameSetup;
     userUid: string;
@@ -37,76 +41,62 @@
     onResolvePrivateEncounter: (cardId: string) => void;
     onUndo: () => void;
     onRollback: (targetEventId: string) => void;
-    undo: ReplayProjection["undo"];
-    undoLog: ReplayProjection["undoLog"];
-    gameLog: ReplayProjection["gameLog"];
+    undo: ReplayProjection['undo'];
+    undoLog: ReplayProjection['undoLog'];
+    gameLog: ReplayProjection['gameLog'];
     undoPending?: boolean;
+    embedded?: boolean;
+    flowOnly?: boolean;
   } = $props();
 
   const bonusById = new Map(bonusCards.map((card) => [card.id, card]));
   const player = $derived(game.players.find(({ uid }) => uid === userUid)!);
   const currentPlayer = $derived(game.players[game.turnSeat]);
   const selected = $derived(
-    selectedBonus ? bonusById.get(selectedBonus) : null,
+    selectedBonus ? bonusById.get(selectedBonus) : null
   );
   const isCurrent = $derived(currentPlayer.uid === userUid);
   const goodNames: Record<Good, string> = {
-    fabric: "Fabric",
-    spice: "Spice",
-    fruit: "Fruit",
-    jewelry: "Jewelry",
+    fabric: 'Fabric',
+    spice: 'Spice',
+    fruit: 'Fruit',
+    jewelry: 'Jewelry'
   };
   const stayAction = $derived(
-    requiredAssistantAction(player, player.merchantPlace),
+    requiredAssistantAction(player, player.merchantPlace)
   );
   const sultanCost = $derived(currentSultanCost(game));
   const sultanWildCount = $derived(
-    sultanCost.filter((good) => good === "any").length,
+    sultanCost.filter((good) => good === 'any').length
   );
-  let bonusGood = $state<Good>("jewelry");
-  let familyReward = $state<"lira" | "bonus">("lira");
+  let bonusGood = $state<Good>('jewelry');
+  let familyReward = $state<'lira' | 'bonus'>('lira');
   let assistantPlace = $state(1);
   let sultanWildGoods = $state<Good[]>([]);
-  let caravanSources = $state<[CardSource, CardSource]>(["deck", "deck"]);
+  let caravanSources = $state<[CardSource, CardSource]>(['deck', 'deck']);
   const caravanPreview = $derived(
-    previewCaravansary(game, caravanSources) ?? [],
+    previewCaravansary(game, caravanSources) ?? []
   );
   const privateActionPlace = $derived(
-    game.pending?.kind === "caravansary-discard"
+    game.pending?.kind === 'caravansary-discard'
       ? 6
-      : game.phase === "family-action" && game.pending?.kind === "family-action"
+      : game.phase === 'family-action' && game.pending?.kind === 'family-action'
         ? game.pending.destination
-        : currentPlayer.merchantPlace,
+        : currentPlayer.merchantPlace
   );
   const atCaravansary = $derived(
     isCurrent &&
-      (game.phase === "action" || game.phase === "family-action") &&
-      privateActionPlace === 6,
+      (game.phase === 'action' ||
+        game.phase === 'family-action' ||
+        game.pending?.kind === 'caravansary-discard') &&
+      privateActionPlace === 6
   );
   const governorCardPayment = $derived(
     isCurrent &&
-      game.phase === "encounters" &&
-      game.pending?.kind === "encounters" &&
-      game.pending.governor === "payment",
+      game.phase === 'encounters' &&
+      game.pending?.kind === 'encounters' &&
+      game.pending.governor === 'payment'
   );
-  const canUndo = $derived(
-    Boolean(
-      undo &&
-      undo.actorUids.includes(userUid) &&
-      !undo.blockedReason &&
-      !undoPending,
-    ),
-  );
-  const undoText = $derived(
-    !undo
-      ? "Nothing to undo"
-      : undo.blockedReason
-        ? `Undo locked · ${undo.blockedReason}`
-        : undo.actorUids.includes(userUid)
-          ? `Undo ${undo.label}`
-          : "Waiting for the tabletop action",
-  );
-  const undoButtonText = $derived(undo?.blockedReason ? "↶ Locked" : "↶ Undo");
   const privateStatus = $derived(
     undo?.blockedReason
       ? `Undo locked · ${undo.blockedReason}`
@@ -115,8 +105,8 @@
         : undoLog.length
           ? `Last log: Undid ${undoLog.at(-1)?.label}`
           : isCurrent
-            ? `${game.phase.replace("-", " ")} · make public choices on the tabletop`
-            : `${currentPlayer.name} is using the tabletop`,
+            ? `${game.phase.replace('-', ' ')} · make public choices on the tabletop`
+            : `${currentPlayer.name} is using the tabletop`
   );
 
   function setCaravanSource(index: 0 | 1, source: CardSource) {
@@ -126,74 +116,74 @@
 
   function setSultanWild(index: number, good: Good) {
     sultanWildGoods = Array.from({ length: sultanWildCount }, (_, slot) =>
-      slot === index ? good : (sultanWildGoods[slot] ?? "fabric"),
+      slot === index ? good : (sultanWildGoods[slot] ?? 'fabric')
     );
   }
 </script>
 
 <section
   class="private-controller"
-  aria-labelledby="private-title"
+  class:embedded
+  class:flowOnly
+  aria-labelledby={embedded ? undefined : 'private-title'}
+  aria-label={embedded ? 'Bonus cards' : undefined}
   data-e2e-fit
   data-e2e-no-scroll
 >
-  <header>
-    <div>
-      <p>Private phone · {player.name}</p>
-      <span class="private-history"
-        ><button
-          class="private-undo"
-          aria-label={undoText}
-          disabled={!canUndo}
-          onclick={onUndo}>{undoButtonText}</button
-        ><GameLog
-          entries={gameLog}
-          players={game.players}
-          {userUid}
-          pending={undoPending}
-          {onRollback}
-        /></span
-      >
-    </div>
-    <h1 id="private-title">Your Bonus cards</h1>
-    <span>{privateStatus}</span>
-  </header>
+  {#if !embedded}<header>
+      <div>
+        <p>Private phone · {player.name}</p>
+        <span class="private-history"
+          ><UndoButton
+            {undo}
+            {userUid}
+            pending={undoPending}
+            {onUndo}
+          /><GameLog
+            entries={gameLog}
+            players={game.players}
+            {userUid}
+            pending={undoPending}
+            {onRollback}
+          /></span
+        >
+      </div>
+      <h1 id="private-title">Your Bonus cards</h1>
+      <span>{privateStatus}</span>
+    </header>{/if}
 
   <div class="private-workspace" data-e2e-fit data-e2e-no-scroll>
-    <nav
-      class="private-hand"
-      aria-label="Private Bonus hand"
-      data-e2e-no-scroll
-    >
-      {#each player.bonusHand as cardId}
-        {@const card = bonusById.get(cardId)!}
-        <button
-          aria-label={`Inspect Bonus card: ${card.title}`}
-          aria-pressed={selectedBonus === cardId}
-          onclick={() => onInspectBonus(cardId)}
-        >
-          <BonusCard {card} compact mini class="hand-art" />
-        </button>
-      {:else}<p>No Bonus cards in hand.</p>{/each}
-    </nav>
+    {#if !flowOnly}<nav
+        class="private-hand"
+        aria-label="Private Bonus hand"
+        data-e2e-no-scroll
+      >
+        {#each player.bonusHand as cardId}
+          {@const card = bonusById.get(cardId)!}
+          <button
+            aria-label={`Inspect Bonus card: ${card.title}`}
+            aria-pressed={selectedBonus === cardId}
+            onclick={() => onInspectBonus(cardId)}
+          >
+            <BonusCard {card} compact mini class="hand-art" />
+          </button>
+        {:else}<p>No Bonus cards in hand.</p>{/each}
+      </nav>{/if}
 
     <article class="private-decision" data-e2e-no-scroll>
       {#if atCaravansary}
         <p class="kicker">Private Caravansary choice</p>
         <h2>Draw two, then discard one</h2>
-        {#if game.pending?.kind === "caravansary-discard"}
-          <div class="card-payments">
-            {#each player.bonusHand as cardId}<button
-                class="card-payment"
-                aria-label={`Discard ${bonusById.get(cardId)?.title}`}
-                disabled={undoPending}
-                onclick={() =>
-                  onTakePrivateAction({
-                    kind: "caravansary-discard",
-                    discardCardId: cardId,
-                  })}><BonusCard card={bonusById.get(cardId)!} /></button
-              >{/each}
-          </div>
+        {#if game.pending?.kind === 'caravansary-discard'}
+          <BonusCardChoices
+            cards={player.bonusHand}
+            disabled={undoPending}
+            onChoose={(discardCardId) =>
+              onTakePrivateAction({
+                kind: 'caravansary-discard',
+                discardCardId
+              })}
+          />
         {:else}
           <div class="caravan-sources">
             {#each [0, 1] as index}<div>
@@ -201,30 +191,30 @@
                 <div class="source-pair">
                   <button
                     aria-label={`Card ${index + 1}: draw pile`}
-                    aria-pressed={caravanSources[index] === "deck"}
-                    onclick={() => setCaravanSource(index as 0 | 1, "deck")}
+                    aria-pressed={caravanSources[index] === 'deck'}
+                    onclick={() => setCaravanSource(index as 0 | 1, 'deck')}
                     ><BonusCard reverse="card-back" /></button
                   ><button
                     aria-label={`Card ${index + 1}: discard pile`}
-                    aria-pressed={caravanSources[index] === "discard"}
+                    aria-pressed={caravanSources[index] === 'discard'}
                     disabled={game.bonusDiscard.length <
                       caravanSources
                         .slice(0, index)
-                        .filter((s) => s === "discard").length +
+                        .filter((s) => s === 'discard').length +
                         1}
-                    onclick={() => setCaravanSource(index as 0 | 1, "discard")}
+                    onclick={() => setCaravanSource(index as 0 | 1, 'discard')}
                     ><BonusCard
                       card={bonusById.get(
                         game.bonusDiscard.at(
                           -1 -
                             caravanSources
                               .slice(0, index)
-                              .filter((s) => s === "discard").length,
-                        ) ?? "",
+                              .filter((s) => s === 'discard').length
+                        ) ?? ''
                       )}
                       reverse={game.bonusDiscard.length
                         ? undefined
-                        : "card-back"}
+                        : 'card-back'}
                     /></button
                   >
                 </div>
@@ -235,8 +225,8 @@
             disabled={undoPending || caravanPreview.length !== 2}
             onclick={() =>
               onTakePrivateAction({
-                kind: "caravansary-draw",
-                drawSources: caravanSources,
+                kind: 'caravansary-draw',
+                drawSources: caravanSources
               })}>Draw two cards</button
           >
         {/if}
@@ -247,21 +237,17 @@
           The tabletop can pay 2 Lira. Choose here only if you prefer to discard
           privately.
         </p>
-        <div class="card-payments">
-          {#each player.bonusHand as cardId}<button
-              class="card-payment"
-              aria-label={`Discard ${bonusById.get(cardId)?.title}`}
-              disabled={undoPending}
-              onclick={() => onResolvePrivateEncounter(cardId)}
-              ><BonusCard card={bonusById.get(cardId)!} /></button
-            >{/each}
-        </div>
+        <BonusCardChoices
+          cards={player.bonusHand}
+          disabled={undoPending}
+          onChoose={onResolvePrivateEncounter}
+        />
       {:else if selected}
         <p class="kicker">Selected Bonus card</p>
         <h2>{selected.title}</h2>
         <BonusCard card={selected} class="large-card" />
         {#if isCurrent}
-          {#if selected.effect === "gain-good"}<label
+          {#if selected.effect === 'gain-good'}<label
               >Good to gain<select
                 value={bonusGood}
                 onchange={(event) =>
@@ -275,36 +261,36 @@
             ><button
               class="primary"
               disabled={![
-                "action",
-                "family-action",
-                "turn-end",
-                "final-bonus",
+                'action',
+                'family-action',
+                'turn-end',
+                'final-bonus'
               ].includes(game.phase) ||
                 player.goods[bonusGood] >= player.capacity}
               onclick={() =>
                 onPlayBonus(selected.id, {
-                  kind: "gain-good",
-                  good: bonusGood,
+                  kind: 'gain-good',
+                  good: bonusGood
                 })}>Play to gain 1 {bonusGood}</button
             >
-          {:else if selected.effect === "gain-lira"}<button
+          {:else if selected.effect === 'gain-lira'}<button
               class="primary"
               disabled={![
-                "movement",
-                "action",
-                "family-action",
-                "turn-end",
-                "final-bonus",
+                'movement',
+                'action',
+                'family-action',
+                'turn-end',
+                'final-bonus'
               ].includes(game.phase)}
-              onclick={() => onPlayBonus(selected.id, { kind: "gain-lira" })}
+              onclick={() => onPlayBonus(selected.id, { kind: 'gain-lira' })}
               >Play to gain 5 Lira</button
             >
-          {:else if selected.effect === "return-family"}<label
+          {:else if selected.effect === 'return-family'}<label
               >Reward<select
                 value={familyReward}
                 onchange={(event) =>
                   (familyReward = event.currentTarget.value as
-                    "lira" | "bonus")}
+                    'lira' | 'bonus')}
                 ><option value="lira">3 Lira</option><option value="bonus"
                   >1 Bonus card</option
                 ></select
@@ -314,11 +300,11 @@
               disabled={player.familyPlace === 12}
               onclick={() =>
                 onPlayBonus(selected.id, {
-                  kind: "return-family",
-                  reward: familyReward,
+                  kind: 'return-family',
+                  reward: familyReward
                 })}>Return family to Police</button
             >
-          {:else if selected.effect === "return-assistant"}<label
+          {:else if selected.effect === 'return-assistant'}<label
               >Assistant<select
                 value={assistantPlace}
                 onchange={(event) =>
@@ -329,59 +315,59 @@
               ></label
             ><button
               class="primary"
-              disabled={game.phase !== "movement" ||
+              disabled={game.phase !== 'movement' ||
                 !Object.keys(player.assistantsByPlace).length}
               onclick={() =>
                 onPlayBonus(selected.id, {
-                  kind: "return-assistant",
-                  place: assistantPlace,
+                  kind: 'return-assistant',
+                  place: assistantPlace
                 })}>Return selected assistant</button
             >
-          {:else if selected.effect === "long-move"}<button
+          {:else if selected.effect === 'long-move'}<button
               class="primary"
-              disabled={game.phase !== "movement" ||
-                game.activeBonusEffects.includes("long-move")}
-              onclick={() => onPlayBonus(selected.id, { kind: "long-move" })}
+              disabled={game.phase !== 'movement' ||
+                game.activeBonusEffects.includes('long-move')}
+              onclick={() => onPlayBonus(selected.id, { kind: 'long-move' })}
               >Enable a 3–4 Place move</button
             >
-          {:else if selected.effect === "stay"}<button
+          {:else if selected.effect === 'stay'}<button
               class="primary"
-              disabled={game.phase !== "movement" ||
+              disabled={game.phase !== 'movement' ||
                 player.merchantPlace === 7 ||
                 !stayAction ||
-                stayAction === "fountain"}
-              onclick={() => onPlayBonus(selected.id, { kind: "stay" })}
-              >{stayAction === "pick-up"
-                ? "Stay and pick up assistant"
-                : "Stay and leave assistant"}</button
+                stayAction === 'fountain'}
+              onclick={() => onPlayBonus(selected.id, { kind: 'stay' })}
+              >{stayAction === 'pick-up'
+                ? 'Stay and pick up assistant'
+                : 'Stay and leave assistant'}</button
             >
-          {:else if selected.effect === "wild-small-market"}<button
+          {:else if selected.effect === 'wild-small-market'}<button
               class="primary"
-              disabled={game.phase !== "action" || player.merchantPlace !== 11}
+              disabled={game.phase !== 'action' || player.merchantPlace !== 11}
               onclick={() =>
-                onPlayBonus(selected.id, { kind: "wild-small-market" })}
+                onPlayBonus(selected.id, { kind: 'wild-small-market' })}
               >Enable flexible Small Market demand</button
             >
-          {:else if selected.effect === "repeat-post"}<button
+          {:else if selected.effect === 'repeat-post'}<button
               class="primary"
-              disabled={game.phase !== "turn-end" ||
+              disabled={game.phase !== 'turn-end' ||
                 game.lastAction?.place !== 5}
               onclick={() =>
-                onPlayBonus(selected.id, { kind: "repeat-action" })}
+                onPlayBonus(selected.id, { kind: 'repeat-action' })}
               >Repeat Post Office</button
             >
-          {:else if selected.effect === "repeat-gemstone"}<button
+          {:else if selected.effect === 'repeat-gemstone'}<button
               class="primary"
-              disabled={game.phase !== "turn-end" ||
+              disabled={game.phase !== 'turn-end' ||
                 game.lastAction?.place !== 16 ||
                 player.lira < game.rubyTracks.gemstonePrice}
               onclick={() =>
-                onPlayBonus(selected.id, { kind: "repeat-action" })}
+                onPlayBonus(selected.id, { kind: 'repeat-action' })}
               >Repeat Gemstone Dealer</button
             >
-          {:else if selected.effect === "repeat-sultan"}{#each Array.from( { length: sultanWildCount } ) as _, index}<label
+          {:else if selected.effect === 'repeat-sultan'}{#each Array.from( { length: sultanWildCount } ) as _, index}<label
                 >Wild good {index + 1}<select
-                  value={sultanWildGoods[index] ?? "fabric"}
+                  value={sultanWildGoods[index] ?? 'fabric'}
                   onchange={(event) =>
                     setSultanWild(index, event.currentTarget.value as Good)}
                   >{#each Object.keys(goodNames) as good}<option value={good}
@@ -390,13 +376,13 @@
                 ></label
               >{/each}<button
               class="primary"
-              disabled={game.phase !== "turn-end" ||
+              disabled={game.phase !== 'turn-end' ||
                 game.lastAction?.place !== 13 ||
                 sultanWildGoods.length !== sultanWildCount}
               onclick={() =>
                 onPlayBonus(selected.id, {
-                  kind: "repeat-action",
-                  wildGoods: sultanWildGoods,
+                  kind: 'repeat-action',
+                  wildGoods: sultanWildGoods
                 })}>Repeat Sultan’s Palace</button
             >{/if}
         {:else}<p class="waiting">
@@ -412,6 +398,27 @@
 </section>
 
 <style>
+  .embedded {
+    font-size: inherit;
+  }
+  .embedded .private-decision {
+    color: inherit;
+    background: transparent;
+    border: 0;
+    box-shadow: none;
+    padding: 0.5rem;
+  }
+  .embedded .kicker,
+  .embedded .private-decision > h2 {
+    display: none;
+  }
+  .flowOnly .private-workspace {
+    display: block;
+  }
+  .flowOnly .private-decision {
+    height: 100%;
+  }
+
   .private-controller {
     height: 100%;
     min-height: 0;
@@ -446,28 +453,12 @@
   h1 {
     margin: 0.1rem 0;
     font:
-      700 2rem/0.95 "Cormorant Garamond",
+      700 2rem/0.95 'Cormorant Garamond',
       serif;
   }
   .private-history {
     display: flex;
     gap: 0.3rem;
-  }
-  .private-undo {
-    min-height: 1.75rem;
-    padding: 0.2rem 0.55rem;
-    border: 1px solid #efca7d;
-    border-radius: 0.4rem;
-    color: #173f43;
-    background: #efca7d;
-    font-size: 0.58rem;
-    font-weight: 700;
-    white-space: nowrap;
-  }
-  .private-undo:disabled {
-    border-color: #ffffff33;
-    color: #a6bab5;
-    background: #ffffff0d;
   }
   .private-workspace {
     min-height: 0;
@@ -502,7 +493,7 @@
     text-align: left;
     background: #173f43;
   }
-  .private-hand button[aria-pressed="true"] {
+  .private-hand button[aria-pressed='true'] {
     outline: 2px solid #efca7d;
   }
   .private-hand :global(.hand-art) {
@@ -534,7 +525,7 @@
   .private-decision h2 {
     margin: 0.2rem 0 0.5rem;
     font:
-      700 1.55rem "Cormorant Garamond",
+      700 1.55rem 'Cormorant Garamond',
       serif;
   }
   .private-decision > p:not(.kicker) {
@@ -578,20 +569,6 @@
     grid-template-columns: 1fr 1fr;
     gap: 0.4rem;
   }
-  .card-payments {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 0.5rem;
-    justify-content: center;
-  }
-  .card-payment {
-    width: 5rem;
-    max-width: 30%;
-    padding: 0;
-    background: none;
-    border: 0;
-    cursor: pointer;
-  }
   .waiting {
     color: #6d7c79;
   }
@@ -607,7 +584,7 @@
     background: none;
     cursor: pointer;
   }
-  .source-pair button[aria-pressed="true"] {
+  .source-pair button[aria-pressed='true'] {
     border-color: #b98d39;
   }
   .source-pair button:disabled {

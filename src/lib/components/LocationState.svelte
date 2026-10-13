@@ -23,7 +23,6 @@
   const summary = $derived(locationStateSummary(game, placeId));
   const demand = $derived(demandTiles.find(({ id }) => id === (placeId === 10 ? game.largeDemand[0] : game.smallDemand[0])));
   const discard = $derived(bonusCards.find(({ id }) => id === game.bonusDiscard.at(-1)));
-  const draw = $derived(bonusCards.find(({ id }) => id === game.bonusDrawPile[0]));
   const separatedAssistants = $derived(Object.values(active.assistantsByPlace).reduce((total, count) => total + count, 0));
   const policeFamilies = $derived(game.players.filter(({ familyPlace }) => familyPlace === 12));
   const sultanCost = $derived(currentSultanCost(game));
@@ -46,11 +45,10 @@
   {:else if placeId === 6}
     <span class="caravan-table">
       <span
-        class:empty={!draw}
+        class:empty={!game.bonusDrawPile.length}
         class="card-pile deck"
-        data-inspect-pile-card={draw?.id}
         data-pile-source="deck"
-        aria-label={draw ? `Inspect draw pile top card: ${draw.title}` : 'Bonus draw pile is empty'}
+        aria-label={`Bonus draw pile: ${game.bonusDrawPile.length} face-down cards`}
       ><BonusCard reverse="card-back" compact mini /><b>{game.bonusDrawPile.length}</b></span>
       <span
         class:empty={!discard}

@@ -1,6 +1,6 @@
 # Reviewing every Istanbul production component
 
-The reviewer opens the dedicated gallery without creating a game and walks every page of live locations, player trays, playing pieces, Bonus cards, Market demands, and physical components. Locations are the same rectangular, titled, rounded LocationTile instances used on the board; their status apparatus and occupants come from a deterministic game projection. Trays use PlayerTray, rules cards use BonusCard, and demands use MarketDemand. Stable review IDs, renderer names, representative props, loaded production images, responsive pagination, and the no-scroll/no-clipping contract are checked after every input.
+The reviewer opens the dedicated gallery without creating a game and walks every page of live locations, player trays, playing pieces, Bonus cards, Market demands, and physical components. Locations are the same rectangular, titled, rounded LocationTile instances used on the board; their status apparatus and occupants come from a deterministic game projection. Trays use PlayerMat, rules cards use BonusCard, and demands use MarketDemand. Stable review IDs, renderer names, representative props, loaded production images, responsive pagination, and the no-scroll/no-clipping contract are checked after every input.
 
 ## 1. The reviewer opens the complete production gallery
 
@@ -58,11 +58,11 @@ The reviewer opens the dedicated gallery without creating a game and walks every
 - [x] The next exact rendered-state slice replaces the prior page without scrolling
 - [x] The page satisfies its shared-component geometry and rendering contract
 
-## 6. The reviewer opens five live PlayerTray states
+## 6. The reviewer opens five live PlayerMat states
 
-**The art reviewer** — The reviewer opens five live PlayerTray states
+**The art reviewer** — The reviewer opens five live PlayerMat states
 
-![The reviewer opens five live PlayerTray states](./screenshots/005-reviewer-opens-player-mats-desktop.png)
+![The reviewer opens five live PlayerMat states](./screenshots/005-reviewer-opens-player-mats-desktop.png)
 
 **Verifications:**
 

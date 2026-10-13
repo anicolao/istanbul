@@ -79,26 +79,23 @@ The initial suite follows the MVP's vertical slices:
 13. `013-shared-table-and-private-phones` proves the direct `/tabletop/` entry,
     table-owned room creation/start, QR phone joining, private hands, action
     ownership, and retained tabletop recovery.
-14. `014-responsive-accessible-complete-game` proves a complete game at the
-    full viewport matrix with keyboard, touch, announcements, and reduced
-    motion.
+14. `014-responsive-accessible-complete-game` proves keyboard movement, touch
+    controls, announcements, and reduced motion across the full viewport matrix.
+    Scenario 011 covers the complete five-player game.
 15. `015-production-graphical-assets` proves that every published gameplay
     object uses reviewed production artwork and semantic fallback text.
 16. `016-yellow-mosque-assistant-recall` proves the permanent Yellow Mosque
     power through its ordinary pre-movement controls.
-17. `017-zero-distance-assistant-move` proves both assistant consequences of
-    the zero-distance Bonus move.
+17. `017-zero-distance-assistant-move` proves assistant pickup and automatic
+    warehouse filling after a zero-distance Bonus move.
 18. `018-flexible-demand-slots` proves direct per-slot substitutions and exact
     payment for Flexible Demand.
-19. `019-undo-actions` proves append-only rollback of a private Bonus play,
-    market trade, and movement; alternate replay; observer convergence; and a
-    visible lock after newly revealed dice.
-20. `020-turn-log-and-direct-rollback` proves the completed-turn review, a
-    three-action Undo Turn event, direct rollback to an earlier action from the
-    immutable game log, grey unavailable history, and rollback of an action
-    above—without crossing—a retained dice barrier.
+19. `019-undo-actions` proves atomic rollback of movement and automatic goods,
+    and the visible undo boundary after a dice roll.
+20. `020-turn-log-and-direct-rollback` proves direct rollback from the game log
+    restores the whole reversible move.
 21. `021-production-asset-gallery` proves the standalone review route renders
-    all 83 review states through the same `LocationTile`, `PlayerTray`,
+    all 83 review states through the same `LocationTile`, `PlayerMat`,
     `BonusCard`, `MarketDemand`, and `GameArt` components used during play. It
     validates the complete 71-asset backing manifest, renderer and representative
     props for every stable ID, nested image loading, a titled rectangular rounded
@@ -106,6 +103,11 @@ The initial suite follows the MVP's vertical slices:
 
 23. `023-bot-player` proves host-only bot seats, automatic readiness, removal,
     automatic turns after reload, and shared-table convergence with two host tabs.
+
+24. `024-blocked-merchant-move` proves an unaffordable merchant requires an
+    explicit acknowledgement before committing the move or allowing the bot to act.
+25. `025-unified-game-table` proves personal games use the common table, one-tap
+    warehouse actions, a one-second room animation, private hands, and undo.
 
 Scenario numbers are stable once merged. Add the next number for a new coherent
 story; do not renumber existing scenarios to make room.

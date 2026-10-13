@@ -40,8 +40,10 @@ browser-level tracer bullets verified with Playwright.
   on the shared display, and leaves only private Bonus-card information and
   decisions on each player's phone. One occupied position is chosen as Player 1
   and play proceeds clockwise through the remaining occupied positions.
-- Shared-table play uses one-tap movement, always-visible room actions, readable
-  mats at each physical seat, and an inline game log. Undo replaces confirmation
+- All game screens share one board, room controls, and player-mat renderer.
+  Play uses one-tap movement, room actions on the enlarged tile, readable
+  mats, and an inline game log. Rooms zoom from their board position and rotate
+  by the shortest angle over one second (instantly with reduced motion). Undo replaces confirmation
   dialogs; random draws and rolls retain the existing information boundaries.
   `/mockups/tabletop/?place=10&seat=6` renders the actual tabletop with fixture
   state for reviewing all sixteen rooms and eight seats.
@@ -53,9 +55,10 @@ browser-level tracer bullets verified with Playwright.
 The bazaar board follows the physical tabletop hierarchy: every Place name is
 anchored at the top, enlarged merchants and assistants occupy the visual
 center, and only Places with changing public state carry a large graphical
-display at the bottom. The Caravansary draw and discard piles are directly
-inspectable, revealing the exact current top-card art and rules text without
-changing game history.
+display at the bottom. The Caravansary discard pile can be inspected without changing game history.
+The draw pile stays face down until a player draws. Personal games open private
+Bonus cards from the player mat; shared-table games keep them on private phones.
+A labelled, finger-sized Undo button stays available beside the game log.
 
 The Mocha & Baksheesh and Letters & Seals expansions, optional neutral-assistant
 variant, matchmaking, accounts, rankings, and anti-cheat game authority
@@ -141,7 +144,7 @@ Ada undoes three actions with one event, replays them, rewinds straight to an
 earlier movement, and proves that grey information barriers prevent the game
 log from crossing a retained dice result.
 Scenario 021 opens the standalone production gallery, enlarges a live
-`LocationTile`, and then reviews every page of locations, `PlayerTray` states,
+`LocationTile`, and then reviews every page of locations, `PlayerMat` states,
 merchants, assistants, family members, `BonusCard` faces, `MarketDemand` states,
 and public components. It checks all 85 rendered states and the complete
 73-asset backing manifest by stable ID, verifies the expected renderer and
@@ -179,7 +182,7 @@ workflow. Open `/gallery/` in any deployment to inspect the live component
 catalogue by category, enlarge an item, and cite its stable review reference and
 props when providing feedback. The gallery never substitutes a raw location or
 mat image for the composed UI: it uses the same `LocationTile`, `LocationState`,
-`PlayerTray`, `BonusCard`, and `MarketDemand` components as live play. Each tray
+`PlayerMat`, `BonusCard`, and `MarketDemand` components as live play. Each tray
 is a functional organizer whose goods, extensions, rubies,
 money, cards, and acquired square Mosque powers sit in matching visible wells.
 Every Place also displays its current public state with physical arrangements:

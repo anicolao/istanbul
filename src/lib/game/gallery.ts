@@ -136,7 +136,7 @@ const demandItems: GalleryItem[] = demandTiles.map((tile) => ({
 
 export const galleryCategories: Array<{ id: GalleryCategoryId; label: string; description: string; items: GalleryItem[] }> = [
   { id: 'places', label: 'Locations', description: 'All sixteen live LocationTile states, including titles, pieces, and public apparatus.', items: placeItems },
-  { id: 'mats', label: 'Player trays', description: 'Five representative PlayerTray states with live goods, powers, money, and rubies.', items: matItems },
+  { id: 'mats', label: 'Player trays', description: 'Five representative player mats with live goods, powers, money, and rubies.', items: matItems },
   { id: 'pieces', label: 'Playing pieces', description: 'The GameArt components used for merchants, assistants, family members, and neutral figures.', items: pieceItems },
   { id: 'bonus', label: 'Bonus cards', description: 'Every complete rules face at hand, phone, and responsive desktop-inspector sizes, plus the private back and draw deck.', items: bonusItems },
   { id: 'demands', label: 'Market demands', description: 'Every live MarketDemand goods combination.', items: demandItems },

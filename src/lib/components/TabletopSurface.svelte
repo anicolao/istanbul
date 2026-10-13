@@ -1,28 +1,33 @@
 <script lang="ts">
-  import { base } from "$app/paths";
-  import { places, bonusCards, type Good } from "$lib/game/manifests";
-  import { locationArt, type PlayerColorName } from "$lib/game/art";
+  import { cubicInOut } from 'svelte/easing';
+  import BonusController from './BonusController.svelte';
+  import type { BonusChoice } from '$lib/game/bonus';
+  import { base } from '$app/paths';
+  import { places, bonusCards, type Good } from '$lib/game/manifests';
+  import { locationArt, type PlayerColorName } from '$lib/game/art';
   import {
     merchantToll,
     legalDestinations,
     requiredAssistantAction,
-    type AssistantAction,
-  } from "$lib/game/movement";
-  import type { PlaceActionChoice } from "$lib/game/actions";
-  import type { EncounterChoice } from "$lib/game/encounters";
+    type AssistantAction
+  } from '$lib/game/movement';
+  import type { PlaceActionChoice } from '$lib/game/actions';
+  import type { EncounterChoice } from '$lib/game/encounters';
   import {
     ownsMosqueAbility,
-    type MosqueAbilityChoice,
-  } from "$lib/game/mosques";
-  import type { GameSetup } from "$lib/game/setup";
-  import type { RoomProjection, ReplayProjection } from "$lib/game/protocol";
-  import { tableSeat } from "./table-layout";
-  import LocationTile from "./LocationTile.svelte";
-  import TabletopPlayerPanel from "./TabletopPlayerPanel.svelte";
-  import TabletopPlaceActions from "./TabletopPlaceActions.svelte";
-  import GameArt from "./GameArt.svelte";
-  import TabletopArrow from "./TabletopArrow.svelte";
-  import BonusCard from "./BonusCard.svelte";
+    type MosqueAbilityChoice
+  } from '$lib/game/mosques';
+  import type { GameSetup } from '$lib/game/setup';
+  import type { RoomProjection, ReplayProjection } from '$lib/game/protocol';
+  import { tableSeat } from './table-layout';
+  import LocationTile from './LocationTile.svelte';
+  import TabletopPlayerPanel from './TabletopPlayerPanel.svelte';
+  import TabletopPlaceActions from './TabletopPlaceActions.svelte';
+  import GameArt from './GameArt.svelte';
+  import TabletopArrow from './TabletopArrow.svelte';
+  import UndoButton from './UndoButton.svelte';
+  import BonusCardChoices from './BonusCardChoices.svelte';
+  import BonusCard from './BonusCard.svelte';
   let {
     game,
     room,
@@ -39,6 +44,12 @@
     undo,
     gameLog,
     undoPending = false,
+    selectedBonus = null,
+    onInspectBonus = () => {},
+    onPlayBonus = () => {},
+    undoLog = [],
+    onGrantE2eResources = () => {},
+    e2eResourceReview = 'ruby-routes'
   }: {
     game: GameSetup;
     room: RoomProjection;
@@ -52,75 +63,80 @@
     onUndo: () => void;
     onRollback: (id: string) => void;
     onRematch: () => void;
-    undo: ReplayProjection["undo"];
-    gameLog: ReplayProjection["gameLog"];
+    undo: ReplayProjection['undo'];
+    gameLog: ReplayProjection['gameLog'];
     undoPending?: boolean;
+    selectedBonus?: string | null;
+    onInspectBonus?: (id: string) => void;
+    onPlayBonus?: (id: string, choice: BonusChoice) => void;
+    undoLog?: ReplayProjection['undoLog'];
+    onGrantE2eResources?: () => void;
+    e2eResourceReview?: string;
   } = $props();
-  const goods: Good[] = ["fabric", "spice", "fruit", "jewelry"];
+  const goods: Good[] = ['fabric', 'spice', 'fruit', 'jewelry'];
   const player = $derived(game.players[game.turnSeat]);
-  const canControl = $derived(userUid === player.uid || (room.tabletopOwned && userUid === room.hostUid));
+  const canControl = $derived(
+    userUid === player.uid || (room.tabletopOwned && userUid === room.hostUid)
+  );
   const busy = $derived(undoPending || !canControl);
-  const seat = $derived(tableSeat(game, room, game.turnSeat));
+  const personal = $derived(room.mode === 'personal-screens');
+  const localPlayer = $derived(game.players.find((p) => p.uid === userUid));
+  const seat = $derived(
+    personal ? { angle: 0 } : tableSeat(game, room, game.turnSeat)
+  );
+  let handOpen = $state(false);
   const pending = $derived(game.pending);
   const activePlace = $derived(
-    pending?.kind === "caravansary-discard"
+    pending?.kind === 'caravansary-discard'
       ? 6
-      : pending?.kind === "family-action"
+      : pending?.kind === 'family-action'
         ? pending.destination
-        : pending?.kind === "warehouse-extra" || pending?.kind === "dice-adjust"
+        : pending?.kind === 'warehouse-extra' || pending?.kind === 'dice-adjust'
           ? pending.actionPlace
-          : game.phase === "turn-end" &&
+          : game.phase === 'turn-end' &&
               game.lastAction?.playerUid === player.uid
             ? game.lastAction.place
-            : player.merchantPlace,
+            : player.merchantPlace
   );
   const warehouseEncounters = $derived(
-    pending?.kind === "warehouse-extra" && !pending.familyAction
+    pending?.kind === 'warehouse-extra' && !pending.familyAction
       ? {
-          kind: "encounters" as const,
+          kind: 'encounters' as const,
           familyUids: game.players
             .filter(
               (p) =>
                 p.uid !== player.uid &&
                 p.familyPlace === activePlace &&
-                activePlace !== 12,
+                activePlace !== 12
             )
             .map((p) => p.uid),
           governor:
-            game.governorPlace === activePlace ? ("available" as const) : null,
-          smuggler: game.smugglerPlace === activePlace,
+            game.governorPlace === activePlace ? ('available' as const) : null,
+          smuggler: game.smugglerPlace === activePlace
         }
-      : null,
+      : null
   );
   const actionReady = $derived(
-    game.phase === "action" || game.phase === "family-action",
+    game.phase === 'action' || game.phase === 'family-action'
   );
   const reachable = $derived(
-    game.phase === "movement" ? legalDestinations(game, player) : [],
-  );
-  const canUndo = $derived(
-    Boolean(
-      undo &&
-      !undo.blockedReason &&
-      undo.actorUids.includes(userUid) &&
-      !undoPending,
-    ),
+    game.phase === 'movement' ? legalDestinations(game, player) : []
   );
   const canEnd = $derived(
-    pending?.kind !== "caravansary-discard" &&
-      (["action", "family-action", "turn-end", "final-bonus"].includes(
-        game.phase,
+    pending?.kind !== 'caravansary-discard' &&
+      (['action', 'family-action', 'turn-end', 'final-bonus'].includes(
+        game.phase
       ) ||
-        (pending?.kind === "warehouse-extra" &&
+        (pending?.kind === 'warehouse-extra' &&
           !game.players.some(
             (p) =>
               p.uid !== player.uid &&
               p.familyPlace === player.merchantPlace &&
-              p.familyPlace !== 12,
+              p.familyPlace !== 12
           )) ||
-        (pending?.kind === "encounters" &&
-          pending.governor !== "payment" &&
-          !pending.familyUids.length)),
+        (pending?.kind === 'encounters' &&
+          pending.governor !== 'payment' &&
+          !pending.familyUids.length))
   );
   let zoom = $state<number | null>(null),
     zoomAngle = $state(0),
@@ -128,12 +144,13 @@
     yellow = $state(false),
     power = $state<Good | null>(null),
     inspectedCard = $state<string | null>(null);
-  let arrivalContext = $state("");
-  let context = $state(""),
-    gain = $state<Good>("fabric"),
+  let collapsed = $state(false);
+  let arrivalContext = $state('');
+  let context = $state(''),
+    gain = $state<Good>('fabric'),
     smuggler = $state(false);
   const publicCard = $derived(bonusCards.find((c) => c.id === inspectedCard));
-  const title = $derived(places.find((p) => p.id === zoom)?.name ?? "");
+  const title = $derived(places.find((p) => p.id === zoom)?.name ?? '');
   $effect(() => {
     const next = `${game.epoch}:${game.turnNumber}:${game.turnSeat}`;
     if (next !== context) {
@@ -148,17 +165,12 @@
     const arrival = `${next}:${game.phase}:${activePlace}:${seat.angle}`;
     if (arrival !== arrivalContext) {
       arrivalContext = arrival;
-      if (game.phase !== "movement" && game.phase !== "game-over") {
-        zoom = activePlace;
+      collapsed = game.phase === 'movement';
+      if (game.phase !== 'movement' && game.phase !== 'game-over') {
+        if (!personal || canControl) zoom = activePlace;
         zoomAngle = seat.angle;
       }
     }
-  });
-  // Manual collapse stays collapsed until the next arrival/phase, without changing the board.
-  let collapsed = $state(false);
-  $effect(() => {
-    game.turnNumber;
-    collapsed = game.phase === "movement";
   });
   function open(id = activePlace) {
     zoom = id;
@@ -166,10 +178,22 @@
     collapsed = false;
     power = null;
   }
+  function navigateBoard(event: KeyboardEvent, index: number) {
+    const delta = { ArrowLeft: -1, ArrowRight: 1, ArrowUp: -4, ArrowDown: 4 }[
+      event.key
+    ];
+    if (delta === undefined) return;
+    event.preventDefault();
+    const target = Math.max(0, Math.min(15, index + delta));
+    (event.currentTarget as HTMLElement)
+      .closest('.board')
+      ?.querySelector<HTMLElement>(`[data-place-id="${game.board[target]}"]`)
+      ?.focus();
+  }
   function tapRoom(id: number, event: MouseEvent) {
     if (busy) return;
     const card = (event.target as HTMLElement).closest<HTMLElement>(
-      "[data-inspect-pile-card]",
+      '[data-inspect-pile-card]'
     )?.dataset.inspectPileCard;
     if (card && !reachable.includes(id)) {
       inspectedCard = card;
@@ -178,7 +202,7 @@
     }
     if (yellow) {
       if (player.assistantsByPlace[id]) {
-        onUseMosqueAbility({ kind: "yellow-recall", place: id });
+        onUseMosqueAbility({ kind: 'yellow-recall', place: id });
         yellow = false;
       }
       return;
@@ -187,7 +211,8 @@
       const assistant = requiredAssistantAction(player, id);
       if (assistant) {
         open(id);
-        if (merchantToll(game, player, id) <= player.lira) onMove(id, assistant);
+        if (merchantToll(game, player, id) <= player.lira)
+          onMove(id, assistant);
       }
       return;
     }
@@ -195,9 +220,9 @@
   }
   function showPower(good: Good) {
     if (
-      good === "fruit" &&
-      game.phase === "movement" &&
-      !game.abilitiesUsedThisTurn.includes("fruit") &&
+      good === 'fruit' &&
+      game.phase === 'movement' &&
+      !game.abilitiesUsedThisTurn.includes('fruit') &&
       player.lira >= 2
     ) {
       yellow = !yellow;
@@ -208,28 +233,34 @@
     power = good;
   }
   function tileZoom(
-    _node: Element,
-    { id, angle }: { id: number; angle: number },
+    node: HTMLElement,
+    { id, angle }: { id: number; angle: number }
   ) {
-    const index = game.board.indexOf(id),
-      x = (((index % 4) + 0.5) / 4 - 0.5) * 66,
-      y = ((Math.floor(index / 4) + 0.5) / 4 - 0.5) * 36.56;
+    const table = node.parentElement!;
+    const source = table.querySelector<HTMLElement>(`[data-place-id="${id}"]`)!;
+    const origin = source.getBoundingClientRect();
+    const bounds = table.getBoundingClientRect();
+    const dx = origin.left + origin.width / 2 - (bounds.left + node.offsetLeft);
+    const dy = origin.top + origin.height / 2 - (bounds.top + node.offsetTop);
+    const sx = origin.width / node.offsetWidth;
+    const sy = origin.height / node.offsetHeight;
     const shortest = ((((angle + 180) % 360) + 360) % 360) - 180;
     return {
-      duration: matchMedia("(prefers-reduced-motion: reduce)").matches
+      duration: matchMedia('(prefers-reduced-motion: reduce)').matches
         ? 0
-        : 260,
+        : 1000,
+      easing: cubicInOut,
       css: (t: number) =>
-        `transform:translate(-50%,-50%) translate(${x * (1 - t)}cqw,${y * (1 - t)}cqw) scale(${0.45 + 0.55 * t}) rotate(${shortest * t}deg)`,
+        `transform:translate(-50%,-50%) translate(${dx * (1 - t)}px,${dy * (1 - t)}px) rotate(${shortest * t}deg) scale(${sx + (1 - sx) * t},${sy + (1 - sy) * t})`
     };
   }
 </script>
 
 {#snippet encounterChoices(
-  encounters: Extract<GameSetup["pending"], { kind: "encounters" }>,
+  encounters: Extract<GameSetup['pending'], { kind: 'encounters' }>
 )}
   {#each encounters.familyUids as uid}{@const family = game.players.find(
-      (p) => p.uid === uid,
+      (p) => p.uid === uid
     )!}
     <div class="row">
       <GameArt
@@ -240,40 +271,51 @@
         aria-label="Catch family for 3 Lira"
         onclick={() =>
           onResolveEncounter({
-            kind: "catch-family",
+            kind: 'catch-family',
             familyUid: uid,
-            reward: "lira",
+            reward: 'lira'
           })}><GameArt kind="component" component="lira" />+3</button
       ><button
         class="card-choice small-card"
         aria-label="Catch family for a Bonus card"
         onclick={() =>
           onResolveEncounter({
-            kind: "catch-family",
+            kind: 'catch-family',
             familyUid: uid,
-            reward: "bonus",
+            reward: 'bonus'
           })}><BonusCard reverse="card-back" /></button
       >
     </div>{/each}
-  {#if encounters.governor === "payment"}<div class="row">
+  {#if encounters.governor === 'payment'}<div class="row">
       <GameArt kind="piece" piece="governor" />
       <div class="small-card"><BonusCard reverse="card-back" /></div>
       <button
         class="primary"
         disabled={player.lira < 2}
         onclick={() =>
-          onResolveEncounter({ kind: "governor-pay", payment: "lira" })}
+          onResolveEncounter({ kind: 'governor-pay', payment: 'lira' })}
         ><GameArt kind="component" component="lira" />Pay 2 & roll</button
       >
     </div>
-    <p>Or discard a card from your phone.</p>
+    {#if personal && canControl}<div class="card-payments">
+        <BonusCardChoices
+          cards={player.bonusHand}
+          disabled={busy}
+          onChoose={(discardCardId) =>
+            onResolveEncounter({
+              kind: 'governor-pay',
+              payment: 'card',
+              discardCardId
+            })}
+        />
+      </div>{:else}<p>Or discard a card from your phone.</p>{/if}
   {:else}
-    {#if encounters.governor === "available"}<div class="row">
+    {#if encounters.governor === 'available'}<div class="row">
         <GameArt kind="piece" piece="governor" /><button
           class="card-choice small-card"
           aria-label="Draw a Bonus card from the Governor"
           onclick={() =>
-            onResolveEncounter({ kind: "governor-visit", accept: true })}
+            onResolveEncounter({ kind: 'governor-visit', accept: true })}
           ><BonusCard reverse="card-back" /></button
         >
       </div>{/if}
@@ -298,10 +340,10 @@
             disabled={player.lira < 2 || player.goods[gain] >= player.capacity}
             onclick={() => {
               onResolveEncounter({
-                kind: "smuggler-trade",
+                kind: 'smuggler-trade',
                 accept: true,
                 good: gain,
-                payment: "lira",
+                payment: 'lira'
               });
               smuggler = false;
             }}><GameArt kind="component" component="lira" />2</button
@@ -311,11 +353,11 @@
                 player.goods[gain] >= player.capacity}
               onclick={() => {
                 onResolveEncounter({
-                  kind: "smuggler-trade",
+                  kind: 'smuggler-trade',
                   accept: true,
                   good: gain,
-                  payment: "good",
-                  paymentGood: good,
+                  payment: 'good',
+                  paymentGood: good
                 });
                 smuggler = false;
               }}><GameArt kind="component" component={good} /></button
@@ -325,7 +367,7 @@
 {/snippet}
 <svelte:window
   onkeydown={(e) => {
-    if (e.key === "Escape") {
+    if (e.key === 'Escape') {
       collapsed = true;
       history = false;
       power = null;
@@ -334,6 +376,8 @@
 />
 <section
   class="tabletop-surface"
+  class:personal
+  style={`--opponents:${Math.max(1, game.players.length - 1)}`}
   aria-label="Shared Istanbul table"
   data-e2e-fit
   data-e2e-no-scroll
@@ -342,14 +386,30 @@
     class="table"
     style={`--courtyard:url('${base}/art/bazaar-courtyard.png')`}
   >
-    {#if !canControl}<p class="table-hint">Watching this table · Play from the browser that opened it.</p>{/if}
+    {#if !canControl}<p class="table-hint">
+        {personal
+          ? `${player.name}’s turn`
+          : 'Watching this table · Play from the browser that opened it.'}
+      </p>{/if}
+    <p
+      class="visually-hidden"
+      aria-live="polite"
+      data-testid="turn-announcement"
+    >
+      Turn {game.turnNumber}. {player.name}. {game.phase.replaceAll('-', ' ')}. {canControl
+        ? 'Your action.'
+        : 'Waiting for this merchant.'}
+    </p>
     <TabletopPlayerPanel
       {game}
       {room}
-      {canUndo}
+      {userUid}
+      onHand={() => {
+        handOpen = true;
+        collapsed = true;
+      }}
       {canEnd}
       {busy}
-      {onUndo}
       onEnd={onEndTurn}
       onPower={showPower}
       onOpen={() => open()}
@@ -368,7 +428,8 @@
             ? Boolean(player.assistantsByPlace[id])
             : reachable.includes(id)}
           selected={zoom === id && !collapsed}
-          arrived={id === activePlace && game.phase !== "movement"}
+          arrived={id === activePlace && game.phase !== 'movement'}
+          onkeydown={(e) => navigateBoard(e, index)}
           onclick={(e) => tapRoom(id, e)}
         />{/each}
     </fieldset>
@@ -383,7 +444,7 @@
           class="zoom-tile"
           aria-label={`${title} actions`}
           style={`--facing:${zoomAngle}deg;background-image:url('${base}/${locationArt[zoom]}')`}
-          transition:tileZoom={{ id: zoom, angle: zoomAngle }}
+          in:tileZoom|global={{ id: zoom, angle: zoomAngle }}
         >
           <header>
             <h1>{title}</h1>
@@ -405,31 +466,64 @@
                 />
                 <p>
                   {{
-                    fabric: "After a roll, turn a die to 4 or reroll both.",
-                    spice: "At a warehouse, pay 2 Lira for an extra good.",
-                    fruit: "Once each turn, pay 2 Lira to recall an assistant.",
-                    jewelry: "Your fifth assistant joins your merchant.",
+                    fabric: 'After a roll, turn a die to 4 or reroll both.',
+                    spice: 'At a warehouse, pay 2 Lira for an extra good.',
+                    fruit: 'Once each turn, pay 2 Lira to recall an assistant.',
+                    jewelry: 'Your fifth assistant joins your merchant.'
                   }[power]}
                 </p>
                 <button onclick={() => (power = null)}>Back</button>
-              {:else if game.phase === "movement" && reachable.includes(zoom) && merchantToll(game, player, zoom) > player.lira}
+              {:else if game.phase === 'movement' && reachable.includes(zoom) && merchantToll(game, player, zoom) > player.lira}
                 <div class="components">
                   {#each game.neutralMerchants.filter((merchant) => merchant.place === zoom) as merchant (merchant.id)}
                     <GameArt kind="piece" piece="neutral-merchant" />
                   {/each}
                   {#each game.players.filter((other) => other.uid !== player.uid && other.merchantPlace === zoom) as other (other.uid)}
-                    <GameArt kind="piece" piece="merchant" color={other.color as PlayerColorName} />
+                    <GameArt
+                      kind="piece"
+                      piece="merchant"
+                      color={other.color as PlayerColorName}
+                    />
                   {/each}
                 </div>
-                <p>You have {player.lira} Lira; the merchants here require {merchantToll(game, player, zoom)}. Moving here ends your turn without an action.</p>
-                <button class="primary" onclick={() => {
-                  const assistant = requiredAssistantAction(player, zoom!);
-                  if (assistant) onMove(zoom!, assistant);
-                }}>Move here & lose this turn</button>
-                <button onclick={() => (collapsed = true)}>Choose another room</button>
-              {:else if zoom !== activePlace || game.phase === "movement"}<p>
+                <p>
+                  You have {player.lira} Lira; the merchants here require {merchantToll(
+                    game,
+                    player,
+                    zoom
+                  )}. Moving here ends your turn without an action.
+                </p>
+                <button
+                  class="primary"
+                  onclick={() => {
+                    const assistant = requiredAssistantAction(player, zoom!);
+                    if (assistant) onMove(zoom!, assistant);
+                  }}>Move here & lose this turn</button
+                >
+                <button onclick={() => (collapsed = true)}
+                  >Choose another room</button
+                >
+              {:else if zoom !== activePlace || game.phase === 'movement'}<p>
                   {places.find((p) => p.id === zoom)?.action}
                 </p>
+              {:else if personal && canControl && activePlace === 6 && (actionReady || pending?.kind === 'caravansary-discard')}
+                <BonusController
+                  embedded
+                  flowOnly
+                  {game}
+                  {userUid}
+                  selectedBonus={null}
+                  {onInspectBonus}
+                  {onPlayBonus}
+                  onTakePrivateAction={onTakeAction}
+                  onResolvePrivateEncounter={() => {}}
+                  {onUndo}
+                  {onRollback}
+                  {undo}
+                  {undoLog}
+                  {gameLog}
+                  {undoPending}
+                />
               {:else if actionReady}{#key `${game.epoch}:${game.turnNumber}:${activePlace}`}<TabletopPlaceActions
                     {game}
                     {player}
@@ -437,7 +531,7 @@
                     onAction={onTakeAction}
                     onSkip={onEndTurn}
                   />{/key}
-              {:else if game.phase === "merchant-payment" && pending?.kind === "merchant-payment"}
+              {:else if game.phase === 'merchant-payment' && pending?.kind === 'merchant-payment'}
                 <div class="components">
                   {#each pending.recipientUids as uid}{@const other =
                       game.players.find((p) => p.uid === uid)!}<GameArt
@@ -453,7 +547,7 @@
                   ><GameArt kind="component" component="lira" />Pay {pending.total}
                   & roll</button
                 >
-              {:else if pending?.kind === "warehouse-extra"}
+              {:else if pending?.kind === 'warehouse-extra'}
                 <p>{game.lastAction?.summary}</p>
                 <div class="components">
                   <GameArt kind="component" component="mosque-spice" /><span
@@ -466,14 +560,14 @@
                       disabled={player.lira < 2 ||
                         player.goods[good] >= player.capacity}
                       onclick={() =>
-                        onUseMosqueAbility({ kind: "warehouse-extra", good })}
+                        onUseMosqueAbility({ kind: 'warehouse-extra', good })}
                       ><GameArt kind="component" component={good} /></button
                     >{/each}
                 </div>
                 {#if warehouseEncounters}{@render encounterChoices(
-                    warehouseEncounters,
+                    warehouseEncounters
                   )}{/if}
-              {:else if pending?.kind === "dice-adjust"}
+              {:else if pending?.kind === 'dice-adjust'}
                 <GameArt
                   kind="component"
                   component="mosque-fabric"
@@ -484,11 +578,11 @@
                       aria-label={`Turn die ${i + 1} to 4`}
                       onclick={() =>
                         onUseMosqueAbility({
-                          kind: "dice-adjust",
+                          kind: 'dice-adjust',
                           adjustment:
-                            i === 0 ? "first-to-four" : "second-to-four",
+                            i === 0 ? 'first-to-four' : 'second-to-four'
                         })}
-                      ><b>{["", "⚀", "⚁", "⚂", "⚃", "⚄", "⚅"][die]}</b><small
+                      ><b>{['', '⚀', '⚁', '⚂', '⚃', '⚄', '⚅'][die]}</b><small
                         >→ ⚃</small
                       ></button
                     >{/each}
@@ -497,45 +591,50 @@
                   <button
                     onclick={() =>
                       onUseMosqueAbility({
-                        kind: "dice-adjust",
-                        adjustment: "reroll",
+                        kind: 'dice-adjust',
+                        adjustment: 'reroll'
                       })}>Reroll both</button
                   ><button
                     class="primary"
                     onclick={() =>
                       onUseMosqueAbility({
-                        kind: "dice-adjust",
-                        adjustment: "none",
+                        kind: 'dice-adjust',
+                        adjustment: 'none'
                       })}>Keep dice</button
                   >
                 </div>
-              {:else if pending?.kind === "encounters"}{@render encounterChoices(
-                  pending,
+              {:else if pending?.kind === 'encounters'}{@render encounterChoices(
+                  pending
                 )}
-              {:else if game.phase === "turn-end"}<p>
+              {:else if game.phase === 'turn-end'}<p>
                   {game.lastAction?.summary}
                 </p>
                 {#if game.lastRoll?.playerUid === player.uid && game.lastRoll.place === activePlace}<div
                     class="dice"
                   >
                     {#each game.lastRoll.dice as die}<b
-                        >{["", "⚀", "⚁", "⚂", "⚃", "⚄", "⚅"][die]}</b
+                        >{['', '⚀', '⚁', '⚂', '⚃', '⚄', '⚅'][die]}</b
                       >{/each}
                   </div>{/if}
-              {:else if game.phase === "final-bonus"}<div class="small-card">
+              {:else if game.phase === 'final-bonus'}<div class="small-card">
                   <BonusCard reverse="card-back" />
                 </div>
-                <p>Play your final cards on your phone.</p>{/if}
+                <p>
+                  {personal
+                    ? 'Play any final Bonus cards from your hand.'
+                    : 'Play your final cards on your phone.'}
+                </p>{/if}
             </div>
             <footer>
-              <button
-                aria-label={undo ? `Undo ${undo.label}` : "Nothing to undo"}
-                disabled={!canUndo}
-                onclick={onUndo}>↶ Undo</button
-              >{#if canEnd}<button class="primary" onclick={onEndTurn}
-                  >{game.phase === "final-bonus"
-                    ? "Finish trading"
-                    : "End turn"}
+              <UndoButton
+                {undo}
+                {userUid}
+                pending={undoPending}
+                {onUndo}
+              />{#if canEnd}<button class="primary" onclick={onEndTurn}
+                  >{game.phase === 'final-bonus'
+                    ? 'Finish trading'
+                    : 'End turn'}
                   <TabletopArrow /></button
                 >{/if}
             </footer>
@@ -543,16 +642,59 @@
         </section>
       {/key}
     {/if}
+    {#if personal && localPlayer && handOpen}
+      <section class="hand-panel" aria-label="Your Bonus cards">
+        <button
+          class="close-hand"
+          aria-label="Back to table"
+          onclick={() => {
+            handOpen = false;
+            collapsed = game.phase === 'movement';
+          }}>×</button
+        >
+        <BonusController
+          embedded
+          {game}
+          {userUid}
+          {selectedBonus}
+          {onInspectBonus}
+          onPlayBonus={(id, choice) => {
+            onPlayBonus(id, choice);
+            handOpen = false;
+            collapsed = game.phase === 'movement';
+          }}
+          onTakePrivateAction={onTakeAction}
+          onResolvePrivateEncounter={(discardCardId) =>
+            onResolveEncounter({
+              kind: 'governor-pay',
+              payment: 'card',
+              discardCardId
+            })}
+          {onUndo}
+          {onRollback}
+          {undo}
+          {undoLog}
+          {gameLog}
+          {undoPending}
+        />
+      </section>
+    {/if}
+    {#if import.meta.env.VITE_USE_FIREBASE_EMULATORS === 'true' && canControl && personal && game.phase === 'movement'}
+      <button class="e2e-resources" onclick={onGrantE2eResources}
+        >{e2eResourceReview === 'yellow-recall'
+          ? 'Review Yellow Mosque recall'
+          : e2eResourceReview === 'zero-move'
+            ? 'Review zero-distance Bonus move'
+            : e2eResourceReview === 'flexible-market'
+              ? 'Review Flexible Demand market sale'
+              : 'Review ruby routes with supplied resources'}</button
+      >
+    {/if}
     <span class="last-move"
-      >{game.phase === "movement"
+      >{game.phase === 'movement'
         ? (gameLog.filter((e) => e.active).at(-1)?.summary ??
-          "Move your merchant")
-        : ""}</span
-    >
-    <button
-      class="log-toggle"
-      onclick={() => (history = !history)}
-      aria-expanded={history}>Game log</button
+          'Move your merchant')
+        : ''}</span
     >
     {#if history}<section
         class="history"
@@ -572,17 +714,95 @@
               >{/if}
           </p>{/each}
       </section>{/if}
-    {#if game.phase === "game-over"}<section class="finish">
+    {#if game.phase === 'game-over'}<section class="finish">
         <h1>{game.end.rankings[0]?.name} wins!</h1>
         {#each game.end.rankings as standing}<p>
             {standing.name} · {standing.rubies} rubies · {standing.lira} Lira
-          </p>{/each}<button onclick={onRematch}>Play again</button>
+          </p>{/each}<button
+          disabled={userUid !== room.hostUid || undoPending}
+          onclick={onRematch}>Play again</button
+        >
       </section>{/if}
   </div>
+  <nav class="table-controls" aria-label="Game controls">
+    <UndoButton {undo} {userUid} pending={undoPending} {onUndo} />
+    <button onclick={() => (history = !history)} aria-expanded={history}
+      >Game log</button
+    >
+  </nav>
 </section>
 
 <style>
+  .visually-hidden {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+  }
+  .hand-panel {
+    position: absolute;
+    inset: 10% 20%;
+    z-index: 20;
+    padding: 2cqw;
+    background: #12352ff5;
+    border: 1px solid #947d49;
+    border-radius: 1cqw;
+  }
+  .close-hand {
+    position: absolute;
+    right: 0;
+    top: 0;
+    z-index: 1;
+  }
+  .card-payments {
+    width: 100%;
+    display: flex;
+    justify-content: center;
+    gap: 0.5cqw;
+    min-height: 0;
+  }
+  .e2e-resources {
+    position: absolute;
+    top: 0;
+    left: 0;
+    font-size: 0.65rem;
+  }
+  @media (max-aspect-ratio: 1/1) {
+    .personal .table {
+      width: min(100cqw, calc((100cqh - 56px) * 0.6));
+      aspect-ratio: 3/5;
+    }
+    .personal :global(.mat) {
+      width: min(70cqw, calc(90cqw / var(--opponents)));
+    }
+    .personal .board {
+      left: 2%;
+      width: 96%;
+      top: 24%;
+      height: 40%;
+    }
+    .personal .zoom-tile {
+      width: 94cqw;
+      height: 94cqw;
+      top: 48%;
+    }
+    .personal .hand-panel {
+      inset: 10% 2%;
+    }
+    .personal .zoom-tile h1 {
+      font-size: 5cqw;
+    }
+    .personal .zoom-tile :global(button),
+    .personal .zoom-tile :global(p) {
+      font-size: 3cqw;
+    }
+  }
+
   .tabletop-surface {
+    position: relative;
+    padding-bottom: 56px;
+    box-sizing: border-box;
     width: 100%;
     height: 100%;
     container-type: size;
@@ -591,11 +811,11 @@
     overflow: hidden;
     background: #071b17;
     color: #f6e8c4;
-    font-family: "Atkinson Hyperlegible", sans-serif;
+    font-family: 'Atkinson Hyperlegible', sans-serif;
   }
   .table {
     position: relative;
-    width: min(100cqw, 177.7778cqh);
+    width: min(100cqw, calc((100cqh - 56px) * 16 / 9));
     aspect-ratio: 16/9;
     container-type: inline-size;
     background:
@@ -633,7 +853,7 @@
   }
   .board :global(.place > strong) {
     font:
-      700 6cqw "Cormorant Garamond",
+      700 6cqw 'Cormorant Garamond',
       serif;
     text-shadow:
       0 1px 3px #000,
@@ -697,7 +917,7 @@
   .zoom-tile h1 {
     margin: 0;
     font:
-      700 2.1cqw "Cormorant Garamond",
+      700 2.1cqw 'Cormorant Garamond',
       serif;
   }
   .zoom-tile > header button {
@@ -854,11 +1074,18 @@
     width: 3cqw;
     height: 3cqw;
   }
-  .log-toggle {
+  .table-controls {
     position: absolute;
-    right: 1%;
-    bottom: 1%;
-    font-size: 0.65cqw;
+    right: 8px;
+    bottom: 6px;
+    display: flex;
+    gap: 0.5rem;
+    z-index: 6;
+  }
+  .table-controls > button {
+    min-height: 44px;
+    font-size: 14px;
+    padding: 0.5rem 0.8rem;
   }
   .history,
   .finish {

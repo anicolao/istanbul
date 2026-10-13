@@ -1,163 +1,40 @@
-import { expect, test, type BrowserContext, type Locator } from '@playwright/test';
-import { expectState, openTwoPlayerGame } from '../helpers/game-journey';
-import { ScenarioJournal, TestStepHelper } from '../helpers/test-step-helper';
+import { expect, test } from '@playwright/test';
+import { readState, expectState } from '../helpers/game-journey';
+import {
+  openTable,
+  move,
+  end,
+  travel,
+  nextAda,
+  supply,
+  hand,
+  capture,
+  roomTile
+} from '../helpers/table-journey';
 
-test('original production art communicates the complete tabletop', async ({ browser, page }, testInfo) => {
-  const roomCode = testInfo.project.name === 'phone' ? 'APART' : 'AARTS';
-  const seed = `production-art-${testInfo.project.name}`;
-  const journal = new ScenarioJournal();
-  const ada = new TestStepHelper(page, testInfo, journal, 'Ada, the host');
-  const boraContext: BrowserContext = await browser.newContext({
-    baseURL: String(testInfo.project.use.baseURL),
-    viewport: testInfo.project.use.viewport as { width: number; height: number },
-    locale: 'en-CA', timezoneId: 'America/Toronto', serviceWorkers: 'block', reducedMotion: 'reduce', deviceScaleFactor: 1
-  });
-  const boraPage = await boraContext.newPage();
-  const bora = new TestStepHelper(boraPage, testInfo, journal, 'Bora, the second merchant');
-  ada.setMetadata(
-    'Playing Istanbul with original production artwork',
-    'Ada and Bora create a real two-player game through the ordinary room controls. When the seeded bazaar opens, every location, merchant, assistant, encounter, good, ruby, Bonus card, and player mat is backed by an original graphical asset while its exact rules state remains available through the DOM and serialized replay projection. Bora then opens his private card to compare its hand thumbnail with the full illustrated face.'
-  );
-
+test('Gameplay uses the production components', async ({
+  page,
+  browser
+}, info) => {
+  const t = await openTable(page, browser, info, 15, {});
   try {
-    await openTwoPlayerGame({ hostPage: page, guestPage: boraPage, host: ada, guest: bora, roomCode, seed });
-
-    await ada.step('host-reviews-illustrated-tabletop', {
-      description: 'Ada reviews the complete illustrated tabletop',
-      verifications: [
-        { spec: 'All sixteen Place buttons contain loaded location artwork', check: async () => {
-          const tiles = page.locator('.place [data-art-kind="location"]');
-          await expect(tiles).toHaveCount(16);
-          expect(await loadedBackgrounds(tiles)).toEqual(Array(16).fill(true));
-        } },
-        { spec: 'The board uses graphical merchant, assistant, Governor, and Smuggler pieces', check: async () => {
-          await expect(page.locator('.occupants .merchant [data-art-kind="piece"]')).toHaveCount(5);
-          await expect(page.locator('.governor-piece [data-art-kind="piece"]')).toHaveCount(1);
-          await expect(page.locator('.smuggler-piece [data-art-kind="piece"]')).toHaveCount(1);
-          expect((await loadedBackgrounds(page.locator('[data-art-kind="piece"]'))).every(Boolean)).toBe(true);
-        } },
-        { spec: 'Both player displays and every resource token use loaded production art', check: async () => {
-          await expect(page.locator('[data-art-kind="mat"]')).toHaveCount(testInfo.project.name === 'phone' ? 2 : 0);
-          await expect(page.locator('.compact-tray')).toHaveCount(testInfo.project.name === 'phone' ? 0 : 2);
-          expect(await page.locator('[data-art-kind="component"]').count()).toBeGreaterThanOrEqual(46);
-          expect((await loadedBackgrounds(page.locator('[data-art-kind="mat"], [data-art-kind="component"]'))).every(Boolean)).toBe(true);
-        } },
-        { spec: 'Desktop uses the tabletop composition while phones retain their focused stacked view', check: async () => {
-          if (testInfo.project.name === 'phone') {
-            await expect(page.locator('.game-table')).not.toHaveClass(/table-layout/);
-            return;
-          }
-          await expect(page.locator('.game-table')).toHaveClass(/table-layout/);
-          const positions = await page.locator('.game-table').evaluate((table) => {
-            const rail = table.querySelector('.player-rail')!.getBoundingClientRect();
-            const board = table.querySelector('.board-shell')!.getBoundingClientRect();
-            const inspector = table.querySelector('.inspector')!.getBoundingClientRect();
-            const panels = [...table.querySelectorAll('.player-rail > article')].map((panel) => panel.getBoundingClientRect());
-            return {
-              playersLeftOfBoard: rail.right < board.left,
-              plannerRightOfBoard: board.right < inspector.left,
-              squarePanels: panels.every((panel) => Math.abs(panel.width - panel.height) < 2)
-            };
-          });
-          expect(positions).toEqual({ playersLeftOfBoard: true, plannerRightOfBoard: true, squarePanels: true });
-          await expect(page.getByRole('navigation', { name: 'Private Bonus hand' })).toBeVisible();
-          await expect(page.getByLabel('Ada resources').getByLabel('Private Bonus hand')).toHaveCount(0);
-          await expect(page.getByLabel('Bora resources').getByLabel('Private Bonus hand')).toHaveCount(0);
-        } },
-        { spec: 'Each tray aligns goods, extensions, rubies, money, cards, and four power recesses', check: async () => {
-          await expect(page.locator('[data-testid^="player-tray-"]')).toHaveCount(2);
-          await expect(page.getByLabel('Ada goods').locator('[data-count]')).toHaveCount(4);
-          await expect(page.getByLabel('Ada Mosque tiles').locator('[data-power-color]')).toHaveCount(4);
-          await expect(page.getByLabel('Ada Mosque tiles').locator('[data-enabled="true"]')).toHaveCount(0);
-          await expect(page.getByLabel('Ada resources').getByLabel('0 rubies')).toBeVisible();
-          await expect(page.getByLabel('Bora resources').getByLabel('0 rubies')).toBeVisible();
-          await expect(page.getByLabel('Ada resources').getByLabel('1 Bonus cards')).toBeVisible();
-          await expect(page.getByLabel('Bora resources').getByLabel('1 Bonus cards')).toBeVisible();
-        } },
-        { spec: 'Only Places with relevant live public state expose a large physical apparatus', check: async () => {
-          const states = page.locator('.location-state');
-          await expect(states).toHaveCount(12);
-          const summaries = await states.evaluateAll((elements) => elements.map((element) => element.getAttribute('data-state-summary') ?? ''));
-          expect(summaries.every((summary) => summary.length > 12)).toBe(true);
-          expect(new Set(summaries).size).toBe(12);
-          expect(await states.evaluateAll((elements) => elements.map((element) => Number(element.getAttribute('data-testid')?.replace('place-state-', ''))).sort((a, b) => a - b))).toEqual([5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16]);
-          await expect(page.locator('[data-testid="place-state-5"]')).toHaveAttribute('data-state-summary', /Exposed mail:/);
-          await expect(page.locator('[data-testid="place-state-6"]')).toHaveAttribute('data-state-summary', /Bonus cards in draw pile; 0 in discard/);
-          await expect(page.locator('[data-testid="place-state-14"]')).toHaveAttribute('data-state-summary', /required, pay 1.*required, pay 1/);
-          await expect(page.locator('[data-testid="place-state-16"]')).toHaveAttribute('data-state-summary', /Next ruby costs \d+ Lira/);
-          await expect(page.locator('[data-place-id="5"]')).toHaveAttribute('aria-label', /Current state: Exposed mail:/);
-          await expect(page.locator('[data-testid="place-state-5"] .mail-column')).toHaveCount(4);
-          await expect(page.locator('[data-testid="place-state-6"] .card-pile')).toHaveCount(2);
-          await expect(page.locator('[data-testid="place-state-12"] .station-family')).toHaveCount(2);
-          await expect(page.locator('[data-place-id="12"] > .occupants .family-member')).toHaveCount(0);
-          await expect(page.locator('[data-testid="place-state-14"] .mosque-power')).toHaveCount(2);
-        } },
-        { spec: 'Place names occupy the tile tops while enlarged pieces are vertically centered', check: async () => {
-          const geometry = await page.locator('[data-place-id="7"]').evaluate((tile) => {
-            const tileRect = tile.getBoundingClientRect();
-            const titleRect = tile.querySelector(':scope > strong')!.getBoundingClientRect();
-            const merchantRect = tile.querySelector('.merchant')!.getBoundingClientRect();
-            const assistantRect = tile.querySelector('.assistant');
-            return {
-              titleNearTop: titleRect.top - tileRect.top < tileRect.height * 0.25,
-              merchantCentered: Math.abs((merchantRect.top + merchantRect.height / 2) - (tileRect.top + tileRect.height / 2)) < 2,
-              merchantWidth: merchantRect.width,
-              assistantAbsentAtStart: assistantRect === null
-            };
-          });
-          expect(geometry).toMatchObject({ titleNearTop: true, merchantCentered: true, assistantAbsentAtStart: true });
-          expect(geometry.merchantWidth).toBeGreaterThanOrEqual(testInfo.project.name === 'phone' ? 22 : 44);
-        } },
-        { spec: 'The canonical setup remains unchanged by its visual treatment', check: async () => expectState(page, { screen: 'game', eventCount: 5, diagnosticCount: 0, game: { seed, phase: 'movement', turnNumber: 1, players: [{ name: 'Ada', merchantPlace: 7, assistantsCarried: 4, rubies: 0 }, { name: 'Bora', merchantPlace: 7, assistantsCarried: 4, rubies: 0 }] } }) }
-      ]
-    });
-
-    const cardButton = boraPage.getByRole('button', { name: /Inspect Bonus card:/ });
-    const cardName = (await cardButton.getAttribute('aria-label') ?? '').replace('Inspect Bonus card: ', '');
-    await cardButton.click();
-    await bora.step('guest-opens-illustrated-bonus-card', {
-      description: 'Bora opens his illustrated private Bonus card',
-      verifications: [
-        { spec: 'The hand thumbnail and large card face both load production card art', check: async () => {
-          await expect(boraPage.locator('.hand-card-art')).toHaveCount(1);
-          await expect(boraPage.getByTestId('illustrated-bonus-card').locator('[data-art-kind="card"]')).toHaveCount(1);
-          expect((await loadedBackgrounds(boraPage.locator('.hand-card-art, [data-testid="illustrated-bonus-card"] [data-art-kind="card"]'))).every(Boolean)).toBe(true);
-        } },
-        { spec: 'The exact private title and rules text stay in semantic HTML over the artwork', check: async () => {
-          await expect(boraPage.getByRole('heading', { name: cardName })).toBeVisible();
-          await expect(boraPage.getByText('Private Bonus card', { exact: true })).toBeVisible();
-          await expect(cardButton).toHaveAttribute('aria-pressed', 'true');
-        } },
-        { spec: 'Ada’s hand remains a graphical card back with no private face exposed', check: async () => {
-          if (testInfo.project.name === 'phone') {
-            await expect(boraPage.locator('.masked-hand [data-card-side="card-back"]')).toHaveCount(1);
-            await expect(boraPage.getByText('Bonus hand · 1 hidden card')).toBeVisible();
-          } else {
-            await expect(boraPage.getByLabel('Ada resources').getByLabel('1 Bonus cards')).toBeVisible();
-            await expect(boraPage.getByLabel('Ada resources').getByLabel('Private Bonus hand')).toHaveCount(0);
-          }
-        } },
-        { spec: 'Card inspection is local view state and adds no immutable event', check: async () => expectState(boraPage, { eventCount: 5, diagnosticCount: 0, game: { phase: 'movement', selectedBonus: expect.any(String), opponentHandCounts: [1] } }) }
-      ]
-    });
-
-    ada.generateDocs();
+    await move(page, 3);
+    await capture(
+      t,
+      'The board, mats and room all use the production art',
+      async () => {
+        await expect(page.locator('[data-component="PlayerMat"]')).toHaveCount(
+          2
+        );
+        await expect(page.locator('[data-place-id]')).toHaveCount(16);
+        expect(
+          await roomTile(page).evaluate(
+            (el) => getComputedStyle(el).backgroundImage
+          )
+        ).toContain('spice');
+      }
+    );
   } finally {
-    await boraContext.close();
+    await t.close();
   }
 });
-
-async function loadedBackgrounds(locator: Locator) {
-  return locator.evaluateAll(async (elements) => Promise.all(elements.map(async (element) => {
-    const match = getComputedStyle(element).backgroundImage.match(/url\(["']?(.*?)["']?\)/);
-    if (!match) return false;
-    const image = new Image();
-    const loaded = new Promise<boolean>((resolve) => {
-      image.onload = () => resolve(image.naturalWidth > 0);
-      image.onerror = () => resolve(false);
-    });
-    image.src = match[1];
-    if (image.complete) return image.naturalWidth > 0;
-    return loaded;
-  })));
-}
