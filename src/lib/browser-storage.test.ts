@@ -23,6 +23,14 @@ describe('best-effort browser storage', () => {
     expect(getStoredValue('istanbul:sequence:ROOM:user')).toBeNull();
   });
 
+  it('observes another tab updating or clearing a previously cached value', () => {
+    setStoredValue('shared-sequence', '1');
+    localStorage.setItem('shared-sequence', '2');
+    expect(getStoredValue('shared-sequence')).toBe('2');
+    localStorage.removeItem('shared-sequence');
+    expect(getStoredValue('shared-sequence')).toBeNull();
+  });
+
   it('keeps gameplay state in memory when every persistent write fails', () => {
     vi.spyOn(Storage.prototype, 'setItem').mockImplementation(() => {
       throw new DOMException('The quota has been exceeded.', 'QuotaExceededError');

@@ -44,6 +44,7 @@ export interface Seat {
   uid: string;
   name: string;
   ready: boolean;
+  bot?: boolean;
   tablePosition?: TablePosition;
 }
 

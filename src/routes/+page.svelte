@@ -4,6 +4,7 @@
   import '@fontsource/cormorant-garamond/700.css';
   import { replaceState } from '$app/navigation';
   import { onMount } from 'svelte';
+  import { botStateKey, nextBotAction, botPolicyVersion } from '$lib/game/bot';
   import { appTitle } from '$lib/app-metadata';
   import { setStoredValue } from '$lib/browser-storage';
   import GameTable from '$lib/components/GameTable.svelte';
@@ -55,6 +56,9 @@
   let selectedTablePosition = $state<TablePosition | null>(null);
   let actionPending = $state(false);
   let message = $state('');
+  let botError = $state('');
+  let botWritePending = $state(false);
+  let liveSynced = $state(false);
   let recoveryNotice = $state('');
   let pendingRetryId = $state<string | null>(null);
   let recoveryReview = $state(false);
@@ -67,6 +71,7 @@
 
   const room = $derived(projection.room);
   const game = $derived(projection.game);
+  const botTurn = $derived(Boolean(game && game.phase !== 'game-over' && room?.seats.some(s => s.bot && s.uid === game.players[game.turnSeat].uid)));
   const localSeat = $derived(room?.seats.find((seat) => seat.uid === userUid));
   const isHost = $derived(room?.hostUid === userUid);
   const sharedTablePhone = $derived(Boolean(room?.mode === 'shared-table' && localSeat && game && !tabletopRoute));
@@ -91,6 +96,7 @@
     tabletopOwned: room?.tabletopOwned ?? false,
     tabletopRoute,
     sharedDisplay,
+    bots: room?.seats.filter(s => s.bot).map(s => s.uid) ?? [],
     ready: room?.seats.map((seat) => seat.ready) ?? [],
     tablePositions: room?.seats.map((seat) => seat.tablePosition ?? null) ?? [],
     localSeat: localSeat?.name ?? null,
@@ -206,6 +212,8 @@
 
   async function openRoom(roomCode: string, db?: Awaited<ReturnType<typeof initializeFirebase>>['db']) {
     screen = 'loading-room';
+    liveSynced = false;
+    botError = '';
     message = '';
     const firestore = db ?? (await initializeFirebase()).db;
     repository = createEventRepository(firestore, roomCode, userUid);
@@ -229,6 +237,7 @@
     unsubscribe?.();
     unsubscribe = repository.subscribe(
       (remoteEvents) => {
+        liveSynced = true;
         events = mergeReplayEvents(events, remoteEvents);
         updateProjection(roomCode);
         writeReplayCache(roomCode, events);
@@ -330,6 +339,42 @@
     } finally {
       actionPending = false;
     }
+  }
+
+  $effect(() => {
+    if (!isHost || !botTurn || !game || !liveSynced || recoveryReview || actionPending || botWritePending || botError || events.some(e => e.createdAt === null)) return;
+    const expectedState = botStateKey(game);
+    const timer = setTimeout(() => void runBot(expectedState), 650);
+    return () => clearTimeout(timer);
+  });
+
+  async function runBot(expectedState: string) {
+    if (!repository || !game || !isHost || !botTurn || actionPending || botWritePending || botStateKey(game) !== expectedState) return;
+    const decision = nextBotAction(game);
+    if (!decision) { botError = 'The bot could not choose a move.'; return; }
+    botWritePending = true;
+    try {
+      await repository.append(decision.type, { ...decision.payload, botUid: game.players[game.turnSeat].uid, botState: expectedState, botVersion: botPolicyVersion });
+    } catch (error) {
+      botError = error instanceof Error ? error.message : 'The bot could not finish its move.';
+      pendingRetryId = repository.pendingId();
+    } finally { botWritePending = false; pendingRetryId = repository?.pendingId() ?? null; }
+  }
+
+  async function addBot(tablePosition?: TablePosition) {
+    if (!repository || !isHost || actionPending) return;
+    actionPending = true;
+    try { await repository.append('bot/added', tablePosition ? { tablePosition } : {}); }
+    catch (error) { message = error instanceof Error ? error.message : 'Could not add a bot.'; }
+    finally { actionPending = false; }
+  }
+
+  async function removeBot(botUid: string) {
+    if (!repository || !isHost || actionPending) return;
+    actionPending = true;
+    try { await repository.append('bot/removed', { botUid }); }
+    catch (error) { message = error instanceof Error ? error.message : 'Could not remove the bot.'; }
+    finally { actionPending = false; }
   }
 
   async function configureRoom(layout: string) {
@@ -692,13 +737,14 @@
             {#each room.seats as seat, index}
               <li>
                 <span class="seat-number">{index + 1}</span>
-                <span class="merchant-token" aria-hidden="true">{seat.name.slice(0, 1).toUpperCase()}</span><span class="seat-copy"><strong>{seat.name}{seat.uid === userUid ? ' · you' : ''}</strong><small>{seat.uid === room.hostUid ? 'Room creator' : 'Guest merchant'}</small></span><span class:ready={seat.ready} class="readiness">{seat.ready ? 'Ready' : 'Planning'}</span>
+                <span class="merchant-token" aria-hidden="true">{seat.name.slice(0, 1).toUpperCase()}</span><span class="seat-copy"><strong>{seat.name}{seat.uid === userUid ? ' · you' : ''}</strong><small>{seat.bot ? 'Bot · easy' : seat.uid === room.hostUid ? 'Room creator' : 'Guest merchant'}</small></span>{#if seat.bot && isHost}<button class="bot-lobby-button" aria-label={`Remove ${seat.name}`} onclick={() => void removeBot(seat.uid)} disabled={actionPending}>Remove</button>{:else}<span class:ready={seat.ready} class="readiness">{seat.ready ? 'Ready' : 'Planning'}</span>{/if}
               </li>
             {/each}
             {#if room.seats.length < room.maxPlayers}
-              <li class="open"><span class="seat-number">+</span><span class="empty-token" aria-hidden="true">+</span><span class="seat-copy"><strong>Room is open</strong><small>Another merchant may still join</small></span><span class="readiness">Inviting</span></li>
+              <li class="open"><span class="seat-number">+</span><span class="empty-token" aria-hidden="true">+</span><span class="seat-copy"><strong>Room is open</strong><small>Another merchant may still join</small></span>{#if isHost}<button class="bot-lobby-button" onclick={() => void addBot()} disabled={actionPending}>Add bot</button>{:else}<span class="readiness">Inviting</span>{/if}</li>
             {/if}
           </ol>
+          {#if room.seats.some(s => s.bot)}<p class="bot-note">Bots play automatically while the room creator keeps this page open.</p>{/if}
         </section>
 
         <aside class="table-card" aria-labelledby="table-title">
@@ -726,10 +772,10 @@
         {game} {room} userUid={userUid} {selectedPlace} selectedBonus={null} {boardScale} tabletopControls
         onInspectPlace={inspectPlace} onDismissPlace={() => selectedPlace = null} onInspectBonus={() => {}} onMove={(destination, assistantAction) => void moveTo(destination, assistantAction)} onPayMerchants={() => void payMerchants()}
         onTakeAction={(choice) => void takePlaceAction(choice)} onResolveEncounter={(choice) => void resolveEncounter(choice)} onUseMosqueAbility={(choice) => void useMosqueAbility(choice)} onPlayBonus={() => {}}
-        onGrantE2eResources={() => {}} onRematch={() => { if (room.tabletopOwned) void rematch(); }} onEndTurn={() => void endTurn()} onUndo={() => void undoLastAction()} onRollback={(targetEventId) => void rollbackTo(targetEventId)} undo={projection.undo} undoLog={projection.undoLog} gameLog={projection.gameLog} undoPending={actionPending}
+        onGrantE2eResources={() => {}} onRematch={() => { if (room.tabletopOwned) void rematch(); }} onEndTurn={() => void endTurn()} onUndo={() => void undoLastAction()} onRollback={(targetEventId) => void rollbackTo(targetEventId)} undo={projection.undo} undoLog={projection.undoLog} gameLog={projection.gameLog} undoPending={actionPending || botTurn}
         onZoomIn={() => boardScale = 1} onFit={() => boardScale = 1} {e2eResourceReview}
       />
-    {:else}<SharedTableLobby {room} invitationFor={(position) => makeInviteUrl(room.roomCode, { seat: position })} layoutNames={layoutNames} canConfigure={isHost && room.tabletopOwned} canStart={isHost && allReady} {actionPending} onConfigure={(layout) => void configureRoom(layout)} onStart={() => void startGame()} />{/if}
+    {:else}<SharedTableLobby {room} invitationFor={(position) => makeInviteUrl(room.roomCode, { seat: position })} layoutNames={layoutNames} canConfigure={isHost && room.tabletopOwned} canStart={isHost && allReady} {actionPending} onConfigure={(layout) => void configureRoom(layout)} onStart={() => void startGame()} onAddBot={(position) => void addBot(position)} onRemoveBot={(uid) => void removeBot(uid)} />{/if}
   {:else if screen === 'game' && room && game}
     {#if sharedTablePhone}
       <BonusController
@@ -737,7 +783,7 @@
         onPlayBonus={(cardId, choice) => void playBonus(cardId, choice)}
         onTakePrivateAction={(choice) => void takePrivatePlaceAction(choice)}
         onResolvePrivateEncounter={(cardId) => void resolvePrivateGovernor(cardId)}
-        onUndo={() => void undoLastAction()} onRollback={(targetEventId) => void rollbackTo(targetEventId)} undo={projection.undo} undoLog={projection.undoLog} gameLog={projection.gameLog} undoPending={actionPending}
+        onUndo={() => void undoLastAction()} onRollback={(targetEventId) => void rollbackTo(targetEventId)} undo={projection.undo} undoLog={projection.undoLog} gameLog={projection.gameLog} undoPending={actionPending || botTurn}
       />
     {:else}<GameTable
       {game}
@@ -763,7 +809,7 @@
       undo={projection.undo}
       undoLog={projection.undoLog}
       gameLog={projection.gameLog}
-      undoPending={actionPending}
+      undoPending={actionPending || botTurn}
       onZoomIn={() => boardScale = 1}
       onFit={() => boardScale = 1}
       {e2eResourceReview}
@@ -771,10 +817,14 @@
   {/if}
   {/if}
 
+  {#if botError}<div class="bot-error" role="alert">Bot paused: {botError} <button onclick={async () => { pendingRetryId = repository?.pendingId() ?? null; if (pendingRetryId) await retryPending(); if (!repository?.pendingId()) botError = ''; }}>Try again</button></div>{/if}
   <span class="state-output" data-testid="projection-state" data-room-code={room?.roomCode ?? ''} data-event-count={projection.acceptedEventIds.length} data-layout={room?.layout ?? ''} data-ready-count={room?.seats.filter((seat) => seat.ready).length ?? 0} data-seat-count={room?.seats.length ?? 0}>{stateSummary}</span>
 </main>
 
 <style>
+  .bot-lobby-button { padding: .25rem .5rem; border: 1px solid #173f43; border-radius: .4rem; color: #173f43; background: #efca7d; font: inherit; cursor: pointer; }
+  .bot-note { font-size: .75rem; color: #59706c; }
+  .bot-error { position: fixed; z-index: 100; bottom: 1rem; left: 1rem; padding: 1rem; background: #fffaf0; color: #842e28; }
   :global(*) { box-sizing: border-box; }
   :global(html) { min-width: 320px; background: #ead8b7; color: #173f43; font-family: 'Atkinson Hyperlegible', sans-serif; }
   :global(body) { margin: 0; }
@@ -921,6 +971,7 @@
     .seats { grid-template-columns: 1fr 1fr; gap: .35rem; margin-top: .55rem; }
     .seats li { min-height: 2.7rem; grid-template-columns: 1.7rem 1fr; gap: .35rem; padding: .35rem .45rem; }
     .seat-number, .readiness { display: none; }
+    .seats .bot-lobby-button { grid-column: 1 / -1; }
     .merchant-token, .empty-token { grid-row: 1 / 3; width: 1.65rem; height: 1.65rem; border-width: 2px; font-size: .7rem; }
     .seat-copy { line-height: 1; }
     .seat-copy small { font-size: .63rem; }

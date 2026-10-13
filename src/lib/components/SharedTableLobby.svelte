@@ -4,7 +4,7 @@
 
   let {
     room, invitationFor, layoutNames, canConfigure = false, canStart = false, actionPending = false,
-    onConfigure = () => {}, onStart = () => {}
+    onConfigure = () => {}, onStart = () => {}, onAddBot = () => {}, onRemoveBot = () => {}
   }: {
     room: RoomProjection;
     invitationFor: (position: TablePosition) => string;
@@ -14,6 +14,8 @@
     actionPending?: boolean;
     onConfigure?: (layout: LayoutKind) => void;
     onStart?: () => void;
+    onAddBot?: (position: TablePosition) => void;
+    onRemoveBot?: (uid: string) => void;
   } = $props();
 </script>
 
@@ -30,9 +32,11 @@
         <span class="seat-number">Position {position} · {tablePositionNames[position]}</span>
         {#if seat}
           <div class="claimed-token">{seat.name.slice(0, 1).toUpperCase()}</div>
-          <h2>{seat.name}</h2><p>{seat.ready ? 'Ready' : 'Getting ready'}</p>
+          <h2>{seat.name}</h2><p>{seat.bot ? 'Bot · easy' : seat.ready ? 'Ready' : 'Getting ready'}</p>
+          {#if seat.bot && canConfigure}<button class="bot-button" aria-label={`Remove ${seat.name}`} disabled={actionPending} onclick={() => onRemoveBot(seat.uid)}>Remove</button>{/if}
         {:else if room.seats.length < room.maxPlayers}
           <SeatQr url={invitationFor(position)} label={`Join position ${position}`} />
+          {#if canConfigure}<button class="bot-button" aria-label={`Add bot at position ${position}`} disabled={actionPending} onclick={() => onAddBot(position)}>Add bot</button>{/if}
         {:else}
           <div class="closed-position" aria-hidden="true">◆</div><h2>Table full</h2><p>Five merchants have joined.</p>
         {/if}
@@ -51,10 +55,11 @@
     </section>
   </div>
 
-  <footer><strong>{room.seats.filter(({ ready }) => ready).length}/{room.seats.length} ready · {room.maxPlayers - room.seats.length} merchant spots remaining</strong><span>Eight physical positions · two to five merchants · phones keep Bonus cards private</span></footer>
+  <footer><strong>{room.seats.filter(({ ready }) => ready).length}/{room.seats.length} ready · {room.maxPlayers - room.seats.length} merchant spots remaining</strong><span>{room.seats.some(s => s.bot) ? 'Keep this tabletop open so the bots can play.' : 'Eight physical positions · two to five merchants · phones keep Bonus cards private'}</span></footer>
 </section>
 
 <style>
+  .bot-button { margin-top: .3rem; padding: .2rem .6rem; border: 1px solid #173f43; border-radius: .35rem; background: #efca7d; color: #173f43; font: inherit; font-size: clamp(.5rem, .7vw, .8rem); cursor: pointer; }
   .table-lobby { height: 100%; display: flex; flex-direction: column; gap: clamp(.65rem, 1.2vw, 1.25rem); padding: clamp(.8rem, 1.8vw, 2rem); color: #fffaf0; background: radial-gradient(circle at 50% 0, #3a6e69 0, transparent 34rem), linear-gradient(145deg, #173f43, #0c292c); }
   header { display: flex; align-items: center; justify-content: space-between; gap: 2rem; }
   header p, .order-rule { margin: 0; color: #efca7d; font-size: clamp(.6rem, .8vw, .85rem); font-weight: 700; letter-spacing: .14em; text-transform: uppercase; }

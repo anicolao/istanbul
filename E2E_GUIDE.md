@@ -104,6 +104,9 @@ The initial suite follows the MVP's vertical slices:
     props for every stable ID, nested image loading, a titled rectangular rounded
     location, and full visibility on phone and desktop after every action.
 
+23. `023-bot-player` proves host-only bot seats, automatic readiness, removal,
+    automatic turns after reload, and shared-table convergence with two host tabs.
+
 Scenario numbers are stable once merged. Add the next number for a new coherent
 story; do not renumber existing scenarios to make room.
 

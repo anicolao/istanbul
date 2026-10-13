@@ -58,8 +58,23 @@ inspectable, revealing the exact current top-card art and rules text without
 changing game history.
 
 The Mocha & Baksheesh and Letters & Seals expansions, optional neutral-assistant
-variant, bots, matchmaking, accounts, rankings, and anti-cheat game authority
+variant, matchmaking, accounts, rankings, and anti-cheat game authority
 are outside the MVP.
+
+## Play against a bot
+
+Choose **Add bot** in a private-room lobby, or at an empty position on the
+shared tabletop. Bots are ready immediately; ready your own merchant and open
+the bazaar as usual. You can remove a bot before starting. Keep the room
+creator's page (the shared tabletop for table-owned rooms) open while playing;
+reopening it resumes any unfinished bot turn.
+
+This is an easy playtest opponent: it collects goods and money, sells at markets,
+recalls assistants, and buys rubies. It does not plan Bonus-card combinations or
+Mosque powers, and does not inspect opponents' hands or future draws/rolls.
+Its actions use the ordinary rules and immutable history. Concurrent host tabs
+cannot apply a decision twice. Once the bot responds, earlier human actions can
+no longer be undone, just as when another merchant has acted.
 
 ## Technical foundation
 

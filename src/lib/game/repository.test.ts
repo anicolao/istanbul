@@ -27,6 +27,13 @@ describe('event repository browser persistence', () => {
 
   afterEach(() => vi.restoreAllMocks());
 
+  it('serializes overlapping writes instead of leaving a pending event', async () => {
+    const repository = createEventRepository({} as Firestore, 'ROOM', 'player');
+    const results = await Promise.all([repository.append('turn/moved', {}), repository.append('turn/ended', {}), repository.append('turn/moved', {})]);
+    expect(results).toEqual(['player-000001', 'player-000002', 'player-000003']);
+    expect(repository.pendingId()).toBeNull();
+  });
+
   it('continues Firebase gameplay writes when localStorage rejects every write', async () => {
     vi.spyOn(Storage.prototype, 'setItem').mockImplementation(() => {
       throw new DOMException('The quota has been exceeded.', 'QuotaExceededError');

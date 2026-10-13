@@ -1,5 +1,6 @@
 const replayCachePrefix = 'istanbul:replay:';
 const volatileStorage = new Map<string, string>();
+const memoryOnlyKeys = new Set<string>();
 
 function browserStorage(): Storage | null {
   try {
@@ -20,21 +21,24 @@ function removeReplayCaches(storage: Storage, retainedKey: string) {
 }
 
 export function getStoredValue(key: string): string | null {
-  if (volatileStorage.has(key)) return volatileStorage.get(key) ?? null;
+  if (memoryOnlyKeys.has(key)) return volatileStorage.get(key) ?? null;
   try {
-    return browserStorage()?.getItem(key) ?? null;
+    const storage = browserStorage();
+    return storage ? storage.getItem(key) : volatileStorage.get(key) ?? null;
   } catch {
-    return null;
+    return volatileStorage.get(key) ?? null;
   }
 }
 
 export function setStoredValue(key: string, value: string): boolean {
   volatileStorage.set(key, value);
+  memoryOnlyKeys.add(key);
   const storage = browserStorage();
   if (!storage) return false;
 
   try {
     storage.setItem(key, value);
+    memoryOnlyKeys.delete(key);
     return true;
   } catch {
     removeReplayCaches(storage, key);
@@ -42,12 +46,14 @@ export function setStoredValue(key: string, value: string): boolean {
 
   try {
     storage.setItem(key, value);
+    memoryOnlyKeys.delete(key);
     return true;
   } catch {
     if (key.startsWith(replayCachePrefix)) {
       try {
         storage.removeItem(key);
         storage.setItem(key, value);
+        memoryOnlyKeys.delete(key);
         return true;
       } catch {
         // The latest value is still available in memory for this session.
@@ -59,8 +65,10 @@ export function setStoredValue(key: string, value: string): boolean {
 
 export function removeStoredValue(key: string) {
   volatileStorage.delete(key);
+  memoryOnlyKeys.add(key);
   try {
     browserStorage()?.removeItem(key);
+    memoryOnlyKeys.delete(key);
   } catch {
     // Persistent storage is optional; removing the in-memory value is sufficient.
   }
@@ -68,4 +76,5 @@ export function removeStoredValue(key: string) {
 
 export function resetVolatileStorageForTests() {
   volatileStorage.clear();
+  memoryOnlyKeys.clear();
 }

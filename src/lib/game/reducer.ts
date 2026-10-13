@@ -1,3 +1,4 @@
+import { botStateKey, nextBotAction, botPolicyVersion, matchesBotAction } from './bot';
 import { arrivalAction } from './direct-actions';
 import {
   isTablePosition,
@@ -108,6 +109,7 @@ function actionResult(state: ReplayProjection, event: CanonicalEvent): { summary
 }
 
 export function revealedInformationReason(event: CanonicalEvent): string | null {
+  if (event.payload.botUid) return 'The bot has acted';
   const choice = event.payload.choice as Record<string, unknown> | undefined;
   if (event.type === 'place/action-taken') {
     if (choice?.kind === 'caravansary-trade' || choice?.kind === 'caravansary-draw') return 'Bonus cards were revealed';
@@ -196,6 +198,9 @@ function reject(state: ReplayProjection, event: CanonicalEvent, reason: string) 
 }
 
 function controlsPublicTable(state: ReplayProjection, event: CanonicalEvent, playerUid: string): boolean {
+  if (state.room?.seats.some(seat => seat.uid === playerUid && seat.bot)) {
+    return event.actorUid === state.room.hostUid && event.payload.botUid === playerUid;
+  }
   return event.actorUid === playerUid || Boolean(
     state.room?.mode === 'shared-table'
     && state.room.tabletopOwned
@@ -350,6 +355,28 @@ function applyEvent(state: ReplayProjection, event: CanonicalEvent): boolean {
     return false;
   }
 
+  if (event.type === 'bot/added' || event.type === 'bot/removed') {
+    if (state.room.status !== 'lobby' || event.actorUid !== state.room.hostUid) {
+      reject(state, event, 'host-only'); return false;
+    }
+    if (event.type === 'bot/removed') {
+      const seat = state.room.seats.find(seat => seat.uid === event.payload.botUid && seat.bot);
+      if (!seat) { reject(state, event, 'bot-not-seated'); return false; }
+      state.room.seats = state.room.seats.filter(s => s !== seat);
+      return true;
+    }
+    if (state.room.seats.length >= state.room.maxPlayers) { reject(state, event, 'room-full'); return false; }
+    const position = event.payload.tablePosition;
+    if (state.room.tabletopOwned && (!isTablePosition(position) || state.room.seats.some(s => s.tablePosition === position))) {
+      reject(state, event, 'invalid-table-position'); return false;
+    }
+    const botNumber = Array.from({ length: 5 }, (_, i) => i + 1).find(i => !state.room!.seats.some(s => s.name === `Bot ${i}`))!;
+    state.room.seats.push({ uid: `bot:${event.id}`, name: `Bot ${botNumber}`, bot: true, ready: true,
+      ...(state.room.tabletopOwned ? { tablePosition: position as import('./protocol').TablePosition } : {}) });
+    if (state.room.tabletopOwned) state.room.seats.sort((a, b) => a.tablePosition! - b.tablePosition!);
+    return true;
+  }
+
   if (event.type === 'player/joined') {
     const name = stringField(event.payload, 'name');
     const tablePosition = event.payload.tablePosition;
@@ -405,7 +432,7 @@ function applyEvent(state: ReplayProjection, event: CanonicalEvent): boolean {
     state.room.maxPlayers = maxPlayers;
     state.room.layout = layout;
     state.room.mode = mode;
-    state.room.seats = state.room.seats.map((seat) => ({ ...seat, ready: false }));
+    state.room.seats = state.room.seats.map((seat) => ({ ...seat, ready: seat.bot === true }));
     return true;
   }
 
@@ -449,6 +476,20 @@ function applyEvent(state: ReplayProjection, event: CanonicalEvent): boolean {
     }
     state.game = createSetup(state.room, seed, state.game.epoch + 1);
     return true;
+  }
+
+  if (event.payload.botUid !== undefined) {
+    const player = state.game.players[state.game.turnSeat];
+    if (event.actorUid !== state.room.hostUid || !state.room.seats.some(s => s.uid === event.payload.botUid && s.bot)) {
+      reject(state, event, 'bot-not-authorized'); return false;
+    }
+    // A second host tab or a delayed write may have already advanced this decision.
+    if (event.payload.botUid !== player.uid || event.payload.botState !== botStateKey(state.game)) return false;
+    const decision = nextBotAction(state.game);
+    const { botUid, botState, botVersion, ...payload } = event.payload;
+    if (botVersion !== botPolicyVersion || !decision || !matchesBotAction(decision, event.type, payload)) {
+      reject(state, event, 'invalid-bot-decision'); return false;
+    }
   }
 
   if (event.type === 'turn/moved') {

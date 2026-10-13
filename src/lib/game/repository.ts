@@ -28,7 +28,18 @@ export function createEventRepository(db: Firestore, roomCode: string, actorUid:
   const events = collection(db, 'games', roomCode, 'events');
   const sequenceKey = `istanbul:sequence:${roomCode}:${actorUid}`;
   const pendingKey = `istanbul:pending:${roomCode}:${actorUid}`;
-  let activeWrite: Promise<string> | null = null;
+  let activeWrite: Promise<unknown> | null = null;
+
+  // Serialize both bot and human writes across same-origin host tabs.
+  async function withWriteLock<T>(operation: () => Promise<T>): Promise<T> {
+    const previous = activeWrite ?? Promise.resolve();
+    const write = previous.catch(() => {}).then(async () => {
+      const locks = typeof navigator !== 'undefined' ? navigator.locks : undefined;
+      return locks ? locks.request(`istanbul:write:${roomCode}:${actorUid}`, operation) : operation();
+    });
+    activeWrite = write;
+    try { return await write; } finally { if (activeWrite === write) activeWrite = null; }
+  }
 
   function clonePayload(payload: Record<string, unknown>) {
     return JSON.parse(JSON.stringify(payload)) as Record<string, unknown>;
@@ -61,7 +72,6 @@ export function createEventRepository(db: Firestore, roomCode: string, actorUid:
   }
 
   async function append(type: string, payload: Record<string, unknown>) {
-    if (activeWrite) await activeWrite;
     const existing = readPending();
     if (existing) {
       throw new Error(`Pending event ${existing.id} must be retried before a new action`);
@@ -81,13 +91,12 @@ export function createEventRepository(db: Firestore, roomCode: string, actorUid:
       type
     } };
     setStoredValue(pendingKey, JSON.stringify(pending));
-    activeWrite = send(pending);
-    try { return await activeWrite; } finally { activeWrite = null; }
+    return send(pending);
   }
 
   return {
-    append,
-    retryPending() { const pending = readPending(); return pending ? send(pending) : Promise.resolve(null); },
+    append: (type, payload) => withWriteLock(() => append(type, payload)),
+    retryPending: () => withWriteLock(() => { const pending = readPending(); return pending ? send(pending) : Promise.resolve(null); }),
     pendingId() { return readPending()?.id ?? null; },
     subscribe(onEvents, onError) {
       return onSnapshot(
