@@ -167,7 +167,6 @@
   }
   button:disabled {
     cursor: default;
-    opacity: 0.45;
   }
   small {
     position: absolute;

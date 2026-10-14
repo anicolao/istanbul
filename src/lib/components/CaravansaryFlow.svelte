@@ -158,7 +158,6 @@
     font-size: clamp(0.7rem, 1cqw, 1rem);
   }
   button:disabled {
-    opacity: 0.45;
     cursor: default;
   }
   button:focus-visible {

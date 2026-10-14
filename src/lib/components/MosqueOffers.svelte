@@ -158,9 +158,6 @@
   button:disabled {
     cursor: default;
   }
-  button:disabled:not(.owned) {
-    opacity: 0.55;
-  }
   .owned {
     border-color: #f4d178;
   }

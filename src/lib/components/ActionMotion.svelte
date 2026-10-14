@@ -172,17 +172,19 @@
               s.adjustDie
                 ? [
                     {
-                      transform: `translateY(-${((s.oldDice?.[i] ?? 1) - 1) * 60}px)`
+                      transform: `translateY(-${((s.oldDice?.[i] ?? 1) - 1) * 60}px)`,
+                      easing: 'steps(1,end)'
                     },
                     { transform: `translateY(-${(s.dice![i] - 1) * 60}px)` }
                   ]
                 : Array.from({ length: 15 }, (_, frame) => ({
                     transform: `translateY(-${(frame === 14 ? s.dice![i] - 1 : Math.floor(Math.random() * 6)) * 60}px)`,
-                    offset: frame / 14
+                    offset: frame / 14,
+                    easing: 'steps(1,end)'
                   })),
               {
                 ...options,
-                easing: 'steps(1,end)',
+                easing: 'linear',
                 fill: 'forwards'
               }
             ).finished
