@@ -14,10 +14,7 @@ export function tableSeat(
     const relative =
       (index - local + game.players.length) % game.players.length;
     const count = game.players.length;
-    const width = Math.min(26, 90 / count);
-    if (relative === 0) return { x: 50, y: 90, angle: 0, width };
-    const opponents = count - 1;
-    return { x: (100 * relative) / (opponents + 1), y: 10, angle: 0, width };
+    return { x: (100 * (relative + 0.5)) / count, y: 100, angle: 0, width: 90 / count, order: relative };
   }
   const position =
     room.seats.find((s) => s.uid === game.players[index].uid)?.tablePosition ??

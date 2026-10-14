@@ -567,7 +567,7 @@
   class="tabletop-surface"
   bind:this={surface}
   class:personal
-  style={`--opponents:${Math.max(1, game.players.length - 1)};--courtyard:url('${base}/art/bazaar-courtyard.png')`}
+  style={`--players:${game.players.length};--compact-rows:${Math.ceil(game.players.length / 2)};--courtyard:url('${base}/art/bazaar-courtyard.png')`}
   aria-label="Shared Istanbul table"
   data-motion-active={Boolean(motion)}
   data-e2e-fit
@@ -1099,21 +1099,8 @@
     font-size: 0.65rem;
   }
   @media (max-aspect-ratio: 1/1) {
-    .personal .table {
-      width: min(100cqw, 60cqh);
-      aspect-ratio: 3/5;
-    }
-    .personal :global(.mat) {
-      width: min(70cqw, calc(90cqw / var(--opponents)));
-    }
-    .personal .board {
-      left: 2%;
-      width: 96%;
-      top: 24%;
-      height: 40%;
-    }
     .personal .zoom-tile {
-      --choice-card-width: 12cqw;
+      --choice-card-width: 7cqw;
       top: 48%;
     }
     .personal .hand-panel {
@@ -1125,6 +1112,13 @@
     .personal .zoom-tile :global(button),
     .personal .zoom-tile :global(p) {
       font-size: 3cqw;
+    }
+    .personal .zoom-tile :global(.caravansary-flow) {
+      --choice-card-width: 7cqw;
+    }
+    .personal .zoom-tile :global(.destinations button) {
+      aspect-ratio: 2.3;
+      font-size: 2cqw;
     }
   }
 
@@ -1149,6 +1143,58 @@
     aspect-ratio: 16/9;
     container-type: inline-size;
     isolation: isolate;
+  }
+  .personal .table {
+    --tray-columns: var(--players);
+    --tray-rows: 1;
+    --mat-width: min(calc((100cqw - (var(--tray-columns) + 1) * 8px) / var(--tray-columns)), 32cqh);
+    --mat-height: calc(var(--mat-width) * 0.325);
+    --tray-height: calc(var(--tray-rows) * var(--mat-height) + (var(--tray-rows) - 1) * 8px);
+    width: 100%;
+    height: 100%;
+    aspect-ratio: auto;
+    container-type: size;
+  }
+  .personal .board {
+    box-sizing: border-box;
+    left: 50%;
+    top: calc((100% - var(--tray-height) - 16px) / 2);
+    transform: translate(-50%, -50%);
+    width: min(calc(100cqw - 16px), calc((100cqh - var(--tray-height) - 24px) * 16 / 9));
+    height: auto;
+    aspect-ratio: 16 / 9;
+  }
+  .personal :global(.seats) {
+    inset: auto 8px 8px;
+    display: grid;
+    grid-template-columns: repeat(var(--tray-columns), var(--mat-width));
+    grid-auto-rows: var(--mat-height);
+    justify-content: center;
+    gap: 8px;
+  }
+  .personal :global(.mat) {
+    position: relative;
+    box-sizing: border-box;
+    left: auto;
+    top: auto;
+    width: 100%;
+    height: 100%;
+    transform: none;
+    order: var(--seat-order);
+  }
+  .personal .table-controls {
+    top: 6px;
+    bottom: auto;
+  }
+  .personal .last-move {
+    top: 6px;
+    bottom: auto;
+  }
+  @media (max-width: 600px) and (max-aspect-ratio: 1/1) {
+    .personal .table {
+      --tray-columns: 2;
+      --tray-rows: var(--compact-rows);
+    }
   }
   fieldset {
     min-width: 0;
