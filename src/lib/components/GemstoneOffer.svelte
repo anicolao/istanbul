@@ -1,7 +1,7 @@
 <script lang="ts">
   import GameArt from './GameArt.svelte';
 
-  let { price }: { price: number } = $props();
+  let { price, taken = false }: { price: number; taken?: boolean } = $props();
   const prices = $derived(
     Array.from({ length: 3 }, (_, offset) => Math.min(25, price + offset))
   );
@@ -24,16 +24,23 @@
         ><GameArt kind="component" component="lira" /><b>{amount}</b></span
       >
       <span class="payout"
-        ><span aria-hidden="true">→</span><GameArt
-          kind="component"
-          component="ruby"
-        /></span
+        ><span aria-hidden="true">→</span><span
+          data-gemstone-ruby
+          class:taken={index === 0 && taken}
+          ><GameArt kind="component" component="ruby" /></span
+        ></span
       >
     </span>
   {/each}
 </span>
 
 <style>
+  [data-gemstone-ruby] {
+    display: inline-flex;
+  }
+  .taken {
+    visibility: hidden;
+  }
   .gemstone-payoffs {
     display: grid;
     grid-template-columns: max-content max-content max-content;

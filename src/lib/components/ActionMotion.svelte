@@ -20,6 +20,39 @@
     onBoardComplete: () => void;
     onComplete: () => void;
   } = $props();
+  const pipPositions = [
+    [[50, 50]],
+    [
+      [25, 25],
+      [75, 75]
+    ],
+    [
+      [25, 25],
+      [50, 50],
+      [75, 75]
+    ],
+    [
+      [25, 25],
+      [75, 25],
+      [25, 75],
+      [75, 75]
+    ],
+    [
+      [25, 25],
+      [75, 25],
+      [50, 50],
+      [25, 75],
+      [75, 75]
+    ],
+    [
+      [25, 25],
+      [75, 25],
+      [25, 50],
+      [75, 50],
+      [25, 75],
+      [75, 75]
+    ]
+  ];
   const tokens = new Map<number, HTMLElement>();
   let release: (() => void) | undefined;
   let roomReady = false;
@@ -143,15 +176,10 @@
                     },
                     { transform: `translateY(-${(s.dice![i] - 1) * 60}px)` }
                   ]
-                : [
-                    {
-                      transform: `translateY(-${((s.oldDice?.[i] ?? 1) - 1) * 60}px)`
-                    },
-                    { transform: 'translateY(-300px)', offset: 0.2 },
-                    { transform: 'translateY(0px)', offset: 0.45 },
-                    { transform: 'translateY(-240px)', offset: 0.7 },
-                    { transform: `translateY(-${(s.dice![i] - 1) * 60}px)` }
-                  ],
+                : Array.from({ length: 15 }, (_, frame) => ({
+                    transform: `translateY(-${(frame === 14 ? s.dice![i] - 1 : Math.floor(Math.random() * 6)) * 60}px)`,
+                    offset: frame / 14
+                  })),
               {
                 ...options,
                 easing: 'steps(1,end)',
@@ -185,7 +213,8 @@
         const flight = flyComponent(token, from, to, root!, {
           duration: s.duration,
           delay: 0,
-          aspectRatio: s.card?.length ? 0.5 : 1,
+          aspectRatio: s.card?.length ? 0.5 : s.badge !== undefined ? 0.75 : 1,
+          minSize: s.badge !== undefined ? 36 : 24,
           fade: s.fade
         });
         animations.push(flight);
@@ -237,13 +266,16 @@
   {#each plan.steps as step (step.id)}
     <div
       class="motion-token"
+      class:pawn-motion={step.badge !== undefined}
       class:dice-motion={step.effect === 'dice'}
       use:register={step.id}
       aria-hidden="true"
     >
       {#if step.effect === 'dice'}{#each [0, 1] as i}<span class="die-window"
             ><span class="die-strip"
-              >{#each ['⚀', '⚁', '⚂', '⚃', '⚄', '⚅'] as face}<b>{face}</b
+              >{#each pipPositions as pips}<b
+                  >{#each pips as [x, y]}<i style={`left:${x}%;top:${y}%`}
+                    ></i>{/each}</b
                 >{/each}</span
             ></span
           >{/each}
@@ -291,6 +323,11 @@
     font-size: clamp(12px, 1cqw, 20px);
     border: 1px solid #cda65f;
   }
+  .pawn-motion > strong {
+    font-size: 9px;
+    right: -5%;
+    bottom: 0;
+  }
   .dice-motion {
     display: flex;
     gap: 8px;
@@ -310,7 +347,16 @@
   .die-strip {
     display: block;
   }
+  .die-strip i {
+    position: absolute;
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    background: #263d32;
+    transform: translate(-50%, -50%);
+  }
   .die-strip b {
+    position: relative;
     display: block;
     font: 54px/60px serif;
     width: 60px;

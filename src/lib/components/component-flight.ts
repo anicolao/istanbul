@@ -10,12 +10,13 @@ export function flyComponent(
     fade?: boolean;
     emerge?: boolean;
     aspectRatio?: number;
+    minSize?: number;
   }
 ) {
   const a = source.getBoundingClientRect(),
     b = target.getBoundingClientRect(),
     bounds = surface.getBoundingClientRect();
-  const size = Math.max(24, Math.min(a.width, a.height));
+  const size = Math.max(options.minSize ?? 24, Math.min(a.width, a.height));
   const height = size / (options.aspectRatio ?? 1);
   const x = a.left + a.width / 2 - bounds.left - size / 2;
   const y = a.top + a.height / 2 - bounds.top - height / 2;

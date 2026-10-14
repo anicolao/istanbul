@@ -125,3 +125,36 @@ it('uses the selected demand well when matching goods repeat', () => {
       .selector
   ).toBe('[data-demand-slot="3"]');
 });
+
+describe('arrival purchase sequencing', () => {
+  for (const id of ['arrival-1', 'arrival-16']) {
+    it(`${id}: zoom precedes payments and rewards`, () => {
+      const { before, after } = transition(id);
+      const plan = planActionMotion(before, after);
+      const payments = plan.steps.filter(
+        (s) => s.from.selector === '[data-lira]'
+      );
+      expect(payments.length).toBeGreaterThan(0);
+      expect(payments.every((s) => s.stage === 'room')).toBe(true);
+      expect(plan.steps.find((s) => s.badge !== undefined)?.stage).toBe(
+        'board'
+      );
+    });
+  }
+  it('sends repeat-card payments to the dealer rather than the discard pile', () => {
+    const { before, after } = transition('bonus-repeat-gemstone-1');
+    const payments = planActionMotion(before, after).steps.filter((s) => s.from.selector === '[data-lira]');
+    expect(payments.length).toBeGreaterThan(0);
+    expect(payments.every((s) => s.to.place === 16 && s.to.selector === '[data-price-step="0"] .cost')).toBe(true);
+  });
+  it('takes the dealer ruby from the now row', () => {
+    const { before, after } = transition('action-16');
+    const flight = planActionMotion(before, after).steps.find((s) =>
+      s.to.selector?.includes('data-ruby-slot')
+    )!;
+    expect(flight.from.selector).toBe(
+      '[data-price-step="0"] [data-gemstone-ruby]'
+    );
+    expect(flight.hideSource).toBe(true);
+  });
+});

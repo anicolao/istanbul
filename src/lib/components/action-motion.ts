@@ -172,12 +172,11 @@ export function planActionMotion(
   const actionChanged =
     JSON.stringify(before.lastAction) !== JSON.stringify(after.lastAction);
   const kind = reverse ? before.lastAction?.kind : action?.kind;
-  const purchase = [
-    'sultan-buy',
-    'mosque-take',
-    'gemstone-buy',
-    'wainwright-buy'
-  ].includes(kind ?? '');
+  const purchase =
+    (actionChanged || reverse) &&
+    ['sultan-buy', 'mosque-take', 'gemstone-buy', 'wainwright-buy'].includes(
+      kind ?? ''
+    );
   const market = kind === 'market-sell' && !encounter && !bonus;
   const post =
     kind === 'post-office-collect' &&
@@ -468,23 +467,24 @@ export function planActionMotion(
       if (!post && !(gain && payer))
         for (const bundle of coinBundles(amount - total)) {
           total += bundle;
-          const origin = bonus
-            ? room('[data-card-pile="discard"]', 6)
-            : encounter?.kind === 'catch-family'
-              ? room('.workers')
-              : before.pending?.kind === 'merchant-payment' &&
-                  before.pending.neutralMerchantIds.length
-                ? room('[data-piece-kind="neutral-merchant"]')
-                : encounter
-                  ? room(
-                      `[data-piece-kind="${encounter.kind.startsWith('governor') ? 'governor' : 'smuggler'}"]`
-                    )
-                  : kind === 'gemstone-buy'
-                    ? room('[data-price-step="0"] .cost')
-                    : room(market ? '[data-market-coins]' : undefined);
+          const origin =
+            bonus && !purchase
+              ? room('[data-card-pile="discard"]', 6)
+              : encounter?.kind === 'catch-family'
+                ? room('.workers')
+                : before.pending?.kind === 'merchant-payment' &&
+                    before.pending.neutralMerchantIds.length
+                  ? room('[data-piece-kind="neutral-merchant"]')
+                  : encounter
+                    ? room(
+                        `[data-piece-kind="${encounter.kind.startsWith('governor') ? 'governor' : 'smuggler'}"]`
+                      )
+                    : kind === 'gemstone-buy'
+                      ? room('[data-price-step="0"] .cost')
+                      : room(market ? '[data-market-coins]' : undefined);
           add({
             stage:
-              movement || before.phase === 'merchant-payment'
+              !purchase && (movement || before.phase === 'merchant-payment')
                 ? 'board'
                 : 'room',
             from: gain ? origin : mat(p.uid, '[data-lira]'),
@@ -492,7 +492,7 @@ export function planActionMotion(
             art: componentArt.lira,
             amount: bundle,
             delay:
-              (movement ? 1200 : roomDelay) +
+              (movement && !purchase ? 1200 : roomDelay) +
               (coinBundles(total).length - 1) * 200,
             patches: [patch(pi, 'lira', old.lira + (gain ? total : -total))]
           });
@@ -586,13 +586,14 @@ export function planActionMotion(
         kind === 'sultan-buy'
           ? '.sultan-offer .ruby'
           : kind === 'gemstone-buy'
-            ? '[data-price-step="0"] .payout'
+            ? '[data-price-step="0"] [data-gemstone-ruby]'
             : '[data-location-reward="ruby"]'
       );
       add({
         from: gain ? origin : mat(p.uid, `[data-ruby-slot="${slot}"]`),
         to: gain ? mat(p.uid, `[data-ruby-slot="${slot}"]`) : origin,
         art: componentArt.ruby,
+        hideSource: gain && kind === 'gemstone-buy',
         delay:
           rewardDelay +
           (changedPowers.length || p.capacity !== old.capacity ? 500 : 0) +

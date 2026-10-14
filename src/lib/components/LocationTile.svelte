@@ -2,10 +2,12 @@
   import { places } from '$lib/game/manifests';
   import { locationStateSummary } from '$lib/game/location-state';
   import type { GameSetup } from '$lib/game/setup';
+  import type { GemstoneDisplay } from './gemstone-offer';
   import LocationFace from './LocationFace.svelte';
 
   let {
     game,
+    gemstone,
     placeId,
     index = 0,
     selected = false,
@@ -20,6 +22,7 @@
     onclick
   }: {
     game: GameSetup;
+    gemstone?: GemstoneDisplay;
     placeId: number;
     index?: number;
     selected?: boolean;
@@ -66,7 +69,7 @@
   {onkeydown}
   {onclick}
 >
-  <LocationFace {game} {placeId} />
+  <LocationFace {game} {placeId} {gemstone} />
   {#if actionReady}<span class="action-ready-label"
       >{actionHint ?? 'Your action'}</span
     >{/if}

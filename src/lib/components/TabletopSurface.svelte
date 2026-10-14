@@ -1,4 +1,5 @@
 <script lang="ts">
+  import { gemstoneDisplay } from './gemstone-offer';
   import { untrack } from 'svelte';
   import ActionMotion from './ActionMotion.svelte';
   import {
@@ -96,6 +97,18 @@
   const visualGame = $derived(
     motion ? projectMotion(motion, new Set(landedSteps)) : game
   );
+  const gemstone = $derived.by(() => {
+    const flight = motion?.steps.find(
+      (s) =>
+        s.from.place === 16 && s.from.selector?.includes('data-gemstone-ruby')
+    );
+    if (motion && flight && !motion.reverse)
+      return {
+        price: motion.before.rubyTracks.gemstonePrice,
+        taken: landedSteps.includes(flight.id)
+      };
+    return gemstoneDisplay(game);
+  });
   const matGame = $derived(visualGame),
     boardGame = $derived(visualGame),
     mailGame = $derived(
@@ -578,6 +591,7 @@
       data-testid="bazaar-board"
     >
       {#each game.board as id, index}<LocationTile
+          {gemstone}
           game={boardGame}
           actionReady={id === 7 && activePlace === 7 && canEnd}
           actionHint={id === 7 && activePlace === 7 && canEnd
@@ -640,6 +654,7 @@
           onintroend={() => (zoomReady = true)}
         >
           <LocationFace
+            {gemstone}
             game={mailGame}
             placeId={zoom}
             expanded

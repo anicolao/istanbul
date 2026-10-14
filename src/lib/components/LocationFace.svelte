@@ -11,6 +11,7 @@
   import SultanOffer from './SultanOffer.svelte';
   import MosqueOffers from './MosqueOffers.svelte';
   import MarketFlow from './MarketFlow.svelte';
+  import { gemstoneDisplay, type GemstoneDisplay } from './gemstone-offer';
   import GemstoneOffer from './GemstoneOffer.svelte';
   import DicePayoffs from './DicePayoffs.svelte';
   import MailTrack from './MailTrack.svelte';
@@ -22,6 +23,7 @@
     expanded = false,
     caravanActive = false,
     offerActive = false,
+    gemstone = gemstoneDisplay(game),
     caravanHidden = false,
     disabled = false,
     onAction = () => {}
@@ -31,6 +33,7 @@
     expanded?: boolean;
     caravanActive?: boolean;
     offerActive?: boolean;
+    gemstone?: GemstoneDisplay;
     caravanHidden?: boolean;
     disabled?: boolean;
     onAction?: (choice: PlaceActionChoice) => void;
@@ -169,7 +172,7 @@
     >{/if}
   {#if placeId === 16}
     <span class="dice-legend"
-      ><GemstoneOffer price={game.rubyTracks.gemstonePrice} /></span
+      ><GemstoneOffer price={gemstone.price} taken={gemstone.taken} /></span
     >
   {/if}
   {#if placeId === 8 || placeId === 9}
