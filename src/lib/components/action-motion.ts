@@ -357,7 +357,7 @@ export function planActionMotion(
         } else if (kind === 'mosque-take' && !encounter)
           origin = room(`[data-mosque-payment="${g}"]`);
         else if (encounter?.kind === 'smuggler-trade')
-          origin = room('[data-piece-kind="smuggler"]');
+          origin = room('[data-piece-kind="smuggler"]', before.smugglerPlace);
         else if (post) {
           const col = postOfficeRows.findIndex(
             (rows) =>
@@ -477,7 +477,10 @@ export function planActionMotion(
                   ? room('[data-piece-kind="neutral-merchant"]')
                   : encounter
                     ? room(
-                        `[data-piece-kind="${encounter.kind.startsWith('governor') ? 'governor' : 'smuggler'}"]`
+                        `[data-piece-kind="${encounter.kind.startsWith('governor') ? 'governor' : 'smuggler'}"]`,
+                        encounter.kind.startsWith('governor')
+                          ? before.governorPlace
+                          : before.smugglerPlace
                       )
                     : kind === 'gemstone-buy'
                       ? room('[data-price-step="0"] .cost')
@@ -661,10 +664,13 @@ export function planActionMotion(
       duration: 700,
       patches: []
     });
-  // Relocations should be visible on the table; dice and payments can then use the expanded room.
+  // Resolve encounters on the board, never against the shrinking room overlay.
+  // Payments land at the encounter before its visitor starts relocating.
   if (encounter?.dice) {
     for (const step of plan.steps) {
       step.stage = 'board';
+      if (step.from.place) step.from.board = true;
+      if (step.to.place) step.to.board = true;
       if (step.effect === 'dice') step.delay = 600;
       else if (step.art === pieceArt.governor || step.art === pieceArt.smuggler)
         step.delay = 1600;

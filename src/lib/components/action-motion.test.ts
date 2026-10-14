@@ -158,3 +158,28 @@ describe('arrival purchase sequencing', () => {
     expect(flight.hideSource).toBe(true);
   });
 });
+
+describe('encounter payments precede relocation', () => {
+  for (const [id, npc] of [['governor-pay', 'governor'], ['smuggler', 'smuggler']] as const) {
+    it(`${npc}: coins land on the original board tile before the visitor moves`, () => {
+      const { before, after } = transition(id);
+      const plan = planActionMotion(before, after);
+      const oldPlace = before[`${npc}Place`];
+      const newPlace = after[`${npc}Place`];
+      expect(newPlace).not.toBe(oldPlace);
+      const payments = plan.steps.filter((s) => s.from.selector === '[data-lira]');
+      expect(payments).toHaveLength(2);
+      const relocation = plan.steps.find((s) => s.art?.endsWith(`/${npc}-transparent.png`))!;
+      for (const payment of payments) {
+        expect(payment.to).toEqual({ place: oldPlace, selector: `[data-piece-kind="${npc}"]`, board: true });
+        expect(payment.stage).toBe('board');
+        expect(payment.delay + payment.duration).toBeLessThanOrEqual(relocation.delay);
+      }
+      expect(relocation.to.place).toBe(newPlace);
+      for (const step of plan.steps) {
+        if (step.from.place) expect(step.from.board).toBe(true);
+        if (step.to.place) expect(step.to.board).toBe(true);
+      }
+    });
+  }
+});

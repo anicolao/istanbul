@@ -93,6 +93,17 @@ test('a shared tabletop plays a human and bot game with two host tabs', async ({
   browser,
   context
 }, testInfo) => {
+  await page.addInitScript(() => {
+    const animate = Element.prototype.animate;
+    const flights: string[] = [];
+    Object.assign(window, { merchantFlights: flights });
+    Element.prototype.animate = function (frames, options) {
+      const pawn = this.querySelector('img')?.getAttribute('src');
+      if (this.classList.contains('pawn-motion') && pawn?.includes('/merchant-') &&
+          Array.isArray(frames) && frames.some((frame) => frame.transform)) flights.push(pawn);
+      return animate.call(this, frames, options);
+    };
+  });
   const roomCode = testInfo.project.name === 'phone' ? 'BOTPB' : 'BOTDB';
   const phoneContext = await browser.newContext({
     baseURL: String(testInfo.project.use.baseURL),
@@ -124,6 +135,8 @@ test('a shared tabletop plays a human and bot game with two host tabs', async ({
       diagnosticCount: 0,
       game: { currentTurn: 'Ada', turnNumber: 2, phase: 'movement' }
     });
+    await expect(page.locator('[data-motion-active]')).toHaveAttribute('data-motion-active', 'false');
+    expect(await page.evaluate(() => (window as unknown as { merchantFlights: string[] }).merchantFlights)).toHaveLength(1);
     await page.locator('[data-place-id="4"]').click();
     await expectState(page, {
       game: { currentTurn: 'Ada', players: [{ goods: { fruit: 2 } }, {}] }
@@ -136,6 +149,9 @@ test('a shared tabletop plays a human and bot game with two host tabs', async ({
       diagnosticCount: 0,
       game: { currentTurn: 'Ada', turnNumber: 4, phase: 'movement' }
     });
+    await expect(page.locator('[data-motion-active]')).toHaveAttribute('data-motion-active', 'false');
+    // Two bot moves and the human's intervening move, each animated once.
+    expect(await page.evaluate(() => (window as unknown as { merchantFlights: string[] }).merchantFlights)).toHaveLength(3);
     const state = await readState(page);
     await expectState(otherHost, {
       diagnosticCount: 0,

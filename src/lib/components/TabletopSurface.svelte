@@ -40,7 +40,7 @@
   import BonusCardChoices from './BonusCardChoices.svelte';
   import BonusCard from './BonusCard.svelte';
   let {
-    game,
+    game: incomingGame,
     room,
     userUid,
     onMove,
@@ -84,10 +84,12 @@
     onGrantE2eResources?: () => void;
     e2eResourceReview?: string;
   } = $props();
+  let game = $state.raw(untrack(() => incomingGame));
   let surface = $state<HTMLElement>();
   let zoomReady = $state(false);
   let previousGame: GameSetup | undefined;
   let motion = $state.raw<MotionPlan | null>(null);
+  const pendingMotions: MotionPlan[] = [];
   let landedSteps = $state<number[]>([]);
   let boardMotion = $state(false);
   let undoMotion = false;
@@ -154,6 +156,11 @@
     motion = null;
     boardMotion = false;
     landedSteps = [];
+    while (pendingMotions.length) {
+      const next = pendingMotions.shift()!;
+      startMotion(next);
+      if (motion) return;
+    }
     if (queuedUndo) {
       queuedUndo = false;
       undoMotion = true;
@@ -164,28 +171,39 @@
       collapsed = true;
     }
   }
+  function startMotion(next: MotionPlan) {
+    game = next.after;
+    motion = next.steps.length ? next : null;
+    landedSteps = [];
+    boardMotion = next.steps.some((s) => s.stage === 'board');
+  }
   $effect(() => {
-    const current = game;
+    const current = incomingGame;
     untrack(() => {
       const snapshot = structuredClone($state.snapshot(current));
+      // Optimistic writes, acknowledgements and replay can publish the same
+      // position repeatedly. They must not restart an unfinished flight.
+      if (previousGame && JSON.stringify(snapshot) === JSON.stringify(previousGame)) return;
       if (
         previousGame &&
         previousGame.epoch === current.epoch &&
         previousGame.seed === current.seed
       ) {
-        const start = motion
-          ? structuredClone($state.snapshot(visualGame))
-          : previousGame;
         const next = planActionMotion(
-          start,
+          previousGame,
           snapshot,
           undoMotion,
           undoMotion ? undefined : motionChoice
         );
-        motion = next.steps.length ? next : null;
-        landedSteps = [];
-        boardMotion = next.steps.some((s) => s.stage === 'board');
-      } else finishMotion();
+        // A fast bot may publish its next action before this one lands.
+        // Play each transition once, in order, from its committed position.
+        if (motion) pendingMotions.push(next);
+        else startMotion(next);
+      } else {
+        pendingMotions.length = 0;
+        game = snapshot;
+        finishMotion();
+      }
       undoMotion = false;
       motionChoice = undefined;
       previousGame = snapshot;

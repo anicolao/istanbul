@@ -1,5 +1,36 @@
 import { expect, test } from '@playwright/test';
 
+for (const [scenario, npc] of [['governor-pay', 'governor'], ['smuggler', 'smuggler']] as const) {
+  test(`${npc} payment targets the encounter board tile while the room closes`, async ({ page }) => {
+    await page.goto(`/dev/animations/?scenario=${scenario}&players=4&surface=shared-table&seat=6`);
+    await expect(page.locator('.zoom-tile')).toBeVisible();
+    await page.waitForFunction(() => {
+      const room = document.querySelector('.zoom-tile');
+      return room && room.getAnimations().every((animation) => animation.playState !== 'running');
+    });
+    await page.getByRole('button', { name: 'Trigger', exact: true }).click();
+    const coin = page.locator('.motion-token').filter({ has: page.locator('img[src$="/lira.png"]') }).first();
+    await expect(coin).toBeVisible();
+    const distance = await coin.evaluate((node, visitor) => {
+      const surface = node.closest('[data-motion-active]')!;
+      const target = surface.querySelector(`[data-place-id="3"] [data-piece-kind="${visitor}"]`)!;
+      const bounds = surface.getBoundingClientRect();
+      const destination = target.getBoundingClientRect();
+      const animation = node.getAnimations().find((a) =>
+        (a.effect as KeyframeEffect).getKeyframes().some((frame) => frame.transform)
+      )!;
+      const frame = (animation.effect as KeyframeEffect).getKeyframes().at(-1)!;
+      const transform = new DOMMatrix(String(frame.transform));
+      return Math.hypot(
+        bounds.left + transform.m41 + parseFloat((node as HTMLElement).style.width) / 2 - (destination.left + destination.width / 2),
+        bounds.top + transform.m42 + parseFloat((node as HTMLElement).style.height) / 2 - (destination.top + destination.height / 2)
+      );
+    }, npc);
+    expect(distance).toBeLessThan(1);
+    await expect(page.locator('[data-motion-active]')).toHaveAttribute('data-motion-active', 'false');
+  });
+}
+
 test('arrival payments wait for zoom and a purchased gemstone stays off the offer', async ({
   page
 }) => {
