@@ -1115,16 +1115,12 @@
     .personal .zoom-tile h1 {
       font-size: 5cqw;
     }
-    .personal .zoom-tile :global(button),
+    .personal .zoom-tile :global(button:not(.destinations button)),
     .personal .zoom-tile :global(p) {
       font-size: 3cqw;
     }
     .personal .zoom-tile :global(.caravansary-flow) {
       --choice-card-width: 7cqw;
-    }
-    .personal .zoom-tile :global(.destinations button) {
-      aspect-ratio: 2.3;
-      font-size: 2cqw;
     }
   }
 

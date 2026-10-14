@@ -33,7 +33,11 @@
   let wager = $state(7);
 </script>
 
-<div class="choices" aria-label="Place action">
+<div
+  class="choices"
+  class:police-map={placeId === 12 && player.familyPlace === 12}
+  aria-label="Place action"
+>
   {#if warehouse}
     <button
       class="offer primary"
@@ -245,15 +249,23 @@
     outline: 2px solid white;
     outline-offset: 2px;
   }
+  .choices.police-map {
+    height: 100%;
+    container-type: size;
+  }
   .destinations {
     display: grid;
-    grid-template-columns: repeat(4, 1fr);
-    gap: 0.35cqw;
-    width: 100%;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    grid-template-rows: repeat(4, minmax(0, 1fr));
+    gap: 0.6cqw;
+    width: min(100cqw, calc(100cqh * 16 / 9));
+    aspect-ratio: 16 / 9;
+    container-type: inline-size;
   }
   .destinations button {
-    min-height: 3.4cqw;
-    aspect-ratio: 1.5;
+    min-width: 0;
+    min-height: 0;
+    padding: 1cqw;
     overflow: hidden;
     line-height: 1.1;
     background-size: cover;
@@ -261,7 +273,7 @@
     text-shadow:
       0 1px 3px #000,
       0 0 5px #000;
-    font-size: 0.7cqw;
+    font-size: 2.8cqw;
     display: flex;
     align-items: end;
     justify-content: center;
