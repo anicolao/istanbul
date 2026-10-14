@@ -3,6 +3,8 @@
   import { locationStateSummary } from '$lib/game/location-state';
   import type { GameSetup } from '$lib/game/setup';
   import type { GemstoneDisplay } from './gemstone-offer';
+  import TurnHighlight from './TurnHighlight.svelte';
+  import { playerHighlightColors } from '$lib/game/art';
   import LocationFace from './LocationFace.svelte';
 
   let {
@@ -58,7 +60,7 @@
   class:arrived
   class:has-encounter={hasEncounter}
   class={`place family-${place.family}`}
-  style={`--row: ${Math.floor(index / 4)}; --column: ${index % 4}`}
+  style={`--row: ${Math.floor(index / 4)}; --column: ${index % 4};--seat-color:${playerHighlightColors[game.players[game.turnSeat].color]}`}
   aria-label={label}
   aria-pressed={selected}
   data-place-id={placeId}
@@ -70,6 +72,7 @@
   {onclick}
 >
   <LocationFace {game} {placeId} {gemstone} />
+  {#if reachable}<TurnHighlight />{/if}
   {#if actionReady}<span class="action-ready-label"
       >{actionHint ?? 'Your action'}</span
     >{/if}
@@ -105,9 +108,8 @@
     box-shadow: inset 0 0 6px #efca7d;
   }
   .place.reachable {
-    box-shadow:
-      0 0 0 1px #f4cf7599,
-      0 0.35rem 0.7rem #0005;
+    filter: drop-shadow(0 0 0.35cqw var(--seat-color))
+      drop-shadow(0 0.35cqw 0.4cqw #000a);
   }
   .place:focus-visible {
     outline: 3px solid #fff2a8;

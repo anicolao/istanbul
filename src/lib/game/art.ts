@@ -3,6 +3,14 @@ import type { BonusCardManifest, Good } from './manifests';
 export const playerColorNames = ['ruby', 'saffron', 'teal', 'indigo', 'plum'] as const;
 export type PlayerColorName = (typeof playerColorNames)[number];
 
+export const playerHighlightColors: Record<PlayerColorName, string> = {
+  ruby: '#d23b32',
+  saffron: '#e6a012',
+  teal: '#159f9b',
+  indigo: '#4387bd',
+  plum: '#b45b88'
+};
+
 export const locationArt = Object.fromEntries(
   Array.from({ length: 16 }, (_, index) => {
     const id = index + 1;

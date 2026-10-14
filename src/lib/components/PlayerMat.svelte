@@ -5,7 +5,8 @@
   import type { GameSetup, SetupPlayer } from '$lib/game/setup';
   import { mosqueTiles, type Good } from '$lib/game/manifests';
   import BonusCard from './BonusCard.svelte';
-  import { componentArt } from '$lib/game/art';
+  import TurnHighlight from './TurnHighlight.svelte';
+  import { componentArt, playerHighlightColors } from '$lib/game/art';
   let {
     game,
     room,
@@ -36,13 +37,6 @@
     onHand?: () => void;
   } = $props();
   const goods: Good[] = ['fabric', 'spice', 'fruit', 'jewelry'];
-  const colors: Record<string, string> = {
-    ruby: '#d26757',
-    saffron: '#e0b451',
-    teal: '#6ec4b4',
-    indigo: '#91aaf2',
-    plum: '#cd8acd'
-  };
   const asset = (path: string) => `${base}/${path}`;
 </script>
 
@@ -55,8 +49,9 @@
   aria-current={active ? 'true' : undefined}
   data-position={room.seats.find((s) => s.uid === player.uid)?.tablePosition ??
     index + 1}
-  style={`--x:${seat.x}%;--y:${seat.y}%;--rotation:${seat.angle}deg;--width:${seat.width}%;--seat-color:${colors[player.color]};background-image:url('${asset('art/game/mats/shared-five-slots-v2.png')}')`}
+  style={`--x:${seat.x}%;--y:${seat.y}%;--rotation:${seat.angle}deg;--width:${seat.width}%;--seat-color:${playerHighlightColors[player.color]};background-image:url('${asset('art/game/mats/shared-five-slots-v2.png')}')`}
 >
+  {#if active}<TurnHighlight />{/if}
   <strong class="name" data-player-name
     >{player.name}<span class="turn-light"></span></strong
   >
