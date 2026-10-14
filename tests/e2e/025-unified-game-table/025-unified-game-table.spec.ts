@@ -138,7 +138,7 @@ test('personal games use direct table actions, private cards, and a one-second r
       ]
     });
     const undo = page
-      .getByRole('navigation', { name: 'Game controls' })
+      .locator('.zoom-tile:not([inert])')
       .getByRole('button', { name: /Undo move/ });
     const undoBounds = await undo.boundingBox();
     expect(undoBounds!.height).toBeGreaterThanOrEqual(44);

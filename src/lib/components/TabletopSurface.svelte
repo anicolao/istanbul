@@ -403,11 +403,17 @@
     if (!source) return roomGeometry.get(node);
     const origin = source.getBoundingClientRect();
     const bounds = table.getBoundingClientRect();
+    const trayTop = personal
+      ? table.querySelector('.seats')?.getBoundingClientRect().top ?? bounds.bottom
+      : bounds.bottom;
+    const availableHeight = personal ? trayTop - bounds.top - 16 : bounds.height * 0.94;
+    const availableWidth = personal ? bounds.width - 16 : bounds.width * 0.94;
+    if (personal) node.style.top = `${8 + availableHeight / 2}px`;
     const sideways = Math.abs(angle % 180) === 90;
     const scale = Math.min(
       4,
-      ((sideways ? bounds.height : bounds.width) * 0.94) / origin.width,
-      ((sideways ? bounds.width : bounds.height) * 0.94) / origin.height
+      (sideways ? availableHeight : availableWidth) / origin.width,
+      (sideways ? availableWidth : availableHeight) / origin.height
     );
     node.style.width = `${origin.width * scale}px`;
     node.style.height = `${origin.height * scale}px`;
@@ -997,7 +1003,7 @@
       </section>{/if}
   </div>
   <nav class="table-controls" aria-label="Game controls">
-    <UndoButton {undo} {userUid} pending={undoPending} onUndo={animateUndo} />
+    {#if !personal}<UndoButton {undo} {userUid} pending={undoPending} onUndo={animateUndo} />{/if}
     <button onclick={() => (history = !history)} aria-expanded={history}
       >Game log</button
     >
@@ -1147,7 +1153,9 @@
   .personal .table {
     --tray-columns: var(--players);
     --tray-rows: 1;
-    --mat-width: min(calc((100cqw - (var(--tray-columns) + 1) * 8px) / var(--tray-columns)), 32cqh);
+    --tray-right: 104px;
+    --tray-bottom: 8px;
+    --mat-width: min(calc((100cqw - var(--tray-right) - var(--tray-columns) * 8px) / var(--tray-columns)), 32cqh);
     --mat-height: calc(var(--mat-width) * 0.325);
     --tray-height: calc(var(--tray-rows) * var(--mat-height) + (var(--tray-rows) - 1) * 8px);
     width: 100%;
@@ -1158,14 +1166,14 @@
   .personal .board {
     box-sizing: border-box;
     left: 50%;
-    top: calc((100% - var(--tray-height) - 16px) / 2);
+    top: calc((100% - var(--tray-height) - var(--tray-bottom) - 8px) / 2);
     transform: translate(-50%, -50%);
-    width: min(calc(100cqw - 16px), calc((100cqh - var(--tray-height) - 24px) * 16 / 9));
+    width: min(calc(100cqw - 16px), calc((100cqh - var(--tray-height) - var(--tray-bottom) - 16px) * 16 / 9));
     height: auto;
     aspect-ratio: 16 / 9;
   }
   .personal :global(.seats) {
-    inset: auto 8px 8px;
+    inset: auto var(--tray-right) var(--tray-bottom) 8px;
     display: grid;
     grid-template-columns: repeat(var(--tray-columns), var(--mat-width));
     grid-auto-rows: var(--mat-height);
@@ -1182,10 +1190,6 @@
     transform: none;
     order: var(--seat-order);
   }
-  .personal .table-controls {
-    top: 6px;
-    bottom: auto;
-  }
   .personal .last-move {
     top: 6px;
     bottom: auto;
@@ -1194,6 +1198,8 @@
     .personal .table {
       --tray-columns: 2;
       --tray-rows: var(--compact-rows);
+      --tray-right: 8px;
+      --tray-bottom: 60px;
     }
   }
   fieldset {
