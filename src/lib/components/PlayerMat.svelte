@@ -26,7 +26,7 @@
     room: RoomProjection;
     player: SetupPlayer;
     index?: number;
-    seat: { x: number; y: number; angle: number; width: number };
+    seat: { x: number; y: number; angle: number; width: number; order?: number };
     active?: boolean;
     userUid?: string;
     canEnd?: boolean;
@@ -49,7 +49,7 @@
   aria-current={active ? 'true' : undefined}
   data-position={room.seats.find((s) => s.uid === player.uid)?.tablePosition ??
     index + 1}
-  style={`--x:${seat.x}%;--y:${seat.y}%;--rotation:${seat.angle}deg;--width:${seat.width}%;--seat-color:${playerHighlightColors[player.color]};background-image:url('${asset('art/game/mats/shared-five-slots-v2.png')}')`}
+  style={`--seat-order:${seat.order ?? index};--x:${seat.x}%;--y:${seat.y}%;--rotation:${seat.angle}deg;--width:${seat.width}%;--seat-color:${playerHighlightColors[player.color]};background-image:url('${asset('art/game/mats/shared-five-slots-v2.png')}')`}
 >
   {#if active}<TurnHighlight />{/if}
   <strong class="name" data-player-name
