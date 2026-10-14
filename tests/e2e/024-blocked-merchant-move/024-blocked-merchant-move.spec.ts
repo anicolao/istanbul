@@ -20,7 +20,9 @@ test('an unaffordable merchant waits for acknowledgement before the bot can act'
     await page.goto(
       `/tabletop/?e2eRoom=${roomCode}&e2eSeed=5931f6f0-9b64-4e00-923a-f8ef49d673cc`
     );
+    await expect(page.getByRole('button', { name: 'Add bot at position 4', exact: true })).toBeVisible();
     await phone.goto(`/?room=${roomCode}&seat=4`);
+    await expect(phone.getByRole('heading', { name: 'Take a seat at the tabletop.' })).toBeVisible();
     await phone.getByLabel('Your merchant name').fill('Alex');
     await phone.getByRole('button', { name: /Join the room/ }).click();
     await phone.getByRole('button', { name: /I am ready/ }).click();
