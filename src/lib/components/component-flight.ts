@@ -22,29 +22,38 @@ export function flyComponent(
   const tx = b.left + b.width / 2 - bounds.left - size / 2;
   const ty = b.top + b.height / 2 - bounds.top - height / 2;
   const scale = (Math.min(b.width, b.height) * 0.85) / size;
-  const mat = target.closest<HTMLElement>('[data-player-uid]');
-  const angle = mat
-    ? parseFloat(getComputedStyle(mat).getPropertyValue('--rotation')) || 0
-    : 0;
+  const facing = (element: HTMLElement) => {
+    const mat = element.closest<HTMLElement>('[data-player-uid]');
+    const room = element.closest<HTMLElement>('.zoom-tile');
+    return mat
+      ? parseFloat(getComputedStyle(mat).getPropertyValue('--rotation')) || 0
+      : room
+        ? parseFloat(getComputedStyle(room).getPropertyValue('--facing')) || 0
+        : 0;
+  };
+  const startAngle = facing(source);
+  const turn =
+    ((((facing(target) - startAngle + 180) % 360) + 360) % 360) - 180;
+  const angle = startAngle + turn;
   token.style.width = `${size}px`;
   token.style.height = `${height}px`;
   return token.animate(
     [
       {
-        transform: `translate(${x}px,${y + (options.emerge ? 15 : 0)}px) scale(${options.emerge ? 0.7 : 1}) rotate(0deg)`,
+        transform: `translate(${x}px,${y + (options.emerge ? 15 : 0)}px) scale(${options.emerge ? 0.7 : 1}) rotate(${startAngle}deg)`,
         opacity: options.emerge ? 0 : 1
       },
       ...(options.emerge
         ? [
             {
-              transform: `translate(${x}px,${y}px) scale(1) rotate(0deg)`,
+              transform: `translate(${x}px,${y}px) scale(1) rotate(${startAngle}deg)`,
               opacity: 1,
               offset: 0.15
             }
           ]
         : []),
       {
-        transform: `translate(${x + (tx - x) * 0.45}px,${y + (ty - y) * 0.45 - 45}px) scale(1.25) rotate(${angle * 0.45}deg)`,
+        transform: `translate(${x + (tx - x) * 0.45}px,${y + (ty - y) * 0.45 - 45}px) scale(1.25) rotate(${startAngle + turn * 0.45}deg)`,
         opacity: 1,
         offset: 0.45
       },

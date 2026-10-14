@@ -156,13 +156,11 @@ test('the production gallery renders the same logical components used during pla
     ['place-07', 'place-08', 'place-09', 'place-10', 'place-11', 'place-12'],
     async () => {
       const tea = page.locator(
-        '[data-asset-id="place-09"] [data-component="TeaHousePayoffs"]'
+        '[data-asset-id="place-09"] [data-component="DicePayoffs"]'
       );
       await expect(tea).toBeVisible();
-      await expect(tea.locator('[data-outcome="success"]')).toContainText(
-        '≥ wager'
-      );
-      await expect(tea.locator('[data-outcome="failure"]')).toContainText('×2');
+      await expect(tea.locator('.outcome').nth(0)).toContainText('≥ wager');
+      await expect(tea.locator('.outcome').nth(1)).toContainText('2×');
     }
   );
   await nextPage(
@@ -173,16 +171,15 @@ test('the production gallery renders the same logical components used during pla
       const sultan = page.locator(
         '[data-asset-id="place-13"] [data-component="SultanOffer"]'
       );
-      await expect(sultan.locator('[data-sultan-good]')).toHaveCount(5);
+      await expect(sultan.locator('[data-sultan-slot]')).toHaveCount(6);
       expect(
         await sultan
-          .locator('[data-sultan-good]')
+          .locator('[data-sultan-slot]')
           .evaluateAll((slots) =>
-            slots.map((slot) => slot.getAttribute('data-required'))
+            slots.map((slot) => slot.getAttribute('data-sultan-payment'))
           )
-      ).toEqual(['1', '1', '1', '2', '1']);
-      await expect(sultan.locator('[data-sultan-good] b')).toHaveText('2');
-      await expect(sultan.locator('[data-sultan-next="fabric"]')).toBeVisible();
+      ).toEqual(['jewelry', 'fabric', 'spice', 'fruit', 'spice', 'jewelry']);
+      await expect(sultan.getByLabel('Next offer adds fabric')).toBeVisible();
       const gemstone = page.locator(
         '[data-asset-id="place-16"] [data-component="GemstoneOffer"]'
       );

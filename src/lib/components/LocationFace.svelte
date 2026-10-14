@@ -8,6 +8,11 @@
   import GameArt from './GameArt.svelte';
   import PlayingPiece from './PlayingPiece.svelte';
   import LocationState from './LocationState.svelte';
+  import SultanOffer from './SultanOffer.svelte';
+  import MosqueOffers from './MosqueOffers.svelte';
+  import MarketFlow from './MarketFlow.svelte';
+  import GemstoneOffer from './GemstoneOffer.svelte';
+  import DicePayoffs from './DicePayoffs.svelte';
   import MailTrack from './MailTrack.svelte';
   import CaravansaryFlow from './CaravansaryFlow.svelte';
   import type { PlaceActionChoice } from '$lib/game/actions';
@@ -16,6 +21,7 @@
     placeId,
     expanded = false,
     caravanActive = false,
+    offerActive = false,
     caravanHidden = false,
     disabled = false,
     onAction = () => {}
@@ -24,6 +30,7 @@
     placeId: number;
     expanded?: boolean;
     caravanActive?: boolean;
+    offerActive?: boolean;
     caravanHidden?: boolean;
     disabled?: boolean;
     onAction?: (choice: PlaceActionChoice) => void;
@@ -49,7 +56,17 @@
   );
 </script>
 
-<span class="location-face" class:expanded data-component="LocationFace" data-testid={[5, 6].includes(placeId) ? `place-state-${placeId}` : undefined} data-state-summary={[5, 6].includes(placeId) ? locationStateSummary(game, placeId) : undefined}>
+<span
+  class="location-face"
+  class:expanded
+  data-component="LocationFace"
+  data-testid={[5, 6, 8, 9, 10, 11, 13, 14, 15, 16].includes(placeId)
+    ? `place-state-${placeId}`
+    : undefined}
+  data-state-summary={[5, 6, 8, 9, 10, 11, 13, 14, 15, 16].includes(placeId)
+    ? locationStateSummary(game, placeId)
+    : undefined}
+>
   <img
     class="artwork"
     src={`${base}/${locationArt[placeId]}`}
@@ -93,6 +110,7 @@
         label={`${worker.player.name}'s ${worker.piece}`}
       />{/each}
   </span>
+  <span class="motion-supply" data-component-source aria-hidden="true"></span>
   {#if placeId === 1}<span
       class="wheelbarrow-source"
       data-wheelbarrow-source
@@ -120,12 +138,95 @@
       /></span
     >
   {/if}
-  {#if !expanded && placeId !== 12 && placeId !== 5 && placeId !== 6}<span
+  {#if placeId === 10 || placeId === 11}
+    <span class="market-position"
+      ><MarketFlow
+        {game}
+        player={game.players[game.turnSeat]}
+        {placeId}
+        active={expanded && offerActive}
+        {disabled}
+        {onAction}
+      /></span
+    >
+  {/if}
+  {#if placeId === 13}<span class="sultan-position"
+      ><SultanOffer
+        {game}
+        active={expanded && offerActive}
+        {disabled}
+        {onAction}
+      /></span
+    >{/if}
+  {#if placeId === 14 || placeId === 15}<span class="mosque-position"
+      ><MosqueOffers
+        {game}
+        {placeId}
+        active={expanded && offerActive}
+        {disabled}
+        {onAction}
+      /></span
+    >{/if}
+  {#if placeId === 16}
+    <span class="dice-legend"
+      ><GemstoneOffer price={game.rubyTracks.gemstonePrice} /></span
+    >
+  {/if}
+  {#if placeId === 8 || placeId === 9}
+    <span class="dice-legend"><DicePayoffs {placeId} /></span>
+  {/if}
+  {#if !expanded && ![5, 6, 8, 9, 10, 11, 12, 13, 14, 15, 16].includes(placeId)}<span
       class="state-area"><LocationState {game} {placeId} /></span
     >{/if}
 </span>
 
 <style>
+  .motion-supply {
+    position: absolute;
+    left: 46%;
+    top: 48%;
+    width: 8%;
+    height: 14%;
+    pointer-events: none;
+  }
+
+  .sultan-position,
+  .mosque-position {
+    position: absolute;
+    z-index: 3;
+    top: 26%;
+    left: 24%;
+    right: 24%;
+  }
+  .mosque-position {
+    left: 35%;
+    right: 35%;
+    top: 23%;
+  }
+  .expanded .sultan-position,
+  .expanded .mosque-position {
+    pointer-events: auto;
+  }
+
+  .market-position {
+    position: absolute;
+    z-index: 3;
+    left: 39.8%;
+    right: 39.8%;
+    top: 21%;
+  }
+  .expanded .market-position {
+    pointer-events: auto;
+  }
+
+  .dice-legend {
+    position: absolute;
+    z-index: 3;
+    left: 23%;
+    right: 23%;
+    top: 22%;
+    font-size: 3cqw;
+  }
   .caravan-position {
     position: absolute;
     z-index: 3;

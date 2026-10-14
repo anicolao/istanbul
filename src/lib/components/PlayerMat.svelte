@@ -57,7 +57,9 @@
     index + 1}
   style={`--x:${seat.x}%;--y:${seat.y}%;--rotation:${seat.angle}deg;--width:${seat.width}%;--seat-color:${colors[player.color]};background-image:url('${asset('art/game/mats/shared-five-slots-v2.png')}')`}
 >
-  <strong class="name">{player.name}<span class="turn-light"></span></strong>
+  <strong class="name" data-player-name
+    >{player.name}<span class="turn-light"></span></strong
+  >
   <div class="cargo" data-wheelbarrow>
     {#each goods as good}<div
         class="good"
@@ -122,19 +124,28 @@
           <TabletopArrow />{/if}</button
       >{/if}
   </div>
-  <div class="powers" aria-label={`${player.name} Mosque tiles`}>
-    {#each player.mosqueTileIds as id}{@const tile = mosqueTiles.find(
-        (t) => t.id === id
-      )}{#if tile}<button
-          aria-label={tile.ability}
-          title={tile.ability}
-          disabled={!active || busy}
-          onclick={() => onPower(tile.color)}
-          ><img
-            src={asset(componentArt.mosque[tile.color])}
-            alt={tile.ability}
-          /></button
-        >{/if}{/each}
+  <div
+    data-power-tray
+    class="powers"
+    aria-label={`${player.name} Mosque tiles`}
+  >
+    {#each goods as good}
+      {@const tile = mosqueTiles.find(
+        (t) => t.color === good && player.mosqueTileIds.includes(t.id)
+      )}
+      <span class="power-slot" data-power-slot={good}>
+        {#if tile}<button
+            aria-label={tile.ability}
+            title={tile.ability}
+            disabled={!active || busy}
+            onclick={() => onPower(good)}
+            ><img
+              src={asset(componentArt.mosque[good])}
+              alt={tile.ability}
+            /></button
+          >{/if}
+      </span>
+    {/each}
   </div>
 </article>
 
@@ -346,6 +357,12 @@
     display: flex;
     justify-content: center;
     gap: 1.4cqw;
+  }
+  .power-slot {
+    display: block;
+    width: 5.6cqw;
+    height: 100%;
+    flex: none;
   }
   .powers button {
     background: none;

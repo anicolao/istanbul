@@ -28,7 +28,7 @@ test('Ruby purchases and Bonus cards use direct components', async ({
     await nextAda(t);
     await travel(t, 13);
     await roomTile(page)
-      .getByRole('button', { name: 'Deliver goods', exact: true })
+      .getByRole('button', { name: 'Deliver goods for one ruby', exact: true })
       .click();
     await capture(
       t,

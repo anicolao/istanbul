@@ -21,7 +21,7 @@ test('Mosque powers appear on the same player mats', async ({
     await supply(page);
     await move(page, 14);
     await roomTile(page)
-      .getByRole('button', { name: /Hold 2; pay 1 fabric/ })
+      .getByRole('button', { name: /fabric power: hold 2 fabric, pay 1/ })
       .click();
     await expectState(page, {
       game: { players: [{ mosqueTileIds: ['mosque-fabric-2'] }, {}] }

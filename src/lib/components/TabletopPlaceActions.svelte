@@ -1,26 +1,25 @@
 <script lang="ts">
   import {
-    marketRevenueFor,
     postOfficeRows,
     warehouseGood,
-    type PlaceActionChoice,
-  } from "$lib/game/actions";
-  import { demandTiles, mosqueTiles, type Good } from "$lib/game/manifests";
-  import { defaultMarketSelection } from "$lib/game/market-selection";
-  import { ownsMosqueAbility } from "$lib/game/mosques";
-  import { currentSultanCost } from "$lib/game/ruby-routes";
-  import type { GameSetup, SetupPlayer } from "$lib/game/setup";
-  import { base } from "$app/paths";
-  import { locationArt, type PlayerColorName } from "$lib/game/art";
-  import { places } from "$lib/game/manifests";
-  import CaravansaryFlow from "./CaravansaryFlow.svelte";
-  import GameArt from "./GameArt.svelte";
+    type PlaceActionChoice
+  } from '$lib/game/actions';
+  import { type Good } from '$lib/game/manifests';
+  import MarketFlow from './MarketFlow.svelte';
+  import MosqueOffers from './MosqueOffers.svelte';
+  import SultanOffer from './SultanOffer.svelte';
+  import type { GameSetup, SetupPlayer } from '$lib/game/setup';
+  import { base } from '$app/paths';
+  import { locationArt, type PlayerColorName } from '$lib/game/art';
+  import { places } from '$lib/game/manifests';
+  import CaravansaryFlow from './CaravansaryFlow.svelte';
+  import GameArt from './GameArt.svelte';
   let {
     game,
     player,
     placeId,
     onAction,
-    onSkip,
+    onSkip
   }: {
     game: GameSetup;
     player: SetupPlayer;
@@ -28,74 +27,17 @@
     onAction: (choice: PlaceActionChoice) => void;
     onSkip: () => void;
   } = $props();
-  const goods: Good[] = ["fabric", "spice", "fruit", "jewelry"];
+  const goods: Good[] = ['fabric', 'spice', 'fruit', 'jewelry'];
   let recalls = $state<number[]>([]);
   const warehouse = $derived(warehouseGood(placeId));
-  const demand = $derived(
-    demandTiles.find(
-      (tile) =>
-        tile.id ===
-        (placeId === 10 ? game.largeDemand[0] : game.smallDemand[0]),
-    ),
-  );
-  let selected = $state<number[]>([]),
-    wild = $state<Good[]>([]),
-    wager = $state(7);
-  const flexible = $derived(
-    placeId === 11 && game.activeBonusEffects.includes("wild-small-market"),
-  );
-  $effect(() => {
-    selected = defaultMarketSelection(demand?.goods ?? [], player.goods);
-    wild = [...(demand?.goods ?? [])];
-  });
-  const payment = $derived(
-    (demand?.goods ?? []).map((good, i) =>
-      flexible ? (wild[i] ?? good) : good,
-    ),
-  );
-  const marketLegal = $derived(
-    selected.length > 0 &&
-      goods.every(
-        (good) =>
-          selected.filter((i) => payment[i] === good).length <=
-          player.goods[good],
-      ),
-  );
-  const cost = $derived(currentSultanCost(game));
-  let sultanWild = $state<Good[]>([]);
-  const resolvedWild = $derived.by(() => {
-    const remaining = Object.fromEntries(
-      goods.map((good) => [
-        good,
-        player.goods[good] - cost.filter((item) => item === good).length,
-      ]),
-    ) as Record<Good, number>;
-    return cost
-      .filter((good) => good === "any")
-      .map((_, i) => {
-        const good =
-          sultanWild[i] ??
-          goods.find((good) => remaining[good] > 0) ??
-          "fabric";
-        remaining[good] -= 1;
-        return good;
-      });
-  });
-  const affordable = $derived(
-    goods.every(
-      (good) =>
-        player.goods[good] >=
-        cost.filter((item) => item === good).length +
-          resolvedWild.filter((item) => item === good).length,
-    ),
-  );
+  let wager = $state(7);
 </script>
 
 <div class="choices" aria-label="Place action">
   {#if warehouse}
     <button
       class="offer primary"
-      onclick={() => onAction({ kind: "warehouse-fill", good: warehouse })}
+      onclick={() => onAction({ kind: 'warehouse-fill', good: warehouse })}
       aria-label={`Fill ${warehouse} to ${player.capacity}`}
       ><GameArt kind="component" component={warehouse} /><span
         >Fill {warehouse}<b>{player.goods[warehouse]} → {player.capacity}</b
@@ -108,7 +50,7 @@
       disabled={player.lira < 7 ||
         player.extensions >= 3 ||
         game.supplies.wheelbarrowExtensions < 1}
-      onclick={() => onAction({ kind: "wainwright-buy" })}
+      onclick={() => onAction({ kind: 'wainwright-buy' })}
       ><GameArt kind="component" component="wheelbarrow" /><span
         >Extend all tracks<b>7 Lira · capacity {player.capacity + 1}</b></span
       ></button
@@ -116,12 +58,12 @@
   {:else if placeId === 5}
     <button
       class="offer primary"
-      onclick={() => onAction({ kind: "post-office-collect" })}
+      onclick={() => onAction({ kind: 'post-office-collect' })}
       ><span>Collect</span>{#each postOfficeRows as rows, i}{@const reward =
           rows[game.postOfficeLower[i] ? 1 : 0]}<span class="reward"
           ><GameArt
             kind="component"
-            component={reward.good ?? "lira"}
+            component={reward.good ?? 'lira'}
           />{#if !reward.good}<b>{reward.lira}</b>{/if}</span
         >{/each}</button
     >
@@ -150,15 +92,15 @@
     <button
       disabled={!recalls.length}
       onclick={() =>
-        onAction({ kind: "fountain-recall", assistantPlaces: recalls })}
+        onAction({ kind: 'fountain-recall', assistantPlaces: recalls })}
       >Recall selected</button
     ><button
       onclick={() =>
         onAction({
-          kind: "fountain-recall",
+          kind: 'fountain-recall',
           assistantPlaces: Object.entries(player.assistantsByPlace).flatMap(
-            ([p, n]) => Array(n).fill(Number(p)),
-          ),
+            ([p, n]) => Array(n).fill(Number(p))
+          )
         })}>Recall all</button
     >
   {:else if placeId === 8}
@@ -168,8 +110,8 @@
         aria-label={`Take ${good} and roll`}
         onclick={() =>
           onAction({
-            kind: "black-market-roll",
-            good: good as Exclude<Good, "jewelry">,
+            kind: 'black-market-roll',
+            good: good as Exclude<Good, 'jewelry'>
           })}
         ><GameArt kind="component" component={good} /><span>+1 & roll</span
         ></button
@@ -184,52 +126,20 @@
     </div>
     <button
       class="primary"
-      onclick={() => onAction({ kind: "tea-house-wager", wager })}
+      onclick={() => onAction({ kind: 'tea-house-wager', wager })}
       >Roll for {wager} Lira</button
-    ><small>Roll {wager}+ to win; otherwise gain 2 Lira.</small>
-  {:else if placeId === 10 || placeId === 11}
-    <div class="demand">
-      {#each demand?.goods ?? [] as good, i}<div>
-          <button
-            class:selected={selected.includes(i)}
-            aria-pressed={selected.includes(i)}
-            aria-label={`Sell demand slot ${i + 1}: ${payment[i]}`}
-            onclick={() =>
-              (selected = selected.includes(i)
-                ? selected.filter((slot) => slot !== i)
-                : [...selected, i])}
-            ><GameArt kind="component" component={payment[i]} /><span
-              >{selected.includes(i) ? "✓" : "−"}</span
-            ></button
-          >{#if flexible}<button
-              aria-label={`Change payment for demand slot ${i + 1}`}
-              onclick={() =>
-                (wild[i] = goods[(goods.indexOf(wild[i] ?? good) + 1) % 4])}
-              ><GameArt kind="component" component={wild[i] ?? good} /><span
-                >↻</span
-              ></button
-            >{/if}
-        </div>{/each}
-    </div>
-    <button
-      class="primary"
-      disabled={!marketLegal}
-      onclick={() =>
-        onAction({
-          kind: "market-sell",
-          slotIndexes: selected,
-          ...(flexible ? { wildGoods: selected.map((i) => payment[i]) } : {}),
-        })}>Sell · {marketRevenueFor(placeId, selected.length)} Lira</button
     >
+  {:else if placeId === 10 || placeId === 11}
+    <MarketFlow {game} {player} {placeId} {onAction} active />
   {:else if placeId === 12}
     {#if player.familyPlace === 12}<div class="destinations">
         {#each game.board as id}{@const target = places.find(
-            (p) => p.id === id,
+            (p) => p.id === id
           )!}<button
             aria-label={`Send family to ${target.name}`}
             disabled={id === 12}
             style={`background-image:url('${base}/${locationArt[id]}')`}
-            onclick={() => onAction({ kind: "police-send", destination: id })}
+            onclick={() => onAction({ kind: 'police-send', destination: id })}
             >{target.shortName}</button
           >{/each}
       </div>{:else}<GameArt
@@ -239,55 +149,14 @@
       />
       <p>Your family is already in the bazaar.</p>{/if}
   {:else if placeId === 13}
-    <div class="cost">
-      {#each cost as good, i}{#if good !== "any"}<GameArt
-            kind="component"
-            component={good}
-          />{:else}{@const index = cost
-            .slice(0, i)
-            .filter((g) => g === "any").length}<button
-            aria-label={`Sultan wild good ${index + 1}: ${resolvedWild[index]}`}
-            onclick={() =>
-              (sultanWild[index] =
-                goods[(goods.indexOf(resolvedWild[index]) + 1) % 4])}
-            ><GameArt kind="component" component={resolvedWild[index]} /><span
-              >↻</span
-            ></button
-          >{/if}{/each}<span>→</span><GameArt
-        kind="component"
-        component="ruby"
-      />
-    </div>
-    <button
-      class="primary"
-      disabled={!affordable}
-      onclick={() => onAction({ kind: "sultan-buy", wildGoods: resolvedWild })}
-      >Deliver goods</button
-    >
+    <SultanOffer {game} {player} {onAction} active />
   {:else if placeId === 14 || placeId === 15}
-    {#each placeId === 14 ? ["fabric", "spice"] : ["fruit", "jewelry"] as color}{@const good =
-        color as Good}{@const tile = mosqueTiles.find(
-        (tile) => tile.id === game.mosqueStacks[good][0],
-      )}<button
-        class="offer"
-        disabled={!tile ||
-          ownsMosqueAbility(player, good) ||
-          player.goods[good] < tile.required}
-        onclick={() =>
-          tile && onAction({ kind: "mosque-take", tileId: tile.id })}
-        ><GameArt kind="component" component={`mosque-${good}`} /><span
-          >{tile?.ability ?? "Sold out"}<b
-            >{ownsMosqueAbility(player, good)
-              ? "Owned"
-              : `Hold ${tile?.required ?? 0}; pay 1 ${good}`}</b
-          ></span
-        ></button
-      >{/each}
+    <MosqueOffers {game} {player} {placeId} {onAction} active />
   {:else if placeId === 16}
     <button
       class="offer primary"
       disabled={player.lira < game.rubyTracks.gemstonePrice}
-      onclick={() => onAction({ kind: "gemstone-buy" })}
+      onclick={() => onAction({ kind: 'gemstone-buy' })}
       ><GameArt kind="component" component="ruby" /><span
         >Buy ruby<b>{game.rubyTracks.gemstonePrice} Lira</b></span
       ></button
@@ -371,40 +240,7 @@
     padding: 0.5cqw;
     font-size: 1.3cqw;
   }
-  .demand {
-    display: flex;
-    gap: 0.35cqw;
-    width: 100%;
-  }
-  .demand > div {
-    flex: 1;
-    min-width: 0;
-    display: grid;
-    gap: 0.2cqw;
-  }
-  .demand button {
-    position: relative;
-    padding: 0.3cqw;
-  }
-  .demand :global(.game-art) {
-    width: 100%;
-    height: 4cqw;
-  }
-  .demand button span {
-    position: absolute;
-    bottom: 0;
-    right: 0.15cqw;
-  }
-  .cost {
-    display: flex;
-    align-items: center;
-    gap: 0.25cqw;
-    flex-wrap: wrap;
-  }
-  .cost :global(.game-art) {
-    width: 2.7cqw;
-    height: 2.7cqw;
-  }
+
   button:focus-visible {
     outline: 2px solid white;
     outline-offset: 2px;

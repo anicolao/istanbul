@@ -1,21 +1,16 @@
 <script lang="ts">
   import { untrack } from 'svelte';
+  import ActionMotion from './ActionMotion.svelte';
+  import {
+    planActionMotion,
+    projectMotion,
+    type ActionMotion as MotionPlan
+  } from './action-motion';
   import LocationFace from './LocationFace.svelte';
-  import WainwrightTransfer, {
-    type WainwrightPurchase
-  } from './WainwrightTransfer.svelte';
-  import GoodsTransfer, { type Transfer } from './GoodsTransfer.svelte';
-  import PostOfficeTransfer, {
-    type MailCollection
-  } from './PostOfficeTransfer.svelte';
-  import { postOfficeRows, warehouseGood } from '$lib/game/actions';
+  import { warehouseGood } from '$lib/game/actions';
   import { cubicInOut } from 'svelte/easing';
   import BonusController from './BonusController.svelte';
   import CaravansaryFlow from './CaravansaryFlow.svelte';
-  import AssistantTransfer, {
-    type AssistantRecall
-  } from './AssistantTransfer.svelte';
-  import CardTransfer, { type CardDraw } from './CardTransfer.svelte';
   import type { BonusChoice } from '$lib/game/bonus';
   import { base } from '$app/paths';
   import { places, bonusCards, type Good } from '$lib/game/manifests';
@@ -89,251 +84,105 @@
     e2eResourceReview?: string;
   } = $props();
   let surface = $state<HTMLElement>();
-  let transfer = $state<Transfer | null>(null);
-  let transferring = $state(false);
-  let landed = $state(0);
   let zoomReady = $state(false);
   let previousGame: GameSetup | undefined;
-  let purchase = $state<WainwrightPurchase | null>(null);
-  let purchasing = $state(false);
-  let wheelbarrowLanded = $state(false);
-  let rubyLanded = $state(false);
-  let assistantRecall = $state<AssistantRecall | null>(null);
-  let assistantsLanded = $state(0);
-  let cardDraw = $state<CardDraw | null>(null);
-  let cardsLanded = $state(0);
-  let handBeforeDraw = $state<string[]>([]);
-  let collection = $state<MailCollection | null>(null);
-  let mailArrivals = $state<number[]>([]);
-  const mailGame = $derived(
-    collection ? { ...game, postOfficeLower: collection.before } : game
+  let motion = $state.raw<MotionPlan | null>(null);
+  let landedSteps = $state<number[]>([]);
+  let boardMotion = $state(false);
+  let undoMotion = false;
+  let motionChoice: PlaceActionChoice | undefined;
+  let queuedUndo = $state(false);
+  let dismissAfterMotion = $state(false);
+  const visualGame = $derived(
+    motion ? projectMotion(motion, new Set(landedSteps)) : game
   );
-  const boardGame = $derived.by(() => ({
-    ...mailGame,
-    players: mailGame.players.map((p) => {
-      if (!assistantRecall || p.uid !== assistantRecall.uid) return p;
-      const stationed = { ...assistantRecall.stationed };
-      for (const place of assistantRecall.places.slice(0, assistantsLanded))
-        stationed[place]--;
-      return {
-        ...p,
-        assistantsCarried: assistantRecall.carried + assistantsLanded,
-        assistantsByPlace: stationed
-      };
-    })
-  }));
-  const matGame = $derived.by(() => ({
-    ...game,
-    players: game.players.map((p) => ({
-      ...p,
-      ...(cardDraw && p.uid === cardDraw.uid
+  const matGame = $derived(visualGame),
+    boardGame = $derived(visualGame),
+    mailGame = $derived(
+      motion
         ? {
-            bonusHand: [
-              ...handBeforeDraw,
-              ...cardDraw.cards.slice(0, cardsLanded).map((card) => card.id)
-            ]
-          }
-        : {}),
-      ...(collection && p.uid === collection.uid
-        ? {
-            goods: Object.fromEntries(
-              Object.entries(collection.player.goods).map(([good, count]) => [
-                good,
-                Math.min(
-                  p.capacity,
-                  count +
-                    mailArrivals.filter(
-                      (column) =>
-                        postOfficeRows[column][
-                          collection!.before[column] ? 1 : 0
-                        ].good === good
-                    ).length
-                )
-              ])
-            ) as typeof p.goods,
-            lira:
-              collection.player.lira +
-              mailArrivals.reduce(
-                (sum, column) =>
-                  sum +
-                  (postOfficeRows[column][collection!.before[column] ? 1 : 0]
-                    .lira ?? 0),
-                0
-              )
-          }
-        : {}),
-      ...(transfer && transferring && p.uid === transfer.uid
-        ? { goods: { ...p.goods, [transfer.good]: landed } }
-        : {}),
-      ...(purchase && purchasing && p.uid === purchase.uid
-        ? {
-            capacity: wheelbarrowLanded
-              ? purchase.capacityAfter
-              : purchase.capacityBefore,
-            rubies: rubyLanded ? purchase.rubiesAfter : purchase.rubiesBefore
-          }
-        : {})
-    }))
-  }));
-  $effect(() => {
-    const current = game;
-    untrack(() => {
-      const actor = current.players[current.turnSeat];
-      const prior = previousGame?.players.find((p) => p.uid === actor.uid);
-      const good =
-        current.lastAction?.kind === 'warehouse-fill'
-          ? warehouseGood(current.lastAction.place)
-          : null;
-      if (
-        prior &&
-        good &&
-        current.lastAction?.playerUid === actor.uid &&
-        actor.goods[good] > prior.goods[good]
-      ) {
-        landed = prior.goods[good];
-        transfer = {
-          uid: actor.uid,
-          good,
-          from: landed,
-          to: actor.goods[good],
-          landed,
-          key: `${current.epoch}:${current.turnNumber}:${actor.uid}`
-        };
-        transferring = true;
-      } else if (
-        transfer &&
-        (actor.uid !== transfer.uid ||
-          current.lastAction?.kind !== 'warehouse-fill' ||
-          actor.goods[transfer.good] < transfer.to)
-      ) {
-        transfer = null;
-        transferring = false;
-        purchasing = false;
-      }
-      if (
-        prior &&
-        current.lastAction?.kind === 'wainwright-buy' &&
-        current.lastAction.playerUid === actor.uid &&
-        actor.capacity > prior.capacity
-      ) {
-        purchase = {
-          uid: actor.uid,
-          capacityBefore: prior.capacity,
-          capacityAfter: actor.capacity,
-          rubiesBefore: prior.rubies,
-          rubiesAfter: actor.rubies
-        };
-        purchasing = true;
-        wheelbarrowLanded = false;
-        rubyLanded = false;
-      } else if (
-        purchase &&
-        (actor.uid !== purchase.uid ||
-          current.lastAction?.kind !== 'wainwright-buy' ||
-          actor.capacity < purchase.capacityAfter ||
-          actor.rubies < purchase.rubiesAfter)
-      ) {
-        purchase = null;
-        purchasing = false;
-      }
-      if (
-        prior &&
-        previousGame &&
-        current.lastAction?.kind === 'post-office-collect' &&
-        current.lastAction.playerUid === actor.uid &&
-        actor.lira > prior.lira &&
-        current.postOfficeLower.some(
-          (value, i) => value !== previousGame!.postOfficeLower[i]
-        )
-      ) {
-        collection = {
-          uid: actor.uid,
-          before: [...previousGame.postOfficeLower],
-          after: [...current.postOfficeLower],
-          player: structuredClone(prior)
-        };
-        mailArrivals = [];
-      } else if (
-        collection &&
-        (actor.uid !== collection.uid ||
-          current.turnNumber !== previousGame?.turnNumber ||
-          current.postOfficeLower.some(
-            (value, i) => value !== collection!.after[i]
-          ) ||
-          actor.lira < prior!.lira)
-      ) {
-        collection = null;
-      }
-      if (
-        prior &&
-        current.pending?.kind === 'caravansary-discard' &&
-        actor.bonusHand.length === prior.bonusHand.length + 2
-      ) {
-        cardDraw = {
-          uid: actor.uid,
-          cards: actor.bonusHand
-            .filter((id) => !prior.bonusHand.includes(id))
-            .map((id) => ({
-              id,
-              source: previousGame!.bonusDiscard.includes(id)
-                ? 'discard'
-                : 'deck'
+            ...visualGame,
+            players: visualGame.players.map((p) => ({
+              ...p,
+              goods:
+                motion!.before.players.find((old) => old.uid === p.uid)
+                  ?.goods ?? p.goods
             }))
-        };
-        cardsLanded = 0;
-        handBeforeDraw = [...prior.bonusHand];
-      } else if (
-        cardDraw &&
-        (actor.uid !== cardDraw.uid ||
-          current.pending?.kind !== 'caravansary-discard')
-      )
-        cardDraw = null;
-      if (
-        prior &&
-        current.lastAction?.kind === 'fountain-recall' &&
-        current.lastAction.place === 7 &&
-        actor.assistantsCarried > prior.assistantsCarried
-      ) {
-        assistantRecall = {
-          uid: actor.uid,
-          color: actor.color as PlayerColorName,
-          carried: prior.assistantsCarried,
-          stationed: { ...prior.assistantsByPlace },
-          places: Object.entries(prior.assistantsByPlace).flatMap(
-            ([place, count]) =>
-              Array(
-                Math.max(
-                  0,
-                  count - (actor.assistantsByPlace[Number(place)] ?? 0)
-                )
-              ).fill(Number(place))
-          )
-        };
-        assistantsLanded = 0;
-      } else if (
-        assistantRecall &&
-        (actor.uid !== assistantRecall.uid ||
-          current.turnNumber !== previousGame?.turnNumber ||
-          actor.assistantsCarried < prior!.assistantsCarried)
-      )
-        assistantRecall = null;
-      previousGame = structuredClone($state.snapshot(current));
-    });
-  });
+          }
+        : visualGame
+    );
+  const cardDraw = $derived(
+    motion?.steps.some((s) => s.card && !landedSteps.includes(s.id)) ?? false
+  );
   const goods: Good[] = ['fabric', 'spice', 'fruit', 'jewelry'];
   const player = $derived(game.players[game.turnSeat]);
   const fillMessage = $derived(
-    transfer &&
-      transfer.uid === player.uid &&
-      game.lastAction?.kind === 'warehouse-fill'
-      ? `${transfer.good[0].toUpperCase()}${transfer.good.slice(1)} ${transferring ? landed : transfer.to} / ${player.capacity}${transferring ? ' · Filling wheelbarrow' : ' · Wheelbarrow full'}`
+    game.lastAction?.kind === 'warehouse-fill'
+      ? `${warehouseGood(game.lastAction.place)!.replace(/^./, (letter) => letter.toUpperCase())} ${visualGame.players[game.turnSeat].goods[warehouseGood(game.lastAction.place)!]} / ${player.capacity} · ${motion ? 'Filling wheelbarrow' : 'Wheelbarrow full'}`
       : null
   );
+  function recordAction(choice: PlaceActionChoice) {
+    motionChoice = choice;
+    onTakeAction(choice);
+  }
+  function animateUndo() {
+    if (motion) {
+      queuedUndo = true;
+      return;
+    }
+    undoMotion = true;
+    onUndo();
+  }
+  function closeRoom() {
+    if (motion) dismissAfterMotion = true;
+    else collapsed = true;
+  }
+  function finishMotion() {
+    motion = null;
+    boardMotion = false;
+    landedSteps = [];
+    if (queuedUndo) {
+      queuedUndo = false;
+      undoMotion = true;
+      onUndo();
+    }
+    if (dismissAfterMotion) {
+      dismissAfterMotion = false;
+      collapsed = true;
+    }
+  }
+  $effect(() => {
+    const current = game;
+    untrack(() => {
+      const snapshot = structuredClone($state.snapshot(current));
+      if (
+        previousGame &&
+        previousGame.epoch === current.epoch &&
+        previousGame.seed === current.seed
+      ) {
+        const start = motion
+          ? structuredClone($state.snapshot(visualGame))
+          : previousGame;
+        const next = planActionMotion(
+          start,
+          snapshot,
+          undoMotion,
+          undoMotion ? undefined : motionChoice
+        );
+        motion = next.steps.length ? next : null;
+        landedSteps = [];
+        boardMotion = next.steps.some((s) => s.stage === 'board');
+      } else finishMotion();
+      undoMotion = false;
+      motionChoice = undefined;
+      previousGame = snapshot;
+    });
+  });
 
   const canControl = $derived(
     userUid === player.uid || (room.tabletopOwned && userUid === room.hostUid)
   );
-  const busy = $derived(undoPending || !canControl);
+  const busy = $derived(undoPending || !canControl || Boolean(motion));
   const personal = $derived(room.mode === 'personal-screens');
   const localPlayer = $derived(game.players.find((p) => p.uid === userUid));
   const seat = $derived(
@@ -405,12 +254,6 @@
     power = $state<Good | null>(null),
     inspectedCard = $state<string | null>(null);
   let collapsed = $state(false);
-  $effect(() => {
-    if (collapsed) {
-      collection = null;
-      cardDraw = null;
-    }
-  });
   let arrivalContext = $state('');
   let context = $state(''),
     gain = $state<Good>('fabric'),
@@ -427,6 +270,10 @@
       power = null;
       smuggler = false;
       inspectedCard = null;
+    }
+    if (boardMotion) {
+      collapsed = true;
+      return;
     }
     const arrival = `${next}:${game.phase}:${activePlace}:${seat.angle}`;
     if (arrival !== arrivalContext) {
@@ -491,9 +338,9 @@
     if (reachable.includes(id)) {
       const assistant = requiredAssistantAction(player, id);
       if (assistant) {
-        open(id);
         if (merchantToll(game, player, id) <= player.lira)
           onMove(id, assistant);
+        else open(id);
       }
       return;
     }
@@ -513,7 +360,10 @@
     open();
     power = good;
   }
-  const roomGeometry = new WeakMap<HTMLElement, { origin: DOMRect; bounds: DOMRect; scale: number }>();
+  const roomGeometry = new WeakMap<
+    HTMLElement,
+    { origin: DOMRect; bounds: DOMRect; scale: number }
+  >();
   function fitRoom(node: HTMLElement, id: number, angle: number) {
     const table = node.parentElement;
     if (!table) return roomGeometry.get(node);
@@ -676,7 +526,7 @@
 <svelte:window
   onkeydown={(e) => {
     if (e.key === 'Escape') {
-      collapsed = true;
+      closeRoom();
       history = false;
       power = null;
     }
@@ -688,6 +538,7 @@
   class:personal
   style={`--opponents:${Math.max(1, game.players.length - 1)};--courtyard:url('${base}/art/bazaar-courtyard.png')`}
   aria-label="Shared Istanbul table"
+  data-motion-active={Boolean(motion)}
   data-e2e-fit
   data-e2e-no-scroll
 >
@@ -713,8 +564,6 @@
       onHand={() => {
         handOpen = true;
         collapsed = true;
-        transferring = false;
-        purchasing = false;
       }}
       {canEnd}
       {busy}
@@ -783,6 +632,7 @@
       {#key `${zoom}-${zoomAngle}`}
         <section
           class="zoom-tile"
+          data-zoom-place={zoom}
           aria-label={`${title} actions`}
           style={`--facing:${zoomAngle}deg`}
           use:roomSize={{ id: zoom, angle: zoomAngle }}
@@ -793,6 +643,7 @@
             game={mailGame}
             placeId={zoom}
             expanded
+            offerActive={zoom === activePlace && actionReady}
             caravanActive={zoom === activePlace &&
               actionReady &&
               pending?.kind !== 'caravansary-discard'}
@@ -800,28 +651,34 @@
               pending?.kind === 'caravansary-discard' &&
               !cardDraw}
             disabled={busy}
-            onAction={onTakeAction}
+            onAction={recordAction}
           />
           <header>
             <h1 class="visually-hidden">{title}</h1>
-            <button
-              aria-label="Back to table"
-              onclick={() => {
-                collapsed = true;
-                transferring = false;
-                purchasing = false;
-              }}><TabletopArrow back /></button
+            <button aria-label="Back to table" onclick={closeRoom}
+              ><TabletopArrow back /></button
             >
           </header>
           <fieldset
             class="room-flow"
+            class:market-offer={[10, 11, 13, 14, 15].includes(zoom)}
             class:caravan-piles={zoom === 6 &&
               actionReady &&
               pending?.kind !== 'caravansary-discard'}
-            disabled={busy}
+            disabled={undoPending || !canControl}
           >
             <div class="content" aria-live="polite">
-              {#if publicCard}<div class="public-card">
+              {#if motion}<p class="motion-status" aria-live="polite">
+                  {motion.reverse
+                    ? 'Undoing…'
+                    : motion.steps.some(
+                          (s) =>
+                            s.effect === 'dice' && !landedSteps.includes(s.id)
+                        )
+                      ? 'Rolling…'
+                      : (fillMessage ?? game.lastAction?.summary ?? '')}
+                </p>
+              {:else if publicCard}<div class="public-card">
                   <BonusCard card={publicCard} />
                 </div>
                 <button onclick={() => (inspectedCard = null)}>Back</button>
@@ -869,8 +726,6 @@
                 <button
                   onclick={() => {
                     collapsed = true;
-                    transferring = false;
-                    purchasing = false;
                   }}>Choose another room</button
                 >
               {:else if zoom !== activePlace || game.phase === 'movement'}{#if zoom !== 5}<p
@@ -884,15 +739,17 @@
                   {#if personal}{#key `${game.epoch}:${game.turnNumber}:${player.uid}`}<CaravansaryFlow
                         {game}
                         disabled={busy}
-                        onAction={onTakeAction}
+                        onAction={recordAction}
                       />{/key}
                   {:else}<p>Choose a card to discard on your phone.</p>{/if}
                 {/if}
+              {:else if [10, 11, 13, 14, 15].includes(activePlace) && actionReady}
+                <!-- Interact directly with the location offer. -->
               {:else if actionReady}{#key `${game.epoch}:${game.turnNumber}:${activePlace}`}<TabletopPlaceActions
                     {game}
                     {player}
                     placeId={activePlace}
-                    onAction={onTakeAction}
+                    onAction={recordAction}
                     onSkip={onEndTurn}
                   />{/key}
               {:else if game.phase === 'merchant-payment' && pending?.kind === 'merchant-payment'}
@@ -994,8 +851,10 @@
                 {undo}
                 {userUid}
                 pending={undoPending}
-                {onUndo}
-              />{#if canEnd}<button class="primary" onclick={onEndTurn}
+                onUndo={animateUndo}
+              />{#if canEnd && !motion}<button
+                  class="primary"
+                  onclick={onEndTurn}
                   >{game.phase === 'final-bonus'
                     ? 'Finish trading'
                     : 'End turn'}
@@ -1027,15 +886,18 @@
             handOpen = false;
             collapsed = game.phase === 'movement';
           }}
-          onTakePrivateAction={onTakeAction}
+          onTakePrivateAction={recordAction}
           onResolvePrivateEncounter={(discardCardId) =>
             onResolveEncounter({
               kind: 'governor-pay',
               payment: 'card',
               discardCardId
             })}
-          {onUndo}
-          {onRollback}
+          onUndo={animateUndo}
+          onRollback={(id) => {
+            undoMotion = true;
+            onRollback(id);
+          }}
           {undo}
           {undoLog}
           {gameLog}
@@ -1053,6 +915,15 @@
               ? 'Review Flexible Demand market sale'
               : 'Review ruby routes with supplied resources'}</button
       >
+    {/if}
+    {#if game.activeBonusEffects.length}
+      <aside class="active-effects" aria-label="Active Bonus cards">
+        {#each game.activeBonusEffects as effect}{@const card = bonusCards.find(
+            (c) => c.effect === effect
+          )}
+          <span><BonusCard {card} /></span>
+        {/each}
+      </aside>
     {/if}
     <span class="last-move"
       >{game.phase === 'movement'
@@ -1072,15 +943,19 @@
             {entry.summary}{#if entry.active && !entry.blockedReason && entry.rollbackActorUids.includes(userUid)}<button
                 disabled={busy}
                 onclick={() => {
+                  undoMotion = true;
                   onRollback(entry.eventId);
                   history = false;
                 }}>Undo to here</button
               >{/if}
           </p>{/each}
       </section>{/if}
-    {#if game.phase === 'game-over'}<section class="finish">
+    {#if game.phase === 'game-over' && !motion}<section class="finish">
         <h1>{game.end.rankings[0]?.name} wins!</h1>
-        {#each game.end.rankings as standing}<p>
+        {#each game.end.rankings as standing, i}<p
+            class="score-reveal"
+            style={`--rank-delay:${i * 200}ms`}
+          >
             {standing.name} · {standing.rubies} rubies · {standing.lira} Lira
           </p>{/each}<button
           disabled={userUid !== room.hostUid || undoPending}
@@ -1089,55 +964,72 @@
       </section>{/if}
   </div>
   <nav class="table-controls" aria-label="Game controls">
-    <UndoButton {undo} {userUid} pending={undoPending} {onUndo} />
+    <UndoButton {undo} {userUid} pending={undoPending} onUndo={animateUndo} />
     <button onclick={() => (history = !history)} aria-expanded={history}
       >Game log</button
     >
   </nav>
-  <AssistantTransfer
-    recall={assistantRecall}
+  <ActionMotion
+    plan={motion}
     {surface}
-    onArrival={(count) => (assistantsLanded = count)}
-    onComplete={() => (assistantRecall = null)}
-  />
-  <CardTransfer
-    draw={cardDraw}
-    ready={zoomReady && !collapsed}
-    {surface}
-    onArrival={(count) => (cardsLanded = count)}
-    onComplete={() => (cardDraw = null)}
-  />
-  <PostOfficeTransfer
-    {collection}
-    ready={zoomReady && !collapsed}
-    {surface}
-    onArrival={(column) => {
-      if (!mailArrivals.includes(column))
-        mailArrivals = [...mailArrivals, column];
+    ready={!boardMotion &&
+      (zoomReady || collapsed || zoom === 7 || zoom === null)}
+    onArrival={(id) => {
+      if (!landedSteps.includes(id)) landedSteps = [...landedSteps, id];
     }}
-    onComplete={() => (collection = null)}
-  />
-  <WainwrightTransfer
-    purchase={purchasing ? purchase : null}
-    ready={zoomReady && !collapsed}
-    {surface}
-    onWheelbarrow={() => (wheelbarrowLanded = true)}
-    onRuby={() => (rubyLanded = true)}
-    onComplete={() => (purchasing = false)}
-  />
-  <GoodsTransfer
-    transfer={transferring ? transfer : null}
-    ready={zoomReady && !collapsed}
-    {surface}
-    onCount={(count) => {
-      landed = count;
-      if (transfer) transfer.landed = count;
+    onBoardComplete={() => {
+      const moved = boardMotion;
+      boardMotion = false;
+      if (
+        moved &&
+        game.phase !== 'movement' &&
+        game.phase !== 'game-over' &&
+        activePlace !== 7 &&
+        (!personal || canControl)
+      ) {
+        zoom = activePlace;
+        zoomAngle = seat.angle;
+        collapsed = false;
+        zoomReady = false;
+      }
     }}
-    onComplete={() => (transferring = false)}
+    onComplete={finishMotion}
   />
 </section>
 
 <style>
+  .active-effects {
+    position: absolute;
+    left: 16%;
+    bottom: 2%;
+    display: flex;
+    gap: 1cqw;
+    z-index: 5;
+  }
+  .active-effects > span {
+    width: 3.5cqw;
+  }
+
+  .score-reveal {
+    animation: score-in 0.6s both;
+    animation-delay: var(--rank-delay);
+  }
+  @keyframes score-in {
+    from {
+      opacity: 0;
+      transform: translateY(15px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .score-reveal {
+      animation: none;
+    }
+  }
+
   .visually-hidden {
     position: absolute;
     width: 1px;
@@ -1319,10 +1211,18 @@
     color: #17291e;
     font-weight: 700;
   }
-  .room-flow.caravan-piles {
+  .room-flow.caravan-piles,
+  .room-flow.market-offer {
     pointer-events: none;
   }
-  .room-flow.caravan-piles footer {
+  .room-flow.caravan-piles footer,
+  .room-flow.market-offer footer,
+  .room-flow.caravan-piles :global(button),
+  .room-flow.caravan-piles :global(input),
+  .room-flow.caravan-piles :global(select),
+  .room-flow.market-offer :global(button),
+  .room-flow.market-offer :global(input),
+  .room-flow.market-offer :global(select) {
     pointer-events: auto;
   }
   .room-flow {
