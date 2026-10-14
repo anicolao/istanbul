@@ -43,7 +43,7 @@ test('personal games use direct table actions, private cards, and a one-second r
             ).toBeVisible();
             await expect(page.locator('.inspector')).toHaveCount(0);
             await expect(
-              page.locator('[data-pile-source=deck]')
+              page.locator('[data-card-pile=deck]')
             ).not.toHaveAttribute('data-inspect-pile-card');
             await expect(
               page.getByRole('button', {
@@ -117,6 +117,7 @@ test('personal games use direct table actions, private cards, and a one-second r
     await expectState(page, {
       game: { players: [{ merchantPlace: 3, goods: { spice: 2 } }, {}] }
     });
+    await expect(page.locator('.flying-good')).toHaveCount(0);
     await steps.step('direct-warehouse', {
       description:
         'One tap moves and fills spice while the warehouse smoothly enlarges',

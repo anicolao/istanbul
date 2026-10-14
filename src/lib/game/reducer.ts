@@ -88,7 +88,7 @@ function actionResult(state: ReplayProjection, event: CanonicalEvent): { summary
     const movement = game.lastMovement;
     return {
       summary: movement
-        ? `Moved ${movement.distance} space${movement.distance === 1 ? '' : 's'} from Place ${movement.from} to Place ${movement.to} and ${movement.assistantAction === 'pick-up' ? 'picked up' : 'left'} an assistant.`
+        ? `Moved ${movement.distance} space${movement.distance === 1 ? '' : 's'} from Place ${movement.from} to Place ${movement.to}${movement.assistantAction === 'fountain' ? '' : ` and ${movement.assistantAction === 'pick-up' ? 'picked up' : 'left'} an assistant`}.`
         : undoLabel(event),
       dice: null
     };
@@ -317,7 +317,8 @@ export function replayEvents(events: unknown[]): ReplayProjection {
   return state;
 }
 
-function applyEvent(state: ReplayProjection, event: CanonicalEvent): boolean {
+/** Apply one command to an existing projection (also used by the in-memory design lab). */
+export function applyEvent(state: ReplayProjection, event: CanonicalEvent): boolean {
   if (event.type === 'game/created') {
     if (state.room) {
       reject(state, event, 'room-already-created');

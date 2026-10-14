@@ -113,7 +113,7 @@ test('a dedicated tabletop controls public play while phones contain private Bon
 
     await page.getByRole('button', { name: /^4 Fruit Warehouse.*Reachable/ }).click();
     await table.step('tabletop-commits-public-move', { description: 'Ada commits movement on the shared tabletop', verifications: [
-      { spec: 'One room tap moves and fills the warehouse without a dialog or extra action click', check: async () => { await expect(page.getByRole('heading', { name: 'Fruit Warehouse' })).toBeVisible(); await expect(page.getByRole('button', { name: 'Fill fruit to 2' })).toHaveCount(0); await expect(page.getByText('Filled fruit to capacity 2.', { exact: true })).toBeVisible(); await expect(page.getByRole('dialog')).toHaveCount(0); await expect(page.locator('.inspector')).toHaveCount(0); } },
+      { spec: 'One room tap moves and fills the warehouse without a dialog or extra action click', check: async () => { await expect(page.getByRole('heading', { name: 'Fruit Warehouse' })).toBeVisible(); await expect(page.getByRole('button', { name: 'Fill fruit to 2' })).toHaveCount(0); await expect(page.getByText('Fruit 2 / 2 · Wheelbarrow full', { exact: true })).toBeVisible(); await expect(page.getByRole('dialog')).toHaveCount(0); await expect(page.locator('.inspector')).toHaveCount(0); } },
       { spec: 'The tabletop-authored event records Ada’s assistant drop and no diagnostic', check: async () => expectState(page, { eventCount: 8, diagnosticCount: 0, game: { phase: 'turn-end', lastMovement: { from: 7, to: 4, assistantAction: 'drop' }, players: [{ merchantPlace: 4, assistantsCarried: 3, assistantsByPlace: { 4: 1 }, lira: 7, goods: { fruit: 2 } }, {}] } }) }
     ] });
     await ada.step('ada-phone-awaits-public-action', { description: 'Ada’s phone remains private while the tabletop resolves Fruit Warehouse', verifications: [
@@ -155,8 +155,9 @@ test('a dedicated tabletop controls public play while phones contain private Bon
     await expect.poll(async ()=>(await readState(boraPage)).game.players[1].merchantPlace).toBe(6);
     const arrival = await readState(page);
     if(arrival.game.phase==='merchant-payment') await page.getByRole('button',{name:/Pay .* & roll/}).click();
-    await expect(boraPage.getByRole('button',{name:'Draw two cards',exact:true})).toBeEnabled();
-    await boraPage.getByRole('button',{name:'Draw two cards',exact:true}).click();
+    await page.getByRole('button',{name:'Draw from face-down pile',exact:true}).click();
+    await page.getByRole('button',{name:'Draw from face-down pile',exact:true}).click();
+    await expect(page.getByRole('button',{name:/^Discard /})).toHaveCount(0);
     await expect.poll(async ()=>(await readState(page)).game.pending?.kind).toBe('caravansary-discard');
     await expect(boraPage.locator('.card-choices [data-component="BonusCard"]')).toHaveCount(3);
     await expect(page.getByRole('button',{name:/^End turn/})).toHaveCount(0);

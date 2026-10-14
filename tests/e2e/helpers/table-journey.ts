@@ -124,6 +124,11 @@ export async function end(page: Page) {
         .click();
       continue;
     }
+    if (state.game.players.find((p: { name: string }) => p.name === state.game.currentTurn)?.merchantPlace === 7 && await page.locator('[data-place-id="7"][data-action-ready="true"]').isVisible()) {
+      await page.locator('[data-place-id="7"]').click();
+      await expect.poll(async () => (await readState(page)).eventCount).toBeGreaterThan(state.eventCount);
+      continue;
+    }
     const finish = tile.getByRole('button', {
       name: /^(End turn|Finish trading)$/
     });
@@ -186,11 +191,11 @@ export async function travel(
     if (next === destination) return;
     if (
       next === 7 &&
-      (await roomTile(table.page)
+      (await table.page
         .getByRole('button', { name: 'Recall all', exact: true })
         .isVisible())
     )
-      await roomTile(table.page)
+      await table.page
         .getByRole('button', { name: 'Recall all', exact: true })
         .click();
     await end(table.page);

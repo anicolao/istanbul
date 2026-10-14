@@ -32,9 +32,13 @@ test('Upgrades and warehouse fills happen on arrival', async ({
     await end(page);
     await nextAda(t);
     await travel(t, 7);
-    await roomTile(page)
+    await page
       .getByRole('button', { name: 'Recall all', exact: true })
       .click();
+    await expect(roomTile(page)).toHaveCount(0);
+    await expect(page.locator('[data-place-id="7"] [data-piece-kind="assistant"]')).toHaveCount(0);
+    await expect(page.locator('[data-place-id="7"] [aria-label="4 assistants carried"]')).toBeVisible();
+    await expect(page.locator('[data-place-id="7"]')).toContainText('End turn');
     await capture(
       t,
       'A larger wheelbarrow fills directly and assistants return at the Fountain',

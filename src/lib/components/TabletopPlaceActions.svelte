@@ -13,7 +13,7 @@
   import { base } from "$app/paths";
   import { locationArt, type PlayerColorName } from "$lib/game/art";
   import { places } from "$lib/game/manifests";
-  import BonusCard from "./BonusCard.svelte";
+  import CaravansaryFlow from "./CaravansaryFlow.svelte";
   import GameArt from "./GameArt.svelte";
   let {
     game,
@@ -126,10 +126,7 @@
         >{/each}</button
     >
   {:else if placeId === 6}
-    <div class="private-draw">
-      <BonusCard reverse="card-deck" /><BonusCard reverse="card-back" />
-    </div>
-    <p>Draw and choose your cards on your phone.</p>
+    <CaravansaryFlow {game} {onAction} />
   {:else if placeId === 7}
     <div class="assistants">
       {#each Object.entries(player.assistantsByPlace) as [place, count]}{#each Array(count) as _, i}{@const n =
@@ -412,14 +409,6 @@
     outline: 2px solid white;
     outline-offset: 2px;
   }
-  .private-draw {
-    display: flex;
-    gap: 0.7cqw;
-    width: 10cqw;
-  }
-  .private-draw :global(.bonus-card) {
-    width: 4.6cqw;
-  }
   .destinations {
     display: grid;
     grid-template-columns: repeat(4, 1fr);
@@ -427,7 +416,10 @@
     width: 100%;
   }
   .destinations button {
-    height: 3.4cqw;
+    min-height: 3.4cqw;
+    aspect-ratio: 1.5;
+    overflow: hidden;
+    line-height: 1.1;
     background-size: cover;
     background-position: center;
     text-shadow:

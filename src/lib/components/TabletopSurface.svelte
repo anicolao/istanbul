@@ -1,10 +1,25 @@
 <script lang="ts">
+  import { untrack } from 'svelte';
+  import LocationFace from './LocationFace.svelte';
+  import WainwrightTransfer, {
+    type WainwrightPurchase
+  } from './WainwrightTransfer.svelte';
+  import GoodsTransfer, { type Transfer } from './GoodsTransfer.svelte';
+  import PostOfficeTransfer, {
+    type MailCollection
+  } from './PostOfficeTransfer.svelte';
+  import { postOfficeRows, warehouseGood } from '$lib/game/actions';
   import { cubicInOut } from 'svelte/easing';
   import BonusController from './BonusController.svelte';
+  import CaravansaryFlow from './CaravansaryFlow.svelte';
+  import AssistantTransfer, {
+    type AssistantRecall
+  } from './AssistantTransfer.svelte';
+  import CardTransfer, { type CardDraw } from './CardTransfer.svelte';
   import type { BonusChoice } from '$lib/game/bonus';
   import { base } from '$app/paths';
   import { places, bonusCards, type Good } from '$lib/game/manifests';
-  import { locationArt, type PlayerColorName } from '$lib/game/art';
+  import { type PlayerColorName } from '$lib/game/art';
   import {
     merchantToll,
     legalDestinations,
@@ -73,8 +88,248 @@
     onGrantE2eResources?: () => void;
     e2eResourceReview?: string;
   } = $props();
+  let surface = $state<HTMLElement>();
+  let transfer = $state<Transfer | null>(null);
+  let transferring = $state(false);
+  let landed = $state(0);
+  let zoomReady = $state(false);
+  let previousGame: GameSetup | undefined;
+  let purchase = $state<WainwrightPurchase | null>(null);
+  let purchasing = $state(false);
+  let wheelbarrowLanded = $state(false);
+  let rubyLanded = $state(false);
+  let assistantRecall = $state<AssistantRecall | null>(null);
+  let assistantsLanded = $state(0);
+  let cardDraw = $state<CardDraw | null>(null);
+  let cardsLanded = $state(0);
+  let handBeforeDraw = $state<string[]>([]);
+  let collection = $state<MailCollection | null>(null);
+  let mailArrivals = $state<number[]>([]);
+  const mailGame = $derived(
+    collection ? { ...game, postOfficeLower: collection.before } : game
+  );
+  const boardGame = $derived.by(() => ({
+    ...mailGame,
+    players: mailGame.players.map((p) => {
+      if (!assistantRecall || p.uid !== assistantRecall.uid) return p;
+      const stationed = { ...assistantRecall.stationed };
+      for (const place of assistantRecall.places.slice(0, assistantsLanded))
+        stationed[place]--;
+      return {
+        ...p,
+        assistantsCarried: assistantRecall.carried + assistantsLanded,
+        assistantsByPlace: stationed
+      };
+    })
+  }));
+  const matGame = $derived.by(() => ({
+    ...game,
+    players: game.players.map((p) => ({
+      ...p,
+      ...(cardDraw && p.uid === cardDraw.uid
+        ? {
+            bonusHand: [
+              ...handBeforeDraw,
+              ...cardDraw.cards.slice(0, cardsLanded).map((card) => card.id)
+            ]
+          }
+        : {}),
+      ...(collection && p.uid === collection.uid
+        ? {
+            goods: Object.fromEntries(
+              Object.entries(collection.player.goods).map(([good, count]) => [
+                good,
+                Math.min(
+                  p.capacity,
+                  count +
+                    mailArrivals.filter(
+                      (column) =>
+                        postOfficeRows[column][
+                          collection!.before[column] ? 1 : 0
+                        ].good === good
+                    ).length
+                )
+              ])
+            ) as typeof p.goods,
+            lira:
+              collection.player.lira +
+              mailArrivals.reduce(
+                (sum, column) =>
+                  sum +
+                  (postOfficeRows[column][collection!.before[column] ? 1 : 0]
+                    .lira ?? 0),
+                0
+              )
+          }
+        : {}),
+      ...(transfer && transferring && p.uid === transfer.uid
+        ? { goods: { ...p.goods, [transfer.good]: landed } }
+        : {}),
+      ...(purchase && purchasing && p.uid === purchase.uid
+        ? {
+            capacity: wheelbarrowLanded
+              ? purchase.capacityAfter
+              : purchase.capacityBefore,
+            rubies: rubyLanded ? purchase.rubiesAfter : purchase.rubiesBefore
+          }
+        : {})
+    }))
+  }));
+  $effect(() => {
+    const current = game;
+    untrack(() => {
+      const actor = current.players[current.turnSeat];
+      const prior = previousGame?.players.find((p) => p.uid === actor.uid);
+      const good =
+        current.lastAction?.kind === 'warehouse-fill'
+          ? warehouseGood(current.lastAction.place)
+          : null;
+      if (
+        prior &&
+        good &&
+        current.lastAction?.playerUid === actor.uid &&
+        actor.goods[good] > prior.goods[good]
+      ) {
+        landed = prior.goods[good];
+        transfer = {
+          uid: actor.uid,
+          good,
+          from: landed,
+          to: actor.goods[good],
+          landed,
+          key: `${current.epoch}:${current.turnNumber}:${actor.uid}`
+        };
+        transferring = true;
+      } else if (
+        transfer &&
+        (actor.uid !== transfer.uid ||
+          current.lastAction?.kind !== 'warehouse-fill' ||
+          actor.goods[transfer.good] < transfer.to)
+      ) {
+        transfer = null;
+        transferring = false;
+        purchasing = false;
+      }
+      if (
+        prior &&
+        current.lastAction?.kind === 'wainwright-buy' &&
+        current.lastAction.playerUid === actor.uid &&
+        actor.capacity > prior.capacity
+      ) {
+        purchase = {
+          uid: actor.uid,
+          capacityBefore: prior.capacity,
+          capacityAfter: actor.capacity,
+          rubiesBefore: prior.rubies,
+          rubiesAfter: actor.rubies
+        };
+        purchasing = true;
+        wheelbarrowLanded = false;
+        rubyLanded = false;
+      } else if (
+        purchase &&
+        (actor.uid !== purchase.uid ||
+          current.lastAction?.kind !== 'wainwright-buy' ||
+          actor.capacity < purchase.capacityAfter ||
+          actor.rubies < purchase.rubiesAfter)
+      ) {
+        purchase = null;
+        purchasing = false;
+      }
+      if (
+        prior &&
+        previousGame &&
+        current.lastAction?.kind === 'post-office-collect' &&
+        current.lastAction.playerUid === actor.uid &&
+        actor.lira > prior.lira &&
+        current.postOfficeLower.some(
+          (value, i) => value !== previousGame!.postOfficeLower[i]
+        )
+      ) {
+        collection = {
+          uid: actor.uid,
+          before: [...previousGame.postOfficeLower],
+          after: [...current.postOfficeLower],
+          player: structuredClone(prior)
+        };
+        mailArrivals = [];
+      } else if (
+        collection &&
+        (actor.uid !== collection.uid ||
+          current.turnNumber !== previousGame?.turnNumber ||
+          current.postOfficeLower.some(
+            (value, i) => value !== collection!.after[i]
+          ) ||
+          actor.lira < prior!.lira)
+      ) {
+        collection = null;
+      }
+      if (
+        prior &&
+        current.pending?.kind === 'caravansary-discard' &&
+        actor.bonusHand.length === prior.bonusHand.length + 2
+      ) {
+        cardDraw = {
+          uid: actor.uid,
+          cards: actor.bonusHand
+            .filter((id) => !prior.bonusHand.includes(id))
+            .map((id) => ({
+              id,
+              source: previousGame!.bonusDiscard.includes(id)
+                ? 'discard'
+                : 'deck'
+            }))
+        };
+        cardsLanded = 0;
+        handBeforeDraw = [...prior.bonusHand];
+      } else if (
+        cardDraw &&
+        (actor.uid !== cardDraw.uid ||
+          current.pending?.kind !== 'caravansary-discard')
+      )
+        cardDraw = null;
+      if (
+        prior &&
+        current.lastAction?.kind === 'fountain-recall' &&
+        current.lastAction.place === 7 &&
+        actor.assistantsCarried > prior.assistantsCarried
+      ) {
+        assistantRecall = {
+          uid: actor.uid,
+          color: actor.color as PlayerColorName,
+          carried: prior.assistantsCarried,
+          stationed: { ...prior.assistantsByPlace },
+          places: Object.entries(prior.assistantsByPlace).flatMap(
+            ([place, count]) =>
+              Array(
+                Math.max(
+                  0,
+                  count - (actor.assistantsByPlace[Number(place)] ?? 0)
+                )
+              ).fill(Number(place))
+          )
+        };
+        assistantsLanded = 0;
+      } else if (
+        assistantRecall &&
+        (actor.uid !== assistantRecall.uid ||
+          current.turnNumber !== previousGame?.turnNumber ||
+          actor.assistantsCarried < prior!.assistantsCarried)
+      )
+        assistantRecall = null;
+      previousGame = structuredClone($state.snapshot(current));
+    });
+  });
   const goods: Good[] = ['fabric', 'spice', 'fruit', 'jewelry'];
   const player = $derived(game.players[game.turnSeat]);
+  const fillMessage = $derived(
+    transfer &&
+      transfer.uid === player.uid &&
+      game.lastAction?.kind === 'warehouse-fill'
+      ? `${transfer.good[0].toUpperCase()}${transfer.good.slice(1)} ${transferring ? landed : transfer.to} / ${player.capacity}${transferring ? ' · Filling wheelbarrow' : ' · Wheelbarrow full'}`
+      : null
+  );
+
   const canControl = $derived(
     userUid === player.uid || (room.tabletopOwned && userUid === room.hostUid)
   );
@@ -119,6 +374,11 @@
   const actionReady = $derived(
     game.phase === 'action' || game.phase === 'family-action'
   );
+  const fountainRecall = $derived(activePlace === 7 && actionReady);
+  let recalledPlaces = $state<number[]>([]);
+  $effect(() => {
+    if (!fountainRecall) recalledPlaces = [];
+  });
   const reachable = $derived(
     game.phase === 'movement' ? legalDestinations(game, player) : []
   );
@@ -145,6 +405,12 @@
     power = $state<Good | null>(null),
     inspectedCard = $state<string | null>(null);
   let collapsed = $state(false);
+  $effect(() => {
+    if (collapsed) {
+      collection = null;
+      cardDraw = null;
+    }
+  });
   let arrivalContext = $state('');
   let context = $state(''),
     gain = $state<Good>('fabric'),
@@ -192,6 +458,21 @@
   }
   function tapRoom(id: number, event: MouseEvent) {
     if (busy) return;
+    if (id === 7 && activePlace === 7 && canEnd) {
+      onEndTurn();
+      return;
+    }
+    if (fountainRecall) {
+      const count = player.assistantsByPlace[id] ?? 0;
+      if (id !== 7 && count) {
+        const selected = recalledPlaces.filter((place) => place === id).length;
+        recalledPlaces =
+          selected === count
+            ? recalledPlaces.filter((place) => place !== id)
+            : [...recalledPlaces, id];
+      }
+      return;
+    }
     const card = (event.target as HTMLElement).closest<HTMLElement>(
       '[data-inspect-pile-card]'
     )?.dataset.inspectPileCard;
@@ -232,9 +513,13 @@
     open();
     power = good;
   }
+  const roomGeometry = new WeakMap<HTMLElement, { origin: DOMRect; bounds: DOMRect; scale: number }>();
   function fitRoom(node: HTMLElement, id: number, angle: number) {
-    const table = node.parentElement!;
-    const source = table.querySelector<HTMLElement>(`[data-place-id="${id}"]`)!;
+    const table = node.parentElement;
+    if (!table) return roomGeometry.get(node);
+    const source = table.querySelector<HTMLElement>(`[data-place-id="${id}"]`);
+    // The board can unmount before a global outro finishes (reload/rematch).
+    if (!source) return roomGeometry.get(node);
     const origin = source.getBoundingClientRect();
     const bounds = table.getBoundingClientRect();
     const sideways = Math.abs(angle % 180) === 90;
@@ -245,12 +530,15 @@
     );
     node.style.width = `${origin.width * scale}px`;
     node.style.height = `${origin.height * scale}px`;
-    return { origin, bounds, scale };
+    const geometry = { origin, bounds, scale };
+    roomGeometry.set(node, geometry);
+    return geometry;
   }
   function roomSize(
     node: HTMLElement,
     { id, angle }: { id: number; angle: number }
   ) {
+    zoomReady = false;
     const observer = new ResizeObserver(() => fitRoom(node, id, angle));
     observer.observe(node.parentElement!);
     return { destroy: () => observer.disconnect() };
@@ -259,7 +547,9 @@
     node: HTMLElement,
     { id, angle }: { id: number; angle: number }
   ) {
-    const { origin, bounds, scale } = fitRoom(node, id, angle);
+    const geometry = fitRoom(node, id, angle);
+    if (!geometry) return { duration: 0 };
+    const { origin, bounds, scale } = geometry;
     const dx = origin.left + origin.width / 2 - (bounds.left + node.offsetLeft);
     const dy = origin.top + origin.height / 2 - (bounds.top + node.offsetTop);
     const shortest = ((((angle + 180) % 360) + 360) % 360) - 180;
@@ -394,6 +684,7 @@
 />
 <section
   class="tabletop-surface"
+  bind:this={surface}
   class:personal
   style={`--opponents:${Math.max(1, game.players.length - 1)};--courtyard:url('${base}/art/bazaar-courtyard.png')`}
   aria-label="Shared Istanbul table"
@@ -416,12 +707,14 @@
         : 'Waiting for this merchant.'}
     </p>
     <TabletopPlayerPanel
-      {game}
+      game={matGame}
       {room}
       {userUid}
       onHand={() => {
         handOpen = true;
         collapsed = true;
+        transferring = false;
+        purchasing = false;
       }}
       {canEnd}
       {busy}
@@ -436,13 +729,21 @@
       data-testid="bazaar-board"
     >
       {#each game.board as id, index}<LocationTile
-          {game}
+          game={boardGame}
+          actionReady={id === 7 && activePlace === 7 && canEnd}
+          actionHint={id === 7 && activePlace === 7 && canEnd
+            ? 'End turn →'
+            : undefined}
           placeId={id}
           {index}
-          reachable={yellow
-            ? Boolean(player.assistantsByPlace[id])
-            : reachable.includes(id)}
-          selected={zoom === id && !collapsed}
+          reachable={fountainRecall
+            ? id !== 7 && Boolean(player.assistantsByPlace[id])
+            : yellow
+              ? Boolean(player.assistantsByPlace[id])
+              : reachable.includes(id)}
+          selected={fountainRecall
+            ? recalledPlaces.includes(id)
+            : zoom === id && !collapsed}
           arrived={id === activePlace && game.phase !== 'movement'}
           onkeydown={(e) => navigateBoard(e, index)}
           onclick={(e) => tapRoom(id, e)}
@@ -453,23 +754,72 @@
           >Tap an assistant’s room · 2 Lira</span
         ><button onclick={() => (yellow = false)}>×</button>
       </div>{/if}
-    {#if zoom !== null && !collapsed}
+    {#if fountainRecall}<div
+        class="table-hint fountain-recall"
+        aria-label="Fountain recall"
+      >
+        <span>Tap your assistants’ rooms</span>
+        <button
+          disabled={busy || !recalledPlaces.length}
+          onclick={() =>
+            onTakeAction({
+              kind: 'fountain-recall',
+              assistantPlaces: recalledPlaces
+            })}>Recall {recalledPlaces.length || 'selected'}</button
+        >
+        <button
+          disabled={busy ||
+            !Object.values(player.assistantsByPlace).some(Boolean)}
+          onclick={() =>
+            onTakeAction({
+              kind: 'fountain-recall',
+              assistantPlaces: Object.entries(player.assistantsByPlace)
+                .filter(([place]) => Number(place) !== 7)
+                .flatMap(([place, count]) => Array(count).fill(Number(place)))
+            })}>Recall all</button
+        >
+      </div>{/if}
+    {#if zoom !== null && zoom !== 7 && !collapsed && !fountainRecall}
       {#key `${zoom}-${zoomAngle}`}
         <section
           class="zoom-tile"
           aria-label={`${title} actions`}
-          style={`--facing:${zoomAngle}deg;background-image:url('${base}/${locationArt[zoom]}')`}
+          style={`--facing:${zoomAngle}deg`}
           use:roomSize={{ id: zoom, angle: zoomAngle }}
-          in:tileZoom|global={{ id: zoom, angle: zoomAngle }}
+          transition:tileZoom|global={{ id: zoom, angle: zoomAngle }}
+          onintroend={() => (zoomReady = true)}
         >
+          <LocationFace
+            game={mailGame}
+            placeId={zoom}
+            expanded
+            caravanActive={zoom === activePlace &&
+              actionReady &&
+              pending?.kind !== 'caravansary-discard'}
+            caravanHidden={personal &&
+              pending?.kind === 'caravansary-discard' &&
+              !cardDraw}
+            disabled={busy}
+            onAction={onTakeAction}
+          />
           <header>
-            <h1>{title}</h1>
+            <h1 class="visually-hidden">{title}</h1>
             <button
               aria-label="Back to table"
-              onclick={() => (collapsed = true)}><TabletopArrow back /></button
+              onclick={() => {
+                collapsed = true;
+                transferring = false;
+                purchasing = false;
+              }}><TabletopArrow back /></button
             >
           </header>
-          <fieldset class="room-flow" disabled={busy}>
+          <fieldset
+            class="room-flow"
+            class:caravan-piles={zoom === 6 &&
+              actionReady &&
+              pending?.kind !== 'caravansary-discard'}
+            disabled={busy}
+          >
             <div class="content" aria-live="polite">
               {#if publicCard}<div class="public-card">
                   <BonusCard card={publicCard} />
@@ -516,30 +866,28 @@
                     if (assistant) onMove(zoom!, assistant);
                   }}>Move here & lose this turn</button
                 >
-                <button onclick={() => (collapsed = true)}
-                  >Choose another room</button
+                <button
+                  onclick={() => {
+                    collapsed = true;
+                    transferring = false;
+                    purchasing = false;
+                  }}>Choose another room</button
                 >
-              {:else if zoom !== activePlace || game.phase === 'movement'}<p>
-                  {places.find((p) => p.id === zoom)?.action}
-                </p>
-              {:else if personal && canControl && activePlace === 6 && (actionReady || pending?.kind === 'caravansary-discard')}
-                <BonusController
-                  embedded
-                  flowOnly
-                  {game}
-                  {userUid}
-                  selectedBonus={null}
-                  {onInspectBonus}
-                  {onPlayBonus}
-                  onTakePrivateAction={onTakeAction}
-                  onResolvePrivateEncounter={() => {}}
-                  {onUndo}
-                  {onRollback}
-                  {undo}
-                  {undoLog}
-                  {gameLog}
-                  {undoPending}
-                />
+              {:else if zoom !== activePlace || game.phase === 'movement'}{#if zoom !== 5}<p
+                  >
+                    {places.find((p) => p.id === zoom)?.action}
+                  </p>{/if}
+              {:else if activePlace === 6 && actionReady && pending?.kind !== 'caravansary-discard'}
+                <!-- The piles are interactive components on the location face. -->
+              {:else if activePlace === 6 && pending?.kind === 'caravansary-discard'}
+                {#if !cardDraw}
+                  {#if personal}{#key `${game.epoch}:${game.turnNumber}:${player.uid}`}<CaravansaryFlow
+                        {game}
+                        disabled={busy}
+                        onAction={onTakeAction}
+                      />{/key}
+                  {:else}<p>Choose a card to discard on your phone.</p>{/if}
+                {/if}
               {:else if actionReady}{#key `${game.epoch}:${game.turnNumber}:${activePlace}`}<TabletopPlaceActions
                     {game}
                     {player}
@@ -564,7 +912,7 @@
                   & roll</button
                 >
               {:else if pending?.kind === 'warehouse-extra'}
-                <p>{game.lastAction?.summary}</p>
+                <p>{fillMessage ?? game.lastAction?.summary}</p>
                 <div class="components">
                   <GameArt kind="component" component="mosque-spice" /><span
                     >+1 · 2 Lira</span
@@ -622,9 +970,9 @@
               {:else if pending?.kind === 'encounters'}{@render encounterChoices(
                   pending
                 )}
-              {:else if game.phase === 'turn-end'}<p>
-                  {game.lastAction?.summary}
-                </p>
+              {:else if game.phase === 'turn-end'}{#if zoom !== 5}<p>
+                    {fillMessage ?? game.lastAction?.summary}
+                  </p>{/if}
                 {#if game.lastRoll?.playerUid === player.uid && game.lastRoll.place === activePlace}<div
                     class="dice"
                   >
@@ -746,6 +1094,47 @@
       >Game log</button
     >
   </nav>
+  <AssistantTransfer
+    recall={assistantRecall}
+    {surface}
+    onArrival={(count) => (assistantsLanded = count)}
+    onComplete={() => (assistantRecall = null)}
+  />
+  <CardTransfer
+    draw={cardDraw}
+    ready={zoomReady && !collapsed}
+    {surface}
+    onArrival={(count) => (cardsLanded = count)}
+    onComplete={() => (cardDraw = null)}
+  />
+  <PostOfficeTransfer
+    {collection}
+    ready={zoomReady && !collapsed}
+    {surface}
+    onArrival={(column) => {
+      if (!mailArrivals.includes(column))
+        mailArrivals = [...mailArrivals, column];
+    }}
+    onComplete={() => (collection = null)}
+  />
+  <WainwrightTransfer
+    purchase={purchasing ? purchase : null}
+    ready={zoomReady && !collapsed}
+    {surface}
+    onWheelbarrow={() => (wheelbarrowLanded = true)}
+    onRuby={() => (rubyLanded = true)}
+    onComplete={() => (purchasing = false)}
+  />
+  <GoodsTransfer
+    transfer={transferring ? transfer : null}
+    ready={zoomReady && !collapsed}
+    {surface}
+    onCount={(count) => {
+      landed = count;
+      if (transfer) transfer.landed = count;
+    }}
+    onComplete={() => (transferring = false)}
+  />
 </section>
 
 <style>
@@ -864,40 +1253,6 @@
   .board :global(.place-shade) {
     background: none;
   }
-  .board :global(.place > strong) {
-    font:
-      700 6cqw 'Cormorant Garamond',
-      serif;
-    text-shadow:
-      0 1px 3px #000,
-      0 0 5px #000;
-  }
-  .board :global(.place-number) {
-    width: 7cqw;
-    height: 7cqw;
-    font-size: 4cqw;
-  }
-  .board :global(.occupants) {
-    inset: 22% 8%;
-    height: auto;
-    align-items: center;
-  }
-  .board :global(.occupants .merchant) {
-    width: 24cqw;
-    height: 24cqw;
-  }
-  .board :global(.occupants .assistant),
-  .board :global(.occupants .family-member) {
-    width: 13cqw;
-    height: 13cqw;
-  }
-  .board :global(.encounter) {
-    width: 12cqw;
-    height: 16cqw;
-  }
-  .board :global(.place:hover .place-art) {
-    scale: 1;
-  }
   .zoom-tile {
     position: absolute;
     z-index: 10;
@@ -905,9 +1260,7 @@
     top: 49.5%;
     box-sizing: border-box;
     transform: translate(-50%, -50%) rotate(var(--facing));
-    background-size: cover;
-    background-position: center;
-    border: 1px solid #947d49;
+    border: 0;
     border-radius: 0.18cqw;
     box-shadow: 0 0.5cqw 1cqw #0009;
     overflow: hidden;
@@ -923,8 +1276,9 @@
   }
   .zoom-tile > header {
     position: absolute;
-    inset: 0 0 auto;
-    padding: 0.7cqw 1cqw;
+    z-index: 4;
+    top: 3%;
+    right: 3%;
   }
   .zoom-tile h1 {
     margin: 0;
@@ -965,9 +1319,16 @@
     color: #17291e;
     font-weight: 700;
   }
+  .room-flow.caravan-piles {
+    pointer-events: none;
+  }
+  .room-flow.caravan-piles footer {
+    pointer-events: auto;
+  }
   .room-flow {
     position: absolute;
-    inset: 4.4cqw 0 0;
+    z-index: 4;
+    inset: 20% 16% 8%;
     display: flex;
     flex-direction: column;
   }

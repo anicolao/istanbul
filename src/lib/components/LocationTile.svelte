@@ -2,10 +2,7 @@
   import { places } from '$lib/game/manifests';
   import { locationStateSummary } from '$lib/game/location-state';
   import type { GameSetup } from '$lib/game/setup';
-  import type { PlayerColorName } from '$lib/game/art';
-  import GameArt from './GameArt.svelte';
-  import LocationState from './LocationState.svelte';
-  import PlayingPiece from './PlayingPiece.svelte';
+  import LocationFace from './LocationFace.svelte';
 
   let {
     game,
@@ -38,13 +35,16 @@
   } = $props();
 
   const place = $derived(places.find(({ id }) => id === placeId)!);
-  const merchants = $derived(game.players.filter(({ merchantPlace }) => merchantPlace === placeId));
-  const assistants = $derived(game.players.flatMap((player) => Array.from({ length: player.assistantsByPlace[placeId] ?? 0 }, () => player)));
-  const families = $derived(game.players.filter(({ familyPlace }) => familyPlace === placeId));
+  const merchants = $derived(
+    game.players.filter(({ merchantPlace }) => merchantPlace === placeId)
+  );
   const stateSummary = $derived(locationStateSummary(game, placeId));
-  const hasEncounter = $derived(placeId === game.governorPlace || placeId === game.smugglerPlace);
-  const hasStateDisplay = $derived([5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16].includes(placeId));
-  const label = $derived(`${place.id} ${place.name}. ${place.action} Current state: ${stateSummary}.${reachable ? ' Reachable this turn.' : ''}${actionHint ? ` ${actionHint}.` : actionReady ? ' Active now; tap to use this room.' : ''}${merchants.length ? ` Merchants: ${merchants.map(({ name }) => name).join(', ')}.` : ''}`);
+  const hasEncounter = $derived(
+    placeId === game.governorPlace || placeId === game.smugglerPlace
+  );
+  const label = $derived(
+    `${place.id} ${place.name}. ${place.action} Current state: ${stateSummary}.${reachable ? ' Reachable this turn.' : ''}${actionHint ? ` ${actionHint}.` : actionReady ? ' Active now; tap to use this room.' : ''}${merchants.length ? ` Merchants: ${merchants.map(({ name }) => name).join(', ')}.` : ''}`
+  );
 </script>
 
 <button
@@ -66,50 +66,67 @@
   {onkeydown}
   {onclick}
 >
-  <GameArt kind="location" place={place.id} class="place-art" />
-  <span class="place-shade"></span>
-  {#if hasStateDisplay}<LocationState {game} {placeId} />{/if}
-  <span class="place-number">{place.id}</span>
-  <strong>{place.shortName}</strong>
-  {#if actionReady || actionHint}<span class="action-ready-label">{actionHint ?? "Tap to use"}</span>{/if}
-  <span class="occupants" aria-hidden="true">
-    {#each merchants as merchant}<PlayingPiece piece="merchant" color={merchant.color as PlayerColorName} class="merchant" label={`${merchant.name}'s merchant`} />{/each}
-    {#each assistants as assistant}<PlayingPiece piece="assistant" color={assistant.color as PlayerColorName} class="assistant" label={`${assistant.name}'s assistant`} />{/each}
-    {#each placeId === 12 ? [] : families as family}<PlayingPiece piece="family" color={family.color as PlayerColorName} class="family-member" label={`${family.name}'s family member`} />{/each}
-    {#each game.neutralMerchants.filter(({ place: neutralPlace }) => neutralPlace === placeId), neutralIndex}<PlayingPiece piece="neutral-merchant" class="merchant neutral" label={`Neutral merchant ${neutralIndex + 1}`} />{/each}
-  </span>
-  {#if placeId === game.governorPlace}<PlayingPiece piece="governor" class="encounter governor-piece" label="Governor" />{/if}
-  {#if placeId === game.smugglerPlace}<PlayingPiece piece="smuggler" class="encounter smuggler-piece" label="Smuggler" />{/if}
+  <LocationFace {game} {placeId} />
+  {#if actionReady}<span class="action-ready-label"
+      >{actionHint ?? 'Your action'}</span
+    >{/if}
 </button>
 
 <style>
-  .place { container: location-tile / size; position: relative; width: 100%; height: 100%; min-width: 0; min-height: 0; display: grid; grid-template-columns: 1fr; grid-template-rows: auto 1fr; gap: .15rem; align-items: start; overflow: hidden; padding: .42rem; border: 1px solid rgb(255 250 240 / 60%); border-radius: .55rem; color: #fffaf0; text-align: left; background: #173f43; box-shadow: 0 .35rem .7rem rgb(0 0 0 / 30%); cursor: pointer; }
-  .place :global(.place-art), .place-shade { position: absolute; inset: 0; }
-  .place :global(.place-art) { z-index: 0; transition: scale .25s ease; }.place:hover :global(.place-art), .place:focus-visible :global(.place-art) { scale: 1.05; }
-  .place-shade { z-index: 1; background: linear-gradient(to bottom, rgb(5 25 27 / 88%) 0, rgb(5 25 27 / 34%) 27%, transparent 52%, rgb(5 25 27 / 42%) 100%); pointer-events: none; }
-  .place:focus-visible { outline: 4px solid #fff2a8; outline-offset: 2px; box-shadow: 0 0 0 7px #173f43, 0 .35rem .7rem rgb(0 0 0 / 30%); }
-  .place::after { position: absolute; inset: 0; border: 3px solid transparent; border-radius: inherit; content: ''; pointer-events: none; }
-  .place.selected::after { border-color: #e2574f; box-shadow: inset 0 0 0 2px #fff7d6; }
-  .place.reachable { border-color: #f4cf75; box-shadow: 0 0 0 2px rgb(244 207 117 / 45%), 0 .35rem .7rem rgb(0 0 0 / 30%); }
-  .place.reachable::before { position: absolute; inset: .2rem; border: 1px dashed #a56823; border-radius: .35rem; content: ''; pointer-events: none; }
-  .place.action-ready { border-color: #efca7d; box-shadow: 0 0 0 3px rgb(239 202 125 / 55%), 0 .35rem .7rem rgb(0 0 0 / 30%); animation: action-ready-pulse 1.4s ease-in-out infinite alternate; }
-  .action-ready-label { position: absolute; z-index: 6; right: .35rem; bottom: .3rem; left: .35rem; padding: .22rem .3rem; border: 1px solid #efca7d; border-radius: 1rem; color: #173f43; text-align: center; background: #efca7d; box-shadow: 0 .15rem .3rem #0008; font-size: clamp(.42rem, .72vw, .62rem); font-weight: 700; letter-spacing: .05em; text-transform: uppercase; }
-  .place.departed { animation: departure-pulse .45s ease-out; }.place.arrived { animation: arrival-pulse .6s ease-out; }
-  .place-number { position: absolute; z-index: 4; top: .28rem; right: .3rem; width: 1.45rem; height: 1.45rem; display: grid; place-items: center; border: 1px solid #efca7d; border-radius: 50%; color: #fffaf0; background: rgb(10 44 47 / 92%); font-size: .72rem; font-weight: 700; }
-  .place > strong { position: relative; z-index: 3; max-width: calc(100% - 1.7rem); align-self: start; overflow: hidden; text-shadow: 0 1px 3px #000; font-size: clamp(.72rem, 1.1vw, .94rem); line-height: 1; text-overflow: ellipsis; white-space: nowrap; }
-  .occupants { position: absolute; z-index: 3; inset-block: 0; right: .38rem; left: .38rem; height: 4.2rem; display: flex; gap: .18rem; align-items: center; justify-content: center; margin-block: auto; pointer-events: none; }
-  .place.has-encounter .occupants { padding-right: 0; }
-  .occupants :global(.merchant), .occupants :global(.family-member), .occupants :global(.assistant) { flex: 0 0 auto; }
-  .occupants :global(.merchant) { width: 4.2rem; height: 4.2rem; }.occupants :global(.family-member) { width: 3.525rem; height: 3.525rem; }.occupants :global(.assistant) { width: 3.525rem; height: 3.525rem; }.occupants :global(.merchant.neutral) { background-color: transparent; }
-  .place :global(.encounter) { position: absolute; z-index: 3; inset-block: 0; right: .25rem; width: 3.6rem; height: 3.6rem; margin-block: auto; }
-  @keyframes departure-pulse { from { filter: brightness(1.45); } to { filter: none; } }
-  @keyframes arrival-pulse { 0% { translate: 0 -.25rem; filter: brightness(1.7); } 100% { translate: 0; filter: none; } }
-  @keyframes action-ready-pulse { from { filter: brightness(1); } to { filter: brightness(1.16); } }
-  @media (max-width: 720px) {
-    .place { padding: .24rem; border-radius: .38rem; }.place > strong { display: -webkit-box; max-width: calc(100% - 1.25rem); overflow: hidden; font-size: .58rem; line-height: .88; white-space: normal; -webkit-box-orient: vertical; -webkit-line-clamp: 2; line-clamp: 2; }.place-number { width: 1.05rem; height: 1.05rem; font-size: .5rem; }.occupants { right: .12rem; left: .12rem; height: 1.5rem; gap: .02rem; }.occupants :global(.merchant) { width: 1.4rem; height: 1.4rem; }.occupants :global(.assistant), .occupants :global(.family-member) { width: 1.18rem; height: 1.18rem; }.place :global(.encounter) { right: .1rem; width: 1.2rem; height: 1.2rem; }
+  .place {
+    position: relative;
+    display: block;
+    width: 100%;
+    height: 100%;
+    min-width: 0;
+    min-height: 0;
+    overflow: hidden;
+    padding: 0;
+    border: 0;
+    border-radius: 2px;
+    background: #173f43;
+    color: #fffaf0;
+    cursor: pointer;
+    box-shadow: 0 0.35rem 0.7rem #0005;
   }
-  @media (max-height: 500px) and (orientation: landscape) {
-    .place { padding: .2rem; }.place > strong { font-size: .52rem; }.occupants { height: 1.35rem; }.occupants :global(.merchant) { width: 1.25rem; height: 1.25rem; }.occupants :global(.assistant), .occupants :global(.family-member) { width: 1.05rem; height: 1.05rem; }
+  .place::after {
+    position: absolute;
+    inset: 0;
+    border: 2px solid transparent;
+    content: '';
+    pointer-events: none;
+    z-index: 5;
   }
-  @media (prefers-reduced-motion: reduce) { .place.departed, .place.arrived, .place.action-ready { animation: none; } }
+  .place.selected::after {
+    border-color: #ffdf91;
+    box-shadow: inset 0 0 6px #efca7d;
+  }
+  .place.reachable {
+    box-shadow:
+      0 0 0 1px #f4cf7599,
+      0 0.35rem 0.7rem #0005;
+  }
+  .place:focus-visible {
+    outline: 3px solid #fff2a8;
+    outline-offset: 2px;
+  }
+  .place[data-place-id='7'] .action-ready-label {
+    bottom: 10%;
+    left: 25%;
+    right: 25%;
+    padding: 0.3rem;
+    border-radius: 0.25rem;
+    font-size: 0.85rem;
+  }
+  .action-ready-label {
+    position: absolute;
+    z-index: 6;
+    bottom: 1%;
+    left: 18%;
+    right: 18%;
+    text-align: center;
+    background: #efca7d;
+    color: #173f43;
+    font-size: 0.6rem;
+  }
 </style>

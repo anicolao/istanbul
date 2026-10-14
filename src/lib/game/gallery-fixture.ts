@@ -23,7 +23,7 @@ export function createGalleryGame() {
   const game = createSetup(room, 'production-component-gallery');
   game.startingSeat = 0;
   game.turnSeat = 0;
-  game.postOfficeLower = [true, false, true, false];
+  game.postOfficeLower = [true, true, false, false];
   game.largeDemand = ['demand-large-4', ...game.largeDemand.filter((id) => id !== 'demand-large-4')];
   game.smallDemand = ['demand-small-2', ...game.smallDemand.filter((id) => id !== 'demand-small-2')];
   game.bonusDiscard = [game.bonusDrawPile.shift()!];
@@ -36,7 +36,7 @@ export function createGalleryGame() {
   for (const [index, player] of game.players.entries()) {
     player.merchantPlace = [1, 5, 8, 11, 14][index];
     player.assistantsCarried = Math.max(1, 4 - index);
-    player.assistantsByPlace = index === 0 ? { 2: 1, 7: 2 } : index === 1 ? { 5: 1 } : index === 2 ? { 10: 1 } : index === 3 ? { 13: 1 } : { 15: 1 };
+    player.assistantsByPlace = index === 0 ? { 2: 1, 4: 2 } : index === 1 ? { 5: 1 } : index === 2 ? { 10: 1 } : index === 3 ? { 13: 1 } : { 15: 1 };
     player.familyPlace = [12, 6, 12, 9, 16][index];
     player.capacity = Math.min(5, 2 + index);
     player.extensions = Math.min(3, index);

@@ -27,11 +27,8 @@ test('Gameplay uses the production components', async ({
           2
         );
         await expect(page.locator('[data-place-id]')).toHaveCount(16);
-        expect(
-          await roomTile(page).evaluate(
-            (el) => getComputedStyle(el).backgroundImage
-          )
-        ).toContain('spice');
+        await expect(roomTile(page).locator('.artwork')).toHaveAttribute('src', /spice/);
+        await expect(roomTile(page).locator('.frame')).toHaveAttribute('src', /location-frame/);
       }
     );
   } finally {

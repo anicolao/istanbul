@@ -1,10 +1,6 @@
 <script lang="ts">
   import { bonusCards, type Good } from '$lib/game/manifests';
-  import {
-    previewCaravansary,
-    type CardSource,
-    type PlaceActionChoice
-  } from '$lib/game/actions';
+  import { type PlaceActionChoice } from '$lib/game/actions';
   import type { BonusChoice } from '$lib/game/bonus';
   import { requiredAssistantAction } from '$lib/game/movement';
   import { currentSultanCost } from '$lib/game/ruby-routes';
@@ -13,6 +9,7 @@
   import UndoButton from './UndoButton.svelte';
   import BonusCardChoices from './BonusCardChoices.svelte';
   import BonusCard from './BonusCard.svelte';
+  import CaravansaryFlow from './CaravansaryFlow.svelte';
   import GameLog from './GameLog.svelte';
 
   let {
@@ -73,10 +70,6 @@
   let familyReward = $state<'lira' | 'bonus'>('lira');
   let assistantPlace = $state(1);
   let sultanWildGoods = $state<Good[]>([]);
-  let caravanSources = $state<[CardSource, CardSource]>(['deck', 'deck']);
-  const caravanPreview = $derived(
-    previewCaravansary(game, caravanSources) ?? []
-  );
   const privateActionPlace = $derived(
     game.pending?.kind === 'caravansary-discard'
       ? 6
@@ -108,11 +101,6 @@
             ? `${game.phase.replace('-', ' ')} · make public choices on the tabletop`
             : `${currentPlayer.name} is using the tabletop`
   );
-
-  function setCaravanSource(index: 0 | 1, source: CardSource) {
-    caravanSources =
-      index === 0 ? [source, caravanSources[1]] : [caravanSources[0], source];
-  }
 
   function setSultanWild(index: number, good: Good) {
     sultanWildGoods = Array.from({ length: sultanWildCount }, (_, slot) =>
@@ -172,64 +160,11 @@
 
     <article class="private-decision" data-e2e-no-scroll>
       {#if atCaravansary}
-        <p class="kicker">Private Caravansary choice</p>
-        <h2>Draw two, then discard one</h2>
-        {#if game.pending?.kind === 'caravansary-discard'}
-          <BonusCardChoices
-            cards={player.bonusHand}
-            disabled={undoPending}
-            onChoose={(discardCardId) =>
-              onTakePrivateAction({
-                kind: 'caravansary-discard',
-                discardCardId
-              })}
-          />
-        {:else}
-          <div class="caravan-sources">
-            {#each [0, 1] as index}<div>
-                <p>Card {index + 1}</p>
-                <div class="source-pair">
-                  <button
-                    aria-label={`Card ${index + 1}: draw pile`}
-                    aria-pressed={caravanSources[index] === 'deck'}
-                    onclick={() => setCaravanSource(index as 0 | 1, 'deck')}
-                    ><BonusCard reverse="card-back" /></button
-                  ><button
-                    aria-label={`Card ${index + 1}: discard pile`}
-                    aria-pressed={caravanSources[index] === 'discard'}
-                    disabled={game.bonusDiscard.length <
-                      caravanSources
-                        .slice(0, index)
-                        .filter((s) => s === 'discard').length +
-                        1}
-                    onclick={() => setCaravanSource(index as 0 | 1, 'discard')}
-                    ><BonusCard
-                      card={bonusById.get(
-                        game.bonusDiscard.at(
-                          -1 -
-                            caravanSources
-                              .slice(0, index)
-                              .filter((s) => s === 'discard').length
-                        ) ?? ''
-                      )}
-                      reverse={game.bonusDiscard.length
-                        ? undefined
-                        : 'card-back'}
-                    /></button
-                  >
-                </div>
-              </div>{/each}
-          </div>
-          <button
-            class="primary"
-            disabled={undoPending || caravanPreview.length !== 2}
-            onclick={() =>
-              onTakePrivateAction({
-                kind: 'caravansary-draw',
-                drawSources: caravanSources
-              })}>Draw two cards</button
-          >
-        {/if}
+        <CaravansaryFlow
+          {game}
+          disabled={undoPending}
+          onAction={onTakePrivateAction}
+        />
       {:else if governorCardPayment}
         <p class="kicker">Private Governor payment</p>
         <h2>Discard a Bonus card</h2>
@@ -564,31 +499,8 @@
   .primary:disabled {
     opacity: 0.4;
   }
-  .caravan-sources {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 0.4rem;
-  }
   .waiting {
     color: #6d7c79;
-  }
-  .source-pair {
-    display: flex;
-    gap: 0.4rem;
-    justify-content: center;
-  }
-  .source-pair button {
-    width: 3rem;
-    padding: 0;
-    border: 2px solid transparent;
-    background: none;
-    cursor: pointer;
-  }
-  .source-pair button[aria-pressed='true'] {
-    border-color: #b98d39;
-  }
-  .source-pair button:disabled {
-    opacity: 0.3;
   }
   @media (max-height: 700px) {
     h1 {

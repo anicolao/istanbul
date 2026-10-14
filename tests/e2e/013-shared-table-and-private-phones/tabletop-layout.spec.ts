@@ -6,6 +6,11 @@ test('all sixteen room actions fit the real tabletop at each physical edge', asy
   for (const seat of [1, 2, 4, 6, 8]) {
     for (let place = 1; place <= 16; place++) {
       await page.goto(`/mockups/tabletop/?place=${place}&seat=${seat}`);
+      if (place === 7) {
+        await expect(page.locator('.zoom-tile')).toHaveCount(0);
+        await expect(page.getByRole('button', { name: 'Recall all', exact: true })).toBeVisible();
+        continue;
+      }
       await expect(page.locator('.zoom-tile:not([inert])')).toBeVisible();
       await expect(page.locator('.zoom-tile:not([inert])')).toHaveAttribute('style', new RegExp(`--facing: ?${seat <= 3 ? -180 : seat === 4 ? -90 : seat === 8 ? 90 : 0}deg`));
       await expect(page.locator('.mat')).toHaveCount(5);

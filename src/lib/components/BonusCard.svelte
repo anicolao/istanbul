@@ -58,5 +58,6 @@
   .bonus-card.mini strong { font-size: 10cqi; line-height: .92; }
   .bonus-card.mini p { margin-top: 2cqi; font-size: 5.4cqi; line-height: 1.02; }
   .bonus-card.reverse { padding: 0; }
+  .bonus-card.reverse .card-face { background-size: 104% 110%; background-position: center top; }
   .bonus-card.reverse::after { display: none; }
 </style>

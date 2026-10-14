@@ -28,8 +28,9 @@ test('Mail, private draws, and markets share room controls', async ({
     await travel(t, 6);
     const count = (await readState(page)).game.localHand.length;
     await roomTile(page)
-      .getByRole('button', { name: 'Draw two cards', exact: true })
+      .getByRole('button', { name: 'Draw from face-down pile', exact: true })
       .click();
+    await roomTile(page).getByRole('button', { name: 'Draw from face-down pile', exact: true }).click();
     await expect
       .poll(async () => (await readState(page)).game.localHand.length)
       .toBe(count + 2);

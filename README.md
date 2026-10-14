@@ -162,6 +162,17 @@ emulator-backed Playwright scenarios, the production build, and whitespace
 checks. Each gameplay slice must include its rules/reducer fixtures, accessible
 UI, browser proof, and reviewed screenshots in the same change.
 
+## Animation and card review
+
+Open `/dev/animations/` to replay prepared local game positions using the same
+components and rules as live play. Choose a room/action, player count, screen
+mode and seat; Trigger or Replay runs the action. Playback speed and Pause apply
+to room zooms and component flights. This lab never writes events to live rooms.
+
+Open `/dev/cards/` to review all ten Bonus-card designs, rules text, copy counts
+and the matching card back. Search narrows the gallery; Artwork only removes the
+text overlay for art review. Fronts and backs use the same 1:2 component frame.
+
 ## Rules and artwork
 
 The implementation targets the 2014 Istanbul base game. The rules summary was

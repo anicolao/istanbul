@@ -4,7 +4,8 @@
   import type { RoomProjection } from '$lib/game/protocol';
   import type { GameSetup, SetupPlayer } from '$lib/game/setup';
   import { mosqueTiles, type Good } from '$lib/game/manifests';
-  import { componentArt, bonusCardArt } from '$lib/game/art';
+  import BonusCard from './BonusCard.svelte';
+  import { componentArt } from '$lib/game/art';
   let {
     game,
     room,
@@ -48,6 +49,7 @@
 <article
   class="mat"
   data-component="PlayerMat"
+  data-player-uid={player.uid}
   class:active
   aria-label={`${player.name} resources`}
   aria-current={active ? 'true' : undefined}
@@ -56,9 +58,10 @@
   style={`--x:${seat.x}%;--y:${seat.y}%;--rotation:${seat.angle}deg;--width:${seat.width}%;--seat-color:${colors[player.color]};background-image:url('${asset('art/game/mats/shared-five-slots-v2.png')}')`}
 >
   <strong class="name">{player.name}<span class="turn-light"></span></strong>
-  <div class="cargo">
+  <div class="cargo" data-wheelbarrow>
     {#each goods as good}<div
         class="good"
+        data-good={good}
         aria-label={`${player.goods[good]} ${good}, capacity ${player.capacity}`}
       >
         <span class="good-count"
@@ -66,6 +69,7 @@
         >{#each Array(5) as _, row}{@const slot = 4 - row}
           <div
             class="goods-slot"
+            data-goods-slot={slot}
             class:locked={slot >= player.capacity}
             class:filled={slot < player.goods[good]}
           >
@@ -76,27 +80,29 @@
           </div>{/each}
       </div>{/each}
   </div>
-  <div class="coins" aria-label={`${player.lira} Lira`}>
+  <div data-lira class="coins" aria-label={`${player.lira} Lira`}>
     <img src={asset(componentArt.lira)} alt="" /><b>{player.lira}</b>
   </div>
   {#if room.mode === 'personal-screens' && player.uid === userUid}<button
       class="cards"
+      data-card-tray
       aria-label="Your Bonus cards"
       onclick={onHand}
-      ><img src={asset(bonusCardArt.back)} alt="" /><span
+      ><BonusCard reverse="card-back" mini /><span
         >{player.bonusHand.length}</span
       ></button
     >{:else}<div
       class="cards"
+      data-card-tray
       aria-label={`${player.bonusHand.length} Bonus cards`}
     >
-      <img src={asset(bonusCardArt.back)} alt="" /><span
+      <BonusCard reverse="card-back" mini /><span
         >{player.bonusHand.length}</span
       >
     </div>
   {/if}
   <div class="rubies" aria-label={`${player.rubies} rubies`}>
-    {#each Array(Math.max(6, player.rubies)) as _, i}<span
+    {#each Array(Math.max(6, player.rubies)) as _, i}<span data-ruby-slot={i}
         >{#if i < player.rubies}<img
             src={asset(componentArt.ruby)}
             alt=""
@@ -258,11 +264,6 @@
     top: 27%;
     width: 6%;
     height: 44%;
-  }
-  .cards img {
-    width: 100%;
-    height: 100%;
-    object-fit: contain;
   }
   .cards span {
     position: absolute;
