@@ -255,6 +255,7 @@
     game.phase === 'action' || game.phase === 'family-action'
   );
   const fountainRecall = $derived(activePlace === 7 && actionReady);
+  const fountainEncounter = $derived(activePlace === 7 && pending?.kind === 'encounters');
   let recalledPlaces = $state<number[]>([]);
   $effect(() => {
     if (!fountainRecall) recalledPlaces = [];
@@ -303,6 +304,7 @@
       inspectedCard = null;
     }
     if (boardMotion) {
+      if (fountainEncounter) arrivalContext = '';
       collapsed = true;
       return;
     }
@@ -336,7 +338,7 @@
   }
   function tapRoom(id: number, event: MouseEvent) {
     if (busy) return;
-    if (id === 7 && activePlace === 7 && canEnd) {
+    if (id === 7 && activePlace === 7 && canEnd && !fountainEncounter) {
       onEndTurn();
       return;
     }
@@ -617,8 +619,8 @@
       {#each game.board as id, index}<LocationTile
           {gemstone}
           game={boardGame}
-          actionReady={id === 7 && activePlace === 7 && canEnd}
-          actionHint={id === 7 && activePlace === 7 && canEnd
+          actionReady={id === 7 && activePlace === 7 && canEnd && !fountainEncounter}
+          actionHint={id === 7 && activePlace === 7 && canEnd && !fountainEncounter
             ? 'End turn →'
             : undefined}
           placeId={id}
@@ -666,7 +668,7 @@
             })}>Recall all</button
         >
       </div>{/if}
-    {#if zoom !== null && zoom !== 7 && !collapsed && !fountainRecall}
+    {#if zoom !== null && (zoom !== 7 || fountainEncounter) && !collapsed && !fountainRecall}
       {#key `${zoom}-${zoomAngle}`}
         <section
           class="zoom-tile"

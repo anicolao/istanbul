@@ -62,6 +62,7 @@ export const scenarios = [
     ['governor-pay', 'Governor · pay and relocate'],
     ['smuggler', 'Smuggler · trade and relocate'],
     ['family', 'Catch a family member'],
+    ['fountain-encounters', 'Fountain · visitors after recall'],
     ['green', 'Green power · extra good'],
     ['red', 'Red power · change a die'],
     ['reroll', 'Red power · reroll'],
@@ -188,6 +189,12 @@ export function fixture(
     15: { kind: 'mosque-take', tileId: 'mosque-jewelry-2' },
     16: { kind: 'gemstone-buy' }
   };
+  if (id === 'fountain-encounters') {
+    player.merchantPlace = 7;
+    game.smugglerPlace = 7;
+    game.governorPlace = 7;
+    trigger = action({ kind: 'fountain-recall', assistantPlaces: [2, 4] });
+  }
   if (id === 'arrival-1' || id === 'action-1') player.capacity = 4;
   if (id === 'wainwright-extension') {
     player.capacity = 3;
