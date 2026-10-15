@@ -1,0 +1,1 @@
+import{t as e}from"../chunks/BWD8_cZ8.js";export{e as component};
