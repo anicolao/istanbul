@@ -9,6 +9,7 @@
   import UndoButton from './UndoButton.svelte';
   import BonusCardChoices from './BonusCardChoices.svelte';
   import BonusCard from './BonusCard.svelte';
+  import AssistantRecallMap from './AssistantRecallMap.svelte';
   import CaravansaryFlow from './CaravansaryFlow.svelte';
   import GameLog from './GameLog.svelte';
 
@@ -68,7 +69,6 @@
   );
   let bonusGood = $state<Good>('jewelry');
   let familyReward = $state<'lira' | 'bonus'>('lira');
-  let assistantPlace = $state(1);
   let sultanWildGoods = $state<Good[]>([]);
   const privateActionPlace = $derived(
     game.pending?.kind === 'caravansary-discard'
@@ -102,6 +102,8 @@
             : `${currentPlayer.name} is using the tabletop`
   );
 
+  const choosingAssistant = $derived(isCurrent && selected?.effect === 'return-assistant' && !atCaravansary && !governorCardPayment);
+
   let workspaceWidth = $state(0);
   let workspaceHeight = $state(0);
   function measureWorkspace(node: HTMLElement) {
@@ -118,7 +120,7 @@
   // Reserve play controls so selecting a card never shrinks the hand.
   const cardWidth = $derived.by(() => {
     const count = player.bonusHand.length;
-    if (!count || flowOnly || atCaravansary || governorCardPayment) return 0;
+    if (!count || flowOnly || atCaravansary || governorCardPayment || choosingAssistant) return 0;
     let best = 0;
     for (let rows = 1; rows <= count; rows++) {
       const columns = Math.ceil(count / rows);
@@ -188,7 +190,7 @@
         {:else}<p>No Bonus cards in hand.</p>{/each}
       </nav>{/if}
 
-    {#if !fullHand || selected || atCaravansary || governorCardPayment}<article class="private-decision" data-e2e-no-scroll>
+    {#if !fullHand || selected || atCaravansary || governorCardPayment}<article class="private-decision" class:assistant-selection={choosingAssistant} data-e2e-no-scroll>
       {#if atCaravansary}
         <CaravansaryFlow
           {game}
@@ -210,7 +212,7 @@
       {:else if selected}
         <p class="kicker">Selected Bonus card</p>
         <h2>{selected.title}</h2>
-        {#if !fullHand}<BonusCard card={selected} class="large-card" />{/if}
+        {#if !fullHand && !choosingAssistant}<BonusCard card={selected} class="large-card" />{/if}
         {#if isCurrent}
           {#if selected.effect === 'gain-good'}<label
               >Good to gain<select
@@ -269,25 +271,19 @@
                   reward: familyReward
                 })}>Return family to Police</button
             >
-          {:else if selected.effect === 'return-assistant'}<label
-              >Assistant<select
-                value={assistantPlace}
-                onchange={(event) =>
-                  (assistantPlace = Number(event.currentTarget.value))}
-                >{#each Object.keys(player.assistantsByPlace) as place}<option
-                    value={place}>Place {place}</option
-                  >{/each}</select
-              ></label
-            ><button
-              class="primary"
-              disabled={game.phase !== 'movement' ||
-                !Object.keys(player.assistantsByPlace).length}
-              onclick={() =>
-                onPlayBonus(selected.id, {
-                  kind: 'return-assistant',
-                  place: assistantPlace
-                })}>Return selected assistant</button
-            >
+          {:else if selected.effect === 'return-assistant'}
+            <p>Tap an assistant to return it to your merchant.</p>
+            <AssistantRecallMap
+              {game}
+              {player}
+              disabled={undoPending || game.phase !== 'movement'}
+              onRecall={(place) => onPlayBonus(selected.id, { kind: 'return-assistant', place })}
+            />
+            {#if !Object.values(player.assistantsByPlace).some((count) => count > 0)}
+              <p>All your assistants are with your merchant.</p>
+            {:else if game.phase !== 'movement'}
+              <p>Play this card before moving your merchant.</p>
+            {/if}
           {:else if selected.effect === 'long-move'}<button
               class="primary"
               disabled={game.phase !== 'movement' ||
@@ -504,6 +500,12 @@
     border-radius: 0.9rem;
     color: #173f43;
     background: #fffaf0;
+  }
+  .assistant-selection {
+    container-type: size;
+  }
+  .assistant-selection :global(.recall-map) {
+    width: min(100cqw, calc((100cqh - 88px) * 16 / 9), 720px);
   }
   .kicker {
     margin: 0;
