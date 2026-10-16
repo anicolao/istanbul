@@ -1,0 +1,10 @@
+/* Noto Sans Math, subset to the arrows, comparisons and dice used by the game.
+   Keeping these glyphs local avoids OS-dependent fallback fonts. See OFL.txt. */
+@font-face {
+  font-family: 'Istanbul Symbols';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url('./noto-sans-math-game-symbols.woff2') format('woff2');
+  unicode-range: U+2190-21FF, U+2264-2265, U+2680-2685;
+}
