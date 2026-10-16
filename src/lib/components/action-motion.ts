@@ -198,17 +198,23 @@ export function planActionMotion(
     !reverse &&
     !keptRoll &&
     (encounter?.dice ||
-      (dice &&
+      (!encounter && !bonus && dice &&
         (JSON.stringify(dice) !== JSON.stringify(oldDice) ||
           (actionChanged && [8, 9].includes(place)) ||
           (before.pending?.kind !== 'dice-adjust' &&
             after.pending?.kind === 'dice-adjust'))));
   const dieResult = encounter?.dice || dice;
   let roomDelay = rolled ? 1000 : 0;
-  if (rolled && dieResult)
+  if (rolled && dieResult) {
+    const rollOrigin = encounter?.dice
+      ? room(
+          `[data-piece-kind="${encounter.kind.startsWith('governor') ? 'governor' : 'smuggler'}"]`,
+          encounter.kind.startsWith('governor') ? before.governorPlace : before.smugglerPlace
+        )
+      : room();
     add({
-      from: room(),
-      to: room(),
+      from: { ...rollOrigin },
+      to: { ...rollOrigin },
       effect: 'dice',
       dice: dieResult,
       oldDice,
@@ -220,6 +226,7 @@ export function planActionMotion(
       patches: [],
       duration: 1000
     });
+  }
   const movement = after.players.some(
     (p) =>
       p.merchantPlace !==

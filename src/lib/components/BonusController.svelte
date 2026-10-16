@@ -102,6 +102,36 @@
             : `${currentPlayer.name} is using the tabletop`
   );
 
+  let workspaceWidth = $state(0);
+  let workspaceHeight = $state(0);
+  function measureWorkspace(node: HTMLElement) {
+    const observer = new ResizeObserver(([entry]) => {
+      workspaceWidth = entry.contentRect.width;
+      workspaceHeight = entry.contentRect.height;
+    });
+    observer.observe(node);
+    return { destroy: () => observer.disconnect() };
+  }
+  const controlSpace = $derived(Math.max(180,
+    player.bonusHand.some((id) => bonusById.get(id)?.effect === 'repeat-sultan')
+      ? sultanWildCount * 64 + 56 : 0));
+  // Reserve play controls so selecting a card never shrinks the hand.
+  const cardWidth = $derived.by(() => {
+    const count = player.bonusHand.length;
+    if (!count || flowOnly || atCaravansary || governorCardPayment) return 0;
+    let best = 0;
+    for (let rows = 1; rows <= count; rows++) {
+      const columns = Math.ceil(count / rows);
+      best = Math.max(best, Math.min(
+        200,
+        (workspaceWidth - 24 - (columns - 1) * 12) / columns,
+        (workspaceHeight - controlSpace - 20 - (rows - 1) * 12) / (rows * 2)
+      ));
+    }
+    return best >= 160 ? Math.floor(best) : 0;
+  });
+  const fullHand = $derived(cardWidth > 0);
+
   function setSultanWild(index: number, good: Good) {
     sultanWildGoods = Array.from({ length: sultanWildCount }, (_, slot) =>
       slot === index ? good : (sultanWildGoods[slot] ?? 'fabric')
@@ -140,7 +170,7 @@
       <span>{privateStatus}</span>
     </header>{/if}
 
-  <div class="private-workspace" data-e2e-fit data-e2e-no-scroll>
+  <div class="private-workspace" class:full-hand={fullHand} style={`--hand-card-width:${cardWidth}px; --hand-control-height:${controlSpace}px`} use:measureWorkspace data-e2e-fit data-e2e-no-scroll>
     {#if !flowOnly}<nav
         class="private-hand"
         aria-label="Private Bonus hand"
@@ -153,12 +183,12 @@
             aria-pressed={selectedBonus === cardId}
             onclick={() => onInspectBonus(cardId)}
           >
-            <BonusCard {card} compact mini class="hand-art" />
+            <BonusCard {card} compact={!fullHand} mini={!fullHand} class="hand-art" />
           </button>
         {:else}<p>No Bonus cards in hand.</p>{/each}
       </nav>{/if}
 
-    <article class="private-decision" data-e2e-no-scroll>
+    {#if !fullHand || selected || atCaravansary || governorCardPayment}<article class="private-decision" data-e2e-no-scroll>
       {#if atCaravansary}
         <CaravansaryFlow
           {game}
@@ -180,7 +210,7 @@
       {:else if selected}
         <p class="kicker">Selected Bonus card</p>
         <h2>{selected.title}</h2>
-        <BonusCard card={selected} class="large-card" />
+        {#if !fullHand}<BonusCard card={selected} class="large-card" />{/if}
         {#if isCurrent}
           {#if selected.effect === 'gain-good'}<label
               >Good to gain<select
@@ -328,7 +358,7 @@
         <h2>Select a Bonus card</h2>
         <p>Tap a card to inspect it or play it during your turn.</p>
       {/if}
-    </article>
+    </article>{/if}
   </div>
 </section>
 
@@ -402,10 +432,36 @@
     grid-template-rows: auto minmax(0, 1fr);
     gap: 0.55rem;
   }
+  .full-hand {
+    grid-template-rows: minmax(0, 1fr) var(--hand-control-height);
+  }
+  .full-hand .private-hand {
+    display: flex;
+    flex-wrap: wrap;
+    align-content: center;
+    justify-content: center;
+    gap: 12px;
+    padding: 8px;
+  }
+  .full-hand .private-hand button {
+    width: var(--hand-card-width);
+    padding: 0;
+    border: 0;
+    overflow: visible;
+    background: transparent;
+  }
+  .full-hand .private-hand :global(.hand-art) {
+    width: 100%;
+  }
+  .full-hand .private-decision {
+    width: min(100%, 32rem);
+    justify-self: center;
+    align-self: start;
+  }
   .private-hand {
     min-height: 5.1rem;
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(7rem, 1fr));
+    grid-template-columns: repeat(auto-fit, minmax(3rem, 1fr));
     gap: 0.45rem;
     padding: 0.45rem;
     overflow: hidden;

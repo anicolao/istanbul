@@ -96,7 +96,7 @@ test('a dedicated tabletop controls public play while phones contain private Bon
 
     await adaPage.getByRole('button', { name: /Inspect Bonus card: A profitable bargain/ }).click();
     await ada.step('ada-inspects-private-bonus', { description: 'Ada privately inspects her Bonus card', verifications: [
-      { spec: 'Only Ada’s phone reveals the card title, artwork, rules, and enabled play control', check: async () => { await expect(adaPage.getByRole('heading', { name: 'A profitable bargain' })).toBeVisible(); await expect(adaPage.locator('.private-decision [data-component="BonusCard"]')).toContainText('Gain 5 Lira.'); await expect(adaPage.getByRole('button', { name: 'Play to gain 5 Lira' })).toBeEnabled(); } },
+      { spec: 'Only Ada’s phone reveals the card title, artwork, rules, and enabled play control', check: async () => { await expect(adaPage.getByRole('heading', { name: 'A profitable bargain' })).toBeVisible(); await expect(adaPage.locator('.private-hand [aria-pressed="true"] [data-component="BonusCard"]')).toContainText('Gain 5 Lira.'); await expect(adaPage.getByRole('button', { name: 'Play to gain 5 Lira' })).toBeEnabled(); } },
       { spec: 'The tabletop still contains no private title or card face', check: async () => { await expect(page.getByText('A profitable bargain')).toHaveCount(0); await expect(page.locator('.hand')).toHaveCount(0); } },
       { spec: 'Private inspection is local and appends no event', check: async () => expectState(adaPage, { eventCount: 6, game: { selectedBonus: 'bonus-gain-lira-4', phase: 'movement' } }) }
     ] });
