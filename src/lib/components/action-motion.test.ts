@@ -160,6 +160,35 @@ describe('arrival purchase sequencing', () => {
 });
 
 describe('encounter payments precede relocation', () => {
+  it('keeps Tea House rewards separate from visitor interactions', () => {
+    const { state, trigger } = fixture('tea-house-encounters', 4, 'shared-table', 6);
+    let before = structuredClone(state.game!);
+    expect(applyEvent(state, eventFor(state, trigger, 800))).toBe(true);
+    const wager = planActionMotion(before, state.game!);
+    expect(wager.steps.filter((s) => s.effect === 'dice')).toHaveLength(1);
+    const result = structuredClone(state.game!.lastRoll);
+    const choices = [
+      { kind: 'governor-visit', accept: true },
+      { kind: 'governor-pay', payment: 'lira' },
+      { kind: 'smuggler-trade', accept: true, good: 'spice', payment: 'lira' }
+    ];
+    for (const [index, choice] of choices.entries()) {
+      before = structuredClone(state.game!);
+      expect(applyEvent(state, eventFor(state, {
+        type: 'encounter/resolved', payload: { choice }
+      }, 801 + index))).toBe(true);
+      const plan = planActionMotion(before, state.game!);
+      expect(state.game!.lastRoll).toEqual(result);
+      expect(plan.steps.filter((s) => s.to.selector === '[data-lira]')).toHaveLength(0);
+      const rolls = plan.steps.filter((s) => s.effect === 'dice');
+      expect(rolls).toHaveLength(index === 0 ? 0 : 1);
+      for (const roll of rolls) {
+        expect(roll.stage).toBe('board');
+        expect(roll.from.selector).toBe(`[data-piece-kind="${index === 1 ? 'governor' : 'smuggler'}"]`);
+        expect(roll.dice).toEqual(state.game!.encounterLog.at(-1)!.dice);
+      }
+    }
+  });
   for (const [id, npc] of [['governor-pay', 'governor'], ['smuggler', 'smuggler']] as const) {
     it(`${npc}: coins land on the original board tile before the visitor moves`, () => {
       const { before, after } = transition(id);

@@ -776,7 +776,9 @@
                             s.effect === 'dice' && !landedSteps.includes(s.id)
                         )
                       ? 'Rolling…'
-                      : (fillMessage ?? game.lastAction?.summary ?? '')}
+                      : (motion.after.encounterLog.length > motion.before.encounterLog.length
+                          ? game.encounterLog.at(-1)?.summary
+                          : fillMessage ?? game.lastAction?.summary ?? '')}
                 </p>
               {:else if publicCard}<div class="public-card">
                   <BonusCard card={publicCard} />
@@ -928,9 +930,11 @@
                   pending
                 )}
               {:else if game.phase === 'turn-end'}{#if zoom !== 5}<p>
-                    {fillMessage ?? game.lastAction?.summary}
+                    {['tea-house-wager', 'black-market-roll'].includes(game.lastAction?.kind ?? '') && game.encounterLog.length
+                      ? game.encounterLog.at(-1)?.summary
+                      : fillMessage ?? game.lastAction?.summary}
                   </p>{/if}
-                {#if game.lastRoll?.playerUid === player.uid && game.lastRoll.place === activePlace}<div
+                {#if !game.encounterLog.length && game.lastRoll?.playerUid === player.uid && game.lastRoll.place === activePlace}<div
                     class="dice"
                   >
                     {#each game.lastRoll.dice as die}<b
@@ -1146,7 +1150,7 @@
   }
   .hand-panel {
     position: absolute;
-    inset: 10% 20%;
+    inset: 4% 3%;
     z-index: 20;
     padding: 2cqw;
     background: #12352ff5;

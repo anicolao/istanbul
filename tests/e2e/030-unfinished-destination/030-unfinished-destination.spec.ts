@@ -49,7 +49,8 @@ for (const [place, effect] of [[5, 'post'], [13, 'sultan'], [16, 'gemstone']] as
     await expect(card.locator('[data-component="BonusCard"]')).toBeVisible();
     await card.click();
     await expect(page.locator('.hand-panel')).toBeVisible();
-    await expect(page.locator('.hand-panel .large-card')).toBeVisible();
+    await expect(page.locator('.hand-panel .private-hand [aria-pressed="true"]')).toBeVisible();
+    await expect(page.locator('.hand-panel .private-decision .primary')).toBeVisible();
   });
 }
 
