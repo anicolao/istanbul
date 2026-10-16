@@ -975,16 +975,21 @@
             <p class="section-kicker">New table</p>
             <h2 id="create-title">Open the bazaar</h2>
             <form
+              id="create-game-room"
+              autocomplete="off"
               onsubmit={(event) => {
                 event.preventDefault();
                 void createRoom();
               }}
             >
-              <label
+              <label for="create-player-nickname"
                 >Your merchant name<input
+                  id="create-player-nickname"
+                  name="player-nickname"
+                  type="text"
                   bind:value={hostName}
                   maxlength="24"
-                  autocomplete="nickname"
+                  autocomplete="off"
                   required
                 /></label
               >
@@ -1072,16 +1077,21 @@
             begins.
           </p>
           <form
+            id="join-game-room"
+            autocomplete="off"
             onsubmit={(event) => {
               event.preventDefault();
               void joinRoom();
             }}
           >
-            <label
+            <label for="join-player-nickname"
               >Your merchant name<input
+                id="join-player-nickname"
+                name="player-nickname"
+                type="text"
                 bind:value={guestName}
                 maxlength="24"
-                autocomplete="nickname"
+                autocomplete="off"
                 required
               /></label
             >
