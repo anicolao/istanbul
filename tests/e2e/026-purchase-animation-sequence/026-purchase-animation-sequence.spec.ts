@@ -84,6 +84,7 @@ test('arrival payments wait for zoom and a purchased gemstone stays off the offe
     .locator('.zoom-tile')
     .getByRole('button', { name: 'End turn', exact: true })
     .click();
+  await page.getByRole('button', { name: 'End turn anyway', exact: true }).click();
   const next = page.locator('[data-place-id="16"] [data-price-step="0"]');
   await expect(next).toHaveAttribute('data-price', '19');
   await expect(next.locator('[data-gemstone-ruby]')).toBeVisible();

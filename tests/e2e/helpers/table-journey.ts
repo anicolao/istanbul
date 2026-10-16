@@ -103,6 +103,12 @@ export async function end(page: Page) {
     )
       return;
     const tile = roomTile(page);
+    const confirmSkip = tile.getByRole('button', { name: 'End turn anyway', exact: true });
+    if (await confirmSkip.isVisible()) {
+      await confirmSkip.click();
+      await expect.poll(async () => (await readState(page)).eventCount).toBeGreaterThan(state.eventCount);
+      continue;
+    }
     if (
       await tile
         .getByRole('button', { name: 'Keep dice', exact: true })
@@ -126,6 +132,8 @@ export async function end(page: Page) {
     }
     if (state.game.players.find((p: { name: string }) => p.name === state.game.currentTurn)?.merchantPlace === 7 && await page.locator('[data-place-id="7"][data-action-ready="true"]').isVisible()) {
       await page.locator('[data-place-id="7"]').click();
+      if (await tile.getByRole('button', { name: 'End turn anyway', exact: true }).isVisible())
+        await tile.getByRole('button', { name: 'End turn anyway', exact: true }).click();
       await expect.poll(async () => (await readState(page)).eventCount).toBeGreaterThan(state.eventCount);
       continue;
     }
@@ -134,6 +142,8 @@ export async function end(page: Page) {
     });
     if (await finish.isVisible()) {
       await finish.click();
+      if (await tile.getByRole('button', { name: 'End turn anyway', exact: true }).isVisible())
+        await tile.getByRole('button', { name: 'End turn anyway', exact: true }).click();
       await expect
         .poll(async () => (await readState(page)).eventCount)
         .toBeGreaterThan(state.eventCount);

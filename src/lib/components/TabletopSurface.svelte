@@ -1,4 +1,5 @@
 <script lang="ts">
+  import { unfinishedDestination, availableRepeatCard } from '$lib/game/unfinished-destination';
   import { gemstoneDisplay } from './gemstone-offer';
   import { untrack } from 'svelte';
   import ActionMotion from './ActionMotion.svelte';
@@ -84,6 +85,9 @@
     onGrantE2eResources?: () => void;
     e2eResourceReview?: string;
   } = $props();
+  let endWarning = $state<string | null>(null);
+  let finishEncountersForRepeat = $state(false);
+  let repeatEncounterStep = '';
   let game = $state.raw(untrack(() => incomingGame));
   let surface = $state<HTMLElement>();
   let zoomReady = $state(false);
@@ -149,6 +153,7 @@
     onUndo();
   }
   function closeRoom() {
+    endWarning = null;
     if (motion) dismissAfterMotion = true;
     else collapsed = true;
   }
@@ -184,6 +189,7 @@
       // Optimistic writes, acknowledgements and replay can publish the same
       // position repeatedly. They must not restart an unfinished flight.
       if (previousGame && JSON.stringify(snapshot) === JSON.stringify(previousGame)) return;
+      endWarning = null;
       if (
         previousGame &&
         previousGame.epoch === current.epoch &&
@@ -263,6 +269,7 @@
   const reachable = $derived(
     game.phase === 'movement' ? legalDestinations(game, player) : []
   );
+  const repeatCard = $derived(bonusCards.find(card => card.id === availableRepeatCard(game)));
   const canEnd = $derived(
     pending?.kind !== 'caravansary-discard' &&
       (['action', 'family-action', 'turn-end', 'final-bonus'].includes(
@@ -302,6 +309,7 @@
       power = null;
       smuggler = false;
       inspectedCard = null;
+      finishEncountersForRepeat = false;
     }
     if (boardMotion) {
       if (fountainEncounter) arrivalContext = '';
@@ -318,6 +326,46 @@
       }
     }
   });
+  $effect(() => {
+    if (!finishEncountersForRepeat || busy || !canControl) return;
+    const step = JSON.stringify([game.epoch, game.turnNumber, game.turnSeat, game.phase, pending]);
+    if (step === repeatEncounterStep) return;
+    repeatEncounterStep = step;
+    untrack(() => {
+      if (pending?.kind === 'encounters' && canEnd) {
+        if (pending.governor === 'available') onResolveEncounter({ kind: 'governor-visit', accept: false });
+        else if (pending.smuggler) onResolveEncounter({ kind: 'smuggler-trade', accept: false });
+      } else {
+        finishEncountersForRepeat = false;
+        if (game.phase === 'turn-end') requestEndTurn();
+      }
+    });
+  });
+  function requestEndTurn() {
+    if (busy || !canEnd || finishEncountersForRepeat) return;
+    // Ending already declines optional visitors; preserve the chance to repeat
+    // the destination action once those encounter events have completed.
+    if (pending?.kind === 'encounters' && availableRepeatCard({ ...game, phase: 'turn-end' })) {
+      repeatEncounterStep = '';
+      finishEncountersForRepeat = true;
+      return;
+    }
+    const unfinished = unfinishedDestination(game);
+    if (unfinished) {
+      endWarning = `You didn't choose to ${unfinished}. End your turn anyway?`;
+      open();
+    } else if (repeatCard) {
+      endWarning = repeatCard.effect === 'repeat-post'
+        ? 'You can collect the Post Office resources again with a Bonus card. End your turn anyway?'
+        : 'You can gain another ruby with a Bonus card. End your turn anyway?';
+      open();
+    } else onEndTurn();
+  }
+  function confirmEndTurn() {
+    if (busy || !canEnd) return;
+    endWarning = null;
+    onEndTurn();
+  }
   function open(id = activePlace) {
     zoom = id;
     zoomAngle = seat.angle;
@@ -339,7 +387,7 @@
   function tapRoom(id: number, event: MouseEvent) {
     if (busy) return;
     if (id === 7 && activePlace === 7 && canEnd && !fountainEncounter) {
-      onEndTurn();
+      requestEndTurn();
       return;
     }
     if (fountainRecall) {
@@ -606,7 +654,7 @@
       }}
       {canEnd}
       {busy}
-      onEnd={onEndTurn}
+      onEnd={requestEndTurn}
       onPower={showPower}
       onOpen={() => open()}
     />
@@ -668,7 +716,7 @@
             })}>Recall all</button
         >
       </div>{/if}
-    {#if zoom !== null && (zoom !== 7 || fountainEncounter) && !collapsed && !fountainRecall}
+    {#if zoom !== null && (zoom !== 7 || fountainEncounter || endWarning) && !collapsed && (!fountainRecall || endWarning)}
       {#key `${zoom}-${zoomAngle}`}
         <section
           class="zoom-tile"
@@ -709,7 +757,17 @@
             disabled={undoPending || !canControl}
           >
             <div class="content" aria-live="polite">
-              {#if motion}<p class="motion-status" aria-live="polite">
+              {#if endWarning && repeatCard}
+                {#if personal}<button class="repeat-card" aria-label={`Play ${repeatCard.title}`} onclick={() => {
+                    onInspectBonus(repeatCard.id);
+                    endWarning = null;
+                    handOpen = true;
+                    collapsed = true;
+                  }}><BonusCard card={repeatCard} /></button>
+                {:else}<div class="repeat-card"><BonusCard reverse="card-back" /></div>
+                  <p>Play the Bonus card on your phone.</p>
+                {/if}
+              {:else if motion}<p class="motion-status" aria-live="polite">
                   {motion.reverse
                     ? 'Undoing…'
                     : motion.steps.some(
@@ -791,7 +849,7 @@
                     {player}
                     placeId={activePlace}
                     onAction={recordAction}
-                    onSkip={onEndTurn}
+                    onSkip={requestEndTurn}
                   />{/key}
               {:else if game.phase === 'merchant-payment' && pending?.kind === 'merchant-payment'}
                 <div class="components">
@@ -887,20 +945,27 @@
                     : 'Play your final cards on your phone.'}
                 </p>{/if}
             </div>
-            <footer>
-              <UndoButton
+            <footer class:warning={Boolean(endWarning)}>
+              {#if endWarning}<div class="end-warning" role="alert">
+                  <p>{endWarning}</p>
+                  <div class="row">
+                    <button class="primary" onclick={() => (endWarning = null)}>Continue choosing</button>
+                    <button onclick={confirmEndTurn}>End turn anyway</button>
+                  </div>
+                </div>
+              {:else}<UndoButton
                 {undo}
                 {userUid}
                 pending={undoPending}
                 onUndo={animateUndo}
               />{#if canEnd && !motion}<button
                   class="primary"
-                  onclick={onEndTurn}
+                  onclick={requestEndTurn}
                   >{game.phase === 'final-bonus'
                     ? 'Finish trading'
                     : 'End turn'}
                   <TabletopArrow /></button
-                >{/if}
+                >{/if}{/if}
             </footer>
           </fieldset>
         </section>
@@ -1339,6 +1404,18 @@
     padding: 0.6cqw 1cqw;
     gap: 0.5cqw;
   }
+  .repeat-card {
+    width: min(35%, 10cqw);
+    padding: 0;
+    flex-shrink: 0;
+  }
+  footer.warning {
+    background: #14362df5;
+    border: 1px solid #efd28e;
+    border-radius: 0.35cqw;
+  }
+  .end-warning { width: 100%; }
+  .end-warning p { margin-bottom: 0.5cqw; }
   footer button {
     min-width: 7cqw;
   }
