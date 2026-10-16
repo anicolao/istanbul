@@ -1,4 +1,5 @@
 <script lang="ts">
+  import '$lib/assets/fonts/game-symbols.css';
   import { unfinishedDestination, availableRepeatCard } from '$lib/game/unfinished-destination';
   import { gemstoneDisplay } from './gemstone-offer';
   import { untrack } from 'svelte';
@@ -1204,7 +1205,12 @@
       radial-gradient(ellipse at center, #17392dda, #091f1ae8),
       var(--courtyard) center/cover;
     color: #f6e8c4;
-    font-family: 'Atkinson Hyperlegible', sans-serif;
+    /* Bundle the arrows and comparison signs missing from Atkinson rather than
+       depending on the platform's system-symbol fallback. */
+    font-family: 'Atkinson Hyperlegible', 'Istanbul Symbols', sans-serif;
+  }
+  .tabletop-surface :global(button) {
+    font-family: inherit;
   }
   .table {
     position: relative;
