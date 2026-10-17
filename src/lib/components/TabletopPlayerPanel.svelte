@@ -3,10 +3,11 @@
   import type { RoomProjection } from '$lib/game/protocol';
   import type { GameSetup } from '$lib/game/setup';
   import { type Good } from '$lib/game/manifests';
-  import { tableSeat } from './table-layout';
+  import { tableSeat, type SharedTableLayout } from './table-layout';
   let {
     game,
     room,
+    layout,
     userUid = '',
     onHand = () => {},
     canEnd = false,
@@ -17,6 +18,7 @@
   }: {
     game: GameSetup;
     room: RoomProjection;
+    layout: SharedTableLayout;
     userUid?: string;
     onHand?: () => void;
     canEnd?: boolean;
@@ -34,7 +36,7 @@
       {room}
       {player}
       {index}
-      seat={tableSeat(game, room, index, userUid)}
+      seat={tableSeat(game, room, index, userUid, layout)}
       active={index === game.turnSeat}
       {userUid}
       {canEnd}

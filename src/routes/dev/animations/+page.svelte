@@ -79,7 +79,15 @@
     latest = 'Undone';
   }
   async function reset(replay = false) {
-    prepared = fixture(subject, count, mode, seat);
+    const seating = new URL(location.href).searchParams.get('seats')?.split(',').map(Number);
+    const validSeating = seating?.length === count && new Set(seating).size === count
+      && seating.every(p => tablePositions.includes(p as TablePosition));
+    if (validSeating && seating[0] !== seat) {
+      const other = seating.indexOf(seat);
+      if (other > 0) seating[other] = seating[0];
+      seating[0] = seat;
+    }
+    prepared = fixture(subject, count, mode, seat, validSeating ? seating as TablePosition[] : undefined);
     projection = structuredClone($state.snapshot(prepared.state));
     history = [];
     sequence = 0;
@@ -90,6 +98,7 @@
     latest = 'Ready';
     paused = false;
     const url = new URL(location.href);
+    if (validSeating) url.searchParams.set('seats', seating.join(','));
     for (const [k, v] of Object.entries({
       scenario: subject,
       players: count,
@@ -143,7 +152,7 @@
       subject = params.get('scenario')!;
     const n = Number(params.get('players'));
     if (n >= 2 && n <= 5) count = n;
-    const p = Number(params.get('seat'));
+    const p = Number(params.get('seat') ?? params.get('seats')?.split(',')[0]);
     if (tablePositions.includes(p as TablePosition)) seat = p as TablePosition;
     if (params.get('surface') === 'personal-screens') mode = 'personal-screens';
     void reset();

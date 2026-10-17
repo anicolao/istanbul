@@ -47,7 +47,7 @@ export default defineConfig({
     },
     {
       name: 'webkit-desktop',
-      testMatch: '**/035-bonus-card-rendering/*.spec.ts',
+      testMatch: ['**/035-bonus-card-rendering/*.spec.ts', '**/036-occupied-table-edges/*.spec.ts'],
       use: {
         browserName: 'webkit', viewport: { width: 1280, height: 1000 },
         // WebKit previews contain no invitation URL; use the server directly.

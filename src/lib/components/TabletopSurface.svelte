@@ -32,7 +32,7 @@
   } from '$lib/game/mosques';
   import type { GameSetup } from '$lib/game/setup';
   import type { RoomProjection, ReplayProjection } from '$lib/game/protocol';
-  import { tableSeat } from './table-layout';
+  import { occupiedPositions, sharedTableLayout, tableAngle, tableControls } from './table-layout';
   import LocationTile from './LocationTile.svelte';
   import TabletopPlayerPanel from './TabletopPlayerPanel.svelte';
   import TabletopPlaceActions from './TabletopPlaceActions.svelte';
@@ -91,6 +91,10 @@
   let repeatEncounterStep = '';
   let game = $state.raw(untrack(() => incomingGame));
   let surface = $state<HTMLElement>();
+  let tableWidth = $state(0), tableHeight = $state(0);
+  const positions = $derived(occupiedPositions(game, room));
+  const sharedLayout = $derived(sharedTableLayout(positions, tableWidth, tableHeight));
+  const controls = $derived(tableControls(sharedLayout, tableWidth, tableHeight));
   let zoomReady = $state(false);
   let previousGame: GameSetup | undefined;
   let motion = $state.raw<MotionPlan | null>(null);
@@ -224,7 +228,7 @@
   const personal = $derived(room.mode === 'personal-screens');
   const localPlayer = $derived(game.players.find((p) => p.uid === userUid));
   const seat = $derived(
-    personal ? { angle: 0 } : tableSeat(game, room, game.turnSeat)
+    { angle: personal ? 0 : tableAngle(positions[game.turnSeat]) }
   );
   let handOpen = $state(false);
   const pending = $derived(game.pending);
@@ -444,7 +448,8 @@
   }
   const roomGeometry = new WeakMap<
     HTMLElement,
-    { origin: DOMRect; bounds: DOMRect; scale: number; sourceAngle: number }
+    { origin: DOMRect; bounds: DOMRect; scale: number; sourceAngle: number;
+      area: { x: number; y: number; width: number; height: number } }
   >();
   function fitRoom(node: HTMLElement, id: number, angle: number) {
     const table = node.parentElement;
@@ -463,12 +468,13 @@
     const sourceHeight = sourceSideways ? origin.width : origin.height;
     const left = sideTrays && trays ? trays.right - bounds.left + 8 : 8;
     const bottom = !sideTrays && trays ? trays.top - bounds.top - 8 : bounds.height - 8;
-    const availableHeight = personal ? bottom - 8 : bounds.height * 0.94;
-    const availableWidth = personal ? bounds.width - left - 8 : bounds.width * 0.94;
-    if (personal) {
-      node.style.top = `${8 + availableHeight / 2}px`;
-      node.style.left = `${left + availableWidth / 2}px`;
-    }
+    const area = personal
+      ? { x: left, y: 8, width: bounds.width - left - 8, height: bottom - 8 }
+      : sharedTableLayout(positions, bounds.width, bounds.height).playArea;
+    const availableHeight = area.height;
+    const availableWidth = area.width;
+    node.style.top = `${area.y + availableHeight / 2}px`;
+    node.style.left = `${area.x + availableWidth / 2}px`;
     const sideways = Math.abs(angle % 180) === 90;
     const scale = Math.min(
       4,
@@ -477,7 +483,7 @@
     );
     node.style.width = `${sourceWidth * scale}px`;
     node.style.height = `${sourceHeight * scale}px`;
-    const geometry = { origin, bounds, scale, sourceAngle };
+    const geometry = { origin, bounds, scale, sourceAngle, area };
     roomGeometry.set(node, geometry);
     return geometry;
   }
@@ -488,6 +494,10 @@
     zoomReady = false;
     const observer = new ResizeObserver(() => fitRoom(node, id, angle));
     observer.observe(node.parentElement!);
+    // Shared-board dimensions settle after the table's ResizeObserver updates
+    // its layout. Observe the source too, so an open room follows that change.
+    const source = node.parentElement?.querySelector(`[data-place-id="${id}"]`);
+    if (source) observer.observe(source);
     return { destroy: () => observer.disconnect() };
   }
   function tileZoom(
@@ -496,17 +506,32 @@
   ) {
     const geometry = fitRoom(node, id, angle);
     if (!geometry) return { duration: 0 };
-    const { origin, bounds, scale, sourceAngle } = geometry;
-    const dx = origin.left + origin.width / 2 - (bounds.left + node.offsetLeft);
-    const dy = origin.top + origin.height / 2 - (bounds.top + node.offsetTop);
+    const { origin, bounds, scale, sourceAngle, area } = geometry;
+    const targetX = parseFloat(node.style.left), targetY = parseFloat(node.style.top);
+    const dx = origin.left + origin.width / 2 - (bounds.left + targetX);
+    const dy = origin.top + origin.height / 2 - (bounds.top + targetY);
     const shortest = ((((angle - sourceAngle + 180) % 360) + 360) % 360) - 180;
+    const width = parseFloat(node.style.width), height = parseFloat(node.style.height);
     return {
       duration: matchMedia('(prefers-reduced-motion: reduce)').matches
         ? 0
         : 1000,
       easing: cubicInOut,
-      css: (t: number) =>
-        `transform:translate(-50%,-50%) translate(${dx * (1 - t)}px,${dy * (1 - t)}px) rotate(${sourceAngle + shortest * t}deg) scale(${1 / scale + (1 - 1 / scale) * t})`
+      css: (t: number) => {
+        const rotation = sourceAngle + shortest * t;
+        const radians = rotation * Math.PI / 180;
+        const rotatedWidth = width * Math.abs(Math.cos(radians)) + height * Math.abs(Math.sin(radians));
+        const rotatedHeight = width * Math.abs(Math.sin(radians)) + height * Math.abs(Math.cos(radians));
+        const x = targetX + dx * (1 - t), y = targetY + dy * (1 - t);
+        // The diagonal swept by a rotating rectangle can be wider than either
+        // endpoint. Keep every frame inside the same area as the final room.
+        const fittedScale = Math.min(
+          1 / scale + (1 - 1 / scale) * t,
+          2 * Math.min(x - area.x, area.x + area.width - x) / rotatedWidth,
+          2 * Math.min(y - area.y, area.y + area.height - y) / rotatedHeight
+        );
+        return `transform:translate(-50%,-50%) translate(${dx * (1 - t)}px,${dy * (1 - t)}px) rotate(${rotation}deg) scale(${fittedScale})`;
+      }
     };
   }
 </script>
@@ -633,13 +658,14 @@
   class="tabletop-surface"
   bind:this={surface}
   class:personal
-  style={`--players:${game.players.length};--compact-rows:${Math.ceil(game.players.length / 2)};--courtyard:url('${base}/art/bazaar-courtyard.png')`}
+  style={`--log-x:${controls.log.x}px;--log-y:${controls.log.y}px;--undo-x:${controls.undo.x}px;--undo-y:${controls.undo.y}px;--players:${game.players.length};--compact-rows:${Math.ceil(game.players.length / 2)};--courtyard:url('${base}/art/bazaar-courtyard.png')`}
   aria-label="Shared Istanbul table"
   data-motion-active={Boolean(motion)}
   data-e2e-fit
   data-e2e-no-scroll
 >
-  <div class="table">
+  <div class="table" bind:clientWidth={tableWidth} bind:clientHeight={tableHeight}
+    style={`--board-x:${sharedLayout.board.x}px;--board-y:${sharedLayout.board.y}px;--board-width:${sharedLayout.board.width}px;--board-height:${sharedLayout.board.height}px`}>
     {#if !canControl}<p class="table-hint">
         {personal
           ? `${player.name}’s turn`
@@ -655,6 +681,7 @@
         : 'Waiting for this merchant.'}
     </p>
     <TabletopPlayerPanel
+      layout={sharedLayout}
       game={matGame}
       {room}
       {userUid}
@@ -1078,7 +1105,7 @@
       </section>{/if}
   </div>
   <nav class="table-controls" aria-label="Game controls">
-    {#if !personal}<UndoButton {undo} {userUid} pending={undoPending} onUndo={animateUndo} />{/if}
+    {#if !personal}<UndoButton compact {undo} {userUid} pending={undoPending} onUndo={animateUndo} />{/if}
     <button onclick={() => (history = !history)} aria-expanded={history} aria-label="Game log" title="Game log"
       ><span class="log-icon" aria-hidden="true">☰</span><span class="log-label">Game log</span></button
     >
@@ -1225,10 +1252,18 @@
   }
   .table {
     position: relative;
-    width: min(100cqw, 177.7778cqh);
-    aspect-ratio: 16/9;
-    container-type: inline-size;
+    width: 100%;
+    height: 100%;
+    container-type: size;
     isolation: isolate;
+    /* Rotated children can retain an unrotated scroll-overflow box even when
+       every painted frame fits. Keep that overflow inside the game canvas. */
+    overflow: clip;
+  }
+  .tabletop-surface:not(.personal) :global(.mat) {
+    box-sizing: border-box;
+    height: auto;
+    aspect-ratio: 1 / 0.325;
   }
   .personal .table {
     --side-trays: 0;
@@ -1240,10 +1275,6 @@
     --mat-width: min(calc((100cqw - var(--tray-right) - var(--tray-columns) * 8px) / var(--tray-columns)), 32cqh);
     --mat-height: calc(var(--mat-width) * 0.325);
     --tray-height: calc(var(--tray-rows) * var(--mat-height) + (var(--tray-rows) - 1) * 8px);
-    width: 100%;
-    height: 100%;
-    aspect-ratio: auto;
-    container-type: size;
   }
   .personal .board {
     box-sizing: border-box;
@@ -1322,10 +1353,11 @@
   }
   .board {
     position: absolute;
-    left: 17%;
-    top: 17%;
-    width: 66%;
-    height: 65%;
+    box-sizing: border-box;
+    left: var(--board-x);
+    top: var(--board-y);
+    width: var(--board-width);
+    height: var(--board-height);
     display: grid;
     grid-template-columns: repeat(4, minmax(0, 1fr));
     grid-template-rows: repeat(4, minmax(0, 1fr));
@@ -1570,6 +1602,28 @@
     padding: 0.5rem 0.8rem;
   }
   .log-icon { display: none; }
+  .tabletop-surface:not(.personal) .table-controls {
+    display: contents;
+  }
+  .tabletop-surface:not(.personal) .table-controls > button {
+    position: absolute;
+    z-index: 6;
+    left: var(--log-x);
+    top: var(--log-y);
+    width: 44px;
+    padding: 0;
+    border: 0;
+    background: #12352faa;
+    border-radius: 50%;
+  }
+  .tabletop-surface:not(.personal) :global(.table-controls .undo-button) {
+    position: absolute;
+    z-index: 6;
+    left: var(--undo-x);
+    top: var(--undo-y);
+  }
+  .tabletop-surface:not(.personal) .log-icon { display: inline; font-size: 20px; }
+  .tabletop-surface:not(.personal) .log-label { display: none; }
   @media (min-width: 601px) and (max-width: 1366px) and (min-height: 601px) and (min-aspect-ratio: 1/1) {
     .personal .table-controls { top: 4px; left: 4px; right: auto; bottom: auto; }
     .personal .table-controls > button { width: 44px; padding: 0; border: 0; background: #12352faa; border-radius: 50%; }
