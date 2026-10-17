@@ -553,10 +553,12 @@
     color: #5f706d;
     font-size: 0.5rem;
   }
+  code {
+    font-family: inherit;
+  }
   .asset-card code {
     align-self: end;
     color: #995145;
-    font-family: inherit;
     font-size: 0.47rem;
     white-space: nowrap;
   }
