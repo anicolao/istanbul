@@ -28,9 +28,19 @@
       ? bonusCardArt[card.effect]
       : bonusCardArt[reverse === 'card-deck' ? 'deck' : 'back']
   );
+  function sizeCard(node: HTMLElement) {
+    // Scale the fixed print layout in HTML. WebKit can paint positioned HTML
+    // inside an SVG foreignObject at its unscaled size despite correct bounds.
+    const setWidth = (width: number) => node.style.setProperty('--card-scale', String(width / 200));
+    setWidth(parseFloat(getComputedStyle(node).width));
+    const observer = new ResizeObserver(([entry]) => setWidth(entry.contentRect.width));
+    observer.observe(node);
+    return { destroy: () => observer.disconnect() };
+  }
 </script>
 
 <article
+  use:sizeCard
   class:compact
   class:mini
   class:reverse={Boolean(reverse)}
@@ -44,25 +54,21 @@
   data-component="BonusCard"
   data-testid={testId}
 >
-  <svg class="card-canvas" viewBox="0 0 200 400" aria-hidden="true">
-    <foreignObject width="200" height="400">
-      <div
-        xmlns="http://www.w3.org/1999/xhtml"
-        class="printed-card"
-        class:back={Boolean(reverse)}
-      >
-        <span
-          class={`card-face ${artClass}`}
-          style={`--card-art: url('${artPath(base, asset)}')`}
-          data-art-kind="card"
-        ></span>
-        {#if card}
-          <strong data-bonus-text="title">{card.title}</strong>
-          <p data-bonus-text="rules">{card.text}</p>
-        {/if}
-      </div>
-    </foreignObject>
-  </svg>
+  <div
+    aria-hidden="true"
+    class="printed-card"
+    class:back={Boolean(reverse)}
+  >
+    <span
+      class={`card-face ${artClass}`}
+      style={`--card-art: url('${artPath(base, asset)}')`}
+      data-art-kind="card"
+    ></span>
+    {#if card}
+      <strong data-bonus-text="title">{card.title}</strong>
+      <p data-bonus-text="rules">{card.text}</p>
+    {/if}
+  </div>
 </article>
 
 <style>
@@ -84,13 +90,12 @@
     text-align: left;
     box-shadow: 0 0.8rem 1.4rem #4b2c2240;
   }
-  .card-canvas {
-    display: block;
-    width: 100%;
-    height: 100%;
-  }
   .printed-card {
-    position: relative;
+    position: absolute;
+    top: 0;
+    left: 0;
+    transform: scale(var(--card-scale, 0));
+    transform-origin: top left;
     box-sizing: border-box;
     width: 200px;
     height: 400px;

@@ -172,6 +172,9 @@ to room zooms and component flights. This lab never writes events to live rooms.
 Open `/dev/animations/mobile` for phone and tablet portrait/landscape presets.
 The game fills an embedded device viewport, with scenario and playback controls
 outside it. Changing the preview size preserves the current game position.
+These presets resize the current browser; they do not emulate Safari's renderer.
+Open the lab in Safari to review Safari. CI also checks card artwork in WebKit
+at phone and desktop sizes, including visual comparisons that catch paint clipping.
 
 Open `/dev/cards/` to review all ten Bonus-card designs, rules text, copy counts
 and the matching card back. Search narrows the gallery; Artwork only removes the

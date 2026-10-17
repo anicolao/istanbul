@@ -35,6 +35,27 @@ export default defineConfig({
   snapshotPathTemplate: '{testDir}/{testFileDir}/screenshots/{arg}{ext}',
   projects: [
     {
+      name: 'webkit-phone',
+      testMatch: '**/035-bonus-card-rendering/*.spec.ts',
+      use: {
+        browserName: 'webkit', viewport: { width: 393, height: 852 },
+        isMobile: true, hasTouch: true,
+        // WebKit previews contain no invitation URL; use the server directly.
+        baseURL: `http://127.0.0.1:${port}`,
+        launchOptions: { args: [] }
+      }
+    },
+    {
+      name: 'webkit-desktop',
+      testMatch: '**/035-bonus-card-rendering/*.spec.ts',
+      use: {
+        browserName: 'webkit', viewport: { width: 1280, height: 1000 },
+        // WebKit previews contain no invitation URL; use the server directly.
+        baseURL: `http://127.0.0.1:${port}`,
+        launchOptions: { args: [] }
+      }
+    },
+    {
       name: 'phone',
       use: { browserName: 'chromium', viewport: { width: 393, height: 852 } }
     },
