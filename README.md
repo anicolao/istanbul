@@ -169,6 +169,10 @@ components and rules as live play. Choose a room/action, player count, screen
 mode and seat; Trigger or Replay runs the action. Playback speed and Pause apply
 to room zooms and component flights. This lab never writes events to live rooms.
 
+Open `/dev/animations/mobile` for phone and tablet portrait/landscape presets.
+The game fills an embedded device viewport, with scenario and playback controls
+outside it. Changing the preview size preserves the current game position.
+
 Open `/dev/cards/` to review all ten Bonus-card designs, rules text, copy counts
 and the matching card back. Search narrows the gallery; Artwork only removes the
 text overlay for art review. Fronts and backs use the same 1:2 component frame.
