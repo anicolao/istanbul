@@ -29,7 +29,7 @@ jobs:
       - uses: actions/checkout@v4
       - uses: cachix/install-nix-action@v31
       - run: nix develop --command bun install --frozen-lockfile
-      - run: nix develop --command bunx playwright install chromium
+      - run: nix develop --command bunx playwright install chromium webkit
       - run: nix develop --command bun run check
       - run: nix develop --command bun run test:unit
       - run: nix develop --command bun run test:rules
@@ -51,7 +51,7 @@ jobs:
       - uses: actions/checkout@v4
       - uses: cachix/install-nix-action@v31
       - run: nix develop --command bun install --frozen-lockfile
-      - run: nix develop --command bunx playwright install chromium
+      - run: nix develop --command bunx playwright install --with-deps chromium webkit
       - run: nix develop --command bun run test:e2e:update-snapshots
         env:
           CI: 'true'
