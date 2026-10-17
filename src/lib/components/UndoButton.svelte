@@ -33,7 +33,7 @@
   aria-label={description}
   title={description}
   disabled={!available}
-  onclick={onUndo}><span aria-hidden="true">↶</span> Undo</button
+  onclick={onUndo}><span aria-hidden="true">↶</span><span class="label">Undo</span></button
 >
 
 <style>
@@ -55,7 +55,7 @@
     cursor: pointer;
     touch-action: manipulation;
   }
-  .undo-button span {
+  .undo-button > span:first-child {
     font-size: 23px;
   }
   .undo-button:disabled {
@@ -67,5 +67,9 @@
   .undo-button:focus-visible {
     outline: 3px solid white;
     outline-offset: 2px;
+  }
+  @media (max-aspect-ratio: 1/1), (max-width: 600px), (max-height: 600px) {
+    .undo-button { min-width: 44px; padding: 0.4rem; }
+    .label { display: none; }
   }
 </style>

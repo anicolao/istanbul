@@ -108,7 +108,7 @@ test('a dedicated tabletop controls public play while phones contain private Bon
     ] });
     await table.step('tabletop-reflects-private-bonus', { description: 'The tabletop reflects the public consequence of Ada’s card', verifications: [
       { spec: 'Ada’s mat shows 7 Lira and zero Bonus cards while the spent card becomes the public discard', check: async () => { const adaTray = page.getByLabel('Ada resources', { exact: true }); await expect(adaTray.getByLabel('7 Lira', { exact: true })).toBeVisible(); await expect(adaTray.getByLabel('0 Bonus cards', { exact: true })).toBeVisible(); await expect(page.getByTestId('place-state-6')).toHaveAttribute('data-state-summary', /1 in discard, topped by A profitable bargain/); } },
-      { spec: 'The public log describes the effect while movement still belongs to the tabletop', check: async () => { await expect(page.getByText('Played a Bonus card to gain 5 Lira.', { exact: true })).toBeVisible(); await expectState(page, { eventCount: 7, game: { phase: 'movement', players: [{ lira: 7 }, {}], localHand: [] } }); } }
+      { spec: 'The public log describes the effect while movement still belongs to the tabletop', check: async () => { await page.getByRole('button', { name: 'Game log', exact: true }).click(); await expect(page.locator('.history')).toContainText('Played a Bonus card to gain 5 Lira.'); await page.locator('.history').getByRole('button', { name: '×', exact: true }).click(); await expectState(page, { eventCount: 7, game: { phase: 'movement', players: [{ lira: 7 }, {}], localHand: [] } }); } }
     ] });
 
     await page.getByRole('button', { name: /^4 Fruit Warehouse.*Reachable/ }).click();

@@ -99,12 +99,10 @@ test('personal games use direct table actions, private cards, and a one-second r
     ).toBe(true);
     await roomAnimations.dispose();
     const shape = await page.locator('.zoom-tile').evaluate((el) => {
-      const source = document
-        .querySelector('[data-place-id="3"]')!
-        .getBoundingClientRect();
+      const source = getComputedStyle(document.querySelector('[data-place-id="3"]')!);
       const style = getComputedStyle(el);
       return {
-        original: source.width / source.height,
+        original: parseFloat(source.width) / parseFloat(source.height),
         expanded: parseFloat(style.width) / parseFloat(style.height)
       };
     });
@@ -142,7 +140,7 @@ test('personal games use direct table actions, private cards, and a one-second r
       .getByRole('button', { name: /Undo move/ });
     const undoBounds = await undo.boundingBox();
     expect(undoBounds!.height).toBeGreaterThanOrEqual(44);
-    expect(undoBounds!.width).toBeGreaterThanOrEqual(88);
+    expect(undoBounds!.width).toBeGreaterThanOrEqual(info.project.name === 'phone' ? 44 : 88);
     await undo.click();
     await expectState(page, { game: before.game });
     await page

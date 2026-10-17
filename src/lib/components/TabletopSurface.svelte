@@ -444,7 +444,7 @@
   }
   const roomGeometry = new WeakMap<
     HTMLElement,
-    { origin: DOMRect; bounds: DOMRect; scale: number }
+    { origin: DOMRect; bounds: DOMRect; scale: number; sourceAngle: number }
   >();
   function fitRoom(node: HTMLElement, id: number, angle: number) {
     const table = node.parentElement;
@@ -454,21 +454,30 @@
     if (!source) return roomGeometry.get(node);
     const origin = source.getBoundingClientRect();
     const bounds = table.getBoundingClientRect();
-    const trayTop = personal
-      ? table.querySelector('.seats')?.getBoundingClientRect().top ?? bounds.bottom
-      : bounds.bottom;
-    const availableHeight = personal ? trayTop - bounds.top - 16 : bounds.height * 0.94;
-    const availableWidth = personal ? bounds.width - 16 : bounds.width * 0.94;
-    if (personal) node.style.top = `${8 + availableHeight / 2}px`;
+    const trays = table.querySelector('.seats')?.getBoundingClientRect();
+    const layout = getComputedStyle(table);
+    const sideTrays = personal && layout.getPropertyValue('--side-trays').trim() === '1';
+    const sourceAngle = personal ? parseFloat(layout.getPropertyValue('--board-angle')) || 0 : 0;
+    const sourceSideways = Math.abs(sourceAngle % 180) === 90;
+    const sourceWidth = sourceSideways ? origin.height : origin.width;
+    const sourceHeight = sourceSideways ? origin.width : origin.height;
+    const left = sideTrays && trays ? trays.right - bounds.left + 8 : 8;
+    const bottom = !sideTrays && trays ? trays.top - bounds.top - 8 : bounds.height - 8;
+    const availableHeight = personal ? bottom - 8 : bounds.height * 0.94;
+    const availableWidth = personal ? bounds.width - left - 8 : bounds.width * 0.94;
+    if (personal) {
+      node.style.top = `${8 + availableHeight / 2}px`;
+      node.style.left = `${left + availableWidth / 2}px`;
+    }
     const sideways = Math.abs(angle % 180) === 90;
     const scale = Math.min(
       4,
-      (sideways ? availableHeight : availableWidth) / origin.width,
-      (sideways ? availableWidth : availableHeight) / origin.height
+      (sideways ? availableHeight : availableWidth) / sourceWidth,
+      (sideways ? availableWidth : availableHeight) / sourceHeight
     );
-    node.style.width = `${origin.width * scale}px`;
-    node.style.height = `${origin.height * scale}px`;
-    const geometry = { origin, bounds, scale };
+    node.style.width = `${sourceWidth * scale}px`;
+    node.style.height = `${sourceHeight * scale}px`;
+    const geometry = { origin, bounds, scale, sourceAngle };
     roomGeometry.set(node, geometry);
     return geometry;
   }
@@ -487,17 +496,17 @@
   ) {
     const geometry = fitRoom(node, id, angle);
     if (!geometry) return { duration: 0 };
-    const { origin, bounds, scale } = geometry;
+    const { origin, bounds, scale, sourceAngle } = geometry;
     const dx = origin.left + origin.width / 2 - (bounds.left + node.offsetLeft);
     const dy = origin.top + origin.height / 2 - (bounds.top + node.offsetTop);
-    const shortest = ((((angle + 180) % 360) + 360) % 360) - 180;
+    const shortest = ((((angle - sourceAngle + 180) % 360) + 360) % 360) - 180;
     return {
       duration: matchMedia('(prefers-reduced-motion: reduce)').matches
         ? 0
         : 1000,
       easing: cubicInOut,
       css: (t: number) =>
-        `transform:translate(-50%,-50%) translate(${dx * (1 - t)}px,${dy * (1 - t)}px) rotate(${shortest * t}deg) scale(${1 / scale + (1 - 1 / scale) * t})`
+        `transform:translate(-50%,-50%) translate(${dx * (1 - t)}px,${dy * (1 - t)}px) rotate(${sourceAngle + shortest * t}deg) scale(${1 / scale + (1 - 1 / scale) * t})`
     };
   }
 </script>
@@ -1036,12 +1045,6 @@
         {/each}
       </aside>
     {/if}
-    <span class="last-move"
-      >{game.phase === 'movement'
-        ? (gameLog.filter((e) => e.active).at(-1)?.summary ??
-          'Move your merchant')
-        : ''}</span
-    >
     {#if history}<section
         class="history"
         style={`transform:translate(-50%,-50%) rotate(${seat.angle}deg)`}
@@ -1076,8 +1079,8 @@
   </div>
   <nav class="table-controls" aria-label="Game controls">
     {#if !personal}<UndoButton {undo} {userUid} pending={undoPending} onUndo={animateUndo} />{/if}
-    <button onclick={() => (history = !history)} aria-expanded={history}
-      >Game log</button
+    <button onclick={() => (history = !history)} aria-expanded={history} aria-label="Game log" title="Game log"
+      ><span class="log-icon" aria-hidden="true">☰</span><span class="log-label">Game log</span></button
     >
   </nav>
   <ActionMotion
@@ -1162,6 +1165,9 @@
     right: 0;
     top: 0;
     z-index: 1;
+    min-width: 44px;
+    min-height: 44px;
+    font-size: 24px;
   }
   .card-payments {
     width: 100%;
@@ -1182,7 +1188,8 @@
       top: 48%;
     }
     .personal .hand-panel {
-      inset: 10% 2%;
+      inset: 8px 2%;
+      padding-top: 48px;
     }
     .personal .zoom-tile h1 {
       font-size: 5cqw;
@@ -1224,6 +1231,8 @@
     isolation: isolate;
   }
   .personal .table {
+    --side-trays: 0;
+    --board-angle: 0deg;
     --tray-columns: var(--players);
     --tray-rows: 1;
     --tray-right: 104px;
@@ -1263,16 +1272,46 @@
     transform: none;
     order: var(--seat-order);
   }
-  .personal .last-move {
-    top: 6px;
-    bottom: auto;
-  }
-  @media (max-width: 600px) and (max-aspect-ratio: 1/1) {
+  @media (max-aspect-ratio: 1/1) {
     .personal .table {
       --tray-columns: 2;
       --tray-rows: var(--compact-rows);
       --tray-right: 8px;
-      --tray-bottom: 60px;
+      --tray-bottom: 8px;
+      --board-angle: 90deg;
+    }
+    .personal .board {
+      width: min(calc(100cqh - var(--tray-height) - 24px), calc((100cqw - 16px) * 16 / 9));
+      transform: translate(-50%, -50%) rotate(90deg);
+    }
+  }
+  @media (min-width: 601px) and (max-aspect-ratio: 1/1) {
+    .personal .table {
+      --tray-columns: var(--players);
+      --tray-rows: 1;
+    }
+  }
+  @media (max-height: 600px) and (min-aspect-ratio: 1/1) {
+    .personal .table {
+      --side-trays: 1;
+      --tray-columns: 1;
+      --tray-rows: var(--players);
+      --mat-width: min(30cqw, calc((100cqh - 16px - (var(--players) - 1) * 8px) / var(--players) / 0.325));
+    }
+    .personal :global(.seats) {
+      inset: 8px auto 8px 8px;
+      align-content: center;
+    }
+    .personal .board {
+      left: calc(var(--mat-width) + 16px + (100% - var(--mat-width) - 24px) / 2);
+      top: 50%;
+      width: min(calc(100cqw - var(--mat-width) - 24px), calc((100cqh - 16px) * 16 / 9));
+    }
+  }
+  @media (min-width: 601px) and (max-width: 1366px) and (min-height: 601px) and (min-aspect-ratio: 1/1) {
+    .personal .table {
+      --tray-right: 8px;
+      --mat-width: calc((100cqw - 8px - var(--tray-columns) * 8px) / var(--tray-columns));
     }
   }
   fieldset {
@@ -1342,6 +1381,13 @@
     border-radius: 50%;
     font-size: 1.6cqw;
     padding: 0;
+  }
+  @media (pointer: coarse) {
+    .zoom-tile > header button {
+      min-width: 44px;
+      min-height: 44px;
+      font-size: 18px;
+    }
   }
   button {
     font: inherit;
@@ -1493,13 +1539,6 @@
   .dice small {
     display: block;
   }
-  .last-move {
-    position: absolute;
-    left: 18%;
-    bottom: 1%;
-    max-width: 18%;
-    font-size: 0.65cqw;
-  }
   .table-hint {
     position: absolute;
     left: 50%;
@@ -1529,6 +1568,19 @@
     min-height: 44px;
     font-size: 14px;
     padding: 0.5rem 0.8rem;
+  }
+  .log-icon { display: none; }
+  @media (min-width: 601px) and (max-width: 1366px) and (min-height: 601px) and (min-aspect-ratio: 1/1) {
+    .personal .table-controls { top: 4px; left: 4px; right: auto; bottom: auto; }
+    .personal .table-controls > button { width: 44px; padding: 0; border: 0; background: #12352faa; border-radius: 50%; }
+    .personal .log-icon { display: inline; font-size: 20px; }
+    .personal .log-label { display: none; }
+  }
+  @media (max-aspect-ratio: 1/1), (max-width: 600px), (max-height: 600px) {
+    .table-controls { top: 4px; left: 4px; right: auto; bottom: auto; }
+    .table-controls > button { width: 44px; padding: 0; border: 0; background: #12352faa; border-radius: 50%; }
+    .log-icon { display: inline; font-size: 20px; }
+    .log-label { display: none; }
   }
   .history,
   .finish {
