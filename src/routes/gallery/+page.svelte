@@ -2,6 +2,7 @@
   import '@fontsource/atkinson-hyperlegible/400.css';
   import '@fontsource/atkinson-hyperlegible/700.css';
   import '@fontsource/cormorant-garamond/700.css';
+  import '$lib/assets/fonts/game-symbols.css';
   import { base } from '$app/paths';
   import BonusCard from '$lib/components/BonusCard.svelte';
   import BonusCardShowcase from '$lib/components/BonusCardShowcase.svelte';
@@ -328,7 +329,7 @@
     overflow: hidden;
     color: #173f43;
     background: #0c2f32;
-    font-family: 'Atkinson Hyperlegible', sans-serif;
+    font-family: 'Atkinson Hyperlegible', 'Istanbul Symbols', sans-serif;
   }
   :global(button) {
     font: inherit;
@@ -555,6 +556,7 @@
   .asset-card code {
     align-self: end;
     color: #995145;
+    font-family: inherit;
     font-size: 0.47rem;
     white-space: nowrap;
   }
