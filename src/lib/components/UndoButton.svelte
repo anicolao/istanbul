@@ -4,11 +4,13 @@
     undo,
     userUid,
     pending = false,
+    compact = false,
     onUndo
   }: {
     undo: ReplayProjection['undo'];
     userUid: string;
     pending?: boolean;
+    compact?: boolean;
     onUndo: () => void;
   } = $props();
   const available = $derived(
@@ -30,6 +32,7 @@
 
 <button
   class="undo-button"
+  class:compact
   aria-label={description}
   title={description}
   disabled={!available}
@@ -55,6 +58,8 @@
     cursor: pointer;
     touch-action: manipulation;
   }
+  .compact { width: 44px; min-width: 44px; padding: 0.4rem; }
+  .compact .label { display: none; }
   .undo-button > span:first-child {
     font-size: 23px;
   }

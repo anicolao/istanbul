@@ -95,7 +95,8 @@ export function fixture(
   id: string,
   count: number,
   mode: RoomMode,
-  position: TablePosition
+  position: TablePosition,
+  seating?: TablePosition[]
 ) {
   const game = createGalleryGame();
   game.players = game.players.slice(0, count);
@@ -130,7 +131,7 @@ export function fixture(
     .map((c) => c.id)
     .filter((id) => !player.bonusHand.includes(id));
   game.bonusDiscard = [game.bonusDrawPile.pop()!];
-  const positions = (
+  const positions = seating ?? (
     [position, 6, 2, 4, 8, 1, 3, 5, 7] as TablePosition[]
   ).filter((v, i, a) => a.indexOf(v) === i);
   const state: ReplayProjection = {
