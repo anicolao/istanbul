@@ -54,7 +54,14 @@ test('cached replay catches up exactly and incompatible history stops safely', a
       .locator('.zoom-tile:not([inert])')
       .getByRole('button', { name: 'End turn', exact: true })
       .click();
-    await expectState(page, { eventCount: 7 });
+    // The live listener can publish event 7 before append() receives its write
+    // acknowledgement and clears the persisted pending event. This scenario
+    // restores a settled cache; uncertain writes are exercised separately below.
+    await expectState(page, {
+      eventCount: 7,
+      actionPending: false,
+      recovery: { pendingRetryId: null }
+    });
     await page.goto(`/?room=${roomCode}&e2eRecovery=1&e2eCacheCount=6`);
     await ada.step('host-restores-six-event-cache', {
       description: 'Ada reloads the last verified local projection',
