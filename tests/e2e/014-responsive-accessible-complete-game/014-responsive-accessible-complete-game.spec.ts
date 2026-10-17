@@ -18,6 +18,12 @@ test('The common table supports keyboard, touch and reduced motion', async ({
 }, info) => {
   const t = await openTable(page, browser, info, 14, {});
   try {
+    // The real game shell must not reserve space for its hidden header,
+    // including after rotating a phone (the animation lab has no shell).
+    await expect.poll(() => page.locator('main.tabletop-game').evaluate(el => {
+      const style = getComputedStyle(el);
+      return [style.paddingTop, style.paddingRight, style.paddingBottom, style.paddingLeft];
+    })).toEqual(['0px', '0px', '0px', '0px']);
     const target = page.locator('[data-place-id="3"]');
     await page.locator('[data-place-id="7"]').focus();
     await page.locator('[data-place-id="7"]').press('ArrowRight');

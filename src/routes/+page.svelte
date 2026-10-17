@@ -2368,7 +2368,7 @@
         max(0.4rem, env(safe-area-inset-bottom))
         max(0.5rem, env(safe-area-inset-left));
     }
-    main.game-screen {
+    main.game-screen:not(.tabletop-game) {
       padding-top: max(3.25rem, env(safe-area-inset-top));
     }
     .topbar {
