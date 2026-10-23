@@ -58,7 +58,7 @@ export async function openTwoPlayerGame(options: {
 
   await guestPage.getByRole('button', { name: /Join the room/ }).click();
   await guest.step('guest-joins', { description: 'Bora claims clockwise seat two', verifications: [
-    { spec: 'Both named seats appear in order', check: async () => { await expect(guestPage.getByText('Ada')).toBeVisible(); await expect(guestPage.getByText('Bora · you')).toBeVisible(); } },
+    { spec: 'Both named seats appear in order', check: async () => { await expect(guestPage.getByText('Ada', { exact: true })).toBeVisible(); await expect(guestPage.getByText('Bora · you', { exact: true })).toBeVisible(); } },
     { spec: 'The join is event two with neither merchant ready', check: async () => expectState(guestPage, { screen: 'lobby', eventCount: 2, seatCount: 2, ready: [false, false] }) }
   ] });
 
@@ -79,4 +79,11 @@ export async function openTwoPlayerGame(options: {
     { spec: 'All sixteen Place controls are rendered', check: async () => expect(hostPage.getByTestId('bazaar-board').getByRole('button')).toHaveCount(16) },
     { spec: 'Ada is the seeded first merchant at Fountain', check: async () => expectState(hostPage, { screen: 'game', eventCount: 5, diagnosticCount: 0, game: { seed, currentTurn: 'Ada', turnNumber: 1, phase: 'movement', players: [{ name: 'Ada', merchantPlace: 7 }, { name: 'Bora', merchantPlace: 7 }] } }) }
   ] });
+}
+
+export async function revealPlayerMats(page: Page) {
+  const dock = page.locator('.mat-dock');
+  if (await dock.count() && !(await dock.getAttribute('class'))?.includes('revealed')) {
+    await dock.locator('.summary').first().click();
+  }
 }

@@ -62,6 +62,7 @@
 <span
   class="location-face"
   class:expanded
+  data-help={`${place.name}: ${place.action}`}
   data-component="LocationFace"
   data-testid={[5, 6, 8, 9, 10, 11, 13, 14, 15, 16].includes(placeId)
     ? `place-state-${placeId}`
@@ -228,7 +229,7 @@
     left: 23%;
     right: 23%;
     top: 22%;
-    font-size: 3cqw;
+    font-size: 3.8cqw;
   }
   .caravan-position {
     position: absolute;
@@ -284,6 +285,9 @@
     height: 100%;
   }
   .artwork {
+    /* Keep the source image edge beneath the opaque gold rail, including
+       when fractional scaling exposes the frame’s antialiased perimeter. */
+    clip-path: inset(2%);
     object-fit: cover;
     z-index: 0;
   }
@@ -303,7 +307,7 @@
     justify-content: center;
     text-align: center;
     font:
-      700 4.5cqw/1 'Cormorant Garamond',
+      700 6cqw/1 'Cormorant Garamond',
       serif;
     white-space: nowrap;
     text-shadow: 0 1px 2px #000;
@@ -312,6 +316,9 @@
     position: absolute;
     z-index: 3;
     top: 24%;
+    background: linear-gradient(90deg, #b9ac89, #e1d5b8 45%, #c5b795);
+    border-radius: 0.7cqw;
+    box-shadow: inset 0 0 0.8cqw #5d4a2e;
     width: 9%;
     height: 50%;
     display: grid;
@@ -360,7 +367,7 @@
   .location-number {
     right: 4.8%;
     font:
-      700 4.5cqw/1 'Cormorant Garamond',
+      700 6cqw/1 'Cormorant Garamond',
       serif;
     text-shadow: 0 1px 3px #000;
   }

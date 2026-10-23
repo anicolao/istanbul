@@ -106,19 +106,13 @@
           />{/if}</span
       >{/each}
   </div>
-  <div class="turn-controls">
-    {#if active}<button
-        class="turn"
-        disabled={busy}
-        onclick={canEnd ? onEnd : onOpen}
-        >{canEnd
-          ? 'End turn'
-          : game.phase === 'movement'
-            ? 'Move your merchant'
-            : 'Continue turn'}{#if canEnd}
-          <TabletopArrow />{/if}</button
-      >{/if}
-  </div>
+  {#if active && game.phase !== 'movement'}<div class="turn-controls">
+    <button class="turn" disabled={busy} aria-label={canEnd ? 'End turn' : 'Continue turn'}
+      data-help={canEnd ? 'End your turn.' : 'Return to your current location action.'}
+      onclick={canEnd ? onEnd : onOpen}>
+      {#if canEnd}<TabletopArrow />{:else}<span aria-hidden="true">↗</span>{/if}
+    </button>
+  </div>{/if}
   <div
     data-power-tray
     class="powers"
@@ -128,17 +122,15 @@
       {@const tile = mosqueTiles.find(
         (t) => t.color === good && player.mosqueTileIds.includes(t.id)
       )}
+      {@const ability = mosqueTiles.find(t => t.color === good)!.ability}
       <span class="power-slot" data-power-slot={good}>
-        {#if tile}<button
-            aria-label={tile.ability}
-            title={tile.ability}
-            disabled={!active || busy}
-            onclick={() => onPower(good)}
-            ><img
-              src={asset(componentArt.mosque[good])}
-              alt={tile.ability}
-            /></button
-          >{/if}
+        <button class:unowned={!tile}
+          aria-label={`${ability}${tile ? '' : ' Not owned.'}`}
+          data-help={`${ability}${tile ? '' : ' Not owned yet; acquire it at the Mosque.'}`}
+          aria-disabled={!tile || !active || busy}
+          onclick={() => { if (tile && active && !busy) onPower(good); }}>
+          <img src={asset(componentArt.mosque[good])} alt="" />
+        </button>
       </span>
     {/each}
   </div>
@@ -169,12 +161,16 @@
     position: absolute;
     top: 8%;
     left: 62%;
-    width: 31%;
+    width: 25%;
     text-align: center;
     font:
       700 4.2cqw 'Cormorant Garamond',
       serif;
     color: var(--seat-color);
+  }
+  .active .name {
+    color: #fff1c9;
+    text-shadow: 0 0 0.5cqw var(--seat-color), 0 0 1.2cqw var(--seat-color), 0 0 2.2cqw var(--seat-color);
   }
   .turn-light {
     display: inline-block;
@@ -246,23 +242,25 @@
   }
   .coins {
     position: absolute;
-    top: 30%;
-    left: 63%;
-    width: 11%;
-    height: 32%;
+    top: 22%;
+    left: 59%;
+    width: 16%;
+    height: 48%;
     display: grid;
     place-items: center;
   }
   .coins img {
-    width: 90%;
-    height: 100%;
+    width: 85%;
+    height: 85%;
     object-fit: contain;
-    filter: brightness(0.65);
+    filter: drop-shadow(0 1px 2px #0008);
   }
   .coins b {
     position: absolute;
     font-size: 5.8cqw;
-    text-shadow: 0 1px 4px #000;
+    paint-order: stroke fill;
+    -webkit-text-stroke: 0.35cqw #35200d;
+    text-shadow: 0 1px 3px #000;
   }
   .cards {
     position: absolute;
@@ -328,10 +326,10 @@
   }
   .turn-controls {
     position: absolute;
-    left: 73%;
-    top: 32%;
-    width: 16%;
-    height: 34%;
+    left: 89%;
+    top: 7%;
+    width: 6%;
+    height: 15%;
     display: flex;
     align-items: center;
     gap: 0.8cqw;
@@ -345,17 +343,18 @@
   }
   .powers {
     position: absolute;
-    left: 61%;
-    right: 14%;
-    top: 63%;
-    height: 13%;
-    display: flex;
-    justify-content: center;
-    gap: 1.4cqw;
+    left: 74%;
+    right: 12%;
+    top: 28%;
+    height: 45%;
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    grid-template-rows: repeat(2, minmax(0, 1fr));
+    gap: 0.5cqw;
   }
   .power-slot {
     display: block;
-    width: 5.6cqw;
+    width: 100%;
     height: 100%;
     flex: none;
   }
@@ -364,7 +363,7 @@
     border: 0;
     padding: 0;
     height: 100%;
-    width: 5.6cqw;
+    width: 100%;
     filter: drop-shadow(0 2px 2px #000);
   }
   .powers img {
@@ -372,7 +371,6 @@
     width: 100%;
     object-fit: contain;
   }
-  .powers button:disabled {
-    opacity: 1;
-  }
+  .powers button[aria-disabled="true"] { cursor: default; }
+  .powers button.unowned img { opacity: 0.45; filter: grayscale(0.6); }
 </style>

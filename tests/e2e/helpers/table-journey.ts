@@ -1,3 +1,4 @@
+import { revealPlayerMats } from './game-journey';
 import {
   expect,
   type Browser,
@@ -121,11 +122,11 @@ export async function end(page: Page) {
     }
     if (
       await tile
-        .getByRole('button', { name: 'Catch family for 3 Lira', exact: true })
+        .getByRole('button', { name: 'Catch family · gain 3 Lira', exact: true })
         .count()
     ) {
       await tile
-        .getByRole('button', { name: 'Catch family for 3 Lira', exact: true })
+        .getByRole('button', { name: 'Catch family · gain 3 Lira', exact: true })
         .first()
         .click();
       continue;
@@ -137,8 +138,10 @@ export async function end(page: Page) {
       await expect.poll(async () => (await readState(page)).eventCount).toBeGreaterThan(state.eventCount);
       continue;
     }
+    const relocation = tile.getByRole('button', { name: /^Roll to move the / });
+    if (await relocation.isVisible()) { await relocation.click(); continue; }
     const finish = tile.getByRole('button', {
-      name: /^(End turn|Finish trading)$/
+      name: /^(End turn|Show results)$/
     });
     if (await finish.isVisible()) {
       await finish.click();
@@ -222,6 +225,7 @@ export async function supply(page: Page) {
     .toBeGreaterThan(before);
 }
 export async function hand(page: Page, title: RegExp) {
+  await revealPlayerMats(page);
   await page
     .getByRole('button', { name: 'Your Bonus cards', exact: true })
     .click();

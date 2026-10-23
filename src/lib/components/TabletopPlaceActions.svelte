@@ -39,15 +39,7 @@
   aria-label="Place action"
 >
   {#if warehouse}
-    <button
-      class="offer primary"
-      onclick={() => onAction({ kind: 'warehouse-fill', good: warehouse })}
-      aria-label={`Fill ${warehouse} to ${player.capacity}`}
-      ><GameArt kind="component" component={warehouse} /><span
-        >Fill {warehouse}<b>{player.goods[warehouse]} → {player.capacity}</b
-        ></span
-      ></button
-    >
+    <p>Your wheelbarrow fills automatically on arrival.</p>
   {:else if placeId === 1}
     <button
       class="offer primary"
@@ -108,16 +100,17 @@
         })}>Recall all</button
     >
   {:else if placeId === 8}
-    <p>Take a good and roll for jewelry.</p>
+    <p>Take a good and roll for jewelry. {Math.max(0, player.capacity - player.goods.jewelry)} jewelry {player.capacity - player.goods.jewelry === 1 ? 'space' : 'spaces'} free.</p>
     {#each goods.slice(0, 3) as good}<button
         class="offer primary"
-        aria-label={`Take ${good} and roll`}
+        class:full={player.goods[good] >= player.capacity}
+        aria-label={player.goods[good] >= player.capacity ? `${good} full: roll only` : `Take ${good} and roll`}
         onclick={() =>
           onAction({
             kind: 'black-market-roll',
             good: good as Exclude<Good, 'jewelry'>
           })}
-        ><GameArt kind="component" component={good} /><span>+1 & roll</span
+        ><GameArt kind="component" component={good} /><span>{player.goods[good] >= player.capacity ? "Full · roll only" : "+1 & roll"}</span
         ></button
       >{/each}
   {:else if placeId === 9}
@@ -169,6 +162,7 @@
 </div>
 
 <style>
+  .offer.full :global(.game-art) { filter: grayscale(1); opacity: .45; }
   .choices {
     display: flex;
     align-items: center;

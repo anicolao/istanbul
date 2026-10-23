@@ -13,17 +13,19 @@
     compact?: boolean;
     onUndo: () => void;
   } = $props();
+  const needsAgreement = $derived(Boolean(undo && (undo.blockedReason || !undo.actorUids.includes(userUid))));
   const available = $derived(
     Boolean(
       undo &&
-      !undo.blockedReason &&
-      undo.actorUids.includes(userUid) &&
+      ((!undo.blockedReason && undo.actorUids.includes(userUid)) || undo.consentActorUids?.includes(userUid)) &&
       !pending
     )
   );
   const description = $derived(
     !undo
       ? 'Nothing to undo'
+      : needsAgreement && undo.consentActorUids?.includes(userUid)
+        ? `Ask everyone to undo ${undo.label}`
       : undo.blockedReason
         ? `Undo unavailable: ${undo.blockedReason}`
         : `Undo ${undo.label}`
@@ -36,7 +38,7 @@
   aria-label={description}
   title={description}
   disabled={!available}
-  onclick={onUndo}><span aria-hidden="true">↶</span><span class="label">Undo</span></button
+  onclick={onUndo}><span aria-hidden="true">↶</span><span class="label">{needsAgreement && available ? 'Request undo' : 'Undo'}</span></button
 >
 
 <style>

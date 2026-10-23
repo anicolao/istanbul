@@ -1,3 +1,4 @@
+import { rematchSeats } from './rematch';
 import { botStateKey, nextBotAction, botPolicyVersion, matchesBotAction } from './bot';
 import { arrivalAction } from './direct-actions';
 import {
@@ -23,7 +24,7 @@ import {
   resolveTeaHouse,
   sellAtMarket,
   tradeAtCaravansary,
-  previewCaravansary,
+  drawCaravansary,
   warehouseGood
 } from './actions';
 import { catchFamily, drawBonus, isEncounterChoice, relocateEncounter } from './encounters';
@@ -31,7 +32,7 @@ import type { Good } from './manifests';
 import { adjustMosqueDice, buyWarehouseExtra, isMosqueAbilityChoice, ownsMosqueAbility, recallWithYellow, takeMosqueTile } from './mosques';
 import { buyGemstoneRuby, buySultanRuby } from './ruby-routes';
 import { activateBonus, bonusEffect, discardPlayedBonus, isBonusChoice } from './bonus';
-import { finishFinalBonusSeat, markEndTrigger } from './endgame';
+import { finishFinalBonusSeat, markEndTrigger, settleFinalBonuses } from './endgame';
 
 const emptyProjection = (): ReplayProjection => ({
   room: null,
@@ -104,7 +105,7 @@ function actionResult(state: ReplayProjection, event: CanonicalEvent): { summary
     return { summary: encounter?.summary ?? undoLabel(event), dice: encounter?.dice ?? null };
   }
   if (event.type === 'bonus/played') return { summary: game.bonusLog.at(-1)?.summary ?? undoLabel(event), dice: null };
-  if (event.type === 'turn/ended') return { summary: 'Ended the turn and passed clockwise.', dice: null };
+  if (event.type === 'turn/ended') return { summary: game.phase === 'game-over' && game.end.finalBonuses ? 'Completed the final round, applied remaining money and goods Bonus cards, and scored the game.' : 'Ended the turn and passed clockwise.', dice: null };
   return { summary: undoLabel(event), dice: null };
 }
 
@@ -121,8 +122,8 @@ export function revealedInformationReason(event: CanonicalEvent): string | null 
   if (event.type === 'encounter/resolved') {
     if (choice?.kind === 'catch-family' && choice.reward === 'bonus') return 'a Bonus card was drawn';
     if (choice?.kind === 'governor-visit' && choice.accept === true) return 'a Bonus card was drawn';
-    if (choice?.kind === 'governor-pay') return 'the Governor was relocated by dice';
-    if (choice?.kind === 'smuggler-trade' && choice.accept === true) return 'the Smuggler was relocated by dice';
+    if (choice?.kind === 'governor-roll' || (choice?.kind === 'governor-pay' && event.payload.separateRelocation !== true)) return 'the Governor was relocated by dice';
+    if (choice?.kind === 'smuggler-roll' || (choice?.kind === 'smuggler-trade' && choice.accept === true && event.payload.separateRelocation !== true)) return 'the Smuggler was relocated by dice';
   }
   if (event.type === 'mosque/ability-used' && choice?.kind === 'dice-adjust' && choice.adjustment === 'reroll') return 'a die was rerolled';
   if (event.type === 'bonus/played' && choice?.kind === 'return-family' && choice.reward === 'bonus') return 'a Bonus card was drawn';
@@ -133,7 +134,8 @@ function rollbackPlan(
   activeEvents: CanonicalEvent[],
   actionById: Map<string, ActionRecord>,
   targetEventId: string,
-  room: ReplayProjection['room']
+  room: ReplayProjection['room'],
+  consent = false
 ): RollbackPlan | null {
   const targetIndex = activeEvents.findIndex(({ id }) => id === targetEventId);
   const target = actionById.get(targetEventId);
@@ -142,6 +144,10 @@ function rollbackPlan(
   const actions: ActionRecord[] = [];
   let blockedReason: string | null = null;
   for (const event of activeEvents.slice(targetIndex)) {
+    if (event.type === 'player/left') {
+      blockedReason = 'A player has left the completed game';
+      break;
+    }
     if (event.type === 'game/started' || event.type === 'game/rematched' || event.type.startsWith('e2e/')) {
       blockedReason = 'A later game or reviewed setup is a rollback boundary';
       break;
@@ -149,12 +155,12 @@ function rollbackPlan(
     const action = actionById.get(event.id);
     if (!action) continue;
     actions.push(action);
-    if (action.ownerUid !== target.ownerUid) {
+    if (!consent && action.ownerUid !== target.ownerUid) {
       blockedReason = 'Another merchant has acted since then';
       break;
     }
     const revealed = revealedInformationReason(event);
-    if (revealed) {
+    if (revealed && !consent) {
       blockedReason = event.id === target.event.id ? revealed : `Cannot cross: ${revealed}`;
       break;
     }
@@ -172,6 +178,12 @@ function rollbackPlan(
   return { target, actions, blockedReason, actorUids };
 }
 
+function consentActors(room: ReplayProjection['room']): string[] {
+  if (!room) return [];
+  return [...new Set([...room.seats.filter(seat => !seat.bot).map(seat => seat.uid),
+    ...(room.mode === 'shared-table' && room.tabletopOwned ? [room.hostUid] : [])])];
+}
+
 function latestAction(activeEvents: CanonicalEvent[], actionById: Map<string, ActionRecord>): ActionRecord | null {
   for (let index = activeEvents.length - 1; index >= 0; index -= 1) {
     const action = actionById.get(activeEvents[index].id);
@@ -180,8 +192,8 @@ function latestAction(activeEvents: CanonicalEvent[], actionById: Map<string, Ac
   return null;
 }
 
-function rebuildActiveProjection(activeEvents: CanonicalEvent[]): ReplayProjection {
-  const rebuilt = emptyProjection();
+function rebuildActiveProjection(activeEvents: CanonicalEvent[], initial?: ReplayProjection): ReplayProjection {
+  const rebuilt = initial ? structuredClone(initial) : emptyProjection();
   for (const activeEvent of activeEvents) {
     if (applyEvent(rebuilt, activeEvent)) rebuilt.acceptedEventIds.push(activeEvent.id);
   }
@@ -208,8 +220,9 @@ function controlsPublicTable(state: ReplayProjection, event: CanonicalEvent, pla
   );
 }
 
-export function replayEvents(events: unknown[]): ReplayProjection {
-  let state = emptyProjection();
+/** Optional initial position supports the local animation lab; live rooms replay from their creation event. */
+export function replayEvents(events: unknown[], initial?: ReplayProjection): ReplayProjection {
+  let state = initial ? structuredClone(initial) : emptyProjection();
   const seen = new Set<string>();
   const validEvents: CanonicalEvent[] = [];
   const activeEvents: CanonicalEvent[] = [];
@@ -230,9 +243,54 @@ export function replayEvents(events: unknown[]): ReplayProjection {
   for (const event of canonicalSort(validEvents)) {
     if (seen.has(event.id)) continue;
     seen.add(event.id);
-    if (event.type === 'action/undone') {
-      const targetEventId = stringField(event.payload, 'targetEventId');
-      const plan = targetEventId ? rollbackPlan(activeEvents, actionById, targetEventId, state.room) : null;
+    if (event.type === 'undo/cancelled') {
+      if (!state.undoRequest || event.payload.requestId !== state.undoRequest.id ||
+          event.actorUid !== state.undoRequest.requesterUid) { reject(state, event, 'undo-cancel-unavailable'); continue; }
+      state.undoRequest = null;
+      state.acceptedEventIds.push(event.id);
+      continue;
+    }
+    let consentPlan: RollbackPlan | null = null;
+    if (event.type === 'undo/requested' || event.type === 'undo/voted') {
+      if (event.type === 'undo/requested') {
+        const targetId = stringField(event.payload, 'targetEventId');
+        const plan = targetId ? rollbackPlan(activeEvents, actionById, targetId, state.room, true) : null;
+        if (state.undoRequest || !plan || plan.blockedReason || !consentActors(state.room).includes(event.actorUid)) {
+          reject(state, event, 'undo-request-unavailable'); continue;
+        }
+        const requiredUids = state.room!.seats.filter(seat => !seat.bot).map(seat => seat.uid);
+        state.undoRequest = { id: event.id, targetEventId: targetId!, requesterUid: event.actorUid,
+          label: plan.target.label, actionCount: plan.actions.length,
+          actions: plan.actions.map(({ label, summary, ownerUid }) => ({ label, summary, ownerUid })), requiredUids,
+          approvedUids: requiredUids.includes(event.actorUid) ? [event.actorUid] : [] };
+      } else {
+        const request = state.undoRequest;
+        const voterUid = stringField(event.payload, 'voterUid') ?? event.actorUid;
+        const tableVote = state.room?.mode === 'shared-table' && state.room.tabletopOwned && state.room.hostUid === event.actorUid;
+        if (!request || event.payload.requestId !== request.id || typeof event.payload.approve !== 'boolean' ||
+          !request.requiredUids.includes(voterUid) || (voterUid !== event.actorUid && !tableVote) || request.approvedUids.includes(voterUid)) {
+          reject(state, event, 'undo-vote-unavailable'); continue;
+        }
+        if (event.payload.approve === false) {
+          state.undoRequest = null;
+          state.acceptedEventIds.push(event.id);
+          continue;
+        }
+        request.approvedUids.push(voterUid);
+      }
+      const request = state.undoRequest!;
+      if (!request.requiredUids.every(uid => request.approvedUids.includes(uid))) {
+        state.acceptedEventIds.push(event.id);
+        continue;
+      }
+      consentPlan = rollbackPlan(activeEvents, actionById, request.targetEventId, state.room, true);
+      if (!consentPlan || consentPlan.blockedReason) {
+        state.undoRequest = null; reject(state, event, 'stale-undo-target'); continue;
+      }
+    }
+    if (event.type === 'action/undone' || consentPlan) {
+      const targetEventId = consentPlan?.target.event.id ?? stringField(event.payload, 'targetEventId');
+      const plan = consentPlan ?? (targetEventId ? rollbackPlan(activeEvents, actionById, targetEventId, state.room) : null);
       if (!targetEventId || !plan) {
         reject(state, event, 'stale-undo-target');
         continue;
@@ -241,7 +299,7 @@ export function replayEvents(events: unknown[]): ReplayProjection {
         reject(state, event, plan.actions.some(({ event: actionEvent }) => revealedInformationReason(actionEvent)) ? 'undo-revealed-information' : 'stale-undo-target');
         continue;
       }
-      if (!plan.actorUids.includes(event.actorUid)) {
+      if (!consentPlan && !plan.actorUids.includes(event.actorUid)) {
         reject(state, event, 'undo-not-authorized');
         continue;
       }
@@ -258,7 +316,7 @@ export function replayEvents(events: unknown[]): ReplayProjection {
         label: plan.target.label,
         actionCount: plan.actions.length
       }];
-      state = rebuildActiveProjection(activeEvents);
+      state = rebuildActiveProjection(activeEvents, initial);
       state.acceptedEventIds = acceptedEventIds;
       state.diagnostics = diagnostics;
       state.undoLog = undoLog;
@@ -273,6 +331,8 @@ export function replayEvents(events: unknown[]): ReplayProjection {
       : null;
     const accepted = applyEvent(state, event);
     if (accepted) {
+      // A new action or room change invalidates the proposed rewind and its votes.
+      if (event.type !== 'player/present') state.undoRequest = null;
       state.acceptedEventIds.push(event.id);
       activeEvents.push(event);
       if (actionContext) {
@@ -287,6 +347,7 @@ export function replayEvents(events: unknown[]): ReplayProjection {
   state.gameLog = actionRecords.map((record) => {
     const active = activeIds.has(record.event.id);
     const plan = active ? rollbackPlan(activeEvents, actionById, record.event.id, state.room) : null;
+    const agreed = active ? rollbackPlan(activeEvents, actionById, record.event.id, state.room, true) : null;
     return {
       eventId: record.event.id,
       actorUid: record.event.actorUid,
@@ -300,7 +361,9 @@ export function replayEvents(events: unknown[]): ReplayProjection {
       barrierReason: revealedInformationReason(record.event),
       blockedReason: active ? plan?.blockedReason ?? null : 'Already undone',
       rollbackCount: active && !plan?.blockedReason ? plan?.actions.length ?? 0 : 0,
-      rollbackActorUids: active && !plan?.blockedReason ? plan?.actorUids ?? [] : []
+      rollbackActorUids: active && !plan?.blockedReason ? plan?.actorUids ?? [] : [],
+      consentActorUids: agreed && !agreed.blockedReason ? consentActors(state.room) : [],
+      consentActionCount: agreed && !agreed.blockedReason ? agreed.actions.length : 0
     };
   });
 
@@ -311,7 +374,8 @@ export function replayEvents(events: unknown[]): ReplayProjection {
     actorUid: target.event.actorUid,
     actorUids: targetPlan.actorUids,
     label: target.label,
-    blockedReason: targetPlan.blockedReason
+    blockedReason: targetPlan.blockedReason,
+    consentActorUids: state.gameLog.find(entry => entry.eventId === target.event.id)?.consentActorUids ?? []
   } : null;
 
   return state;
@@ -482,11 +546,51 @@ export function applyEvent(state: ReplayProjection, event: CanonicalEvent): bool
     return false;
   }
 
-  if (event.type === 'game/rematched') {
-    const seed = stringField(event.payload, 'seed');
-    if (state.game.phase !== 'game-over' || event.actorUid !== state.room.hostUid || !seed || seed.length > 96) {
-      reject(state, event, 'invalid-rematch');
+  if (event.type === 'player/present') {
+    const seat = state.room.seats.find(seat => seat.uid === event.actorUid && !seat.bot && !seat.left);
+    if (state.game.phase !== 'game-over' || event.payload.epoch !== state.game.epoch ||
+        (!seat && !(state.room.tabletopOwned && state.room.hostUid === event.actorUid))) {
       return false;
+    }
+    if (event.createdAt !== null) state.room.presence = { ...state.room.presence,
+      [event.actorUid]: { epoch: state.game.epoch, at: event.createdAt } };
+    return true;
+  }
+  if (event.type === 'player/left') {
+    const seat = state.room.seats.find(seat => seat.uid === event.actorUid && !seat.bot && !seat.left);
+    if (!seat || state.game.phase !== 'game-over' || event.payload.epoch !== state.game.epoch) {
+      reject(state, event, 'cannot-leave-during-game'); return false;
+    }
+    seat.left = true;
+    if (state.room.hostUid === event.actorUid && !state.room.tabletopOwned) {
+      state.room.hostUid = state.room.seats.find(seat => !seat.left && !seat.bot)?.uid ?? state.room.hostUid;
+    }
+    return true;
+  }
+  if (event.type === 'game/rematched') {
+    if (event.payload.rosterVersion === 1 && event.payload.epoch !== state.game.epoch) return false;
+    const seed = stringField(event.payload, 'seed');
+    if (state.game.phase !== 'game-over' || !seed || seed.length > 96) {
+      reject(state, event, 'invalid-rematch'); return false;
+    }
+    if (event.payload.rosterVersion === 1) {
+      const layout = event.payload.layout;
+      const authorized = state.room.seats.some(seat => seat.uid === event.actorUid && !seat.left && !seat.bot)
+        || (state.room.tabletopOwned && state.room.hostUid === event.actorUid);
+      if (!authorized || event.payload.epoch !== state.game.epoch || !isLayout(layout)) {
+        reject(state, event, 'invalid-rematch'); return false;
+      }
+      // Server timestamps and the recorded heartbeats make the roster replay-stable.
+      if (event.createdAt === null) return false;
+      const seats = rematchSeats(state.room, state.game.epoch, event.createdAt, event.actorUid);
+      if (seats.length < 2) { reject(state, event, 'rematch-needs-two-players'); return false; }
+      state.room.seats = seats.map(({ left, ...seat }) => ({ ...seat, ready: true }));
+      state.room.layout = layout;
+      if (!state.room.tabletopOwned || !state.room.presence?.[state.room.hostUid]
+          || state.room.presence[state.room.hostUid].at < event.createdAt - 90_000) state.room.hostUid = event.actorUid;
+      state.room.presence = {};
+    } else if (event.actorUid !== state.room.hostUid) {
+      reject(state, event, 'invalid-rematch'); return false;
     }
     state.game = createSetup(state.room, seed, state.game.epoch + 1);
     return true;
@@ -500,7 +604,7 @@ export function applyEvent(state: ReplayProjection, event: CanonicalEvent): bool
     // A second host tab or a delayed write may have already advanced this decision.
     if (event.payload.botUid !== player.uid || event.payload.botState !== botStateKey(state.game)) return false;
     const decision = nextBotAction(state.game);
-    const { botUid, botState, botVersion, ...payload } = event.payload;
+    const { botUid, botState, botVersion, drawContextVersion, automaticFinalBonus, ...payload } = event.payload;
     if (botVersion !== botPolicyVersion || !decision || !matchesBotAction(decision, event.type, payload)) {
       reject(state, event, 'invalid-bot-decision'); return false;
     }
@@ -636,12 +740,12 @@ export function applyEvent(state: ReplayProjection, event: CanonicalEvent): bool
         if (!game.pending.familyAction) beginEncounters(game);
         if (game.pending?.kind === 'warehouse-extra') { game.pending = null; game.phase = 'turn-end'; }
       }
-      if (game.pending?.kind === 'encounters' && game.pending.governor !== 'payment' && game.pending.familyUids.length === 0) {
+      if (game.pending?.kind === 'encounters' && game.pending.governor !== 'payment' && !game.pending.relocation && game.pending.familyUids.length === 0) {
         game.pending = null; game.phase = 'turn-end';
       }
     }
     if (game.phase === 'final-bonus') {
-      if (!controlsPublicTable(state, event, player.uid) || !finishFinalBonusSeat(game)) {
+      if (!controlsPublicTable(state, event, player.uid) || !(event.payload.automaticFinalBonus === true ? settleFinalBonuses(game) : finishFinalBonusSeat(game))) {
         reject(state, event, 'final-bonus-cannot-end');
         return false;
       }
@@ -652,7 +756,7 @@ export function applyEvent(state: ReplayProjection, event: CanonicalEvent): bool
       return false;
     }
     if (game.phase === 'action' && beginEncounters(game)) return true;
-    advanceTurn(game);
+    advanceTurn(game, event.payload.automaticFinalBonus === true);
     return true;
   }
 
@@ -731,9 +835,9 @@ function applyPlaceAction(state: ReplayProjection, event: CanonicalEvent): boole
     if (actionPlace !== 5) { reject(state, event, 'post-office-unavailable'); return false; }
     summary = collectPostOffice(game, player);
   } else if (choice.kind === 'caravansary-draw') {
-    const cards = actionPlace === 6 ? previewCaravansary(game, choice.drawSources) : null;
+    const cards = actionPlace === 6 ? drawCaravansary(game, choice.drawSources, event.payload.drawContextVersion === 1, familyAction) : null;
     if (!cards) { reject(state, event, 'invalid-caravansary-draw'); return false; }
-    for (const source of choice.drawSources) player.bonusHand.push((source === 'deck' ? game.bonusDrawPile.shift() : game.bonusDiscard.pop())!);
+    player.bonusHand.push(...cards);
     game.pending = { kind: 'caravansary-discard', familyAction };
     game.phase = 'action';
     game.lastAction = {playerUid:player.uid,place:6,kind:choice.kind,summary:'Drew two Bonus cards. Discard one.'};
@@ -745,7 +849,7 @@ function applyPlaceAction(state: ReplayProjection, event: CanonicalEvent): boole
     summary='Drew two Bonus cards and discarded one.';
   } else if (choice.kind === 'caravansary-trade') {
     if (actionPlace !== 6) { reject(state, event, 'caravansary-unavailable'); return false; }
-    summary = tradeAtCaravansary(game, player, choice.drawSources, choice.discardCardId);
+    summary = tradeAtCaravansary(game, player, choice.drawSources, choice.discardCardId, event.payload.drawContextVersion === 1, familyAction);
     if (!summary) { reject(state, event, 'invalid-caravansary-trade'); return false; }
   } else if (choice.kind === 'market-sell') {
     if (actionPlace !== 10 && actionPlace !== 11) {
@@ -820,7 +924,7 @@ export function applyBonus(state: ReplayProjection, event: CanonicalEvent): bool
     player.familyPlace = 12;
     if (choice.reward === 'lira') player.lira += 3;
     else {
-      const drawn = drawBonus(game, `bonus-family:${game.turnNumber}`);
+      const drawn = drawBonus(game, event.payload.drawContextVersion === 1 ? `bonus-family:${cardId}` : `bonus-family:${game.turnNumber}`, event.payload.drawContextVersion === 1);
       if (!drawn) return rejectBonus(state, event, 'bonus-deck-empty');
       player.bonusHand.push(drawn);
     }
@@ -958,12 +1062,23 @@ function applyEncounter(state: ReplayProjection, event: CanonicalEvent): boolean
     return false;
   }
 
+  if (pending.relocation && choice.kind !== `${pending.relocation}-roll`) {
+    reject(state, event, 'encounter-relocation-required');
+    return false;
+  }
   let summary = '';
   let dice: [number, number] | undefined;
   let destination: number | undefined;
-  if (choice.kind === 'catch-family') {
+  if (choice.kind === 'governor-roll' || choice.kind === 'smuggler-roll') {
+    const token = choice.kind === 'governor-roll' ? 'governor' : 'smuggler';
+    if (pending.relocation !== token) { reject(state, event, 'encounter-relocation-unavailable'); return false; }
+    dice = relocateEncounter(game, token);
+    destination = token === 'governor' ? game.governorPlace : game.smugglerPlace;
+    delete pending.relocation;
+    summary = `Rolled ${dice[0]} + ${dice[1]} and moved the ${token === 'governor' ? 'Governor' : 'Smuggler'} to Place ${destination}.`;
+  } else if (choice.kind === 'catch-family') {
     if (!pending.familyUids.includes(choice.familyUid)) { reject(state, event, 'family-not-present'); return false; }
-    const result = catchFamily(game, player, choice.familyUid, choice.reward);
+    const result = catchFamily(game, player, choice.familyUid, choice.reward, event.payload.drawContextVersion === 1);
     if (!result) { reject(state, event, 'invalid-family-reward'); return false; }
     pending.familyUids = pending.familyUids.filter((uid) => uid !== choice.familyUid);
     summary = result;
@@ -973,7 +1088,7 @@ function applyEncounter(state: ReplayProjection, event: CanonicalEvent): boolean
       pending.governor = null;
       summary = 'Declined the Governor; the token remained in place.';
     } else {
-      const card = drawBonus(game, `governor:${game.turnNumber}`);
+      const card = drawBonus(game, `governor:${game.turnNumber}`, event.payload.drawContextVersion === 1);
       if (!card) { reject(state, event, 'bonus-deck-empty'); return false; }
       player.bonusHand.push(card);
       pending.governor = 'payment';
@@ -991,10 +1106,16 @@ function applyEncounter(state: ReplayProjection, event: CanonicalEvent): boolean
       game.bonusDiscard.push(player.bonusHand.splice(cardIndex, 1)[0]);
       summary = 'Discarded 1 Bonus card for the Governor';
     }
-    dice = relocateEncounter(game, 'governor');
-    destination = game.governorPlace;
     pending.governor = null;
-    summary += ` and relocated the token to Place ${destination}.`;
+    // Saved events without this flag retain their original combined payment/roll.
+    if (event.payload.separateRelocation === true) {
+      pending.relocation = 'governor';
+      summary += '; roll to relocate the Governor when ready.';
+    } else {
+      dice = relocateEncounter(game, 'governor');
+      destination = game.governorPlace;
+      summary += ` and relocated the token to Place ${destination}.`;
+    }
   } else if (!choice.accept) {
     if (!pending.smuggler) { reject(state, event, 'smuggler-unavailable'); return false; }
     pending.smuggler = false;
@@ -1012,14 +1133,20 @@ function applyEncounter(state: ReplayProjection, event: CanonicalEvent): boolean
       player.goods[paymentGood] -= 1;
       summary = `Took 1 ${choice.good} and paid the Smuggler 1 ${paymentGood}`;
     }
-    dice = relocateEncounter(game, 'smuggler');
-    destination = game.smugglerPlace;
     pending.smuggler = false;
-    summary += `; relocated the token to Place ${destination}.`;
+    // Saved events without this flag retain their original combined payment/roll.
+    if (event.payload.separateRelocation === true) {
+      pending.relocation = 'smuggler';
+      summary += '; roll to relocate the Smuggler when ready.';
+    } else {
+      dice = relocateEncounter(game, 'smuggler');
+      destination = game.smugglerPlace;
+      summary += `; relocated the token to Place ${destination}.`;
+    }
   }
 
   game.encounterLog.push({ kind: choice.kind, summary, ...(dice ? { dice } : {}), ...(destination ? { destination } : {}) });
-  if (pending.familyUids.length === 0 && pending.governor === null && !pending.smuggler) {
+  if (!pending.relocation && pending.familyUids.length === 0 && pending.governor === null && !pending.smuggler) {
     game.pending = null;
     game.phase = 'turn-end';
   }
@@ -1085,7 +1212,7 @@ function applyMovement(state: ReplayProjection, event: CanonicalEvent): boolean 
   game.lastMovement = { playerUid: player.uid, from, to: destination, distance, assistantAction, paymentTotal, paymentBlocked };
   game.activeBonusEffects = game.activeBonusEffects.filter((effect) => effect !== 'long-move');
   if (paymentBlocked) {
-    advanceTurn(game);
+    advanceTurn(game, event.payload.automaticFinalBonus === true);
   } else if (paymentTotal > 0) {
     game.pending = { kind: 'merchant-payment', recipientUids, neutralMerchantIds, total: paymentTotal };
     game.phase = 'merchant-payment';
@@ -1125,7 +1252,7 @@ function applyMerchantPayment(state: ReplayProjection, event: CanonicalEvent): b
   return true;
 }
 
-function advanceTurn(game: NonNullable<ReplayProjection['game']>) {
+function advanceTurn(game: NonNullable<ReplayProjection['game']>, automaticFinalBonus = false) {
   game.end.ordinaryTurnCounts[game.turnSeat] += 1;
   markEndTrigger(game);
   if (game.end.triggeredByUid && game.turnSeat === game.end.finalTurnSeat) {
@@ -1136,6 +1263,7 @@ function advanceTurn(game: NonNullable<ReplayProjection['game']>) {
     game.abilitiesUsedThisTurn = [];
     game.activeBonusEffects = [];
     game.bonusLog = [];
+    if (automaticFinalBonus) settleFinalBonuses(game);
     return;
   }
   game.turnSeat = (game.turnSeat + 1) % game.players.length;

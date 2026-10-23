@@ -72,19 +72,16 @@
       >
         <GameArt
           kind="component"
-          component={good === 'any' ? resolvedWild[index] : good}
+          component={good === 'any' ? (active ? resolvedWild[index] : 'any') : good}
         />
-        {#if good === 'any'}<small>↻</small>{/if}
+        {#if good === 'any'}<small class="wild-choice"><GameArt kind="component" component="any" /></small>{/if}
       </svelte:element>
     {/each}
     {#if nextGood}<span
         class="good next"
         aria-label={`Next offer adds ${nextGood}`}
       >
-        {#if nextGood === 'any'}<span class="wild">✦</span>{:else}<GameArt
-            kind="component"
-            component={nextGood}
-          />{/if}
+        <GameArt kind="component" component={nextGood} />
       </span>{/if}
   </span><span class="arrow">→</span>
   <svelte:element
@@ -100,6 +97,8 @@
 </span>
 
 <style>
+  .wild-choice { width: 48%; height: 48%; }
+  .wild-choice :global(.game-art) { width: 100%; height: 100%; }
   .sultan-offer {
     container-type: inline-size;
     display: flex;
@@ -175,8 +174,5 @@
     font-size: 3cqw;
     color: #173f43;
   }
-  .wild {
-    font-size: 7cqw;
-    color: #507649;
-  }
+
 </style>

@@ -39,6 +39,7 @@ export interface GameSetup {
     gemstoneRubies: number;
   };
   bonusDrawPile: string[];
+  bonusDrawCounts?: Record<string, number>;
   bonusDiscard: string[];
   supplies: {
     wheelbarrowExtensions: number;
@@ -57,6 +58,7 @@ export interface GameSetup {
     triggeredTurn: number | null;
     finalTurnSeat: number;
     finalBonusSeatsCompleted: number[];
+    finalBonuses?: Array<{ uid: string; lira: number; goods: number; cards: string[] }>;
     rankings: Array<{
       uid: string;
       name: string;
@@ -83,6 +85,7 @@ export interface GameSetup {
   } | {
     kind: 'encounters';
     familyUids: string[];
+    relocation?: 'governor' | 'smuggler';
     governor: 'available' | 'payment' | null;
     smuggler: boolean;
   } | {

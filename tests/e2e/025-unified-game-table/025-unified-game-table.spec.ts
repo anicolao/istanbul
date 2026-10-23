@@ -1,3 +1,4 @@
+import { revealPlayerMats } from '../helpers/game-journey';
 import { expect, test } from '@playwright/test';
 import { TestStepHelper } from '../helpers/test-step-helper';
 import { readState, expectState } from '../helpers/game-journey';
@@ -47,8 +48,7 @@ test('personal games use direct table actions, private cards, and a one-second r
             ).not.toHaveAttribute('data-inspect-pile-card');
             await expect(
               page.getByRole('button', {
-                name: 'Your Bonus cards',
-                exact: true
+                name: /^Show Ada’s player mat|^Show Ada's player mat/
               })
             ).toBeVisible();
           }
@@ -143,7 +143,8 @@ test('personal games use direct table actions, private cards, and a one-second r
     expect(undoBounds!.width).toBeGreaterThanOrEqual(info.project.name === 'phone' ? 44 : 88);
     await undo.click();
     await expectState(page, { game: before.game });
-    await page
+    await revealPlayerMats(page);
+  await page
       .getByRole('button', { name: 'Your Bonus cards', exact: true })
       .click();
     await expect(

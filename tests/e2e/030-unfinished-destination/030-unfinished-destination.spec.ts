@@ -1,3 +1,4 @@
+import { revealPlayerMats } from '../helpers/game-journey';
 import { expect, test } from '@playwright/test';
 
 for (const surface of ['personal-screens', 'shared-table']) {
@@ -7,8 +8,10 @@ for (const surface of ['personal-screens', 'shared-table']) {
     await page.getByRole('button', { name: /^Animation lab/ }).click();
     const room = page.locator('.zoom-tile:not([inert])');
     const matEnd = page.locator('.mat.active').getByRole('button', { name: 'End turn', exact: true });
+    await revealPlayerMats(page);
     await matEnd.click();
     await expect(room.getByRole('alert')).toContainText("You didn't choose to gain a mosque power. End your turn anyway?");
+    await revealPlayerMats(page);
     await matEnd.click();
     await expect(room.getByRole('alert')).toBeVisible();
     await page.waitForTimeout(1100);

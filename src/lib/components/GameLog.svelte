@@ -27,11 +27,12 @@
   }
 
   function canRollback(entry: ReplayProjection['gameLog'][number]) {
-    return entry.active && !entry.blockedReason && entry.rollbackActorUids.includes(userUid) && !pending;
+    return entry.active && ((!entry.blockedReason && entry.rollbackActorUids.includes(userUid)) || entry.consentActorUids?.includes(userUid)) && !pending;
   }
 
   function blockedCopy(entry: ReplayProjection['gameLog'][number]) {
     if (!entry.active) return 'Already undone';
+    if (entry.consentActorUids?.includes(userUid)) return null;
     if (entry.blockedReason) return entry.blockedReason;
     if (!entry.rollbackActorUids.includes(userUid)) return `Only ${playerName(entry.ownerUid)} or the controlling tabletop can roll this back`;
     return null;
@@ -51,8 +52,8 @@
 {#if open}
   <div class="log-backdrop" role="presentation" onclick={() => open = false}>
     <div class="log-dialog" role="dialog" aria-modal="true" aria-labelledby="game-log-title" tabindex="-1" data-e2e-fit data-e2e-no-scroll onclick={(event) => event.stopPropagation()} onkeydown={(event) => event.stopPropagation()}>
-      <header><div><p>Immutable action history</p><h2 id="game-log-title">Game log</h2></div><button aria-label="Close game log" onclick={() => open = false}>×</button></header>
-      <p class="log-help">Choose an available row to restore the game to immediately before that action. Grey rows cannot be crossed.</p>
+      <header><div><p>Played actions</p><h2 id="game-log-title">Game log</h2></div><button aria-label="Close game log" onclick={() => open = false}>×</button></header>
+      <p class="log-help">Choose an available row to restore the game to immediately before that action. Actions that reveal information or cross another turn need everyone’s agreement.</p>
       <ol aria-label="Game actions">
         {#each visibleEntries as entry}
           {@const reason = blockedCopy(entry)}
@@ -60,7 +61,7 @@
             <span class="log-index">T{entry.turnNumber}</span>
             <span class="log-copy"><strong>{entry.label}</strong><small>{entry.summary}</small><i>{playerName(entry.ownerUid)}{entry.dice ? ` · rolled ${entry.dice[0]} + ${entry.dice[1]}` : ''}{entry.barrierReason ? ' · information barrier' : entry.active ? '' : ' · removed from state'}</i></span>
             {#if canRollback(entry)}
-              <button class="rollback" aria-label={`Roll back before ${entry.label}`} onclick={() => rollback(entry)}>Rollback {entry.rollbackCount}</button>
+              <button class="rollback" aria-label={`Roll back before ${entry.label}`} onclick={() => rollback(entry)}>{entry.blockedReason || !entry.rollbackActorUids.includes(userUid) ? `Request undo · ${entry.consentActionCount}` : `Rollback ${entry.rollbackCount}`}</button>
             {:else}<span class="blocked-reason">{reason}</span>{/if}
           </li>
         {:else}<li class="empty">No gameplay actions have been recorded yet.</li>{/each}

@@ -24,6 +24,7 @@ export async function expectInterfaceToFit(page: Page) {
   const problems = await page.evaluate(async () => {
     await new Promise<void>((resolve) => requestAnimationFrame(() => requestAnimationFrame(() => resolve())));
 
+    await Promise.all(Array.from(document.querySelectorAll('.mat-dock')).flatMap(el => el.getAnimations()).map(animation => animation.finished.catch(() => {})));
     const tolerance = 1;
     const root = document.querySelector<HTMLElement>('[data-e2e-layout]');
     if (!root) return ['missing [data-e2e-layout] root'];
@@ -39,7 +40,15 @@ export async function expectInterfaceToFit(page: Page) {
     const visible = (element: HTMLElement) => {
       const style = getComputedStyle(element);
       const rect = element.getBoundingClientRect();
-      return style.display !== 'none' && style.visibility !== 'hidden' && rect.width > 0 && rect.height > 0;
+      if (style.display === 'none' || style.visibility === 'hidden' || rect.width <= 0 || rect.height <= 0) return false;
+      // The expanding mat dock intentionally scrolls horizontally. Its offscreen
+      // seats are reachable by scrolling; check the controls in the visible seat.
+      const dockScroll = element.closest('.mat-dock .seats, .dock-summaries');
+      if (dockScroll && dockScroll !== element) {
+        const viewport = dockScroll.getBoundingClientRect();
+        if (rect.left < viewport.left - tolerance || rect.right > viewport.right + tolerance) return false;
+      }
+      return true;
     };
     const clippedByAncestor = (element: HTMLElement) => {
       const rect = element.getBoundingClientRect();

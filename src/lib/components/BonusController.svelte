@@ -11,6 +11,8 @@
   import BonusCard from './BonusCard.svelte';
   import AssistantRecallMap from './AssistantRecallMap.svelte';
   import CaravansaryFlow from './CaravansaryFlow.svelte';
+  import FamilyRewardChoices from './FamilyRewardChoices.svelte';
+  import GoodChoices from './GoodChoices.svelte';
   import GameLog from './GameLog.svelte';
 
   let {
@@ -68,7 +70,6 @@
     sultanCost.filter((good) => good === 'any').length
   );
   let bonusGood = $state<Good>('jewelry');
-  let familyReward = $state<'lira' | 'bonus'>('lira');
   let sultanWildGoods = $state<Good[]>([]);
   const privateActionPlace = $derived(
     game.pending?.kind === 'caravansary-discard'
@@ -202,7 +203,7 @@
         <h2>Discard a Bonus card</h2>
         <p>
           The tabletop can pay 2 Lira. Choose here only if you prefer to discard
-          privately.
+          privately. You can undo the payment before rolling on the tabletop.
         </p>
         <BonusCardChoices
           cards={player.bonusHand}
@@ -214,18 +215,7 @@
         <h2>{selected.title}</h2>
         {#if !fullHand && !choosingAssistant}<BonusCard card={selected} class="large-card" />{/if}
         {#if isCurrent}
-          {#if selected.effect === 'gain-good'}<label
-              >Good to gain<select
-                value={bonusGood}
-                onchange={(event) =>
-                  (bonusGood = event.currentTarget.value as Good)}
-                >{#each Object.keys(goodNames) as good}<option
-                    value={good}
-                    disabled={player.goods[good as Good] >= player.capacity}
-                    >{goodNames[good as Good]}</option
-                  >{/each}</select
-              ></label
-            ><button
+          {#if selected.effect === 'gain-good'}<GoodChoices selected={bonusGood} unavailable={(Object.keys(goodNames) as Good[]).filter(good => player.goods[good] >= player.capacity)} label="Good to gain" onChoose={good => bonusGood = good} /><button
               class="primary"
               disabled={![
                 'action',
@@ -252,25 +242,8 @@
               onclick={() => onPlayBonus(selected.id, { kind: 'gain-lira' })}
               >Play to gain 5 Lira</button
             >
-          {:else if selected.effect === 'return-family'}<label
-              >Reward<select
-                value={familyReward}
-                onchange={(event) =>
-                  (familyReward = event.currentTarget.value as
-                    'lira' | 'bonus')}
-                ><option value="lira">3 Lira</option><option value="bonus"
-                  >1 Bonus card</option
-                ></select
-              ></label
-            ><button
-              class="primary"
-              disabled={player.familyPlace === 12}
-              onclick={() =>
-                onPlayBonus(selected.id, {
-                  kind: 'return-family',
-                  reward: familyReward
-                })}>Return family to Police</button
-            >
+          {:else if selected.effect === 'return-family'}
+            <FamilyRewardChoices disabled={undoPending || player.familyPlace === 12} onChoose={reward => onPlayBonus(selected.id, { kind: 'return-family', reward })} />
           {:else if selected.effect === 'return-assistant'}
             <p>Tap an assistant to return it to your merchant.</p>
             <AssistantRecallMap
@@ -326,16 +299,9 @@
                 onPlayBonus(selected.id, { kind: 'repeat-action' })}
               >Repeat Gemstone Dealer</button
             >
-          {:else if selected.effect === 'repeat-sultan'}{#each Array.from( { length: sultanWildCount } ) as _, index}<label
-                >Wild good {index + 1}<select
-                  value={sultanWildGoods[index] ?? 'fabric'}
-                  onchange={(event) =>
-                    setSultanWild(index, event.currentTarget.value as Good)}
-                  >{#each Object.keys(goodNames) as good}<option value={good}
-                      >{goodNames[good as Good]}</option
-                    >{/each}</select
-                ></label
-              >{/each}<button
+          {:else if selected.effect === 'repeat-sultan'}{#each Array.from({ length: sultanWildCount }) as _, index}
+              <GoodChoices selected={sultanWildGoods[index]} label={`Wild good ${index + 1}`} onChoose={good => setSultanWild(index, good)} />
+            {/each}<button
               class="primary"
               disabled={game.phase !== 'turn-end' ||
                 game.lastAction?.place !== 13 ||
@@ -528,21 +494,6 @@
   .private-decision :global(.large-card) {
     width: min(100%, 8rem);
     margin-inline: auto;
-  }
-  label {
-    display: grid;
-    gap: 0.25rem;
-    margin-top: 0.5rem;
-    font-size: 0.65rem;
-    font-weight: 700;
-  }
-  select {
-    width: 100%;
-    min-height: 2.5rem;
-    padding: 0.4rem;
-    border: 1px solid #b99a6b;
-    border-radius: 0.4rem;
-    background: #fff;
   }
   .primary {
     width: 100%;

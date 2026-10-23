@@ -112,7 +112,7 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    font-size: 8cqw;
+    font-size: 10cqw;
     line-height: 1;
     font-weight: 700;
     gap: 0.15em;
@@ -124,7 +124,7 @@
     filter: none;
   }
   .payment {
-    font-size: 6cqw;
+    font-size: 8cqw;
   }
   .payment :global(.game-art) {
     width: 7cqw;

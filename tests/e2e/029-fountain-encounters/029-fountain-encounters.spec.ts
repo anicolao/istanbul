@@ -16,5 +16,6 @@ test('fountain recall stays on the board, then zooms for visitors and reopens wi
   await expect(room.getByRole('button', { name: 'Smuggler: pay 2 Lira', exact: true })).toBeVisible();
   await room.getByRole('button', { name: 'Smuggler: pay 2 Lira', exact: true }).click();
   await expect(room.getByRole('button', { name: 'Smuggler: take spice', exact: true })).toHaveCount(0);
+  await room.getByRole('button', { name: 'Roll to move the Smuggler' }).click();
   await expect(room.getByRole('button', { name: 'Draw a Bonus card from the Governor' })).toBeVisible();
 });

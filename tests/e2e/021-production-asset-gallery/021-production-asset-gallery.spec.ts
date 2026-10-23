@@ -22,14 +22,14 @@ test('the production gallery renders the same logical components used during pla
     description: 'The reviewer opens the complete production gallery',
     verifications: [
       {
-        spec: 'The gallery declares 83 rendered review states backed by the complete 71-asset manifest',
+        spec: 'The gallery declares 84 rendered review states backed by the complete 72-asset manifest',
         check: async () => {
           const gallery = page.locator('[data-e2e-layout]');
           await expect(gallery).toHaveAttribute(
             'data-gallery-rendered-count',
-            '83'
+            '84'
           );
-          await expect(gallery).toHaveAttribute('data-gallery-raw-count', '71');
+          await expect(gallery).toHaveAttribute('data-gallery-raw-count', '72');
           await expect(gallery).toHaveAttribute(
             'data-gallery-composite-count',
             '12'
@@ -48,7 +48,7 @@ test('the production gallery renders the same logical components used during pla
             ['Playing pieces', 20],
             ['Bonus cards', 12],
             ['Market demands', 12],
-            ['Physical components', 18]
+            ['Physical components', 19]
           ] as const)
             await expect(
               nav.getByRole('button', { name: new RegExp(`${name}.*${count}`) })
@@ -339,8 +339,8 @@ test('the production gallery renders the same logical components used during pla
       'component-spice',
       'component-fruit',
       'component-jewelry',
-      'component-lira',
-      'component-ruby'
+      'component-any',
+      'component-lira'
     ],
     async () => {
       await expectTransparentComponentArt(page.locator('.asset-grid'), 6);
@@ -350,12 +350,12 @@ test('the production gallery renders the same logical components used during pla
     'reviewer-opens-upgrades-and-first-powers',
     'The reviewer advances through upgrades, markers, and the first Mosque powers',
     [
+      'component-ruby',
       'component-wheelbarrow',
       'component-die',
       'component-mail',
       'component-bonus-deck',
-      'component-mosque-fabric',
-      'component-mosque-spice'
+      'component-mosque-fabric'
     ],
     async () => {
       await expectTransparentComponentArt(page.locator('.asset-grid'), 5);
@@ -371,17 +371,19 @@ test('the production gallery renders the same logical components used during pla
     'reviewer-opens-powers-and-public-supplies',
     'The reviewer advances through the remaining powers, demand bases, and public supplies',
     [
+      'component-mosque-spice',
       'component-mosque-fruit',
       'component-mosque-jewelry',
       'component-demand-large',
       'component-demand-small',
-      'component-ruby-supply',
-      'component-goods-supply'
+      'component-ruby-supply'
     ],
     async () => {
       await expectTransparentComponentArt(page.locator('.asset-grid'), 6);
     }
   );
+
+  await nextPage('reviewer-opens-goods-supply', 'The reviewer opens the final public supply', ['component-goods-supply'], async () => { await expectTransparentComponentArt(page.locator('.asset-grid'), 1); });
 
   await page.getByRole('button', { name: 'Inspect Goods supply' }).click();
   await reviewer.step('reviewer-enlarges-final-component', {

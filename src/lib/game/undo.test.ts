@@ -156,3 +156,169 @@ describe('append-only undo replay', () => {
     for (const [candidate, reason] of cases) expect(revealedInformationReason(candidate)).toBe(reason);
   });
 });
+
+for (const npc of ['governor', 'smuggler'] as const) {
+  it(`${npc}: payment can be undone until a separate mandatory relocation roll`, () => {
+    const setup = [
+      ...startedGame().slice(0, -1),
+      event(5, 'host', 'game/started', { seed: 'encounter-735' }),
+      event(6, 'host', 'turn/moved', { destination: 2, assistantAction: 'drop' }),
+      event(7, 'host', 'place/action-taken', { choice: { kind: 'warehouse-fill', good: 'fabric' } }),
+      ...(npc === 'governor' ? [event(8, 'host', 'encounter/resolved', { choice: { kind: 'governor-visit', accept: true } })] : [])
+    ];
+    const before = replayEvents(setup);
+    expect(before.diagnostics).toEqual([]);
+    const card = before.game!.players[0].bonusHand.at(-1)!;
+    const payment = event(9, 'host', 'encounter/resolved', { separateRelocation: true, choice: npc === 'governor'
+      ? { kind: 'governor-pay', payment: 'card', discardCardId: card }
+      : { kind: 'smuggler-trade', accept: true, good: 'jewelry', payment: 'good', paymentGood: 'fabric' } });
+    const paid = replayEvents([...setup, payment]);
+    expect(paid.diagnostics).toEqual([]);
+    expect(paid.undo?.blockedReason).toBeNull();
+    expect(paid.game!.pending).toMatchObject({ kind: 'encounters', relocation: npc });
+    expect(paid.game![`${npc}Place`]).toBe(before.game![`${npc}Place`]);
+    expect(paid.game!.encounterLog.at(-1)?.dice).toBeUndefined();
+    const undone = replayEvents([...setup, payment, event(10, 'host', 'action/undone', { targetEventId: payment.id })]);
+    expect(undone.diagnostics).toEqual([]);
+    expect(undone.game).toEqual(before.game);
+    const skipped = replayEvents([...setup, payment, event(10, 'host', 'turn/ended', { directAction: true })]);
+    expect(skipped.acceptedEventIds).not.toContain('host-000010');
+    expect(skipped.game!.pending).toMatchObject({ relocation: npc });
+    const roll = event(10, 'host', 'encounter/resolved', { choice: { kind: `${npc}-roll` } });
+    const rolled = replayEvents([...setup, payment, roll]);
+    expect(rolled.diagnostics).toEqual([]);
+    expect(rolled.game!.encounterLog.at(-1)?.dice).toHaveLength(2);
+    expect(rolled.undo?.blockedReason).toContain('relocated by dice');
+    const duplicate = replayEvents([...setup, payment, roll, event(11, 'host', 'encounter/resolved', { choice: { kind: `${npc}-roll` } })]);
+    expect(duplicate.acceptedEventIds).not.toContain('host-000011');
+    const blockedUndo = replayEvents([...setup, payment, roll, event(11, 'host', 'action/undone', { targetEventId: payment.id })]);
+    expect(blockedUndo.acceptedEventIds).not.toContain('host-000011');
+  });
+}
+
+describe('agreed rewinds across revealed information', () => {
+  const rolledHistory = () => [
+    ...startedGame(),
+    event(6, 'host', 'turn/moved', { destination: 9, assistantAction: 'drop' }),
+    event(7, 'host', 'place/action-taken', { choice: { kind: 'tea-house-wager', wager: 7 } })
+  ];
+  const request = () => event(8, 'host', 'undo/requested', { targetEventId: 'host-000007' });
+  const vote = (approve: boolean) => event(9, 'guest', 'undo/voted', { requestId: 'host-000008', approve });
+
+  it('leaves state untouched until all humans agree, then restores the exact pre-roll state', () => {
+    const history = rolledHistory();
+    const before = replayEvents(history.slice(0, -1));
+    const rolled = replayEvents(history);
+    expect(rolled.undo?.consentActorUids).toEqual(['host', 'guest']);
+    const waiting = replayEvents([...history, request()]);
+    expect(waiting.game).toEqual(rolled.game);
+    expect(waiting.undoRequest).toMatchObject({ requiredUids: ['host', 'guest'], approvedUids: ['host'], actionCount: 1 });
+    const restored = replayEvents([...history, request(), vote(true)]);
+    expect(restored.diagnostics).toEqual([]);
+    expect(restored.undoRequest).toBeFalsy();
+    expect(restored.game).toEqual(before.game);
+    expect(restored.gameLog.find(entry => entry.eventId === 'host-000007')?.active).toBe(false);
+    const repeat = event(10, 'host', 'place/action-taken', { choice: { kind: 'tea-house-wager', wager: 7 } });
+    expect(replayEvents([...history, request(), vote(true), repeat]).game!.lastRoll).toEqual(rolled.game!.lastRoll);
+  });
+
+  it('keeps the game intact on rejection or cancellation', () => {
+    const history = rolledHistory();
+    for (const resolution of [vote(false), event(9, 'host', 'undo/cancelled', { requestId: 'host-000008' })]) {
+      const result = replayEvents([...history, request(), resolution]);
+      expect(result.game).toEqual(replayEvents(history).game);
+      expect(result.undoRequest).toBeFalsy();
+      expect(result.diagnostics).toEqual([]);
+    }
+  });
+
+  it('rejects forged, duplicate and stale votes', () => {
+    const history = rolledHistory();
+    for (const invalid of [
+      event(9, 'host', 'undo/voted', { requestId: 'host-000008', approve: true }),
+      event(9, 'host', 'undo/voted', { requestId: 'host-000008', voterUid: 'guest', approve: true }),
+      event(9, 'outsider', 'undo/voted', { requestId: 'host-000008', approve: true }),
+      event(9, 'guest', 'undo/voted', { requestId: 'wrong-request', approve: true })
+    ]) {
+      const result = replayEvents([...history, request(), invalid]);
+      expect(result.acceptedEventIds).not.toContain(invalid.id);
+      expect(result.undoRequest?.approvedUids).toEqual(['host']);
+    }
+    const nextAction = event(9, 'host', 'encounter/resolved', { choice: { kind: 'governor-visit', accept: false } });
+    const staleVote = event(10, 'guest', 'undo/voted', { requestId: 'host-000008', approve: true });
+    const stale = replayEvents([...history, request(), nextAction, staleVote]);
+    expect(stale.acceptedEventIds).toContain(nextAction.id);
+    expect(stale.acceptedEventIds).not.toContain(staleVote.id);
+    expect(stale.undoRequest).toBeFalsy();
+  });
+
+  it('rewinds later players’ actions only with their agreement', () => {
+    const history = [...rolledHistory(),
+      event(8, 'host', 'turn/ended', { directAction: true }),
+      event(9, 'guest', 'turn/moved', { destination: 4, assistantAction: 'drop', directAction: true }),
+      event(10, 'host', 'undo/requested', { targetEventId: 'host-000007' })];
+    const waiting = replayEvents(history);
+    expect(waiting.diagnostics).toEqual([]);
+    expect(waiting.undoRequest?.actionCount).toBe(3);
+    const result = replayEvents([...history, event(11, 'guest', 'undo/voted', { requestId: 'host-000010', approve: true })]);
+    expect(result.game).toEqual(replayEvents(rolledHistory().slice(0, -1)).game);
+    expect(result.diagnostics).toEqual([]);
+  });
+
+  it('restores a drawn card to its original deck position', () => {
+    const history = [...rolledHistory(), event(8, 'host', 'encounter/resolved', { choice: { kind: 'governor-visit', accept: true } })];
+    const result = replayEvents([...history,
+      event(9, 'host', 'undo/requested', { targetEventId: 'host-000008' }),
+      event(10, 'guest', 'undo/voted', { requestId: 'host-000009', approve: true })]);
+    expect(result.game).toEqual(replayEvents(history.slice(0, -1)).game);
+    expect(result.diagnostics).toEqual([]);
+  });
+});
+
+it('lets a shared tabletop collect each human vote without treating the display as a player', () => {
+  const initial = replayEvents(startedGame());
+  initial.room = { ...initial.room!, mode: 'shared-table', tabletopOwned: true, hostUid: 'table' };
+  const history = [
+    event(6, 'host', 'turn/moved', { destination: 9, assistantAction: 'drop' }),
+    event(7, 'host', 'place/action-taken', { choice: { kind: 'tea-house-wager', wager: 7 } }),
+    event(8, 'table', 'undo/requested', { targetEventId: 'host-000007' })
+  ];
+  const waiting = replayEvents(history, initial);
+  expect(waiting.undoRequest?.requiredUids).toEqual(['host', 'guest']);
+  expect(waiting.undoRequest?.approvedUids).toEqual([]);
+  const one = event(9, 'table', 'undo/voted', { requestId: 'table-000008', voterUid: 'host', approve: true });
+  const two = event(10, 'table', 'undo/voted', { requestId: 'table-000008', voterUid: 'guest', approve: true });
+  expect(replayEvents([...history, one], initial).undoRequest?.approvedUids).toEqual(['host']);
+  const result = replayEvents([...history, one, two], initial);
+  expect(result.diagnostics).toEqual([]);
+  expect(result.game).toEqual(replayEvents(history.slice(0, 1), initial).game);
+});
+
+it('requires only the human player’s agreement against a bot', () => {
+  const initial = replayEvents(startedGame());
+  initial.room!.seats[1].bot = true;
+  const history = [
+    event(6, 'host', 'turn/moved', { destination: 9, assistantAction: 'drop' }),
+    event(7, 'host', 'place/action-taken', { choice: { kind: 'tea-house-wager', wager: 7 } })
+  ];
+  const result = replayEvents([...history, event(8, 'host', 'undo/requested', { targetEventId: 'host-000007' })], initial);
+  expect(result.diagnostics).toEqual([]);
+  expect(result.undoRequest).toBeFalsy();
+  expect(result.game).toEqual(replayEvents(history.slice(0, 1), initial).game);
+});
+
+it('requires a current target and rejects overlapping requests', () => {
+  const history = [...startedGame(),
+    event(6, 'host', 'turn/moved', { destination: 9, assistantAction: 'drop' }),
+    event(7, 'host', 'place/action-taken', { choice: { kind: 'tea-house-wager', wager: 7 } }),
+    event(8, 'host', 'undo/requested', { targetEventId: 'host-000007' })];
+  const overlap = replayEvents([...history, event(9, 'guest', 'undo/requested', { targetEventId: 'host-000006' })]);
+  expect(overlap.undoRequest?.id).toBe('host-000008');
+  expect(overlap.acceptedEventIds).not.toContain('guest-000009');
+  const removed = [...history, event(9, 'guest', 'undo/voted', { requestId: 'host-000008', approve: true })];
+  const stale = replayEvents([...removed, event(10, 'guest', 'undo/requested', { targetEventId: 'host-000007' })]);
+  expect(stale.acceptedEventIds).not.toContain('guest-000010');
+  expect(stale.game).toEqual(replayEvents(removed).game);
+  // Reordered input and reloads reconstruct the same request, votes, and resulting history.
+  expect(replayEvents([...removed].reverse())).toEqual(replayEvents(removed));
+});

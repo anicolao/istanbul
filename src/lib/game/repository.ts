@@ -84,7 +84,8 @@ export function createEventRepository(db: Firestore, roomCode: string, actorUid:
       actorUid,
       clientSeq,
       manifestVersions: { ...manifestVersions },
-      payload: clonePayload(payload),
+      payload: clonePayload(['place/action-taken', 'encounter/resolved', 'bonus/played'].includes(type)
+        ? { ...payload, drawContextVersion: 1 } : ['turn/ended', 'turn/moved'].includes(type) ? { ...payload, automaticFinalBonus: true } : payload),
       reducerVersion,
       rulesEdition,
       schemaVersion,

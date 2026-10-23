@@ -1,12 +1,12 @@
-# Undo reverses arrival and goods but stops at a revealed roll
+# Revealed rolls require agreement to rewind
 
 Real browser actions on the common game table, with immutable replay and private-card boundaries.
 
-## 1. Undo reverses arrival and goods but stops at a revealed roll
+## 1. Revealed rolls require agreement to rewind
 
-**Player** — Undo reverses arrival and goods but stops at a revealed roll
+**Player** — Revealed rolls require agreement to rewind
 
-![Undo reverses arrival and goods but stops at a revealed roll](./screenshots/000-table-result-desktop.png)
+![Revealed rolls require agreement to rewind](./screenshots/000-table-result-desktop.png)
 
 **Verifications:**
 

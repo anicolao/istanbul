@@ -1,3 +1,4 @@
+import { revealPlayerMats } from '../helpers/game-journey';
 import { expect, test } from '@playwright/test';
 
 test('card fronts and backs paint completely at room, discard, and hand sizes', async ({ page }, info) => {
@@ -23,6 +24,7 @@ test('card fronts and backs paint completely at room, discard, and hand sizes', 
   await page.goto('/dev/animations/?scenario=hand-review&players=2&surface=personal-screens');
   await expect(page.locator('.mat')).toHaveCount(2);
   await page.getByRole('button', { name: /^Animation lab/ }).click();
+  await revealPlayerMats(page);
   await page.getByRole('button', { name: 'Your Bonus cards', exact: true }).click();
   const cards = page.locator('.hand-panel .hand-art');
   await expect(cards).toHaveCount(2);

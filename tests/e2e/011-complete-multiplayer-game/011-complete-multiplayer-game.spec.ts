@@ -48,25 +48,13 @@ test('five merchants complete ordinary turns, final cards, ranking and rematch o
     }
     await expectState(page, {
       game: {
-        phase: 'final-bonus',
+        phase: 'game-over',
         currentTurn: 'Ada',
         players: [{ rubies: 5 }, {}, {}, {}, {}],
         end: { ordinaryTurnCounts: [14, 14, 14, 14, 14] }
       }
     });
-    for (let i = 0; i < 5; i++) {
-      const actor = t.pages[i];
-      await expectState(actor, {
-        game: { phase: 'final-bonus', currentTurn: t.names[i] }
-      });
-      if (i === 3) {
-        await hand(actor, /Inspect Bonus card: A profitable bargain/);
-        await actor
-          .getByRole('button', { name: 'Play to gain 5 Lira' })
-          .click();
-      }
-      await end(actor);
-    }
+    for (const name of t.names) await expect(page.locator('.roster')).toContainText(name);
     await capture(
       t,
       'Five players finish a full game on the common table',
@@ -83,14 +71,20 @@ test('five merchants complete ordinary turns, final cards, ranking and rematch o
     const completed = (await readState(page)).game;
     await page.reload();
     await expectState(page, { game: completed });
-    await page.getByRole('button', { name: 'Play again', exact: true }).click();
+    await t.pages[3].getByRole('button', { name: 'Leave game', exact: true }).click();
+    await expectState(t.pages[3], { screen: 'landing' });
+    const rematcher = t.pages[4];
+    await rematcher.getByLabel('Rematch map').selectOption('random');
+    await expect(rematcher.locator('.roster')).not.toContainText('Derya');
+    await expect(rematcher.locator('.roster')).toContainText('Bora');
+    await rematcher.getByRole('button', { name: 'Play again', exact: true }).click();
     await expectState(page, {
+      layout: 'random',
       game: {
         epoch: 2,
         turnNumber: 1,
         phase: 'movement',
         players: [
-          { rubies: 0 },
           { rubies: 0 },
           { rubies: 0 },
           { rubies: 0 },

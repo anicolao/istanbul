@@ -64,7 +64,10 @@ export const scenarios = [
     ['family', 'Catch a family member'],
     ['fountain-encounters', 'Fountain · visitors after recall'],
     ['tea-house-encounters', 'Tea House · visitors after the wager'],
+    ['black-market-capacity', 'Black Market · full goods tracks'],
+    ['family-reward-review', 'Family Pardon · reward choices'],
     ['hand-review', 'Review a small Bonus hand'],
+    ['legibility-review', 'Legibility · icons, visitors and player dock'],
     ['green', 'Green power · extra good'],
     ['red', 'Red power · change a die'],
     ['reroll', 'Red power · reroll'],
@@ -192,6 +195,28 @@ export function fixture(
     15: { kind: 'mosque-take', tileId: 'mosque-jewelry-2' },
     16: { kind: 'gemstone-buy' }
   };
+  if (id === 'legibility-review') {
+    trigger = move(13);
+    game.governorPlace = 8;
+    game.smugglerPlace = 9;
+    game.neutralMerchants = [{ id: 'neutral-1', place: 10 }];
+    player.mosqueTileIds = ['mosque-fabric-2', 'mosque-spice-2'];
+  }
+  if (id === 'black-market-capacity') {
+    player.merchantPlace = 8;
+    player.goods.fabric = player.capacity;
+    player.goods.spice = player.capacity;
+    player.goods.fruit = player.capacity;
+    player.goods.jewelry = player.capacity - 1;
+    trigger = action({ kind: 'black-market-roll', good: 'spice' });
+  }
+  if (id === 'family-reward-review') {
+    game.phase = 'movement';
+    player.merchantPlace = 7;
+    player.familyPlace = 8;
+    player.bonusHand = [bonusCards.find(card => card.effect === 'return-family')!.id];
+    trigger = command('bonus/played', { cardId: player.bonusHand[0], choice: { kind: 'return-family', reward: 'lira' } });
+  }
   if (id === 'hand-review') {
     player.bonusHand = player.bonusHand.slice(0, 2);
     trigger = move(3);
@@ -328,14 +353,19 @@ export function fixture(
     }
     trigger = command('bonus/played', { cardId: id, choice });
   } else if (id === 'victory') {
-    player.rubies = 6;
+    player.rubies = game.end.target;
     game.end.triggeredByUid = player.uid;
     game.end.triggeredTurn = game.turnNumber;
     game.end.finalTurnSeat = 0;
-    game.end.finalBonusSeatsCompleted = game.players
-      .slice(1)
-      .map((_, i) => i + 1);
-    game.phase = 'final-bonus';
+    game.end.finalBonusSeatsCompleted = [];
+    game.phase = 'turn-end';
+    player.bonusHand = bonusCards.filter(card => ['gain-good', 'gain-lira', 'long-move'].includes(card.effect)).map(card => card.id);
+    const held = new Set(game.players.flatMap(p => p.bonusHand));
+    game.bonusDiscard = game.bonusDiscard.filter(id => !held.has(id));
+    game.bonusDrawPile = bonusCards.map(card => card.id).filter(id => !held.has(id) && !game.bonusDiscard.includes(id));
+    player.goods = { fabric: player.capacity, spice: player.capacity - 1, fruit: player.capacity, jewelry: player.capacity };
+    trigger = command('turn/ended', { automaticFinalBonus: true });
   }
+
   return { state, trigger };
 }

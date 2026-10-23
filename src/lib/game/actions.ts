@@ -1,3 +1,4 @@
+import { drawBonus } from './encounters';
 import { demandTiles, type Good } from './manifests';
 import type { GameSetup, SetupPlayer } from './setup';
 
@@ -92,31 +93,38 @@ export function collectPostOffice(game: GameSetup, player: SetupPlayer): string 
   return `Collected ${received.join(', ')}.`;
 }
 
-export function previewCaravansary(game: GameSetup, sources: [CardSource, CardSource]): string[] | null {
-  const deck = [...game.bonusDrawPile];
-  const discard = [...game.bonusDiscard];
+/** Apply both source choices atomically, including a possible discard-pile recycle. */
+export function drawCaravansary(game: GameSetup, sources: [CardSource, CardSource], contextual = false, familyAction = false): string[] | null {
+  const next = { ...game, bonusDrawPile: [...game.bonusDrawPile], bonusDiscard: [...game.bonusDiscard],
+    ...(game.bonusDrawCounts ? { bonusDrawCounts: { ...game.bonusDrawCounts } } : {}) };
   const cards: string[] = [];
   for (const source of sources) {
-    const card = source === 'deck' ? deck.shift() : discard.pop();
+    const card = source === 'discard' ? next.bonusDiscard.pop()
+      : contextual ? drawBonus(next, `caravansary:${familyAction ? 'family' : 'merchant'}`, true) : next.bonusDrawPile.shift();
     if (!card) return null;
     cards.push(card);
   }
+  game.bonusDrawPile = next.bonusDrawPile;
+  game.bonusDiscard = next.bonusDiscard;
+  if (next.bonusDrawCounts) game.bonusDrawCounts = next.bonusDrawCounts;
   return cards;
+}
+
+export function previewCaravansary(game: GameSetup, sources: [CardSource, CardSource], contextual = false, familyAction = false): string[] | null {
+  return drawCaravansary({ ...game }, sources, contextual, familyAction);
 }
 
 export function tradeAtCaravansary(
   game: GameSetup,
   player: SetupPlayer,
   sources: [CardSource, CardSource],
-  discardCardId: string
+  discardCardId: string,
+  contextual = false,
+  familyAction = false
 ): string | null {
-  const cards = previewCaravansary(game, sources);
+  const cards = previewCaravansary(game, sources, contextual, familyAction);
   if (!cards || ![...player.bonusHand, ...cards].includes(discardCardId)) return null;
-  for (const source of sources) {
-    const card = source === 'deck' ? game.bonusDrawPile.shift() : game.bonusDiscard.pop();
-    if (!card) return null;
-    player.bonusHand.push(card);
-  }
+  player.bonusHand.push(...drawCaravansary(game, sources, contextual, familyAction)!);
   const discardIndex = player.bonusHand.indexOf(discardCardId);
   if (discardIndex < 0) return null;
   game.bonusDiscard.push(player.bonusHand.splice(discardIndex, 1)[0]);
@@ -157,11 +165,13 @@ export function sellAtMarket(game: GameSetup, player: SetupPlayer, place: number
 }
 
 export function resolveBlackMarket(player: SetupPlayer, good: Exclude<Good, 'jewelry'>, dice: [number, number]): string {
+  const goodBefore = player.goods[good];
+  const jewelryBefore = player.goods.jewelry;
   player.goods[good] = Math.min(player.capacity, player.goods[good] + 1);
   const total = dice[0] + dice[1];
   const jewelry = total >= 11 ? 3 : total >= 9 ? 2 : total >= 7 ? 1 : 0;
   player.goods.jewelry = Math.min(player.capacity, player.goods.jewelry + jewelry);
-  return `Took 1 ${good}; rolled ${dice[0]} + ${dice[1]} = ${total} and gained ${jewelry} jewelry.`;
+  return `Took ${player.goods[good] - goodBefore} ${good}; rolled ${dice[0]} + ${dice[1]} = ${total} and gained ${player.goods.jewelry - jewelryBefore} jewelry.`;
 }
 
 export function resolveTeaHouse(player: SetupPlayer, wager: number, dice: [number, number]): string {

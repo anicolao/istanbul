@@ -45,6 +45,7 @@ export interface Seat {
   name: string;
   ready: boolean;
   bot?: boolean;
+  left?: boolean;
   tablePosition?: TablePosition;
 }
 
@@ -52,6 +53,7 @@ export interface RoomProjection {
   roomCode: string;
   hostUid: string;
   tabletopOwned?: boolean;
+  presence?: Record<string, { epoch: number; at: number }>;
   status: 'lobby' | 'playing';
   seats: Seat[];
   maxPlayers: number;
@@ -64,12 +66,23 @@ export interface ReplayProjection {
   game: GameSetup | null;
   acceptedEventIds: string[];
   diagnostics: Array<{ eventId: string; reason: string }>;
+  undoRequest?: {
+    id: string;
+    targetEventId: string;
+    requesterUid: string;
+    label: string;
+    actionCount: number;
+    actions: Array<{ label: string; summary: string; ownerUid: string }>;
+    requiredUids: string[];
+    approvedUids: string[];
+  } | null;
   undo: {
     targetEventId: string;
     actorUid: string;
     actorUids: string[];
     label: string;
     blockedReason: string | null;
+    consentActorUids?: string[];
   } | null;
   undoLog: Array<{
     eventId: string;
@@ -92,6 +105,8 @@ export interface ReplayProjection {
     blockedReason: string | null;
     rollbackCount: number;
     rollbackActorUids: string[];
+    consentActorUids?: string[];
+    consentActionCount?: number;
   }>;
 }
 

@@ -40,7 +40,7 @@ test('Mosque powers appear on the same player mats', async ({
       'An acquired Mosque tile offers its dice control in the room',
       async () => {
         await expect(
-          page.getByLabel('Ada Mosque tiles').getByRole('button')
+          page.getByLabel('Ada Mosque tiles').locator('button:not(.unowned)')
         ).toHaveCount(1);
         await expectState(page, { diagnosticCount: 0 });
       }

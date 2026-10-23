@@ -43,7 +43,7 @@ test('The common table supports keyboard, touch and reduced motion', async ({
         expect(
           await roomTile(page).evaluate((el) => el.getAnimations().length)
         ).toBe(0);
-        await expect(page.getByLabel('Ada resources')).toBeVisible();
+        await expect(page.getByRole('button', { name: /^Show Ada's player mat/ })).toBeVisible();
       }
     );
   } finally {

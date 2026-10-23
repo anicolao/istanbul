@@ -1,3 +1,4 @@
+import { bonusCards, type Good } from './manifests';
 import type { GameSetup, SetupPlayer } from './setup';
 
 export function playerStanding(player: SetupPlayer) {
@@ -44,5 +45,38 @@ export function finishFinalBonusSeat(game: GameSetup): boolean {
     return true;
   }
   game.turnSeat = (game.turnSeat + 1) % game.players.length;
+  return true;
+}
+
+/** Resolve only beneficial endgame cards; goods are interchangeable for scoring. */
+export function settleFinalBonuses(game: GameSetup): boolean {
+  if (game.phase !== 'final-bonus') return false;
+  const goods: Good[] = ['fabric', 'spice', 'fruit', 'jewelry'];
+  game.end.finalBonuses = [];
+  for (let seat = 0; seat < game.players.length; seat++) {
+    if (game.end.finalBonusSeatsCompleted.includes(seat)) continue;
+    const player = game.players[seat];
+    const reward = { uid: player.uid, lira: 0, goods: 0, cards: [] as string[] };
+    for (const id of [...player.bonusHand]) {
+      const effect = bonusCards.find(card => card.id === id)?.effect;
+      if (effect === 'gain-lira') {
+        player.lira += 5;
+        reward.lira += 5;
+      } else if (effect === 'gain-good') {
+        const good = goods.find(good => player.goods[good] < player.capacity);
+        if (!good) continue;
+        player.goods[good]++;
+        reward.goods++;
+      } else continue;
+      player.bonusHand.splice(player.bonusHand.indexOf(id), 1);
+      game.bonusDiscard.push(id);
+      reward.cards.push(id);
+    }
+    if (reward.cards.length) game.end.finalBonuses.push(reward);
+    game.end.finalBonusSeatsCompleted.push(seat);
+  }
+  game.end.rankings = rankPlayers(game.players);
+  game.end.winnerUids = game.end.rankings.filter(({ rank }) => rank === 1).map(({ uid }) => uid);
+  game.phase = 'game-over';
   return true;
 }

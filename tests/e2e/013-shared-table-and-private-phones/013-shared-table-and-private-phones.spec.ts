@@ -123,7 +123,7 @@ test('a dedicated tabletop controls public play while phones contain private Bon
 
     await page.locator('.zoom-tile').getByRole('button', { name: 'End turn', exact: true }).click();
     await table.step('tabletop-passes-public-turn', { description: 'Ada passes clockwise on the shared tabletop', verifications: [
-      { spec: 'The turn controls and active mat now belong to Bora', check: async () => { await expect(page.getByRole('button', { name: 'Move your merchant', exact: true })).toBeVisible(); await expect(page.getByLabel('Bora resources', { exact: true })).toHaveAttribute('aria-current', 'true'); } },
+      { spec: 'The turn controls and active mat now belong to Bora', check: async () => { await expect(page.getByRole('button', { name: 'Move your merchant', exact: true })).toHaveCount(0); await expect(page.getByLabel('Bora resources', { exact: true })).toHaveAttribute('aria-current', 'true'); } },
       { spec: 'Bora begins event nine with no diagnostic', check: async () => expectState(page, { eventCount: 9, diagnosticCount: 0, game: { currentTurn: 'Bora', turnNumber: 2, phase: 'movement' } }) }
     ] });
 
@@ -163,7 +163,7 @@ test('a dedicated tabletop controls public play while phones contain private Bon
     await expect(page.getByRole('button',{name:/^End turn/})).toHaveCount(0);
     await boraPage.reload();
     await expect(boraPage.locator('.card-choices [data-component="BonusCard"]')).toHaveCount(3);
-    await expect(boraPage.getByRole('button',{name:/Undo unavailable/})).toBeDisabled();
+    await expect(boraPage.getByRole('button',{name:/Ask everyone to undo/})).toBeEnabled();
     await boraPage.getByRole('button', { name: /^Discard / }).first().click();
     await expect.poll(async ()=>(await readState(page)).game.pending?.kind).not.toBe('caravansary-discard');
     await expectState(page,{diagnosticCount:0});

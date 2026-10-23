@@ -21,7 +21,7 @@
   .dice-payoffs { display: grid; grid-template-columns: max-content max-content; width: max-content; max-width: 100%; margin: 0 auto; gap: .08em .45em; padding: .2em .45em; box-sizing: border-box; border: 1px solid #cda65f99; border-radius: .35em; background: #23170fd9; color: #fff1cd; font-size: inherit; line-height: 1; }
   .outcome { display: contents; }
   .condition, .payout { display: flex; align-items: center; justify-content: flex-start; gap: .25em; white-space: nowrap; }
-  b, strong { font-size: .85em; }
+  b, strong { font-size: 1.05em; }
   .condition :global(.game-art) { width: 2.4em; height: 1.8em; filter: none; }
   .payout :global(.game-art) { width: 1.45em; height: 1.45em; filter: none; }
   .payout :global(.coins) { width: 2em; height: 1.65em; }
