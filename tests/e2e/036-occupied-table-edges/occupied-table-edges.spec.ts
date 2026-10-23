@@ -1,10 +1,10 @@
 import { expect, test } from '@playwright/test';
 
-test('occupied edges determine the board, mats and expanded room area', async ({ page }, info) => {
-  test.skip(!['desktop', 'webkit-desktop'].includes(info.project.name), 'Exercise each viewport once per engine.');
-  await page.emulateMedia({ reducedMotion: 'reduce' });
-  const arrangements = [[1, 2, 3], [5, 6], [1, 4], [4, 8], [1, 6], [1, 3, 4, 6, 8]];
-  for (const [width, height] of [[1280, 1000], [1920, 1080], [852, 393], [393, 852]]) {
+for (const [width, height] of [[1280, 1000], [1920, 1080], [852, 393], [393, 852]]) {
+  test(`occupied edges fit the board, mats and expanded room at ${width}×${height}`, async ({ page }, info) => {
+    test.skip(!['desktop', 'webkit-desktop'].includes(info.project.name), 'Exercise each viewport once per engine.');
+    await page.emulateMedia({ reducedMotion: 'reduce' });
+    const arrangements = [[1, 2, 3], [5, 6], [1, 4], [4, 8], [1, 6], [1, 3, 4, 6, 8]];
     await page.setViewportSize({ width, height });
     for (const seats of arrangements) {
       await page.goto(`/dev/animations/?scenario=arrival-3&surface=shared-table&players=${seats.length}&seats=${seats.join(',')}`);
@@ -40,8 +40,8 @@ test('occupied edges determine the board, mats and expanded room area', async ({
       await page.setViewportSize({ width, height });
       await expect.poll(fits).toBe(true);
     }
-  }
-});
+  });
+}
 
 
 test('a side-facing room stays inside the table throughout its rotation', async ({ page }, info) => {
