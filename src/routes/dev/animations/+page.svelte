@@ -4,10 +4,12 @@
   import '@fontsource/cormorant-garamond/700.css';
   import { onMount, tick } from 'svelte';
   import LabControls from './LabControls.svelte';
+  import UndoRequest from '$lib/components/UndoRequest.svelte';
   import TabletopSurface from '$lib/components/TabletopSurface.svelte';
-  import { applyEvent, revealedInformationReason } from '$lib/game/reducer';
+  import { replayEvents } from '$lib/game/reducer';
   import {
     tablePositions,
+    type CanonicalEvent,
     type ReplayProjection,
     type RoomMode,
     type TablePosition
@@ -32,51 +34,32 @@
     latest = $state('Ready'),
     triggered = $state(false),
     reduced = $state(false);
-  let sequence = 0,
-    history: ReplayProjection[] = [];
+  let sequence = 0;
+  let history: CanonicalEvent[] = [];
   let stage: HTMLDivElement;
-  function send(type: string, payload: Record<string, unknown> = {}) {
-    const before = structuredClone($state.snapshot(projection));
-    const next = structuredClone(before);
-    const event = eventFor(
-      next,
-      { type, payload: { ...payload, directAction: true } },
-      ++sequence
-    );
-    if (!applyEvent(next, event)) {
+  function send(type: string, payload: Record<string, unknown> = {}, actorUid?: string) {
+    const event = eventFor(projection,
+      { type, payload: { ...payload, directAction: true, separateRelocation: true, drawContextVersion: 1, automaticFinalBonus: true } }, ++sequence);
+    if (actorUid) event.actorUid = actorUid;
+    event.id = `${event.actorUid}-${event.clientSeq}`;
+    const next = replayEvents([...history, event], $state.snapshot(prepared.state));
+    if (!next.acceptedEventIds.includes(event.id)) {
       error = next.diagnostics.at(-1)?.reason ?? 'Action unavailable';
       return;
     }
-    history.push(before);
-    const barrier = revealedInformationReason(event);
-    next.undo = {
-      targetEventId: event.id,
-      actorUid: event.actorUid,
-      actorUids: [event.actorUid],
-      label:
-        type === 'turn/moved'
-          ? 'move'
-          : type === 'bonus/played'
-            ? 'Bonus card'
-            : type === 'turn/ended'
-              ? 'end turn'
-              : 'action',
-      blockedReason: barrier
-    };
-    // A reveal remains a barrier for earlier snapshots too.
-    if (barrier) history = [];
+    history.push(event);
     projection = next;
     selectedBonus = null;
     error = '';
     latest = type;
     triggered = true;
   }
-  function undo() {
-    if (!projection.undo || projection.undo.blockedReason || !history.length)
-      return;
-    projection = history.pop()!;
-    error = '';
-    latest = 'Undone';
+  function undo(targetEventId = projection.undo?.targetEventId) {
+    const target = projection.gameLog.find(entry => entry.eventId === targetEventId);
+    if (!target || !target.active || projection.undoRequest) return;
+    const actorUid = mode === 'shared-table' ? projection.room!.hostUid : projection.game!.players[projection.game!.turnSeat].uid;
+    const needsAgreement = target.blockedReason || !target.rollbackActorUids.includes(actorUid);
+    send(needsAgreement ? 'undo/requested' : 'action/undone', { targetEventId }, actorUid);
   }
   async function reset(replay = false) {
     const seating = new URL(location.href).searchParams.get('seats')?.split(',').map(Number);
@@ -92,7 +75,7 @@
     history = [];
     sequence = 0;
     generation++;
-    selectedBonus = null;
+    selectedBonus = subject === 'family-reward-review' ? projection.game!.players[0].bonusHand[0] : null;
     triggered = false;
     error = '';
     latest = 'Ready';
@@ -210,11 +193,11 @@
         onResolveEncounter={(choice) => send('encounter/resolved', { choice })}
         onUseMosqueAbility={(choice) => send('mosque/ability-used', { choice })}
         onEndTurn={() => send('turn/ended')}
-        onUndo={undo}
+        onUndo={() => undo()}
         onRollback={undo}
         onRematch={() => reset()}
         undo={projection.undo}
-        gameLog={[]}
+        gameLog={projection.gameLog}
         {selectedBonus}
         onInspectBonus={(id) => (selectedBonus = id)}
         onPlayBonus={(cardId, choice) =>
@@ -222,6 +205,11 @@
       />
     {/if}
   {/key}
+  {#if projection.undoRequest && projection.room}
+    <UndoRequest request={projection.undoRequest} room={projection.room} userUid={projection.undoRequest.requesterUid} previewAllVoters
+      onVote={(voterUid, approve) => send('undo/voted', { requestId: projection.undoRequest!.id, voterUid, approve }, voterUid)}
+      onCancel={() => send('undo/cancelled', { requestId: projection.undoRequest!.id }, projection.undoRequest!.requesterUid)} />
+  {/if}
 </div>
 {#if !embedded}<LabControls bind:subject bind:count bind:mode bind:seat bind:speed bind:paused bind:toolsOpen
   {triggered} {moving} {latest} phase={projection.game?.phase} {reduced} {error} {reset} {trigger} {next} />{/if}

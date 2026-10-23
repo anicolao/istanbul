@@ -1,5 +1,5 @@
 import { expect, test } from '@playwright/test';
-import { readState, expectState } from '../helpers/game-journey';
+import { readState, expectState, revealPlayerMats } from '../helpers/game-journey';
 import {
   openTable,
   move,
@@ -23,7 +23,8 @@ test('Yellow Mosque recalls assistants directly from the board', async ({
     await page
       .getByRole('button', { name: 'Review Yellow Mosque recall' })
       .click();
-    await page.getByLabel('Ada Mosque tiles').getByRole('button').click();
+    await revealPlayerMats(page);
+    await page.getByLabel('Ada Mosque tiles').locator('button:not(.unowned)').click();
     await page.locator('[data-place-id="14"]').click();
     await capture(
       t,

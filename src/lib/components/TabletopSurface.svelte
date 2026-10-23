@@ -35,11 +35,15 @@
   import { occupiedPositions, sharedTableLayout, tableAngle, tableControls } from './table-layout';
   import LocationTile from './LocationTile.svelte';
   import TabletopPlayerPanel from './TabletopPlayerPanel.svelte';
+  import ComponentHelp from './ComponentHelp.svelte';
+  import DockPlayerSummary from './DockPlayerSummary.svelte';
   import TabletopPlaceActions from './TabletopPlaceActions.svelte';
   import GameArt from './GameArt.svelte';
   import TabletopArrow from './TabletopArrow.svelte';
   import UndoButton from './UndoButton.svelte';
   import BonusCardChoices from './BonusCardChoices.svelte';
+  import GameResults from './GameResults.svelte';
+  import FamilyRewardChoices from './FamilyRewardChoices.svelte';
   import BonusCard from './BonusCard.svelte';
   let {
     game: incomingGame,
@@ -54,6 +58,8 @@
     onUndo,
     onRollback,
     onRematch,
+    onLeave,
+    connectedUids = room.seats.filter(seat => !seat.left).map(seat => seat.uid),
     undo,
     gameLog,
     undoPending = false,
@@ -75,7 +81,9 @@
     onEndTurn: () => void;
     onUndo: () => void;
     onRollback: (id: string) => void;
-    onRematch: () => void;
+    onRematch: (layout: RoomProjection['layout']) => void;
+    onLeave?: () => void;
+    connectedUids?: string[];
     undo: ReplayProjection['undo'];
     gameLog: ReplayProjection['gameLog'];
     undoPending?: boolean;
@@ -86,12 +94,26 @@
     onGrantE2eResources?: () => void;
     e2eResourceReview?: string;
   } = $props();
+  function openDockPlayer(uid: string) {
+    dockSelected = dockSelected === uid ? null : uid;
+    requestAnimationFrame(() => {
+      const seats = surface?.querySelector<HTMLElement>('.mat-dock .seats');
+      const mat = Array.from(seats?.querySelectorAll<HTMLElement>('.mat') ?? []).find(el => el.dataset.playerUid === uid);
+      if (seats && mat) seats.scrollTo({ left: mat.offsetLeft - (seats.clientWidth - mat.clientWidth) / 2, behavior: 'smooth' });
+    });
+  }
+  let dockSelected = $state<string | null>(null);
   let endWarning = $state<string | null>(null);
   let finishEncountersForRepeat = $state(false);
   let repeatEncounterStep = '';
   let game = $state.raw(untrack(() => incomingGame));
   let surface = $state<HTMLElement>();
   let tableWidth = $state(0), tableHeight = $state(0);
+  const dockFits = $derived(tableWidth >= game.players.length * 280 + 16 + (game.players.length - 1) * 10);
+  const dockPlayers = $derived.by(() => {
+    const local = Math.max(0, matGame.players.findIndex(p => p.uid === userUid));
+    return [...matGame.players.slice(local), ...matGame.players.slice(0, local)];
+  });
   const positions = $derived(occupiedPositions(game, room));
   const sharedLayout = $derived(sharedTableLayout(positions, tableWidth, tableHeight));
   const controls = $derived(tableControls(sharedLayout, tableWidth, tableHeight));
@@ -231,6 +253,9 @@
     { angle: personal ? 0 : tableAngle(positions[game.turnSeat]) }
   );
   let handOpen = $state(false);
+  $effect(() => {
+    if (personal && selectedBonus) handOpen = true;
+  });
   const pending = $derived(game.pending);
   const activePlace = $derived(
     pending?.kind === 'caravansary-discard'
@@ -289,6 +314,7 @@
           )) ||
         (pending?.kind === 'encounters' &&
           pending.governor !== 'payment' &&
+          !pending.relocation &&
           !pending.familyUids.length))
   );
   let zoom = $state<number | null>(null),
@@ -459,15 +485,13 @@
     if (!source) return roomGeometry.get(node);
     const origin = source.getBoundingClientRect();
     const bounds = table.getBoundingClientRect();
-    const trays = table.querySelector('.seats')?.getBoundingClientRect();
     const layout = getComputedStyle(table);
-    const sideTrays = personal && layout.getPropertyValue('--side-trays').trim() === '1';
     const sourceAngle = personal ? parseFloat(layout.getPropertyValue('--board-angle')) || 0 : 0;
     const sourceSideways = Math.abs(sourceAngle % 180) === 90;
     const sourceWidth = sourceSideways ? origin.height : origin.width;
     const sourceHeight = sourceSideways ? origin.width : origin.height;
-    const left = sideTrays && trays ? trays.right - bounds.left + 8 : 8;
-    const bottom = !sideTrays && trays ? trays.top - bounds.top - 8 : bounds.height - 8;
+    const left = 8;
+    const bottom = bounds.height - 34;
     const area = personal
       ? { x: left, y: 8, width: bounds.width - left - 8, height: bottom - 8 }
       : sharedTableLayout(positions, bounds.width, bounds.height).playArea;
@@ -539,6 +563,15 @@
 {#snippet encounterChoices(
   encounters: Extract<GameSetup['pending'], { kind: 'encounters' }>
 )}
+  {#if encounters.relocation}
+    <div class="row">
+      <GameArt kind="piece" piece={encounters.relocation} />
+      <button class="primary" aria-label={`Roll to move the ${encounters.relocation === 'governor' ? 'Governor' : 'Smuggler'}`} onclick={() => onResolveEncounter({ kind: encounters.relocation === 'governor' ? 'governor-roll' : 'smuggler-roll' })}>
+        <GameArt kind="piece" piece="dice-pair" />Roll to move
+      </button>
+    </div>
+    <p>Payment complete. You can undo before rolling.</p>
+  {:else}
   {#each encounters.familyUids as uid}{@const family = game.players.find(
       (p) => p.uid === uid
     )!}
@@ -547,24 +580,7 @@
         kind="piece"
         piece="family"
         color={family.color as PlayerColorName}
-      /><button
-        aria-label="Catch family for 3 Lira"
-        onclick={() =>
-          onResolveEncounter({
-            kind: 'catch-family',
-            familyUid: uid,
-            reward: 'lira'
-          })}><GameArt kind="component" component="lira" />+3</button
-      ><button
-        class="card-choice small-card"
-        aria-label="Catch family for a Bonus card"
-        onclick={() =>
-          onResolveEncounter({
-            kind: 'catch-family',
-            familyUid: uid,
-            reward: 'bonus'
-          })}><BonusCard reverse="card-back" /></button
-      >
+      /><FamilyRewardChoices verb="Catch family" onChoose={reward => onResolveEncounter({ kind: 'catch-family', familyUid: uid, reward })} />
     </div>{/each}
   {#if encounters.governor === 'payment'}<div class="row">
       <GameArt kind="piece" piece="governor" />
@@ -572,9 +588,10 @@
       <button
         class="primary"
         disabled={player.lira < 2}
+        aria-label="Governor: pay 2 Lira"
         onclick={() =>
           onResolveEncounter({ kind: 'governor-pay', payment: 'lira' })}
-        ><GameArt kind="component" component="lira" />Pay 2 & roll</button
+        ><GameArt kind="component" component="lira" />Pay 2</button
       >
     </div>
     {#if personal && canControl}<div class="card-payments">
@@ -613,7 +630,7 @@
             >{/each}
         </div>
       </div>
-      {#if smuggler}<p>Pay & roll</p>
+      {#if smuggler}<p>Pay</p>
         <div class="goods">
           <button
             aria-label="Smuggler: pay 2 Lira"
@@ -644,10 +661,13 @@
             >{/each}
         </div>{/if}{/if}
   {/if}
+  {/if}
 {/snippet}
 <svelte:window
+  onpointerdown={(e) => { if (!(e.target instanceof Element) || !e.target.closest('.mat-dock, .component-help')) dockSelected = null; }}
   onkeydown={(e) => {
     if (e.key === 'Escape') {
+      dockSelected = null;
       closeRoom();
       history = false;
       power = null;
@@ -658,6 +678,7 @@
   class="tabletop-surface"
   bind:this={surface}
   class:personal
+  class:docked={personal}
   style={`--log-x:${controls.log.x}px;--log-y:${controls.log.y}px;--undo-x:${controls.undo.x}px;--undo-y:${controls.undo.y}px;--players:${game.players.length};--compact-rows:${Math.ceil(game.players.length / 2)};--courtyard:url('${base}/art/bazaar-courtyard.png')`}
   aria-label="Shared Istanbul table"
   data-motion-active={Boolean(motion)}
@@ -680,12 +701,21 @@
         ? 'Your action.'
         : 'Waiting for this merchant.'}
     </p>
+    <div role="group" aria-label="Player mat dock" class:mat-dock={personal} class:revealed={!handOpen && (Boolean(dockSelected) || Boolean(motion))} class:dock-aligned={dockFits}>
+    {#if personal}<div class="dock-pull">
+      <div class="dock-summaries" aria-label="Player summaries">
+        {#each dockPlayers as p}
+          <DockPlayerSummary player={p} active={p.uid === player.uid} onOpen={() => openDockPlayer(p.uid)} />
+        {/each}
+      </div>
+    </div>{/if}
     <TabletopPlayerPanel
       layout={sharedLayout}
       game={matGame}
       {room}
       {userUid}
       onHand={() => {
+        dockSelected = null;
         handOpen = true;
         collapsed = true;
       }}
@@ -695,6 +725,8 @@
       onPower={showPower}
       onOpen={() => open()}
     />
+    </div>
+    {#if !handOpen && !history}<ComponentHelp {surface} />{/if}
     <fieldset
       class="board"
       aria-label="Bazaar"
@@ -981,9 +1013,7 @@
                   <BonusCard reverse="card-back" />
                 </div>
                 <p>
-                  {personal
-                    ? 'Play any final Bonus cards from your hand.'
-                    : 'Play your final cards on your phone.'}
+                  Remaining money and goods Bonus cards will be applied automatically.
                 </p>{/if}
             </div>
             <footer class:warning={Boolean(endWarning)}>
@@ -1003,7 +1033,7 @@
                   class="primary"
                   onclick={requestEndTurn}
                   >{game.phase === 'final-bonus'
-                    ? 'Finish trading'
+                    ? 'Show results'
                     : 'End turn'}
                   <TabletopArrow /></button
                 >{/if}{/if}
@@ -1081,32 +1111,22 @@
           <button onclick={() => (history = false)}>×</button>
         </header>
         {#each [...gameLog].reverse() as entry}<p class:undone={!entry.active}>
-            {entry.summary}{#if entry.active && !entry.blockedReason && entry.rollbackActorUids.includes(userUid)}<button
+            {entry.summary}{#if entry.active && ((!entry.blockedReason && entry.rollbackActorUids.includes(userUid)) || entry.consentActorUids?.includes(userUid))}<button
                 disabled={busy}
                 onclick={() => {
                   undoMotion = true;
                   onRollback(entry.eventId);
                   history = false;
-                }}>Undo to here</button
+                }}>{entry.blockedReason ? 'Request undo to here' : 'Undo to here'}</button
               >{/if}
           </p>{/each}
       </section>{/if}
-    {#if game.phase === 'game-over' && !motion}<section class="finish">
-        <h1>{game.end.rankings[0]?.name} wins!</h1>
-        {#each game.end.rankings as standing, i}<p
-            class="score-reveal"
-            style={`--rank-delay:${i * 200}ms`}
-          >
-            {standing.name} · {standing.rubies} rubies · {standing.lira} Lira
-          </p>{/each}<button
-          disabled={userUid !== room.hostUid || undoPending}
-          onclick={onRematch}>Play again</button
-        >
-      </section>{/if}
+
   </div>
+    {#if game.phase === 'game-over' && !motion}<GameResults {game} {room} {userUid} {connectedUids} pending={undoPending} {onRematch} {onLeave} />{/if}
   <nav class="table-controls" aria-label="Game controls">
     {#if !personal}<UndoButton compact {undo} {userUid} pending={undoPending} onUndo={animateUndo} />{/if}
-    <button onclick={() => (history = !history)} aria-expanded={history} aria-label="Game log" title="Game log"
+    <button onclick={() => (history = !history)} aria-expanded={history} aria-label="Game log" data-help="Game log: review previous actions."
       ><span class="log-icon" aria-hidden="true">☰</span><span class="log-label">Game log</span></button
     >
   </nav>
@@ -1151,10 +1171,6 @@
     width: 3.5cqw;
   }
 
-  .score-reveal {
-    animation: score-in 0.6s both;
-    animation-delay: var(--rank-delay);
-  }
   @keyframes score-in {
     from {
       opacity: 0;
@@ -1166,10 +1182,7 @@
     }
   }
   @media (prefers-reduced-motion: reduce) {
-    .score-reveal {
-      animation: none;
     }
-  }
 
   .visually-hidden {
     position: absolute;
@@ -1345,6 +1358,21 @@
       --mat-width: calc((100cqw - 8px - var(--tray-columns) * 8px) / var(--tray-columns));
     }
   }
+  .docked .table { --side-trays: 0; --tray-height: 18px; --tray-bottom: 8px; }
+  .docked .board { left: 50%; top: calc((100% - 34px) / 2); width: min(calc(100cqw - 16px), calc((100cqh - 42px) * 16 / 9)); }
+  @media (max-aspect-ratio: 1/1) {
+    .docked .board { width: min(calc(100cqh - 42px), calc((100cqw - 16px) * 16 / 9)); }
+  }
+  .mat-dock { position: absolute; z-index: 35; bottom: 0; left: 0; right: 0; height: calc(var(--dock-player-width) * 0.325 + 13px); --dock-player-width: clamp(280px, calc((100cqw - 16px - (var(--players) - 1) * 10px) / var(--players)), 500px); transform: translateY(100%); transition: transform 220ms ease; background: #092b27ed; border-top: 1px solid #bc995c; padding: 6px 8px; box-sizing: border-box; }
+  .mat-dock:not(.revealed) :global(.seats) { visibility: hidden; }
+  .mat-dock.revealed, .mat-dock:has(:global(.seats :focus-visible)) { transform: translateY(0); }
+  .dock-pull { position: absolute; bottom: calc(100% + 1px); left: 8px; right: 8px; }
+  .dock-summaries { display: flex; justify-content: safe center; gap: 10px; overflow-x: auto; scrollbar-width: thin; scrollbar-color: #bc995c #092b27; scroll-snap-type: x proximity; }
+  .dock-aligned .dock-summaries :global(.summary) { flex: 0 0 var(--dock-player-width); max-width: none; box-sizing: border-box; }
+  @media (max-width: 600px) { .dock-summaries { gap: 6px; } }
+  .docked .mat-dock :global(.seats) { position: relative; inset: auto; height: 100%; display: flex; justify-content: safe center; align-items: center; overflow-x: auto; overflow-y: hidden; gap: 10px; pointer-events: auto; }
+  .docked .mat-dock :global(.mat) { flex: 0 0 var(--dock-player-width); height: auto; width: var(--dock-player-width); aspect-ratio: 1 / 0.325; }
+  @media (prefers-reduced-motion: reduce) { .mat-dock { transition: none; } }
   fieldset {
     min-width: 0;
     margin: 0;
@@ -1636,8 +1664,7 @@
     .log-icon { display: inline; font-size: 20px; }
     .log-label { display: none; }
   }
-  .history,
-  .finish {
+  .history {
     position: absolute;
     z-index: 20;
     left: 50%;
@@ -1662,10 +1689,8 @@
   .undone {
     opacity: 0.45;
   }
-  .finish {
-    transform: translate(-50%, -50%);
-  }
-  .finish h1 {
-    font-size: 2cqw;
-  }
+  .docked .table-controls { top: 4px; left: 4px; right: auto; bottom: auto; }
+  .docked .table-controls > button { width: 44px; padding: 0; border: 0; background: #12352faa; border-radius: 50%; }
+  .docked .log-icon { display: inline; font-size: 20px; }
+  .docked .log-label { display: none; }
 </style>

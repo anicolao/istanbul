@@ -72,7 +72,7 @@
   {onclick}
 >
   <LocationFace {game} {placeId} {gemstone} />
-  {#if reachable}<TurnHighlight />{/if}
+  {#if reachable}<TurnHighlight marquee />{/if}
   {#if actionReady}<span class="action-ready-label"
       >{actionHint ?? 'Your action'}</span
     >{/if}

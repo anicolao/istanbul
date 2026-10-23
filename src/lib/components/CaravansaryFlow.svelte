@@ -17,12 +17,20 @@
   } = $props();
   let sources = $state<CardSource[]>([]);
   const player = $derived(game.players[game.turnSeat]);
-  const discardCount = $derived(
-    game.bonusDiscard.length - sources.filter((s) => s === 'discard').length
-  );
-  const deckCount = $derived(
-    game.bonusDrawPile.length - sources.filter((s) => s === 'deck').length
-  );
+  const remainingPiles = $derived.by(() => {
+    let deck = game.bonusDrawPile.length;
+    let discard = game.bonusDiscard.length;
+    for (const source of sources) {
+      if (source === 'discard') discard -= 1;
+      else {
+        if (!deck) { deck = discard; discard = 0; }
+        deck -= 1;
+      }
+    }
+    return { deck, discard };
+  });
+  const discardCount = $derived(remainingPiles.discard);
+  const deckCount = $derived(remainingPiles.deck || remainingPiles.discard);
   const discard = $derived(
     bonusCards.find((card) => card.id === game.bonusDiscard[discardCount - 1])
   );

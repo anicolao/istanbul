@@ -25,22 +25,29 @@ test('Undo restores automatic arrival as one action', async ({
       .click();
     await expectState(page, { game: before.game });
     await move(page, 9);
+    const beforeRoll = (await readState(page)).game;
     await roomTile(page)
       .getByRole('button', { name: 'Roll for 7 Lira' })
       .click();
     await capture(
       t,
-      'Undo reverses arrival and goods but stops at a revealed roll',
+      'Revealed rolls require agreement to rewind',
       async () => {
         await expect(
-          roomTile(page).getByRole('button', { name: /Undo/ })
-        ).toBeDisabled();
+          roomTile(page).getByRole('button', { name: /Ask everyone to undo/ })
+        ).toBeEnabled();
         await expectState(page, {
           diagnosticCount: 0,
           undo: { blockedReason: expect.any(String) }
         });
       }
     );
+    const rolled = (await readState(page)).game;
+    await roomTile(page).getByRole('button', { name: /Ask everyone to undo/ }).click();
+    await t.pages[1].getByRole('button', { name: 'Agree to rewind: Bora' }).click();
+    await expectState(page, { game: beforeRoll });
+    await roomTile(page).getByRole('button', { name: 'Roll for 7 Lira' }).click();
+    await expectState(page, { game: rolled, diagnosticCount: 0 });
   } finally {
     await t.close();
   }

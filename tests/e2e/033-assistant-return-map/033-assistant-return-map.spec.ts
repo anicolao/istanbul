@@ -1,9 +1,11 @@
+import { revealPlayerMats } from '../helpers/game-journey';
 import { expect, test } from '@playwright/test';
 
 test('Assistant Returns chooses an occupied location directly on the map', async ({ page }, info) => {
   await page.goto('/dev/animations/?scenario=bonus-return-assistant-1&players=2&surface=personal-screens');
   await expect(page.locator('.mat')).toHaveCount(2);
   await page.getByRole('button', { name: /^Animation lab/ }).click();
+  await revealPlayerMats(page);
   await page.getByRole('button', { name: 'Your Bonus cards', exact: true }).click();
   await page.getByRole('button', { name: 'Inspect Bonus card: An assistant returns', exact: true }).click();
   const map = page.getByRole('group', { name: 'Choose an assistant to return' });

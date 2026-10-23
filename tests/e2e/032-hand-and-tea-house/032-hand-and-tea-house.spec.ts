@@ -1,3 +1,4 @@
+import { revealPlayerMats } from '../helpers/game-journey';
 import { expect, test } from '@playwright/test';
 async function expectHandToFit(page: import('@playwright/test').Page) {
   expect(await page.locator('.hand-panel').evaluate((panel) => {
@@ -14,6 +15,7 @@ test('a small hand opens as readable cards with controls on the same view', asyn
   await page.goto('/dev/animations/?scenario=hand-review&players=2&surface=personal-screens');
   await expect(page.locator('.mat')).toHaveCount(2);
   await page.getByRole('button', { name: /^Animation lab/ }).click();
+  await revealPlayerMats(page);
   await page.getByRole('button', { name: 'Your Bonus cards', exact: true }).click();
   const panel = page.locator('.hand-panel');
   await expect(panel.locator('.full-hand')).toBeVisible();
@@ -41,6 +43,7 @@ test('a crowded hand uses the inspector only when readable cards cannot fit', as
   await page.goto('/dev/animations/?scenario=action-9&players=2&surface=personal-screens');
   await expect(page.locator('.mat')).toHaveCount(2);
   await page.getByRole('button', { name: /^Animation lab/ }).click();
+  await revealPlayerMats(page);
   await page.getByRole('button', { name: 'Your Bonus cards', exact: true }).click();
   const panel = page.locator('.hand-panel');
   const full = info.project.name === 'desktop';
@@ -58,10 +61,14 @@ test('Tea House outcome is not replayed after visitor interactions', async ({ pa
   const tile = page.locator('.zoom-tile:not([inert])');
   await tile.getByRole('button', { name: /Draw.*card/i }).click();
   await expect(page.locator('[data-motion-active]')).toHaveAttribute('data-motion-active', 'false');
-  await tile.getByRole('button', { name: 'Pay 2 & roll', exact: true }).click();
+  await tile.getByRole('button', { name: 'Governor: pay 2 Lira', exact: true }).click();
+  await expect(page.locator('[data-motion-active]')).toHaveAttribute('data-motion-active', 'false');
+  await tile.getByRole('button', { name: 'Roll to move the Governor' }).click();
   await expect(page.locator('[data-motion-active]')).toHaveAttribute('data-motion-active', 'false');
   await tile.getByRole('button', { name: 'Smuggler: take spice', exact: true }).click();
   await tile.getByRole('button', { name: 'Smuggler: pay 2 Lira', exact: true }).click();
+  await expect(page.locator('[data-motion-active]')).toHaveAttribute('data-motion-active', 'false');
+  await tile.getByRole('button', { name: 'Roll to move the Smuggler' }).click();
   await expect(page.locator('[data-motion-active]')).toHaveAttribute('data-motion-active', 'false');
   await expect(tile.locator('.content')).toContainText('Smuggler');
   await expect(tile.locator('.content')).not.toContainText('Wagered');

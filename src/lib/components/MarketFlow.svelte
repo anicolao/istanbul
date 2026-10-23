@@ -4,6 +4,7 @@
   import { defaultMarketSelection } from '$lib/game/market-selection';
   import type { GameSetup, SetupPlayer } from '$lib/game/setup';
   import MarketDemand from './MarketDemand.svelte';
+  import GameArt from './GameArt.svelte';
   let {
     game,
     player,
@@ -67,6 +68,12 @@
         : [...selected, i])}
     onCycle={(i) => (wild[i] = kinds[(kinds.indexOf(payment[i]) + 1) % 4])}
   />
+  <span class="payouts" aria-label="Market payouts">
+    <span class="column-labels"><GameArt kind="component" component="any" label="Number of goods sold matching demand" /><GameArt kind="component" component="lira" /></span>
+    {#each [1, 2, 3, 4, 5] as count}
+      <span class="payout" class:chosen={active && selected.length === count} aria-label={`${count} goods: ${marketRevenueFor(placeId, count)} Lira`}><span>{count}</span><strong>{marketRevenueFor(placeId, count)}</strong></span>
+    {/each}
+  </span>
   {#if active}<button
       class="sell"
       disabled={disabled || !legal}
@@ -75,11 +82,20 @@
           kind: 'market-sell',
           slotIndexes: selected,
           ...(flexible ? { wildGoods: selected.map((i) => payment[i]) } : {})
-        })}>Sell · {marketRevenueFor(placeId, selected.length)} Lira</button
+        })}>Sell {selected.length} · {marketRevenueFor(placeId, selected.length)} Lira</button
     >{/if}
 </span>
 
 <style>
+  .payouts {
+    position: absolute; top: 3%; left: 110%; width: 58%;
+    display: grid; gap: 2cqw;
+    padding: 4%; border-radius: 5cqw; background: #182e28ed;
+    color: #fff1cc; font: 700 13cqw/1.25 "Atkinson Hyperlegible", sans-serif;
+  }
+  .payout, .column-labels { display: grid; grid-template-columns: 1fr 1fr; text-align: center; align-items: center; justify-items: center; gap: 4cqw; }
+  .column-labels :global(.game-art) { width: 20cqw; height: 16cqw; object-fit: contain; }
+  .payout.chosen { text-shadow: none; background: #efd591; color: #192d26; border-radius: 4cqw; outline: 2px solid #fff0c5; }
   .coin-source {
     position: absolute;
     left: 40%;
@@ -106,7 +122,7 @@
     background: #eed799;
     color: #24392b;
     font:
-      700 4.5cqw/1.1 'Atkinson Hyperlegible',
+      700 7cqw/1.1 'Atkinson Hyperlegible',
       sans-serif;
     cursor: pointer;
   }

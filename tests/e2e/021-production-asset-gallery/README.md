@@ -10,7 +10,7 @@ The reviewer opens the dedicated gallery without creating a game and walks every
 
 **Verifications:**
 
-- [x] The gallery declares 83 rendered review states backed by the complete 71-asset manifest
+- [x] The gallery declares 84 rendered review states backed by the complete 72-asset manifest
 - [x] All six logical-component category totals are immediately visible
 - [x] The first six numbered locations are real LocationTile components with public state
 - [x] Board merchants use the shared glowing PlayingPiece renderer
@@ -184,11 +184,22 @@ The reviewer opens the dedicated gallery without creating a game and walks every
 - [x] The next exact rendered-state slice replaces the prior page without scrolling
 - [x] The page satisfies its shared-component geometry and rendering contract
 
-## 18. The reviewer enlarges the final goods-supply component
+## 18. The reviewer opens the final public supply
+
+**The art reviewer** — The reviewer opens the final public supply
+
+![The reviewer opens the final public supply](./screenshots/017-reviewer-opens-goods-supply-desktop.png)
+
+**Verifications:**
+
+- [x] The next exact rendered-state slice replaces the prior page without scrolling
+- [x] The page satisfies its shared-component geometry and rendering contract
+
+## 19. The reviewer enlarges the final goods-supply component
 
 **The art reviewer** — The reviewer enlarges the final goods-supply component
 
-![The reviewer enlarges the final goods-supply component](./screenshots/017-reviewer-enlarges-final-component-desktop.png)
+![The reviewer enlarges the final goods-supply component](./screenshots/018-reviewer-enlarges-final-component-desktop.png)
 
 **Verifications:**
 

@@ -1,4 +1,5 @@
 import { describe, it, expect } from 'vitest';
+import { componentArt } from '$lib/game/art';
 import {
   fixture,
   scenarios,
@@ -100,7 +101,7 @@ it('changing a die uses a face adjustment, while reroll spins both', () => {
 it('Post Office coins originate in their own cubbies', () => {
   const { before, after } = transition('action-5');
   const coins = planActionMotion(before, after).steps.filter(
-    (s) => s.amount && s.art?.endsWith('/lira.png')
+    (s) => s.amount && s.art?.endsWith(componentArt.lira)
   );
   expect(coins).toHaveLength(2);
   expect(coins.map((s) => s.from.selector)).toEqual([
@@ -212,3 +213,21 @@ describe('encounter payments precede relocation', () => {
     });
   }
 });
+
+for (const [id, npc] of [['governor-pay', 'governor'], ['smuggler', 'smuggler']] as const) {
+  it(`${npc}: separate payment has no dice or NPC flight; explicit roll animates both`, () => {
+    const { state, trigger } = fixture(id, 4, 'shared-table', 6);
+    const before = structuredClone(state.game!);
+    trigger.payload.separateRelocation = true;
+    expect(applyEvent(state, eventFor(state, trigger, 900))).toBe(true);
+    const paid = structuredClone(state.game!);
+    const payment = planActionMotion(before, paid);
+    expect(payment.steps.some(step => step.effect === 'dice')).toBe(false);
+    expect(paid[`${npc}Place`]).toBe(before[`${npc}Place`]);
+    expect(applyEvent(state, eventFor(state, { type: 'encounter/resolved', payload: { choice: { kind: `${npc}-roll` } } }, 901))).toBe(true);
+    const roll = planActionMotion(paid, state.game!);
+    expect(roll.steps.filter(step => step.effect === 'dice')).toHaveLength(1);
+    expect(roll.steps.some(step => step.art?.endsWith(`/${npc}-transparent.png`))).toBe(true);
+    expect(roll.steps.some(step => step.art?.endsWith(componentArt.lira))).toBe(false);
+  });
+}

@@ -152,6 +152,7 @@ export function nextBotAction(game: GameSetup): BotAction | null {
       discardCardId: player.bonusHand[0]
     });
   if (pending?.kind === 'encounters') {
+    if (pending.relocation) return action('encounter/resolved', { choice: { kind: `${pending.relocation}-roll` } });
     if (pending.governor === 'payment')
       return action('encounter/resolved', {
         choice: {

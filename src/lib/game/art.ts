@@ -57,11 +57,12 @@ export const playerMatArt = Object.fromEntries(
 ) as Record<PlayerColorName, string>;
 
 export const componentArt = {
+  any: 'art/game/components/transparent/any-resource-v1.png',
   fabric: 'art/game/components/transparent/fabric.png',
   spice: 'art/game/components/transparent/spice.png',
   fruit: 'art/game/components/transparent/fruit.png',
   jewelry: 'art/game/components/transparent/jewelry.png',
-  lira: 'art/game/components/transparent/lira.png',
+  lira: 'art/game/components/transparent/lira-gold-v2.png',
   ruby: 'art/game/components/transparent/ruby.png',
   wheelbarrow: 'art/game/components/transparent/wheelbarrow.png',
   die: 'art/game/components/transparent/die.png',

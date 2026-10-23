@@ -154,7 +154,7 @@ describe('deterministic economy actions', () => {
     }
     player.goods.spice = 5;
     player.goods.jewelry = 4;
-    resolveBlackMarket(player, 'spice', [6, 6]);
+    expect(resolveBlackMarket(player, 'spice', [6, 6])).toBe('Took 0 spice; rolled 6 + 6 = 12 and gained 1 jewelry.');
     expect(player.goods).toMatchObject({ spice: 5, jewelry: 5 });
   });
 

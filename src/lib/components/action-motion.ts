@@ -169,6 +169,8 @@ export function planActionMotion(
       id: plan.steps.length
     });
   };
+  const finalSettlement = (after.phase === 'game-over' && before.phase !== 'game-over' && Boolean(after.end.finalBonuses))
+    || (reverse && before.phase === 'game-over' && Boolean(before.end.finalBonuses));
   const actionChanged =
     JSON.stringify(before.lastAction) !== JSON.stringify(after.lastAction);
   const kind = reverse ? before.lastAction?.kind : action?.kind;
@@ -177,9 +179,9 @@ export function planActionMotion(
     ['sultan-buy', 'mosque-take', 'gemstone-buy', 'wainwright-buy'].includes(
       kind ?? ''
     );
-  const market = kind === 'market-sell' && !encounter && !bonus;
+  const market = !finalSettlement && kind === 'market-sell' && !encounter && !bonus;
   const post =
-    kind === 'post-office-collect' &&
+    !finalSettlement && kind === 'post-office-collect' &&
     !encounter &&
     (!bonus ||
       bonusCards.find((c) => c.id === bonus.cardId)?.effect === 'repeat-post');
@@ -377,6 +379,7 @@ export function planActionMotion(
           );
         } else if (bonus) origin = room('[data-card-pile="discard"]', 6);
         else if (place === 8) origin = room('.dice-legend');
+        if (finalSettlement) origin = mat(p.uid, '[data-card-tray]');
         const mailColumn = post
           ? Number(origin.selector?.match(/data-mail-column="(\d+)"/)?.[1] ?? 0)
           : undefined;
@@ -475,6 +478,7 @@ export function planActionMotion(
         for (const bundle of coinBundles(amount - total)) {
           total += bundle;
           const origin =
+            finalSettlement ? mat(p.uid, '[data-card-tray]') :
             bonus && !purchase
               ? room('[data-card-pile="discard"]', 6)
               : encounter?.kind === 'catch-family'
@@ -682,6 +686,13 @@ export function planActionMotion(
       else if (step.art === pieceArt.governor || step.art === pieceArt.smuggler)
         step.delay = 1600;
       else step.delay = Math.max(0, step.delay - 1000);
+    }
+  }
+  if (finalSettlement) {
+    for (const step of plan.steps) {
+      step.stage = 'board';
+      if (step.from.place) step.from.board = true;
+      if (step.to.place) step.to.board = true;
     }
   }
   return plan;

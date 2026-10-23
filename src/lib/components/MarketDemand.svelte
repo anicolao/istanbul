@@ -79,7 +79,7 @@
           class={`demand-good slot-${index + 1}`}
           data-demand-slot={index + 1}
           data-good={good}
-          title={good}
+          data-help={good}
         >
           <img class="resource" src={artPath(base, componentArt[good])} alt="" draggable="false" />
         </span>

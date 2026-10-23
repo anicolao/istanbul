@@ -64,7 +64,7 @@
     position: absolute;
     right: 6%;
     bottom: 0;
-    font-size: 5cqw;
+    font-size: 6.5cqw;
     color: #173f43;
     text-shadow: none;
   }

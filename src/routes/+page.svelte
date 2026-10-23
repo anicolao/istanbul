@@ -4,6 +4,9 @@
   import '@fontsource/cormorant-garamond/700.css';
   import { replaceState } from '$app/navigation';
   import { onMount } from 'svelte';
+  import GameResults from '$lib/components/GameResults.svelte';
+  import { rematchSeats } from '$lib/game/rematch';
+  import UndoRequest from '$lib/components/UndoRequest.svelte';
   import { botStateKey, nextBotAction, botPolicyVersion } from '$lib/game/bot';
   import { appTitle } from '$lib/app-metadata';
   import { setStoredValue } from '$lib/browser-storage';
@@ -87,6 +90,32 @@
 
   const room = $derived(projection.room);
   const game = $derived(projection.game);
+  let presenceNow = $state(Date.now());
+  const presenceKey = $derived(game?.phase === 'game-over' && liveSynced &&
+    (room?.seats.some(seat => seat.uid === userUid && !seat.left && !seat.bot) || (room?.tabletopOwned && room.hostUid === userUid))
+    ? `${room!.roomCode}:${game.epoch}:${userUid}` : '');
+  const connectedUids = $derived(room && game ? rematchSeats(room, game.epoch, presenceNow, userUid).map(seat => seat.uid) : []);
+  let presenceBusy = false;
+  async function announcePresence() {
+    if (!presenceKey || !repository || !game || presenceBusy || actionPending || repository.pendingId() || !navigator.onLine) return;
+    presenceBusy = true;
+    try { await repository.append('player/present', { epoch: game.epoch }); }
+    catch { /* The normal pending-write recovery handles failed heartbeats too. */ }
+    finally { presenceBusy = false; }
+  }
+  $effect(() => {
+    if (presenceKey && !actionPending) queueMicrotask(() => void announcePresence());
+  });
+  $effect(() => {
+    if (!presenceKey) return;
+    const heartbeat = setInterval(() => void announcePresence(), 20_000);
+    const clock = setInterval(() => { presenceNow = Date.now(); }, 1000);
+    const wake = () => { if (document.visibilityState === 'visible') void announcePresence(); };
+    window.addEventListener('online', wake);
+    document.addEventListener('visibilitychange', wake);
+    return () => { clearInterval(heartbeat); clearInterval(clock); window.removeEventListener('online', wake); document.removeEventListener('visibilitychange', wake); };
+  });
+
   const botTurn = $derived(
     Boolean(
       game &&
@@ -347,7 +376,7 @@
       screen = 'loading-room';
       return;
     }
-    const seated = projection.room.seats.some((seat) => seat.uid === userUid);
+    const seated = projection.room.seats.some((seat) => seat.uid === userUid && !seat.left);
     screen =
       sharedDisplay && projection.room.mode === 'shared-table'
         ? 'shared-display'
@@ -450,6 +479,7 @@
     if (
       !isHost ||
       !botTurn ||
+      Boolean(projection.undoRequest) ||
       !game ||
       !liveSynced ||
       recoveryReview ||
@@ -470,6 +500,7 @@
       !game ||
       !isHost ||
       !botTurn ||
+      Boolean(projection.undoRequest) ||
       actionPending ||
       botWritePending ||
       botStateKey(game) !== expectedState
@@ -670,6 +701,7 @@
     actionPending = true;
     try {
       await repository.append('encounter/resolved', {
+        separateRelocation: true,
         choice: { kind: 'governor-pay', payment: 'card', discardCardId }
       });
     } finally {
@@ -689,7 +721,7 @@
           choice: { kind: 'warehouse-extra', good: null }
         });
       }
-      await repository.append('encounter/resolved', { choice });
+      await repository.append('encounter/resolved', { choice, separateRelocation: true });
     } finally {
       actionPending = false;
     }
@@ -724,8 +756,7 @@
     if (
       !repository ||
       !projection.undo ||
-      !projection.undo.actorUids.includes(userUid) ||
-      projection.undo.blockedReason ||
+      (!projection.undo.actorUids.includes(userUid) && !projection.undo.consentActorUids?.includes(userUid)) ||
       actionPending
     )
       return;
@@ -740,14 +771,15 @@
       !repository ||
       !target ||
       !target.active ||
-      target.blockedReason ||
-      !target.rollbackActorUids.includes(userUid) ||
+      (!target.rollbackActorUids.includes(userUid) && !target.consentActorUids?.includes(userUid)) ||
+      Boolean(projection.undoRequest) ||
       actionPending
     )
       return;
     actionPending = true;
     try {
-      await repository.append('action/undone', { targetEventId });
+      const needsAgreement = target.blockedReason || !target.rollbackActorUids.includes(userUid);
+      await repository.append(needsAgreement ? 'undo/requested' : 'action/undone', { targetEventId });
       selectedBonus = null;
     } finally {
       actionPending = false;
@@ -795,11 +827,11 @@
     }
   }
 
-  async function rematch() {
+  async function rematch(layout: LayoutKind) {
     if (
       !repository ||
       !room ||
-      !isHost ||
+      (!room.seats.some(seat => seat.uid === userUid && !seat.left && !seat.bot) && !(room.tabletopOwned && isHost)) ||
       game?.phase !== 'game-over' ||
       actionPending
     )
@@ -811,11 +843,36 @@
         import.meta.env.VITE_USE_FIREBASE_EMULATORS === 'true' && requested
           ? `${requested.slice(0, 82)}:rematch:${game.epoch + 1}`
           : crypto.randomUUID();
-      await repository.append('game/rematched', { seed });
+      await repository.append('game/rematched', { seed, layout, epoch: game.epoch, rosterVersion: 1 });
       selectedBonus = null;
     } finally {
       actionPending = false;
     }
+  }
+
+  async function leaveGame() {
+    if (!repository || game?.phase !== 'game-over' || actionPending) return;
+    actionPending = true;
+    try {
+      const activeRepository = repository;
+      const departure = await activeRepository.append('player/left', { epoch: game.epoch });
+      // A concurrent rematch may have started first. Wait for authoritative replay
+      // before leaving, so a rejected departure cannot strand a new game.
+      const accepted = await new Promise<boolean>((resolve, reject) => {
+        const timeout = setTimeout(() => { stop(); reject(new Error('Waiting for the room to confirm your departure.')); }, 15_000);
+        const stop = activeRepository.subscribe(history => {
+          if (!history.some(event => event.id === departure && event.createdAt !== null)) return;
+          clearTimeout(timeout); stop();
+          resolve(replayEvents(history).acceptedEventIds.includes(departure));
+        }, error => { clearTimeout(timeout); stop(); reject(error); });
+      });
+      if (!accepted) { message = 'The next game has already started. You can leave after it ends.'; return; }
+      unsubscribe?.(); unsubscribe = null;
+      repository = null; events = []; projection = replayEvents([]);
+      liveSynced = false; selectedBonus = null; screen = 'landing';
+      const url = new URL(location.href); url.search = ''; window.history.replaceState(null, '', url);
+    } catch (error) { message = error instanceof Error ? error.message : 'Could not leave the game'; }
+    finally { actionPending = false; }
   }
 
   async function retryPending() {
@@ -1334,7 +1391,9 @@
         onRemoveBot={(uid) => void removeBot(uid)}
       />
     {:else if room && game && (screen === 'game' || screen === 'shared-display')}
-      {#if sharedTablePhone}
+      {#if sharedTablePhone && game.phase === 'game-over'}
+        <GameResults {game} {room} {userUid} {connectedUids} pending={actionPending} onRematch={(layout) => void rematch(layout)} onLeave={() => void leaveGame()} />
+      {:else if sharedTablePhone}
         <BonusController
           {game}
           {userUid}
@@ -1368,7 +1427,9 @@
           onEndTurn={() => void endTurn()}
           onUndo={() => void undoLastAction()}
           onRollback={(id) => void rollbackTo(id)}
-          onRematch={() => void rematch()}
+          onRematch={(layout) => void rematch(layout)}
+          onLeave={() => void leaveGame()}
+          {connectedUids}
           undo={projection.undo}
           undoLog={projection.undoLog}
           gameLog={projection.gameLog}
@@ -1399,6 +1460,21 @@
     data-ready-count={room?.seats.filter((seat) => seat.ready).length ?? 0}
     data-seat-count={room?.seats.length ?? 0}>{stateSummary}</span
   >
+  {#if projection.undoRequest && projection.room}
+    <UndoRequest request={projection.undoRequest} room={projection.room} {userUid} pending={actionPending}
+      onVote={async (voterUid, approve) => {
+        if (!repository || !projection.undoRequest) return;
+        actionPending = true;
+        try { await repository.append('undo/voted', { requestId: projection.undoRequest.id, voterUid, approve }); }
+        finally { actionPending = false; }
+      }}
+      onCancel={async () => {
+        if (!repository || !projection.undoRequest) return;
+        actionPending = true;
+        try { await repository.append('undo/cancelled', { requestId: projection.undoRequest.id }); }
+        finally { actionPending = false; }
+      }} />
+  {/if}
 </main>
 
 <style>

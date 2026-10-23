@@ -11,7 +11,7 @@ import {
 import { bonusCards, demandTiles, places, type BonusCardManifest, type Good } from './manifests';
 
 export type GalleryCategoryId = 'places' | 'mats' | 'pieces' | 'bonus' | 'demands' | 'components';
-export type GalleryComponent = Good | 'lira' | 'ruby' | 'wheelbarrow' | 'die' | 'mail' | 'bonus-deck'
+export type GalleryComponent = Good | 'any' | 'lira' | 'ruby' | 'wheelbarrow' | 'die' | 'mail' | 'bonus-deck'
   | 'mosque-fabric' | 'mosque-spice' | 'mosque-fruit' | 'mosque-jewelry'
   | 'demand-large' | 'demand-small' | 'ruby-supply' | 'goods-supply';
 
@@ -97,6 +97,7 @@ const componentDefinitions: Array<[GalleryComponent, string, string, string]> = 
   ['spice', 'Spice good', 'Green goods marker.', componentArt.spice],
   ['fruit', 'Fruit good', 'Yellow goods marker.', componentArt.fruit],
   ['jewelry', 'Jewelry good', 'Blue goods marker.', componentArt.jewelry],
+  ['any', 'Any resource', 'Choose fabric, spice, fruit, or jewelry.', componentArt.any],
   ['lira', 'Lira', 'Money marker and purse icon.', componentArt.lira],
   ['ruby', 'Ruby', 'Victory marker.', componentArt.ruby],
   ['wheelbarrow', 'Wheelbarrow extension', 'Goods-capacity upgrade tile.', componentArt.wheelbarrow],

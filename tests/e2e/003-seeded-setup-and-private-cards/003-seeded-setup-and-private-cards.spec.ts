@@ -1,3 +1,4 @@
+import { revealPlayerMats } from '../helpers/game-journey';
 import { expect, test } from '@playwright/test';
 import { readState, expectState } from '../helpers/game-journey';
 import {
@@ -21,7 +22,8 @@ test('Seeded setup keeps hands private', async ({ page, browser }, info) => {
     await expectState(t.pages[1], {
       game: { board: state.game.board, players: state.game.players }
     });
-    await page
+    await revealPlayerMats(page);
+  await page
       .getByRole('button', { name: 'Your Bonus cards', exact: true })
       .click();
     await capture(t, 'Private cards belong to their owner', async () => {

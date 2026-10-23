@@ -1,0 +1,8 @@
+Generated with built-in image_gen; transparent PNGs.
+Assets: static/art/game/controls/help-off-v1.png and help-on-v1.png
+
+Help off prompt:
+Use case: stylized-concept. One transparent square UI game-component asset for Istanbul board game: HELP MODE OFF. A round antique gold-rimmed medallion with dark teal enamel face, a large ivory question mark engraved in its center. Luxurious hand-painted physical tabletop component, warm metal highlights, subtly worn gold, simple bold readable shape at 48px. Front view, centered, medallion fills 88% of square, clear transparent margin. No words, no extra symbols, no scene, no external shadow. Inactive state: restrained, unlit, no glow. Match ornate gold-and-teal Istanbul game artwork.
+
+Help on edit prompt (help-off image as reference):
+Edit the supplied help-off medallion into its matching HELP MODE ON state. Preserve exact silhouette, size, framing, gold rim ornament positions and central question mark geometry. Change only its face material and question mark colors: luminous warm ivory-gold face instead of dark teal, deep teal question mark instead of ivory, bright warm gold rim. A clearly activated physical game token, still restrained painterly antique gold style. No new text, no additional symbols, no external glow beyond the token, preserve transparent background. This is a paired toggle asset; geometry and position must match exactly.

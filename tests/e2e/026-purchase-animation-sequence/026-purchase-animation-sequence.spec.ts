@@ -1,7 +1,7 @@
 import { expect, test } from '@playwright/test';
 
 for (const [scenario, npc] of [['governor-pay', 'governor'], ['smuggler', 'smuggler']] as const) {
-  test(`${npc} payment targets the encounter board tile while the room closes`, async ({ page }) => {
+  test(`${npc} payment reaches the visitor in the open room before the separate roll`, async ({ page }) => {
     await page.goto(`/dev/animations/?scenario=${scenario}&players=4&surface=shared-table&seat=6`);
     await expect(page.locator('.zoom-tile')).toBeVisible();
     await page.waitForFunction(() => {
@@ -9,11 +9,11 @@ for (const [scenario, npc] of [['governor-pay', 'governor'], ['smuggler', 'smugg
       return room && room.getAnimations().every((animation) => animation.playState !== 'running');
     });
     await page.getByRole('button', { name: 'Trigger', exact: true }).click();
-    const coin = page.locator('.motion-token').filter({ has: page.locator('img[src$="/lira.png"]') }).first();
+    const coin = page.locator('.motion-token').filter({ has: page.locator('img[src$="/lira-gold-v2.png"]') }).first();
     await expect(coin).toBeVisible();
     const distance = await coin.evaluate((node, visitor) => {
       const surface = node.closest('[data-motion-active]')!;
-      const target = surface.querySelector(`[data-place-id="3"] [data-piece-kind="${visitor}"]`)!;
+      const target = surface.querySelector(`.zoom-tile [data-piece-kind="${visitor}"]`)!;
       const bounds = surface.getBoundingClientRect();
       const destination = target.getBoundingClientRect();
       const animation = node.getAnimations().find((a) =>
@@ -28,6 +28,7 @@ for (const [scenario, npc] of [['governor-pay', 'governor'], ['smuggler', 'smugg
     }, npc);
     expect(distance).toBeLessThan(1);
     await expect(page.locator('[data-motion-active]')).toHaveAttribute('data-motion-active', 'false');
+    await expect(page.locator('.zoom-tile').getByRole('button', { name: /^Roll to move the / })).toBeVisible();
   });
 }
 
@@ -71,7 +72,7 @@ test('arrival payments wait for zoom and a purchased gemstone stays off the offe
               node
                 .querySelector('img')
                 ?.getAttribute('src')
-                ?.endsWith('/lira.png') &&
+                ?.endsWith('/lira-gold-v2.png') &&
               Number(getComputedStyle(node).opacity) > 0
           ).length
       )

@@ -1,0 +1,4 @@
+Generated with built-in image_gen using the original lira.png as the edit target.
+Asset: static/art/game/components/transparent/lira-gold-v2.png
+Prompt:
+Edit this game asset: preserve exactly the stack of gold coins, composition, engraved lyre designs, perspective, silhouette and transparent background. Make the coins much shinier and brighter yellow gold, with strong pale-gold specular highlights on raised engravings and rims and richer golden midtones. Remove the dull dark bronze appearance. Keep engraved recesses readable and preserve the hand-painted ornate board-game art style. High contrast against dark brown player mats even at small sizes. No added objects, text, sparkle symbols, halo, or background. Genuine transparent background.

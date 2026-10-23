@@ -63,7 +63,7 @@
   small {
     align-self: center;
     color: #d3bd8e;
-    font-size: 0.55em;
+    font-size: 0.7em;
     font-weight: 700;
     text-transform: uppercase;
   }
@@ -78,7 +78,7 @@
     white-space: nowrap;
   }
   b {
-    font-size: 0.85em;
+    font-size: 1.05em;
   }
   .cost :global(.game-art) {
     width: 2em;
