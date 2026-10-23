@@ -24,6 +24,7 @@ test('The common table supports keyboard, touch and reduced motion', async ({
       const style = getComputedStyle(el);
       return [style.paddingTop, style.paddingRight, style.paddingBottom, style.paddingLeft];
     })).toEqual(['0px', '0px', '0px', '0px']);
+    await expect(page.locator('.marquee-track .marching').first()).toHaveCSS('animation-name', 'none');
     const target = page.locator('[data-place-id="3"]');
     await page.locator('[data-place-id="7"]').focus();
     await page.locator('[data-place-id="7"]').press('ArrowRight');

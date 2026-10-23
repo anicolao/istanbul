@@ -45,6 +45,6 @@
   }
   @keyframes destination-marquee { to { stroke-dashoffset: -24; } }
   @media (prefers-reduced-motion: reduce) {
-    .marquee-track rect { animation: none; }
+    .marquee-track .marching { animation: none; }
   }
 </style>
