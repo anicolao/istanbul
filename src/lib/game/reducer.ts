@@ -31,7 +31,7 @@ import { catchFamily, drawBonus, isEncounterChoice, relocateEncounter } from './
 import type { Good } from './manifests';
 import { adjustMosqueDice, buyWarehouseExtra, isMosqueAbilityChoice, ownsMosqueAbility, recallWithYellow, takeMosqueTile } from './mosques';
 import { buyGemstoneRuby, buySultanRuby } from './ruby-routes';
-import { activateBonus, canUseFlexibleDemand, bonusEffect, discardPlayedBonus, isBonusChoice } from './bonus';
+import { activateBonus, canUseFlexibleDemand, canUseImmediateBonus, bonusEffect, discardPlayedBonus, isBonusChoice } from './bonus';
 import { finishFinalBonusSeat, markEndTrigger, settleFinalBonuses } from './endgame';
 
 const emptyProjection = (): ReplayProjection => ({
@@ -911,15 +911,15 @@ export function applyBonus(state: ReplayProjection, event: CanonicalEvent): bool
   let summary: string | null = null;
 
   if (effect === 'gain-good' && choice.kind === 'gain-good') {
-    if (!['action', 'family-action', 'turn-end', 'final-bonus'].includes(game.phase) || player.goods[choice.good] >= player.capacity) return rejectBonus(state, event, 'bonus-timing');
+    if (!canUseImmediateBonus(game, 'gain-good') || player.goods[choice.good] >= player.capacity) return rejectBonus(state, event, 'bonus-timing');
     player.goods[choice.good] += 1;
     summary = `Played a Bonus card to gain 1 ${choice.good}.`;
   } else if (effect === 'gain-lira' && choice.kind === 'gain-lira') {
-    if (!['movement', 'action', 'family-action', 'turn-end', 'final-bonus'].includes(game.phase)) return rejectBonus(state, event, 'bonus-timing');
+    if (!canUseImmediateBonus(game, 'gain-lira')) return rejectBonus(state, event, 'bonus-timing');
     player.lira += 5;
     summary = 'Played a Bonus card to gain 5 Lira.';
   } else if (effect === 'return-family' && choice.kind === 'return-family') {
-    if (!['movement', 'action', 'family-action', 'turn-end'].includes(game.phase) || player.familyPlace === 12) return rejectBonus(state, event, 'bonus-family-unavailable');
+    if (!canUseImmediateBonus(game, 'return-family') || player.familyPlace === 12) return rejectBonus(state, event, 'bonus-family-unavailable');
     if (choice.reward === 'bonus' && game.bonusDrawPile.length === 0 && game.bonusDiscard.length === 0) return rejectBonus(state, event, 'bonus-deck-empty');
     player.familyPlace = 12;
     if (choice.reward === 'lira') player.lira += 3;

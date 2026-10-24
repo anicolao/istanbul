@@ -44,7 +44,7 @@ export interface BonusCardManifest {
 }
 
 const bonusKinds: Array<[BonusCardManifest['effect'], number, string, string]> = [
-  ['gain-good', 4, 'A useful connection', 'Immediately before or after a Place action, gain one good of your choice.'],
+  ['gain-good', 4, 'A useful connection', 'On your turn, gain one good of your choice. Play before or after a Place action, not while resolving it.'],
   ['gain-lira', 4, 'A profitable bargain', 'Gain 5 Lira.'],
   ['repeat-sultan', 2, 'The Sultan grants another audience', "After the Sultan's Palace action, perform it once more at its new cost."],
   ['repeat-post', 2, 'Another delivery', 'After the Post Office action, perform it once more and advance the indicators again.'],

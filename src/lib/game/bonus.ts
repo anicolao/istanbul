@@ -43,3 +43,11 @@ export function canUseFlexibleDemand(game: GameSetup): boolean {
     : game.phase === 'action' ? game.players[game.turnSeat].merchantPlace : null;
   return place === 11 && !game.activeBonusEffects.includes('wild-small-market');
 }
+
+/** Immediate cards can be played throughout the turn, subject to their own timing. */
+export function canUseImmediateBonus(game: GameSetup, effect: 'gain-good' | 'gain-lira' | 'return-family'): boolean {
+  if (game.phase === 'game-over' || game.pending?.kind === 'caravansary-discard') return false;
+  if (effect === 'return-family') return game.phase !== 'final-bonus';
+  if (effect === 'gain-good') return game.phase !== 'mosque-ability' && game.pending?.kind !== 'dice-adjust' && game.pending?.kind !== 'warehouse-extra';
+  return true;
+}

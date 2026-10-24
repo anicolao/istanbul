@@ -1,7 +1,7 @@
 <script lang="ts">
   import { bonusCards, type Good } from '$lib/game/manifests';
   import { type PlaceActionChoice } from '$lib/game/actions';
-  import { canUseFlexibleDemand, type BonusChoice } from '$lib/game/bonus';
+  import { canUseFlexibleDemand, canUseImmediateBonus, type BonusChoice } from '$lib/game/bonus';
   import { requiredAssistantAction } from '$lib/game/movement';
   import { currentSultanCost } from '$lib/game/ruby-routes';
   import type { GameSetup } from '$lib/game/setup';
@@ -198,7 +198,7 @@
           disabled={undoPending}
           onAction={onTakePrivateAction}
         />
-      {:else if governorCardPayment}
+      {:else if governorCardPayment && !selected}
         <p class="kicker">Private Governor payment</p>
         <h2>Discard a Bonus card</h2>
         <p>
@@ -215,14 +215,10 @@
         <h2>{selected.title}</h2>
         {#if !fullHand && !choosingAssistant}<BonusCard card={selected} class="large-card" />{/if}
         {#if isCurrent}
+          {#if governorCardPayment}<button disabled={undoPending} onclick={() => onResolvePrivateEncounter(selected.id)}>Discard this card to pay the Governor</button>{/if}
           {#if selected.effect === 'gain-good'}<GoodChoices selected={bonusGood} unavailable={(Object.keys(goodNames) as Good[]).filter(good => player.goods[good] >= player.capacity)} label="Good to gain" onChoose={good => bonusGood = good} /><button
               class="primary"
-              disabled={![
-                'action',
-                'family-action',
-                'turn-end',
-                'final-bonus'
-              ].includes(game.phase) ||
+              disabled={undoPending || !canUseImmediateBonus(game, 'gain-good') ||
                 player.goods[bonusGood] >= player.capacity}
               onclick={() =>
                 onPlayBonus(selected.id, {
@@ -232,18 +228,12 @@
             >
           {:else if selected.effect === 'gain-lira'}<button
               class="primary"
-              disabled={![
-                'movement',
-                'action',
-                'family-action',
-                'turn-end',
-                'final-bonus'
-              ].includes(game.phase)}
+              disabled={undoPending || !canUseImmediateBonus(game, 'gain-lira')}
               onclick={() => onPlayBonus(selected.id, { kind: 'gain-lira' })}
               >Play to gain 5 Lira</button
             >
           {:else if selected.effect === 'return-family'}
-            <FamilyRewardChoices disabled={undoPending || player.familyPlace === 12} onChoose={reward => onPlayBonus(selected.id, { kind: 'return-family', reward })} />
+            <FamilyRewardChoices disabled={undoPending || !canUseImmediateBonus(game, 'return-family') || player.familyPlace === 12} onChoose={reward => onPlayBonus(selected.id, { kind: 'return-family', reward })} />
           {:else if selected.effect === 'return-assistant'}
             <p>Tap an assistant to return it to your merchant.</p>
             <AssistantRecallMap

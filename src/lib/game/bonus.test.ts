@@ -134,6 +134,55 @@ describe('Bonus card timing contract', () => {
     expect(game.players[0].bonusHand).toContain(card);
   });
 
+  it.each(['movement', 'merchant-payment', 'encounters', 'turn-end'] as const)(
+    'allows immediate cards during %s without advancing the turn', phase => {
+      for (const kind of ['gain-good', 'gain-lira', 'return-family'] as const) {
+        const [state, game, card] = fixture(kind);
+        game.phase = phase;
+        game.players[0].familyPlace = 4;
+        game.players[0].goods.jewelry = 0;
+        game.pending = phase === 'merchant-payment'
+          ? { kind: 'merchant-payment', recipientUids: ['guest'], neutralMerchantIds: [], total: 2 }
+          : phase === 'encounters' ? { kind: 'encounters', familyUids: [], governor: 'payment', smuggler: true } : null;
+        const pending = structuredClone(game.pending);
+        const choice = kind === 'gain-good' ? { kind, good: 'jewelry' }
+          : kind === 'return-family' ? { kind, reward: 'lira' } : { kind };
+        expect(applyBonus(state, event(card, choice))).toBe(true);
+        expect(game.phase).toBe(phase);
+        expect(game.pending).toEqual(pending);
+        expect(game.players[0].bonusHand).not.toContain(card);
+      }
+    }
+  );
+
+  it('does not interrupt unfinished Place actions with a goods card', () => {
+    const pendingStates: GameSetup['pending'][] = [
+      { kind: 'dice-adjust', actionPlace: 8, originalDice: [2, 3], good: 'spice', familyAction: false },
+      { kind: 'warehouse-extra', actionPlace: 2, familyAction: false },
+      { kind: 'caravansary-discard', familyAction: false }
+    ];
+    for (const pending of pendingStates) {
+      const [state, game, card] = fixture('gain-good');
+      game.phase = pending?.kind === 'caravansary-discard' ? 'action' : 'mosque-ability';
+      game.pending = pending;
+      expect(applyBonus(state, event(card, { kind: 'gain-good', good: 'jewelry' }))).toBe(false);
+      expect(game.players[0].bonusHand).toContain(card);
+    }
+  });
+
+  it('still rejects immediate cards from another player or after the game ends', () => {
+    for (const kind of ['gain-good', 'gain-lira', 'return-family'] as const) {
+      const [state, game, card] = fixture(kind);
+      game.players[0].familyPlace = 4;
+      const choice = kind === 'gain-good' ? { kind, good: 'jewelry' }
+        : kind === 'return-family' ? { kind, reward: 'lira' } : { kind };
+      expect(applyBonus(state, { ...event(card, choice), actorUid: 'guest' })).toBe(false);
+      game.phase = 'game-over';
+      expect(applyBonus(state, event(card, choice))).toBe(false);
+      expect(game.players[0].bonusHand).toContain(card);
+    }
+  });
+
   it('repeats only the immediately completed route at its newly exposed cost', () => {
     {
       const [state, game, card] = fixture('repeat-post'); const player = game.players[0]; game.phase = 'turn-end'; game.lastAction = { playerUid: player.uid, place: 5, kind: 'post-office-collect', summary: 'Collected once.' };
