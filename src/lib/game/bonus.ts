@@ -35,3 +35,11 @@ export function discardPlayedBonus(game: GameSetup, player: SetupPlayer, cardId:
 export function activateBonus(game: GameSetup, effect: 'long-move' | 'wild-small-market') {
   if (!game.activeBonusEffects.includes(effect)) game.activeBonusEffects.push(effect);
 }
+
+/** Flexible Demand applies to the active Small Market visit, including a family visit. */
+export function canUseFlexibleDemand(game: GameSetup): boolean {
+  const place = game.phase === 'family-action' && game.pending?.kind === 'family-action'
+    ? game.pending.destination
+    : game.phase === 'action' ? game.players[game.turnSeat].merchantPlace : null;
+  return place === 11 && !game.activeBonusEffects.includes('wild-small-market');
+}

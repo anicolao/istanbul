@@ -31,7 +31,7 @@ import { catchFamily, drawBonus, isEncounterChoice, relocateEncounter } from './
 import type { Good } from './manifests';
 import { adjustMosqueDice, buyWarehouseExtra, isMosqueAbilityChoice, ownsMosqueAbility, recallWithYellow, takeMosqueTile } from './mosques';
 import { buyGemstoneRuby, buySultanRuby } from './ruby-routes';
-import { activateBonus, bonusEffect, discardPlayedBonus, isBonusChoice } from './bonus';
+import { activateBonus, canUseFlexibleDemand, bonusEffect, discardPlayedBonus, isBonusChoice } from './bonus';
 import { finishFinalBonusSeat, markEndTrigger, settleFinalBonuses } from './endgame';
 
 const emptyProjection = (): ReplayProjection => ({
@@ -955,7 +955,7 @@ export function applyBonus(state: ReplayProjection, event: CanonicalEvent): bool
     game.phase = 'action';
     summary = `Stayed at Place ${player.merchantPlace} and ${assistantAction === 'pick-up' ? 'picked up' : 'left'} 1 assistant.`;
   } else if (effect === 'wild-small-market' && choice.kind === 'wild-small-market') {
-    if (game.phase !== 'action' || player.merchantPlace !== 11 || game.activeBonusEffects.includes('wild-small-market')) return rejectBonus(state, event, 'bonus-market-unavailable');
+    if (!canUseFlexibleDemand(game)) return rejectBonus(state, event, 'bonus-market-unavailable');
     activateBonus(game, 'wild-small-market');
     summary = 'Played Flexible demand; the next Small Market sale may use any goods.';
   } else if (effect === 'repeat-post' && choice.kind === 'repeat-action') {

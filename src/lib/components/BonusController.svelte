@@ -1,7 +1,7 @@
 <script lang="ts">
   import { bonusCards, type Good } from '$lib/game/manifests';
   import { type PlaceActionChoice } from '$lib/game/actions';
-  import type { BonusChoice } from '$lib/game/bonus';
+  import { canUseFlexibleDemand, type BonusChoice } from '$lib/game/bonus';
   import { requiredAssistantAction } from '$lib/game/movement';
   import { currentSultanCost } from '$lib/game/ruby-routes';
   import type { GameSetup } from '$lib/game/setup';
@@ -277,7 +277,7 @@
             >
           {:else if selected.effect === 'wild-small-market'}<button
               class="primary"
-              disabled={game.phase !== 'action' || player.merchantPlace !== 11}
+              disabled={!canUseFlexibleDemand(game)}
               onclick={() =>
                 onPlayBonus(selected.id, { kind: 'wild-small-market' })}
               >Enable flexible Small Market demand</button

@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { bonusCards } from './manifests';
 import { isBonusChoice } from './bonus';
-import { applyBonus } from './reducer';
+import { applyBonus, applyEvent } from './reducer';
 import { createSetup, type GameSetup } from './setup';
 import { manifestVersions, reducerVersion, rulesEdition, schemaVersion, type CanonicalEvent, type ReplayProjection, type RoomProjection } from './protocol';
 
@@ -101,6 +101,37 @@ describe('Bonus card timing contract', () => {
       expect(applyBonus(state, event(card, { kind: 'wild-small-market' }))).toBe(true);
       expect(game.activeBonusEffects).toEqual(['wild-small-market']);
     }
+  });
+
+  it('uses Flexible Demand for a family visit and completes the sale at the Small Market', () => {
+    const [state, game, card] = fixture('wild-small-market');
+    const player = game.players[0];
+    game.phase = 'action';
+    player.merchantPlace = 12;
+    player.familyPlace = 12;
+    player.goods = { fabric: 0, spice: 0, fruit: 0, jewelry: 3 };
+    const action = (choice: Record<string, unknown>): CanonicalEvent => ({
+      ...event(card, choice), type: 'place/action-taken', payload: { choice, directAction: true }
+    });
+    expect(applyEvent(state, action({ kind: 'police-send', destination: 11 }))).toBe(true);
+    expect(game.phase).toBe('family-action');
+    expect(applyBonus(state, event(card, { kind: 'wild-small-market' }))).toBe(true);
+    const before = player.lira;
+    expect(applyEvent(state, action({ kind: 'market-sell', slotIndexes: [0, 1, 2], wildGoods: ['jewelry', 'jewelry', 'jewelry'] }))).toBe(true);
+    expect(player.lira).toBe(before + 9);
+    expect(player.goods.jewelry).toBe(0);
+    expect(game.activeBonusEffects).toEqual([]);
+    expect(game.phase).toBe('turn-end');
+    expect(player.merchantPlace).toBe(12);
+  });
+
+  it.each([10, 13])('rejects Flexible Demand during a family visit to Place %i', destination => {
+    const [state, game, card] = fixture('wild-small-market');
+    game.phase = 'family-action';
+    game.pending = { kind: 'family-action', destination };
+    game.players[0].merchantPlace = 11;
+    expect(applyBonus(state, event(card, { kind: 'wild-small-market' }))).toBe(false);
+    expect(game.players[0].bonusHand).toContain(card);
   });
 
   it('repeats only the immediately completed route at its newly exposed cost', () => {
