@@ -174,3 +174,26 @@ test('a shared tabletop plays a human and bot game with two host tabs', async ({
     await otherHost.close();
   }
 });
+
+test('a trained bot plays its private cards and resumes after reload', async ({page}, info) => {
+  const steps=new TestStepHelper(page,info);
+  steps.setMetadata('Play against the trained bot','Choose the learned policy, then reload during its first turn. Its versioned decisions and private card plays replay without diagnostics.');
+  const code=info.project.name==='phone'?'RLPPP':'RLDDD';
+  await page.goto(`/?e2eRoom=${code}&e2eSeed=bot-2`);
+  await page.getByLabel('Your merchant name').fill('Ada');
+  await page.getByRole('button',{name:/Create private room/}).click();
+  await page.getByLabel('Bot strategy').selectOption('rl-v1');
+  await page.getByRole('button',{name:'Add bot',exact:true}).click();
+  await expect(page.getByText('Bot · trained',{exact:true})).toBeVisible();
+  await steps.step('trained-bot-ready',{description:'The lobby identifies the trained opponent',verifications:[{spec:'A trained bot is seated and ready',check:async()=>expectState(page,{seatCount:2,ready:[false,true],diagnosticCount:0})}]});
+  await page.getByRole('button',{name:/I am ready/}).click();
+  await page.getByRole('button',{name:/Open the bazaar/}).click();
+  await expectState(page,{game:{currentTurn:'Bot 1',turnNumber:1}});
+  await page.reload();
+  await expectState(page,{diagnosticCount:0,game:{currentTurn:'Ada',turnNumber:2,phase:'movement'}});
+  const before=await readState(page);
+  expect(before.gameLog.some((entry:{ownerUid:string})=>entry.ownerUid===before.bots[0])).toBe(true);
+  expect(before.gameLog.some((entry:{ownerUid:string;summary:string})=>entry.ownerUid===before.bots[0] && entry.summary.startsWith('Played a Bonus card to gain 1'))).toBe(true);
+  await page.reload();
+  await expectState(page,{diagnosticCount:0,eventCount:before.eventCount,game:{currentTurn:'Ada',turnNumber:2}});
+});

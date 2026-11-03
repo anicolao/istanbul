@@ -1,0 +1,85 @@
+{
+  "failures": [],
+  "pairedBootstrap95": [
+    0.5625,
+    0.6875
+  ],
+  "seed": "istanbul-rl-v1:release-multi-2026-11-03",
+  "players": 4,
+  "opponent": "money",
+  "features": 42,
+  "games": 320,
+  "score": 0.621875,
+  "wins": 199,
+  "ties": 0,
+  "truncated": 0,
+  "meanTurns": 92.8375,
+  "byLayout": {
+    "short-path": {
+      "games": 80,
+      "score": 0.5375,
+      "wins": 43,
+      "ties": 0,
+      "truncated": 0,
+      "meanTurns": 94.05
+    },
+    "long-path": {
+      "games": 80,
+      "score": 0.6375,
+      "wins": 51,
+      "ties": 0,
+      "truncated": 0,
+      "meanTurns": 89.55
+    },
+    "number-order": {
+      "games": 80,
+      "score": 0.8,
+      "wins": 64,
+      "ties": 0,
+      "truncated": 0,
+      "meanTurns": 97.75
+    },
+    "random": {
+      "games": 80,
+      "score": 0.5125,
+      "wins": 41,
+      "ties": 0,
+      "truncated": 0,
+      "meanTurns": 90
+    }
+  },
+  "bySeat": [
+    {
+      "games": 80,
+      "score": 0.625,
+      "wins": 50,
+      "ties": 0,
+      "truncated": 0,
+      "meanTurns": 91.6
+    },
+    {
+      "games": 80,
+      "score": 0.6625,
+      "wins": 53,
+      "ties": 0,
+      "truncated": 0,
+      "meanTurns": 92.15
+    },
+    {
+      "games": 80,
+      "score": 0.6,
+      "wins": 48,
+      "ties": 0,
+      "truncated": 0,
+      "meanTurns": 93.05
+    },
+    {
+      "games": 80,
+      "score": 0.6,
+      "wins": 48,
+      "ties": 0,
+      "truncated": 0,
+      "meanTurns": 94.55
+    }
+  ]
+}

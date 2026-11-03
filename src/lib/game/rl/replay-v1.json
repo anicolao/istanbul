@@ -1,0 +1,5601 @@
+{
+  "winnerUids": [
+    "bot:host-000003"
+  ],
+  "events": [
+    {
+      "id": "host-000001",
+      "actorUid": "host",
+      "clientSeq": "000001",
+      "createdAt": 1,
+      "type": "game/created",
+      "payload": {
+        "roomCode": "RLHIS",
+        "tabletopOwned": true,
+        "maxPlayers": 2,
+        "mode": "shared-table",
+        "layout": "short-path"
+      },
+      "manifestVersions": {
+        "places": "istanbul-2014-base-v1",
+        "cards": "istanbul-2014-base-v1",
+        "tiles": "istanbul-2014-base-v1",
+        "random": "xorshift32-v1"
+      },
+      "reducerVersion": 1,
+      "schemaVersion": 1,
+      "rulesEdition": "istanbul-2014-base"
+    },
+    {
+      "id": "host-000002",
+      "actorUid": "host",
+      "clientSeq": "000002",
+      "createdAt": 2,
+      "type": "bot/added",
+      "payload": {
+        "tablePosition": 1,
+        "policy": "rl-v1"
+      },
+      "manifestVersions": {
+        "places": "istanbul-2014-base-v1",
+        "cards": "istanbul-2014-base-v1",
+        "tiles": "istanbul-2014-base-v1",
+        "random": "xorshift32-v1"
+      },
+      "reducerVersion": 1,
+      "schemaVersion": 1,
+      "rulesEdition": "istanbul-2014-base"
+    },
+    {
+      "id": "host-000003",
+      "actorUid": "host",
+      "clientSeq": "000003",
+      "createdAt": 3,
+      "type": "bot/added",
+      "payload": {
+        "tablePosition": 2,
+        "policy": "rl-v1"
+      },
+      "manifestVersions": {
+        "places": "istanbul-2014-base-v1",
+        "cards": "istanbul-2014-base-v1",
+        "tiles": "istanbul-2014-base-v1",
+        "random": "xorshift32-v1"
+      },
+      "reducerVersion": 1,
+      "schemaVersion": 1,
+      "rulesEdition": "istanbul-2014-base"
+    },
+    {
+      "id": "host-000004",
+      "actorUid": "host",
+      "clientSeq": "000004",
+      "createdAt": 4,
+      "type": "game/started",
+      "payload": {
+        "seed": "rl-compatibility-v1"
+      },
+      "manifestVersions": {
+        "places": "istanbul-2014-base-v1",
+        "cards": "istanbul-2014-base-v1",
+        "tiles": "istanbul-2014-base-v1",
+        "random": "xorshift32-v1"
+      },
+      "reducerVersion": 1,
+      "schemaVersion": 1,
+      "rulesEdition": "istanbul-2014-base"
+    },
+    {
+      "id": "host-000005",
+      "actorUid": "host",
+      "clientSeq": "000005",
+      "createdAt": 5,
+      "type": "turn/moved",
+      "payload": {
+        "destination": 5,
+        "assistantAction": "drop",
+        "drawContextVersion": 1,
+        "automaticFinalBonus": true,
+        "botUid": "bot:host-000002",
+        "botVersion": 2,
+        "botState": "1:1:0:movement:618938874"
+      },
+      "manifestVersions": {
+        "places": "istanbul-2014-base-v1",
+        "cards": "istanbul-2014-base-v1",
+        "tiles": "istanbul-2014-base-v1",
+        "random": "xorshift32-v1"
+      },
+      "reducerVersion": 1,
+      "schemaVersion": 1,
+      "rulesEdition": "istanbul-2014-base"
+    },
+    {
+      "id": "host-000006",
+      "actorUid": "host",
+      "clientSeq": "000006",
+      "createdAt": 6,
+      "type": "place/action-taken",
+      "payload": {
+        "choice": {
+          "kind": "post-office-collect"
+        },
+        "drawContextVersion": 1,
+        "automaticFinalBonus": true,
+        "botUid": "bot:host-000002",
+        "botVersion": 2,
+        "botState": "1:1:0:action:2021000786"
+      },
+      "manifestVersions": {
+        "places": "istanbul-2014-base-v1",
+        "cards": "istanbul-2014-base-v1",
+        "tiles": "istanbul-2014-base-v1",
+        "random": "xorshift32-v1"
+      },
+      "reducerVersion": 1,
+      "schemaVersion": 1,
+      "rulesEdition": "istanbul-2014-base"
+    },
+    {
+      "id": "host-000007",
+      "actorUid": "host",
+      "clientSeq": "000007",
+      "createdAt": 7,
+      "type": "turn/ended",
+      "payload": {
+        "directAction": true,
+        "drawContextVersion": 1,
+        "automaticFinalBonus": true,
+        "botUid": "bot:host-000002",
+        "botVersion": 2,
+        "botState": "1:1:0:turn-end:354896143"
+      },
+      "manifestVersions": {
+        "places": "istanbul-2014-base-v1",
+        "cards": "istanbul-2014-base-v1",
+        "tiles": "istanbul-2014-base-v1",
+        "random": "xorshift32-v1"
+      },
+      "reducerVersion": 1,
+      "schemaVersion": 1,
+      "rulesEdition": "istanbul-2014-base"
+    },
+    {
+      "id": "host-000008",
+      "actorUid": "host",
+      "clientSeq": "000008",
+      "createdAt": 8,
+      "type": "turn/moved",
+      "payload": {
+        "destination": 5,
+        "assistantAction": "drop",
+        "drawContextVersion": 1,
+        "automaticFinalBonus": true,
+        "botUid": "bot:host-000003",
+        "botVersion": 2,
+        "botState": "1:2:1:movement:2444278002"
+      },
+      "manifestVersions": {
+        "places": "istanbul-2014-base-v1",
+        "cards": "istanbul-2014-base-v1",
+        "tiles": "istanbul-2014-base-v1",
+        "random": "xorshift32-v1"
+      },
+      "reducerVersion": 1,
+      "schemaVersion": 1,
+      "rulesEdition": "istanbul-2014-base"
+    },
+    {
+      "id": "host-000009",
+      "actorUid": "host",
+      "clientSeq": "000009",
+      "createdAt": 9,
+      "type": "turn/merchant-paid",
+      "payload": {
+        "recipientUids": [
+          "bot:host-000002"
+        ],
+        "neutralMerchantIds": [],
+        "drawContextVersion": 1,
+        "automaticFinalBonus": true,
+        "botUid": "bot:host-000003",
+        "botVersion": 2,
+        "botState": "1:2:1:merchant-payment:839289635"
+      },
+      "manifestVersions": {
+        "places": "istanbul-2014-base-v1",
+        "cards": "istanbul-2014-base-v1",
+        "tiles": "istanbul-2014-base-v1",
+        "random": "xorshift32-v1"
+      },
+      "reducerVersion": 1,
+      "schemaVersion": 1,
+      "rulesEdition": "istanbul-2014-base"
+    },
+    {
+      "id": "host-000010",
+      "actorUid": "host",
+      "clientSeq": "000010",
+      "createdAt": 10,
+      "type": "place/action-taken",
+      "payload": {
+        "choice": {
+          "kind": "post-office-collect"
+        },
+        "drawContextVersion": 1,
+        "automaticFinalBonus": true,
+        "botUid": "bot:host-000003",
+        "botVersion": 2,
+        "botState": "1:2:1:action:2997105573"
+      },
+      "manifestVersions": {
+        "places": "istanbul-2014-base-v1",
+        "cards": "istanbul-2014-base-v1",
+        "tiles": "istanbul-2014-base-v1",
+        "random": "xorshift32-v1"
+      },
+      "reducerVersion": 1,
+      "schemaVersion": 1,
+      "rulesEdition": "istanbul-2014-base"
+    },
+    {
+      "id": "host-000011",
+      "actorUid": "host",
+      "clientSeq": "000011",
+      "createdAt": 11,
+      "type": "turn/ended",
+      "payload": {
+        "directAction": true,
+        "drawContextVersion": 1,
+        "automaticFinalBonus": true,
+        "botUid": "bot:host-000003",
+        "botVersion": 2,
+        "botState": "1:2:1:turn-end:1577769785"
+      },
+      "manifestVersions": {
+        "places": "istanbul-2014-base-v1",
+        "cards": "istanbul-2014-base-v1",
+        "tiles": "istanbul-2014-base-v1",
+        "random": "xorshift32-v1"
+      },
+      "reducerVersion": 1,
+      "schemaVersion": 1,
+      "rulesEdition": "istanbul-2014-base"
+    },
+    {
+      "id": "host-000012",
+      "actorUid": "host",
+      "clientSeq": "000012",
+      "createdAt": 12,
+      "type": "turn/moved",
+      "payload": {
+        "destination": 2,
+        "assistantAction": "drop",
+        "drawContextVersion": 1,
+        "automaticFinalBonus": true,
+        "botUid": "bot:host-000002",
+        "botVersion": 2,
+        "botState": "1:3:0:movement:3068950512"
+      },
+      "manifestVersions": {
+        "places": "istanbul-2014-base-v1",
+        "cards": "istanbul-2014-base-v1",
+        "tiles": "istanbul-2014-base-v1",
+        "random": "xorshift32-v1"
+      },
+      "reducerVersion": 1,
+      "schemaVersion": 1,
+      "rulesEdition": "istanbul-2014-base"
+    },
+    {
+      "id": "host-000013",
+      "actorUid": "host",
+      "clientSeq": "000013",
+      "createdAt": 13,
+      "type": "place/action-taken",
+      "payload": {
+        "choice": {
+          "kind": "warehouse-fill",
+          "good": "fabric"
+        },
+        "drawContextVersion": 1,
+        "automaticFinalBonus": true,
+        "botUid": "bot:host-000002",
+        "botVersion": 2,
+        "botState": "1:3:0:action:1904644143"
+      },
+      "manifestVersions": {
+        "places": "istanbul-2014-base-v1",
+        "cards": "istanbul-2014-base-v1",
+        "tiles": "istanbul-2014-base-v1",
+        "random": "xorshift32-v1"
+      },
+      "reducerVersion": 1,
+      "schemaVersion": 1,
+      "rulesEdition": "istanbul-2014-base"
+    },
+    {
+      "id": "host-000014",
+      "actorUid": "host",
+      "clientSeq": "000014",
+      "createdAt": 14,
+      "type": "turn/ended",
+      "payload": {
+        "directAction": true,
+        "drawContextVersion": 1,
+        "automaticFinalBonus": true,
+        "botUid": "bot:host-000002",
+        "botVersion": 2,
+        "botState": "1:3:0:turn-end:1777363939"
+      },
+      "manifestVersions": {
+        "places": "istanbul-2014-base-v1",
+        "cards": "istanbul-2014-base-v1",
+        "tiles": "istanbul-2014-base-v1",
+        "random": "xorshift32-v1"
+      },
+      "reducerVersion": 1,
+      "schemaVersion": 1,
+      "rulesEdition": "istanbul-2014-base"
+    },
+    {
+      "id": "host-000015",
+      "actorUid": "host",
+      "clientSeq": "000015",
+      "createdAt": 15,
+      "type": "turn/moved",
+      "payload": {
+        "destination": 12,
+        "assistantAction": "drop",
+        "drawContextVersion": 1,
+        "automaticFinalBonus": true,
+        "botUid": "bot:host-000003",
+        "botVersion": 2,
+        "botState": "1:4:1:movement:2214297820"
+      },
+      "manifestVersions": {
+        "places": "istanbul-2014-base-v1",
+        "cards": "istanbul-2014-base-v1",
+        "tiles": "istanbul-2014-base-v1",
+        "random": "xorshift32-v1"
+      },
+      "reducerVersion": 1,
+      "schemaVersion": 1,
+      "rulesEdition": "istanbul-2014-base"
+    },
+    {
+      "id": "host-000016",
+      "actorUid": "host",
+      "clientSeq": "000016",
+      "createdAt": 16,
+      "type": "place/action-taken",
+      "payload": {
+        "choice": {
+          "kind": "police-send",
+          "destination": 5
+        },
+        "drawContextVersion": 1,
+        "automaticFinalBonus": true,
+        "botUid": "bot:host-000003",
+        "botVersion": 2,
+        "botState": "1:4:1:action:35510468"
+      },
+      "manifestVersions": {
+        "places": "istanbul-2014-base-v1",
+        "cards": "istanbul-2014-base-v1",
+        "tiles": "istanbul-2014-base-v1",
+        "random": "xorshift32-v1"
+      },
+      "reducerVersion": 1,
+      "schemaVersion": 1,
+      "rulesEdition": "istanbul-2014-base"
+    },
+    {
+      "id": "host-000017",
+      "actorUid": "host",
+      "clientSeq": "000017",
+      "createdAt": 17,
+      "type": "place/action-taken",
+      "payload": {
+        "choice": {
+          "kind": "post-office-collect"
+        },
+        "drawContextVersion": 1,
+        "automaticFinalBonus": true,
+        "botUid": "bot:host-000003",
+        "botVersion": 2,
+        "botState": "1:4:1:family-action:332276486"
+      },
+      "manifestVersions": {
+        "places": "istanbul-2014-base-v1",
+        "cards": "istanbul-2014-base-v1",
+        "tiles": "istanbul-2014-base-v1",
+        "random": "xorshift32-v1"
+      },
+      "reducerVersion": 1,
+      "schemaVersion": 1,
+      "rulesEdition": "istanbul-2014-base"
+    },
+    {
+      "id": "host-000018",
+      "actorUid": "host",
+      "clientSeq": "000018",
+      "createdAt": 18,
+      "type": "turn/ended",
+      "payload": {
+        "directAction": true,
+        "drawContextVersion": 1,
+        "automaticFinalBonus": true,
+        "botUid": "bot:host-000003",
+        "botVersion": 2,
+        "botState": "1:4:1:turn-end:3346941631"
+      },
+      "manifestVersions": {
+        "places": "istanbul-2014-base-v1",
+        "cards": "istanbul-2014-base-v1",
+        "tiles": "istanbul-2014-base-v1",
+        "random": "xorshift32-v1"
+      },
+      "reducerVersion": 1,
+      "schemaVersion": 1,
+      "rulesEdition": "istanbul-2014-base"
+    },
+    {
+      "id": "host-000019",
+      "actorUid": "host",
+      "clientSeq": "000019",
+      "createdAt": 19,
+      "type": "turn/moved",
+      "payload": {
+        "destination": 5,
+        "assistantAction": "pick-up",
+        "drawContextVersion": 1,
+        "automaticFinalBonus": true,
+        "botUid": "bot:host-000002",
+        "botVersion": 2,
+        "botState": "1:5:0:movement:1951709974"
+      },
+      "manifestVersions": {
+        "places": "istanbul-2014-base-v1",
+        "cards": "istanbul-2014-base-v1",
+        "tiles": "istanbul-2014-base-v1",
+        "random": "xorshift32-v1"
+      },
+      "reducerVersion": 1,
+      "schemaVersion": 1,
+      "rulesEdition": "istanbul-2014-base"
+    },
+    {
+      "id": "host-000020",
+      "actorUid": "host",
+      "clientSeq": "000020",
+      "createdAt": 20,
+      "type": "place/action-taken",
+      "payload": {
+        "choice": {
+          "kind": "post-office-collect"
+        },
+        "drawContextVersion": 1,
+        "automaticFinalBonus": true,
+        "botUid": "bot:host-000002",
+        "botVersion": 2,
+        "botState": "1:5:0:action:332220399"
+      },
+      "manifestVersions": {
+        "places": "istanbul-2014-base-v1",
+        "cards": "istanbul-2014-base-v1",
+        "tiles": "istanbul-2014-base-v1",
+        "random": "xorshift32-v1"
+      },
+      "reducerVersion": 1,
+      "schemaVersion": 1,
+      "rulesEdition": "istanbul-2014-base"
+    },
+    {
+      "id": "host-000021",
+      "actorUid": "host",
+      "clientSeq": "000021",
+      "createdAt": 21,
+      "type": "encounter/resolved",
+      "payload": {
+        "choice": {
+          "kind": "catch-family",
+          "familyUid": "bot:host-000003",
+          "reward": "lira"
+        },
+        "drawContextVersion": 1,
+        "automaticFinalBonus": true,
+        "botUid": "bot:host-000002",
+        "botVersion": 2,
+        "botState": "1:5:0:encounters:3320979602"
+      },
+      "manifestVersions": {
+        "places": "istanbul-2014-base-v1",
+        "cards": "istanbul-2014-base-v1",
+        "tiles": "istanbul-2014-base-v1",
+        "random": "xorshift32-v1"
+      },
+      "reducerVersion": 1,
+      "schemaVersion": 1,
+      "rulesEdition": "istanbul-2014-base"
+    },
+    {
+      "id": "host-000022",
+      "actorUid": "host",
+      "clientSeq": "000022",
+      "createdAt": 22,
+      "type": "turn/ended",
+      "payload": {
+        "directAction": true,
+        "drawContextVersion": 1,
+        "automaticFinalBonus": true,
+        "botUid": "bot:host-000002",
+        "botVersion": 2,
+        "botState": "1:5:0:turn-end:2801843593"
+      },
+      "manifestVersions": {
+        "places": "istanbul-2014-base-v1",
+        "cards": "istanbul-2014-base-v1",
+        "tiles": "istanbul-2014-base-v1",
+        "random": "xorshift32-v1"
+      },
+      "reducerVersion": 1,
+      "schemaVersion": 1,
+      "rulesEdition": "istanbul-2014-base"
+    },
+    {
+      "id": "host-000023",
+      "actorUid": "host",
+      "clientSeq": "000023",
+      "createdAt": 23,
+      "type": "turn/moved",
+      "payload": {
+        "destination": 15,
+        "assistantAction": "drop",
+        "drawContextVersion": 1,
+        "automaticFinalBonus": true,
+        "botUid": "bot:host-000003",
+        "botVersion": 2,
+        "botState": "1:6:1:movement:2687363699"
+      },
+      "manifestVersions": {
+        "places": "istanbul-2014-base-v1",
+        "cards": "istanbul-2014-base-v1",
+        "tiles": "istanbul-2014-base-v1",
+        "random": "xorshift32-v1"
+      },
+      "reducerVersion": 1,
+      "schemaVersion": 1,
+      "rulesEdition": "istanbul-2014-base"
+    },
+    {
+      "id": "host-000024",
+      "actorUid": "host",
+      "clientSeq": "000024",
+      "createdAt": 24,
+      "type": "turn/merchant-paid",
+      "payload": {
+        "recipientUids": [],
+        "neutralMerchantIds": [
+          "neutral-2"
+        ],
+        "drawContextVersion": 1,
+        "automaticFinalBonus": true,
+        "botUid": "bot:host-000003",
+        "botVersion": 2,
+        "botState": "1:6:1:merchant-payment:3508542603"
+      },
+      "manifestVersions": {
+        "places": "istanbul-2014-base-v1",
+        "cards": "istanbul-2014-base-v1",
+        "tiles": "istanbul-2014-base-v1",
+        "random": "xorshift32-v1"
+      },
+      "reducerVersion": 1,
+      "schemaVersion": 1,
+      "rulesEdition": "istanbul-2014-base"
+    },
+    {
+      "id": "host-000025",
+      "actorUid": "host",
+      "clientSeq": "000025",
+      "createdAt": 25,
+      "type": "place/action-taken",
+      "payload": {
+        "choice": {
+          "kind": "mosque-take",
+          "tileId": "mosque-fruit-2"
+        },
+        "drawContextVersion": 1,
+        "automaticFinalBonus": true,
+        "botUid": "bot:host-000003",
+        "botVersion": 2,
+        "botState": "1:6:1:action:3559370111"
+      },
+      "manifestVersions": {
+        "places": "istanbul-2014-base-v1",
+        "cards": "istanbul-2014-base-v1",
+        "tiles": "istanbul-2014-base-v1",
+        "random": "xorshift32-v1"
+      },
+      "reducerVersion": 1,
+      "schemaVersion": 1,
+      "rulesEdition": "istanbul-2014-base"
+    },
+    {
+      "id": "host-000026",
+      "actorUid": "host",
+      "clientSeq": "000026",
+      "createdAt": 26,
+      "type": "turn/ended",
+      "payload": {
+        "directAction": true,
+        "drawContextVersion": 1,
+        "automaticFinalBonus": true,
+        "botUid": "bot:host-000003",
+        "botVersion": 2,
+        "botState": "1:6:1:turn-end:2787843449"
+      },
+      "manifestVersions": {
+        "places": "istanbul-2014-base-v1",
+        "cards": "istanbul-2014-base-v1",
+        "tiles": "istanbul-2014-base-v1",
+        "random": "xorshift32-v1"
+      },
+      "reducerVersion": 1,
+      "schemaVersion": 1,
+      "rulesEdition": "istanbul-2014-base"
+    },
+    {
+      "id": "host-000027",
+      "actorUid": "host",
+      "clientSeq": "000027",
+      "createdAt": 27,
+      "type": "turn/moved",
+      "payload": {
+        "destination": 12,
+        "assistantAction": "drop",
+        "drawContextVersion": 1,
+        "automaticFinalBonus": true,
+        "botUid": "bot:host-000002",
+        "botVersion": 2,
+        "botState": "1:7:0:movement:3272249734"
+      },
+      "manifestVersions": {
+        "places": "istanbul-2014-base-v1",
+        "cards": "istanbul-2014-base-v1",
+        "tiles": "istanbul-2014-base-v1",
+        "random": "xorshift32-v1"
+      },
+      "reducerVersion": 1,
+      "schemaVersion": 1,
+      "rulesEdition": "istanbul-2014-base"
+    },
+    {
+      "id": "host-000028",
+      "actorUid": "host",
+      "clientSeq": "000028",
+      "createdAt": 28,
+      "type": "place/action-taken",
+      "payload": {
+        "choice": {
+          "kind": "police-send",
+          "destination": 14
+        },
+        "drawContextVersion": 1,
+        "automaticFinalBonus": true,
+        "botUid": "bot:host-000002",
+        "botVersion": 2,
+        "botState": "1:7:0:action:2120855821"
+      },
+      "manifestVersions": {
+        "places": "istanbul-2014-base-v1",
+        "cards": "istanbul-2014-base-v1",
+        "tiles": "istanbul-2014-base-v1",
+        "random": "xorshift32-v1"
+      },
+      "reducerVersion": 1,
+      "schemaVersion": 1,
+      "rulesEdition": "istanbul-2014-base"
+    },
+    {
+      "id": "host-000029",
+      "actorUid": "host",
+      "clientSeq": "000029",
+      "createdAt": 29,
+      "type": "place/action-taken",
+      "payload": {
+        "choice": {
+          "kind": "mosque-take",
+          "tileId": "mosque-fabric-2"
+        },
+        "drawContextVersion": 1,
+        "automaticFinalBonus": true,
+        "botUid": "bot:host-000002",
+        "botVersion": 2,
+        "botState": "1:7:0:family-action:2704017497"
+      },
+      "manifestVersions": {
+        "places": "istanbul-2014-base-v1",
+        "cards": "istanbul-2014-base-v1",
+        "tiles": "istanbul-2014-base-v1",
+        "random": "xorshift32-v1"
+      },
+      "reducerVersion": 1,
+      "schemaVersion": 1,
+      "rulesEdition": "istanbul-2014-base"
+    },
+    {
+      "id": "host-000030",
+      "actorUid": "host",
+      "clientSeq": "000030",
+      "createdAt": 30,
+      "type": "turn/ended",
+      "payload": {
+        "directAction": true,
+        "drawContextVersion": 1,
+        "automaticFinalBonus": true,
+        "botUid": "bot:host-000002",
+        "botVersion": 2,
+        "botState": "1:7:0:turn-end:890486811"
+      },
+      "manifestVersions": {
+        "places": "istanbul-2014-base-v1",
+        "cards": "istanbul-2014-base-v1",
+        "tiles": "istanbul-2014-base-v1",
+        "random": "xorshift32-v1"
+      },
+      "reducerVersion": 1,
+      "schemaVersion": 1,
+      "rulesEdition": "istanbul-2014-base"
+    },
+    {
+      "id": "host-000031",
+      "actorUid": "host",
+      "clientSeq": "000031",
+      "createdAt": 31,
+      "type": "turn/moved",
+      "payload": {
+        "destination": 5,
+        "assistantAction": "pick-up",
+        "drawContextVersion": 1,
+        "automaticFinalBonus": true,
+        "botUid": "bot:host-000003",
+        "botVersion": 2,
+        "botState": "1:8:1:movement:3085484094"
+      },
+      "manifestVersions": {
+        "places": "istanbul-2014-base-v1",
+        "cards": "istanbul-2014-base-v1",
+        "tiles": "istanbul-2014-base-v1",
+        "random": "xorshift32-v1"
+      },
+      "reducerVersion": 1,
+      "schemaVersion": 1,
+      "rulesEdition": "istanbul-2014-base"
+    },
+    {
+      "id": "host-000032",
+      "actorUid": "host",
+      "clientSeq": "000032",
+      "createdAt": 32,
+      "type": "place/action-taken",
+      "payload": {
+        "choice": {
+          "kind": "post-office-collect"
+        },
+        "drawContextVersion": 1,
+        "automaticFinalBonus": true,
+        "botUid": "bot:host-000003",
+        "botVersion": 2,
+        "botState": "1:8:1:action:1745984903"
+      },
+      "manifestVersions": {
+        "places": "istanbul-2014-base-v1",
+        "cards": "istanbul-2014-base-v1",
+        "tiles": "istanbul-2014-base-v1",
+        "random": "xorshift32-v1"
+      },
+      "reducerVersion": 1,
+      "schemaVersion": 1,
+      "rulesEdition": "istanbul-2014-base"
+    },
+    {
+      "id": "host-000033",
+      "actorUid": "host",
+      "clientSeq": "000033",
+      "createdAt": 33,
+      "type": "turn/ended",
+      "payload": {
+        "directAction": true,
+        "drawContextVersion": 1,
+        "automaticFinalBonus": true,
+        "botUid": "bot:host-000003",
+        "botVersion": 2,
+        "botState": "1:8:1:turn-end:3521001009"
+      },
+      "manifestVersions": {
+        "places": "istanbul-2014-base-v1",
+        "cards": "istanbul-2014-base-v1",
+        "tiles": "istanbul-2014-base-v1",
+        "random": "xorshift32-v1"
+      },
+      "reducerVersion": 1,
+      "schemaVersion": 1,
+      "rulesEdition": "istanbul-2014-base"
+    },
+    {
+      "id": "host-000034",
+      "actorUid": "host",
+      "clientSeq": "000034",
+      "createdAt": 34,
+      "type": "turn/moved",
+      "payload": {
+        "destination": 5,
+        "assistantAction": "drop",
+        "drawContextVersion": 1,
+        "automaticFinalBonus": true,
+        "botUid": "bot:host-000002",
+        "botVersion": 2,
+        "botState": "1:9:0:movement:3427204398"
+      },
+      "manifestVersions": {
+        "places": "istanbul-2014-base-v1",
+        "cards": "istanbul-2014-base-v1",
+        "tiles": "istanbul-2014-base-v1",
+        "random": "xorshift32-v1"
+      },
+      "reducerVersion": 1,
+      "schemaVersion": 1,
+      "rulesEdition": "istanbul-2014-base"
+    },
+    {
+      "id": "host-000035",
+      "actorUid": "host",
+      "clientSeq": "000035",
+      "createdAt": 35,
+      "type": "turn/merchant-paid",
+      "payload": {
+        "recipientUids": [
+          "bot:host-000003"
+        ],
+        "neutralMerchantIds": [],
+        "drawContextVersion": 1,
+        "automaticFinalBonus": true,
+        "botUid": "bot:host-000002",
+        "botVersion": 2,
+        "botState": "1:9:0:merchant-payment:2599687947"
+      },
+      "manifestVersions": {
+        "places": "istanbul-2014-base-v1",
+        "cards": "istanbul-2014-base-v1",
+        "tiles": "istanbul-2014-base-v1",
+        "random": "xorshift32-v1"
+      },
+      "reducerVersion": 1,
+      "schemaVersion": 1,
+      "rulesEdition": "istanbul-2014-base"
+    },
+    {
+      "id": "host-000036",
+      "actorUid": "host",
+      "clientSeq": "000036",
+      "createdAt": 36,
+      "type": "place/action-taken",
+      "payload": {
+        "choice": {
+          "kind": "post-office-collect"
+        },
+        "drawContextVersion": 1,
+        "automaticFinalBonus": true,
+        "botUid": "bot:host-000002",
+        "botVersion": 2,
+        "botState": "1:9:0:action:207823801"
+      },
+      "manifestVersions": {
+        "places": "istanbul-2014-base-v1",
+        "cards": "istanbul-2014-base-v1",
+        "tiles": "istanbul-2014-base-v1",
+        "random": "xorshift32-v1"
+      },
+      "reducerVersion": 1,
+      "schemaVersion": 1,
+      "rulesEdition": "istanbul-2014-base"
+    },
+    {
+      "id": "host-000037",
+      "actorUid": "host",
+      "clientSeq": "000037",
+      "createdAt": 37,
+      "type": "turn/ended",
+      "payload": {
+        "directAction": true,
+        "drawContextVersion": 1,
+        "automaticFinalBonus": true,
+        "botUid": "bot:host-000002",
+        "botVersion": 2,
+        "botState": "1:9:0:turn-end:1263753957"
+      },
+      "manifestVersions": {
+        "places": "istanbul-2014-base-v1",
+        "cards": "istanbul-2014-base-v1",
+        "tiles": "istanbul-2014-base-v1",
+        "random": "xorshift32-v1"
+      },
+      "reducerVersion": 1,
+      "schemaVersion": 1,
+      "rulesEdition": "istanbul-2014-base"
+    },
+    {
+      "id": "host-000038",
+      "actorUid": "host",
+      "clientSeq": "000038",
+      "createdAt": 38,
+      "type": "turn/moved",
+      "payload": {
+        "destination": 12,
+        "assistantAction": "pick-up",
+        "drawContextVersion": 1,
+        "automaticFinalBonus": true,
+        "botUid": "bot:host-000003",
+        "botVersion": 2,
+        "botState": "1:10:1:movement:867949461"
+      },
+      "manifestVersions": {
+        "places": "istanbul-2014-base-v1",
+        "cards": "istanbul-2014-base-v1",
+        "tiles": "istanbul-2014-base-v1",
+        "random": "xorshift32-v1"
+      },
+      "reducerVersion": 1,
+      "schemaVersion": 1,
+      "rulesEdition": "istanbul-2014-base"
+    },
+    {
+      "id": "host-000039",
+      "actorUid": "host",
+      "clientSeq": "000039",
+      "createdAt": 39,
+      "type": "place/action-taken",
+      "payload": {
+        "choice": {
+          "kind": "police-send",
+          "destination": 5
+        },
+        "drawContextVersion": 1,
+        "automaticFinalBonus": true,
+        "botUid": "bot:host-000003",
+        "botVersion": 2,
+        "botState": "1:10:1:action:1831476024"
+      },
+      "manifestVersions": {
+        "places": "istanbul-2014-base-v1",
+        "cards": "istanbul-2014-base-v1",
+        "tiles": "istanbul-2014-base-v1",
+        "random": "xorshift32-v1"
+      },
+      "reducerVersion": 1,
+      "schemaVersion": 1,
+      "rulesEdition": "istanbul-2014-base"
+    },
+    {
+      "id": "host-000040",
+      "actorUid": "host",
+      "clientSeq": "000040",
+      "createdAt": 40,
+      "type": "place/action-taken",
+      "payload": {
+        "choice": {
+          "kind": "post-office-collect"
+        },
+        "drawContextVersion": 1,
+        "automaticFinalBonus": true,
+        "botUid": "bot:host-000003",
+        "botVersion": 2,
+        "botState": "1:10:1:family-action:1317140977"
+      },
+      "manifestVersions": {
+        "places": "istanbul-2014-base-v1",
+        "cards": "istanbul-2014-base-v1",
+        "tiles": "istanbul-2014-base-v1",
+        "random": "xorshift32-v1"
+      },
+      "reducerVersion": 1,
+      "schemaVersion": 1,
+      "rulesEdition": "istanbul-2014-base"
+    },
+    {
+      "id": "host-000041",
+      "actorUid": "host",
+      "clientSeq": "000041",
+      "createdAt": 41,
+      "type": "turn/ended",
+      "payload": {
+        "directAction": true,
+        "drawContextVersion": 1,
+        "automaticFinalBonus": true,
+        "botUid": "bot:host-000003",
+        "botVersion": 2,
+        "botState": "1:10:1:turn-end:3718451713"
+      },
+      "manifestVersions": {
+        "places": "istanbul-2014-base-v1",
+        "cards": "istanbul-2014-base-v1",
+        "tiles": "istanbul-2014-base-v1",
+        "random": "xorshift32-v1"
+      },
+      "reducerVersion": 1,
+      "schemaVersion": 1,
+      "rulesEdition": "istanbul-2014-base"
+    },
+    {
+      "id": "host-000042",
+      "actorUid": "host",
+      "clientSeq": "000042",
+      "createdAt": 42,
+      "type": "turn/moved",
+      "payload": {
+        "destination": 14,
+        "assistantAction": "drop",
+        "drawContextVersion": 1,
+        "automaticFinalBonus": true,
+        "botUid": "bot:host-000002",
+        "botVersion": 2,
+        "botState": "1:11:0:movement:3685426182"
+      },
+      "manifestVersions": {
+        "places": "istanbul-2014-base-v1",
+        "cards": "istanbul-2014-base-v1",
+        "tiles": "istanbul-2014-base-v1",
+        "random": "xorshift32-v1"
+      },
+      "reducerVersion": 1,
+      "schemaVersion": 1,
+      "rulesEdition": "istanbul-2014-base"
+    },
+    {
+      "id": "host-000043",
+      "actorUid": "host",
+      "clientSeq": "000043",
+      "createdAt": 43,
+      "type": "turn/merchant-paid",
+      "payload": {
+        "recipientUids": [],
+        "neutralMerchantIds": [
+          "neutral-1"
+        ],
+        "drawContextVersion": 1,
+        "automaticFinalBonus": true,
+        "botUid": "bot:host-000002",
+        "botVersion": 2,
+        "botState": "1:11:0:merchant-payment:3143111079"
+      },
+      "manifestVersions": {
+        "places": "istanbul-2014-base-v1",
+        "cards": "istanbul-2014-base-v1",
+        "tiles": "istanbul-2014-base-v1",
+        "random": "xorshift32-v1"
+      },
+      "reducerVersion": 1,
+      "schemaVersion": 1,
+      "rulesEdition": "istanbul-2014-base"
+    },
+    {
+      "id": "host-000044",
+      "actorUid": "host",
+      "clientSeq": "000044",
+      "createdAt": 44,
+      "type": "place/action-taken",
+      "payload": {
+        "choice": {
+          "kind": "mosque-take",
+          "tileId": "mosque-spice-2"
+        },
+        "drawContextVersion": 1,
+        "automaticFinalBonus": true,
+        "botUid": "bot:host-000002",
+        "botVersion": 2,
+        "botState": "1:11:0:action:3071339088"
+      },
+      "manifestVersions": {
+        "places": "istanbul-2014-base-v1",
+        "cards": "istanbul-2014-base-v1",
+        "tiles": "istanbul-2014-base-v1",
+        "random": "xorshift32-v1"
+      },
+      "reducerVersion": 1,
+      "schemaVersion": 1,
+      "rulesEdition": "istanbul-2014-base"
+    },
+    {
+      "id": "host-000045",
+      "actorUid": "host",
+      "clientSeq": "000045",
+      "createdAt": 45,
+      "type": "turn/ended",
+      "payload": {
+        "directAction": true,
+        "drawContextVersion": 1,
+        "automaticFinalBonus": true,
+        "botUid": "bot:host-000002",
+        "botVersion": 2,
+        "botState": "1:11:0:turn-end:2601496441"
+      },
+      "manifestVersions": {
+        "places": "istanbul-2014-base-v1",
+        "cards": "istanbul-2014-base-v1",
+        "tiles": "istanbul-2014-base-v1",
+        "random": "xorshift32-v1"
+      },
+      "reducerVersion": 1,
+      "schemaVersion": 1,
+      "rulesEdition": "istanbul-2014-base"
+    },
+    {
+      "id": "host-000046",
+      "actorUid": "host",
+      "clientSeq": "000046",
+      "createdAt": 46,
+      "type": "turn/moved",
+      "payload": {
+        "destination": 5,
+        "assistantAction": "drop",
+        "drawContextVersion": 1,
+        "automaticFinalBonus": true,
+        "botUid": "bot:host-000003",
+        "botVersion": 2,
+        "botState": "1:12:1:movement:2954999178"
+      },
+      "manifestVersions": {
+        "places": "istanbul-2014-base-v1",
+        "cards": "istanbul-2014-base-v1",
+        "tiles": "istanbul-2014-base-v1",
+        "random": "xorshift32-v1"
+      },
+      "reducerVersion": 1,
+      "schemaVersion": 1,
+      "rulesEdition": "istanbul-2014-base"
+    },
+    {
+      "id": "host-000047",
+      "actorUid": "host",
+      "clientSeq": "000047",
+      "createdAt": 47,
+      "type": "place/action-taken",
+      "payload": {
+        "choice": {
+          "kind": "post-office-collect"
+        },
+        "drawContextVersion": 1,
+        "automaticFinalBonus": true,
+        "botUid": "bot:host-000003",
+        "botVersion": 2,
+        "botState": "1:12:1:action:2199005370"
+      },
+      "manifestVersions": {
+        "places": "istanbul-2014-base-v1",
+        "cards": "istanbul-2014-base-v1",
+        "tiles": "istanbul-2014-base-v1",
+        "random": "xorshift32-v1"
+      },
+      "reducerVersion": 1,
+      "schemaVersion": 1,
+      "rulesEdition": "istanbul-2014-base"
+    },
+    {
+      "id": "host-000048",
+      "actorUid": "host",
+      "clientSeq": "000048",
+      "createdAt": 48,
+      "type": "turn/ended",
+      "payload": {
+        "directAction": true,
+        "drawContextVersion": 1,
+        "automaticFinalBonus": true,
+        "botUid": "bot:host-000003",
+        "botVersion": 2,
+        "botState": "1:12:1:turn-end:1161711009"
+      },
+      "manifestVersions": {
+        "places": "istanbul-2014-base-v1",
+        "cards": "istanbul-2014-base-v1",
+        "tiles": "istanbul-2014-base-v1",
+        "random": "xorshift32-v1"
+      },
+      "reducerVersion": 1,
+      "schemaVersion": 1,
+      "rulesEdition": "istanbul-2014-base"
+    },
+    {
+      "id": "host-000049",
+      "actorUid": "host",
+      "clientSeq": "000049",
+      "createdAt": 49,
+      "type": "turn/moved",
+      "payload": {
+        "destination": 5,
+        "assistantAction": "pick-up",
+        "drawContextVersion": 1,
+        "automaticFinalBonus": true,
+        "botUid": "bot:host-000002",
+        "botVersion": 2,
+        "botState": "1:13:0:movement:150063762"
+      },
+      "manifestVersions": {
+        "places": "istanbul-2014-base-v1",
+        "cards": "istanbul-2014-base-v1",
+        "tiles": "istanbul-2014-base-v1",
+        "random": "xorshift32-v1"
+      },
+      "reducerVersion": 1,
+      "schemaVersion": 1,
+      "rulesEdition": "istanbul-2014-base"
+    },
+    {
+      "id": "host-000050",
+      "actorUid": "host",
+      "clientSeq": "000050",
+      "createdAt": 50,
+      "type": "turn/merchant-paid",
+      "payload": {
+        "recipientUids": [
+          "bot:host-000003"
+        ],
+        "neutralMerchantIds": [],
+        "drawContextVersion": 1,
+        "automaticFinalBonus": true,
+        "botUid": "bot:host-000002",
+        "botVersion": 2,
+        "botState": "1:13:0:merchant-payment:1655785589"
+      },
+      "manifestVersions": {
+        "places": "istanbul-2014-base-v1",
+        "cards": "istanbul-2014-base-v1",
+        "tiles": "istanbul-2014-base-v1",
+        "random": "xorshift32-v1"
+      },
+      "reducerVersion": 1,
+      "schemaVersion": 1,
+      "rulesEdition": "istanbul-2014-base"
+    },
+    {
+      "id": "host-000051",
+      "actorUid": "host",
+      "clientSeq": "000051",
+      "createdAt": 51,
+      "type": "place/action-taken",
+      "payload": {
+        "choice": {
+          "kind": "post-office-collect"
+        },
+        "drawContextVersion": 1,
+        "automaticFinalBonus": true,
+        "botUid": "bot:host-000002",
+        "botVersion": 2,
+        "botState": "1:13:0:action:1962012841"
+      },
+      "manifestVersions": {
+        "places": "istanbul-2014-base-v1",
+        "cards": "istanbul-2014-base-v1",
+        "tiles": "istanbul-2014-base-v1",
+        "random": "xorshift32-v1"
+      },
+      "reducerVersion": 1,
+      "schemaVersion": 1,
+      "rulesEdition": "istanbul-2014-base"
+    },
+    {
+      "id": "host-000052",
+      "actorUid": "host",
+      "clientSeq": "000052",
+      "createdAt": 52,
+      "type": "encounter/resolved",
+      "payload": {
+        "choice": {
+          "kind": "catch-family",
+          "familyUid": "bot:host-000003",
+          "reward": "lira"
+        },
+        "drawContextVersion": 1,
+        "automaticFinalBonus": true,
+        "botUid": "bot:host-000002",
+        "botVersion": 2,
+        "botState": "1:13:0:encounters:555972040"
+      },
+      "manifestVersions": {
+        "places": "istanbul-2014-base-v1",
+        "cards": "istanbul-2014-base-v1",
+        "tiles": "istanbul-2014-base-v1",
+        "random": "xorshift32-v1"
+      },
+      "reducerVersion": 1,
+      "schemaVersion": 1,
+      "rulesEdition": "istanbul-2014-base"
+    },
+    {
+      "id": "host-000053",
+      "actorUid": "host",
+      "clientSeq": "000053",
+      "createdAt": 53,
+      "type": "turn/ended",
+      "payload": {
+        "directAction": true,
+        "drawContextVersion": 1,
+        "automaticFinalBonus": true,
+        "botUid": "bot:host-000002",
+        "botVersion": 2,
+        "botState": "1:13:0:turn-end:3509211422"
+      },
+      "manifestVersions": {
+        "places": "istanbul-2014-base-v1",
+        "cards": "istanbul-2014-base-v1",
+        "tiles": "istanbul-2014-base-v1",
+        "random": "xorshift32-v1"
+      },
+      "reducerVersion": 1,
+      "schemaVersion": 1,
+      "rulesEdition": "istanbul-2014-base"
+    },
+    {
+      "id": "host-000054",
+      "actorUid": "host",
+      "clientSeq": "000054",
+      "createdAt": 54,
+      "type": "turn/moved",
+      "payload": {
+        "destination": 12,
+        "assistantAction": "drop",
+        "drawContextVersion": 1,
+        "automaticFinalBonus": true,
+        "botUid": "bot:host-000003",
+        "botVersion": 2,
+        "botState": "1:14:1:movement:1794124284"
+      },
+      "manifestVersions": {
+        "places": "istanbul-2014-base-v1",
+        "cards": "istanbul-2014-base-v1",
+        "tiles": "istanbul-2014-base-v1",
+        "random": "xorshift32-v1"
+      },
+      "reducerVersion": 1,
+      "schemaVersion": 1,
+      "rulesEdition": "istanbul-2014-base"
+    },
+    {
+      "id": "host-000055",
+      "actorUid": "host",
+      "clientSeq": "000055",
+      "createdAt": 55,
+      "type": "place/action-taken",
+      "payload": {
+        "choice": {
+          "kind": "police-send",
+          "destination": 16
+        },
+        "drawContextVersion": 1,
+        "automaticFinalBonus": true,
+        "botUid": "bot:host-000003",
+        "botVersion": 2,
+        "botState": "1:14:1:action:2603214022"
+      },
+      "manifestVersions": {
+        "places": "istanbul-2014-base-v1",
+        "cards": "istanbul-2014-base-v1",
+        "tiles": "istanbul-2014-base-v1",
+        "random": "xorshift32-v1"
+      },
+      "reducerVersion": 1,
+      "schemaVersion": 1,
+      "rulesEdition": "istanbul-2014-base"
+    },
+    {
+      "id": "host-000056",
+      "actorUid": "host",
+      "clientSeq": "000056",
+      "createdAt": 56,
+      "type": "place/action-taken",
+      "payload": {
+        "choice": {
+          "kind": "gemstone-buy"
+        },
+        "drawContextVersion": 1,
+        "automaticFinalBonus": true,
+        "botUid": "bot:host-000003",
+        "botVersion": 2,
+        "botState": "1:14:1:family-action:1546216425"
+      },
+      "manifestVersions": {
+        "places": "istanbul-2014-base-v1",
+        "cards": "istanbul-2014-base-v1",
+        "tiles": "istanbul-2014-base-v1",
+        "random": "xorshift32-v1"
+      },
+      "reducerVersion": 1,
+      "schemaVersion": 1,
+      "rulesEdition": "istanbul-2014-base"
+    },
+    {
+      "id": "host-000057",
+      "actorUid": "host",
+      "clientSeq": "000057",
+      "createdAt": 57,
+      "type": "turn/ended",
+      "payload": {
+        "directAction": true,
+        "drawContextVersion": 1,
+        "automaticFinalBonus": true,
+        "botUid": "bot:host-000003",
+        "botVersion": 2,
+        "botState": "1:14:1:turn-end:3289794700"
+      },
+      "manifestVersions": {
+        "places": "istanbul-2014-base-v1",
+        "cards": "istanbul-2014-base-v1",
+        "tiles": "istanbul-2014-base-v1",
+        "random": "xorshift32-v1"
+      },
+      "reducerVersion": 1,
+      "schemaVersion": 1,
+      "rulesEdition": "istanbul-2014-base"
+    },
+    {
+      "id": "host-000058",
+      "actorUid": "host",
+      "clientSeq": "000058",
+      "createdAt": 58,
+      "type": "turn/moved",
+      "payload": {
+        "destination": 15,
+        "assistantAction": "drop",
+        "drawContextVersion": 1,
+        "automaticFinalBonus": true,
+        "botUid": "bot:host-000002",
+        "botVersion": 2,
+        "botState": "1:15:0:movement:67875775"
+      },
+      "manifestVersions": {
+        "places": "istanbul-2014-base-v1",
+        "cards": "istanbul-2014-base-v1",
+        "tiles": "istanbul-2014-base-v1",
+        "random": "xorshift32-v1"
+      },
+      "reducerVersion": 1,
+      "schemaVersion": 1,
+      "rulesEdition": "istanbul-2014-base"
+    },
+    {
+      "id": "host-000059",
+      "actorUid": "host",
+      "clientSeq": "000059",
+      "createdAt": 59,
+      "type": "place/action-taken",
+      "payload": {
+        "choice": {
+          "kind": "mosque-take",
+          "tileId": "mosque-jewelry-2"
+        },
+        "drawContextVersion": 1,
+        "automaticFinalBonus": true,
+        "botUid": "bot:host-000002",
+        "botVersion": 2,
+        "botState": "1:15:0:action:3011630291"
+      },
+      "manifestVersions": {
+        "places": "istanbul-2014-base-v1",
+        "cards": "istanbul-2014-base-v1",
+        "tiles": "istanbul-2014-base-v1",
+        "random": "xorshift32-v1"
+      },
+      "reducerVersion": 1,
+      "schemaVersion": 1,
+      "rulesEdition": "istanbul-2014-base"
+    },
+    {
+      "id": "host-000060",
+      "actorUid": "host",
+      "clientSeq": "000060",
+      "createdAt": 60,
+      "type": "turn/ended",
+      "payload": {
+        "directAction": true,
+        "drawContextVersion": 1,
+        "automaticFinalBonus": true,
+        "botUid": "bot:host-000002",
+        "botVersion": 2,
+        "botState": "1:15:0:turn-end:1461104713"
+      },
+      "manifestVersions": {
+        "places": "istanbul-2014-base-v1",
+        "cards": "istanbul-2014-base-v1",
+        "tiles": "istanbul-2014-base-v1",
+        "random": "xorshift32-v1"
+      },
+      "reducerVersion": 1,
+      "schemaVersion": 1,
+      "rulesEdition": "istanbul-2014-base"
+    },
+    {
+      "id": "host-000061",
+      "actorUid": "host",
+      "clientSeq": "000061",
+      "createdAt": 61,
+      "type": "turn/moved",
+      "payload": {
+        "destination": 5,
+        "assistantAction": "pick-up",
+        "drawContextVersion": 1,
+        "automaticFinalBonus": true,
+        "botUid": "bot:host-000003",
+        "botVersion": 2,
+        "botState": "1:16:1:movement:107660354"
+      },
+      "manifestVersions": {
+        "places": "istanbul-2014-base-v1",
+        "cards": "istanbul-2014-base-v1",
+        "tiles": "istanbul-2014-base-v1",
+        "random": "xorshift32-v1"
+      },
+      "reducerVersion": 1,
+      "schemaVersion": 1,
+      "rulesEdition": "istanbul-2014-base"
+    },
+    {
+      "id": "host-000062",
+      "actorUid": "host",
+      "clientSeq": "000062",
+      "createdAt": 62,
+      "type": "place/action-taken",
+      "payload": {
+        "choice": {
+          "kind": "post-office-collect"
+        },
+        "drawContextVersion": 1,
+        "automaticFinalBonus": true,
+        "botUid": "bot:host-000003",
+        "botVersion": 2,
+        "botState": "1:16:1:action:1398635748"
+      },
+      "manifestVersions": {
+        "places": "istanbul-2014-base-v1",
+        "cards": "istanbul-2014-base-v1",
+        "tiles": "istanbul-2014-base-v1",
+        "random": "xorshift32-v1"
+      },
+      "reducerVersion": 1,
+      "schemaVersion": 1,
+      "rulesEdition": "istanbul-2014-base"
+    },
+    {
+      "id": "host-000063",
+      "actorUid": "host",
+      "clientSeq": "000063",
+      "createdAt": 63,
+      "type": "turn/ended",
+      "payload": {
+        "directAction": true,
+        "drawContextVersion": 1,
+        "automaticFinalBonus": true,
+        "botUid": "bot:host-000003",
+        "botVersion": 2,
+        "botState": "1:16:1:turn-end:2298570891"
+      },
+      "manifestVersions": {
+        "places": "istanbul-2014-base-v1",
+        "cards": "istanbul-2014-base-v1",
+        "tiles": "istanbul-2014-base-v1",
+        "random": "xorshift32-v1"
+      },
+      "reducerVersion": 1,
+      "schemaVersion": 1,
+      "rulesEdition": "istanbul-2014-base"
+    },
+    {
+      "id": "host-000064",
+      "actorUid": "host",
+      "clientSeq": "000064",
+      "createdAt": 64,
+      "type": "turn/moved",
+      "payload": {
+        "destination": 5,
+        "assistantAction": "drop",
+        "drawContextVersion": 1,
+        "automaticFinalBonus": true,
+        "botUid": "bot:host-000002",
+        "botVersion": 2,
+        "botState": "1:17:0:movement:300888642"
+      },
+      "manifestVersions": {
+        "places": "istanbul-2014-base-v1",
+        "cards": "istanbul-2014-base-v1",
+        "tiles": "istanbul-2014-base-v1",
+        "random": "xorshift32-v1"
+      },
+      "reducerVersion": 1,
+      "schemaVersion": 1,
+      "rulesEdition": "istanbul-2014-base"
+    },
+    {
+      "id": "host-000065",
+      "actorUid": "host",
+      "clientSeq": "000065",
+      "createdAt": 65,
+      "type": "turn/merchant-paid",
+      "payload": {
+        "recipientUids": [
+          "bot:host-000003"
+        ],
+        "neutralMerchantIds": [],
+        "drawContextVersion": 1,
+        "automaticFinalBonus": true,
+        "botUid": "bot:host-000002",
+        "botVersion": 2,
+        "botState": "1:17:0:merchant-payment:3638292434"
+      },
+      "manifestVersions": {
+        "places": "istanbul-2014-base-v1",
+        "cards": "istanbul-2014-base-v1",
+        "tiles": "istanbul-2014-base-v1",
+        "random": "xorshift32-v1"
+      },
+      "reducerVersion": 1,
+      "schemaVersion": 1,
+      "rulesEdition": "istanbul-2014-base"
+    },
+    {
+      "id": "host-000066",
+      "actorUid": "host",
+      "clientSeq": "000066",
+      "createdAt": 66,
+      "type": "place/action-taken",
+      "payload": {
+        "choice": {
+          "kind": "post-office-collect"
+        },
+        "drawContextVersion": 1,
+        "automaticFinalBonus": true,
+        "botUid": "bot:host-000002",
+        "botVersion": 2,
+        "botState": "1:17:0:action:685664105"
+      },
+      "manifestVersions": {
+        "places": "istanbul-2014-base-v1",
+        "cards": "istanbul-2014-base-v1",
+        "tiles": "istanbul-2014-base-v1",
+        "random": "xorshift32-v1"
+      },
+      "reducerVersion": 1,
+      "schemaVersion": 1,
+      "rulesEdition": "istanbul-2014-base"
+    },
+    {
+      "id": "host-000067",
+      "actorUid": "host",
+      "clientSeq": "000067",
+      "createdAt": 67,
+      "type": "turn/ended",
+      "payload": {
+        "directAction": true,
+        "drawContextVersion": 1,
+        "automaticFinalBonus": true,
+        "botUid": "bot:host-000002",
+        "botVersion": 2,
+        "botState": "1:17:0:turn-end:86748832"
+      },
+      "manifestVersions": {
+        "places": "istanbul-2014-base-v1",
+        "cards": "istanbul-2014-base-v1",
+        "tiles": "istanbul-2014-base-v1",
+        "random": "xorshift32-v1"
+      },
+      "reducerVersion": 1,
+      "schemaVersion": 1,
+      "rulesEdition": "istanbul-2014-base"
+    },
+    {
+      "id": "host-000068",
+      "actorUid": "host",
+      "clientSeq": "000068",
+      "createdAt": 68,
+      "type": "turn/moved",
+      "payload": {
+        "destination": 6,
+        "assistantAction": "drop",
+        "drawContextVersion": 1,
+        "automaticFinalBonus": true,
+        "botUid": "bot:host-000003",
+        "botVersion": 2,
+        "botState": "1:18:1:movement:2866091513"
+      },
+      "manifestVersions": {
+        "places": "istanbul-2014-base-v1",
+        "cards": "istanbul-2014-base-v1",
+        "tiles": "istanbul-2014-base-v1",
+        "random": "xorshift32-v1"
+      },
+      "reducerVersion": 1,
+      "schemaVersion": 1,
+      "rulesEdition": "istanbul-2014-base"
+    },
+    {
+      "id": "host-000069",
+      "actorUid": "host",
+      "clientSeq": "000069",
+      "createdAt": 69,
+      "type": "place/action-taken",
+      "payload": {
+        "choice": {
+          "kind": "caravansary-draw",
+          "drawSources": [
+            "deck",
+            "deck"
+          ]
+        },
+        "drawContextVersion": 1,
+        "automaticFinalBonus": true,
+        "botUid": "bot:host-000003",
+        "botVersion": 2,
+        "botState": "1:18:1:action:3578028853"
+      },
+      "manifestVersions": {
+        "places": "istanbul-2014-base-v1",
+        "cards": "istanbul-2014-base-v1",
+        "tiles": "istanbul-2014-base-v1",
+        "random": "xorshift32-v1"
+      },
+      "reducerVersion": 1,
+      "schemaVersion": 1,
+      "rulesEdition": "istanbul-2014-base"
+    },
+    {
+      "id": "host-000070",
+      "actorUid": "host",
+      "clientSeq": "000070",
+      "createdAt": 70,
+      "type": "place/action-taken",
+      "payload": {
+        "choice": {
+          "kind": "caravansary-discard",
+          "discardCardId": "bonus-wild-small-market-1"
+        },
+        "drawContextVersion": 1,
+        "automaticFinalBonus": true,
+        "botUid": "bot:host-000003",
+        "botVersion": 2,
+        "botState": "1:18:1:action:1478910886"
+      },
+      "manifestVersions": {
+        "places": "istanbul-2014-base-v1",
+        "cards": "istanbul-2014-base-v1",
+        "tiles": "istanbul-2014-base-v1",
+        "random": "xorshift32-v1"
+      },
+      "reducerVersion": 1,
+      "schemaVersion": 1,
+      "rulesEdition": "istanbul-2014-base"
+    },
+    {
+      "id": "host-000071",
+      "actorUid": "host",
+      "clientSeq": "000071",
+      "createdAt": 71,
+      "type": "bonus/played",
+      "payload": {
+        "cardId": "bonus-gain-good-3",
+        "choice": {
+          "kind": "gain-good",
+          "good": "spice"
+        },
+        "drawContextVersion": 1,
+        "automaticFinalBonus": true,
+        "botUid": "bot:host-000003",
+        "botVersion": 2,
+        "botState": "1:18:1:turn-end:2377050227"
+      },
+      "manifestVersions": {
+        "places": "istanbul-2014-base-v1",
+        "cards": "istanbul-2014-base-v1",
+        "tiles": "istanbul-2014-base-v1",
+        "random": "xorshift32-v1"
+      },
+      "reducerVersion": 1,
+      "schemaVersion": 1,
+      "rulesEdition": "istanbul-2014-base"
+    },
+    {
+      "id": "host-000072",
+      "actorUid": "host",
+      "clientSeq": "000072",
+      "createdAt": 72,
+      "type": "turn/ended",
+      "payload": {
+        "directAction": true,
+        "drawContextVersion": 1,
+        "automaticFinalBonus": true,
+        "botUid": "bot:host-000003",
+        "botVersion": 2,
+        "botState": "1:18:1:turn-end:195515476"
+      },
+      "manifestVersions": {
+        "places": "istanbul-2014-base-v1",
+        "cards": "istanbul-2014-base-v1",
+        "tiles": "istanbul-2014-base-v1",
+        "random": "xorshift32-v1"
+      },
+      "reducerVersion": 1,
+      "schemaVersion": 1,
+      "rulesEdition": "istanbul-2014-base"
+    },
+    {
+      "id": "host-000073",
+      "actorUid": "host",
+      "clientSeq": "000073",
+      "createdAt": 73,
+      "type": "turn/moved",
+      "payload": {
+        "destination": 7,
+        "assistantAction": "fountain",
+        "drawContextVersion": 1,
+        "automaticFinalBonus": true,
+        "botUid": "bot:host-000002",
+        "botVersion": 2,
+        "botState": "1:19:0:movement:2648302205"
+      },
+      "manifestVersions": {
+        "places": "istanbul-2014-base-v1",
+        "cards": "istanbul-2014-base-v1",
+        "tiles": "istanbul-2014-base-v1",
+        "random": "xorshift32-v1"
+      },
+      "reducerVersion": 1,
+      "schemaVersion": 1,
+      "rulesEdition": "istanbul-2014-base"
+    },
+    {
+      "id": "host-000074",
+      "actorUid": "host",
+      "clientSeq": "000074",
+      "createdAt": 74,
+      "type": "place/action-taken",
+      "payload": {
+        "choice": {
+          "kind": "fountain-recall",
+          "assistantPlaces": [
+            2,
+            5,
+            12,
+            14,
+            15
+          ]
+        },
+        "drawContextVersion": 1,
+        "automaticFinalBonus": true,
+        "botUid": "bot:host-000002",
+        "botVersion": 2,
+        "botState": "1:19:0:action:2700670967"
+      },
+      "manifestVersions": {
+        "places": "istanbul-2014-base-v1",
+        "cards": "istanbul-2014-base-v1",
+        "tiles": "istanbul-2014-base-v1",
+        "random": "xorshift32-v1"
+      },
+      "reducerVersion": 1,
+      "schemaVersion": 1,
+      "rulesEdition": "istanbul-2014-base"
+    },
+    {
+      "id": "host-000075",
+      "actorUid": "host",
+      "clientSeq": "000075",
+      "createdAt": 75,
+      "type": "turn/ended",
+      "payload": {
+        "directAction": true,
+        "drawContextVersion": 1,
+        "automaticFinalBonus": true,
+        "botUid": "bot:host-000002",
+        "botVersion": 2,
+        "botState": "1:19:0:encounters:2783628465"
+      },
+      "manifestVersions": {
+        "places": "istanbul-2014-base-v1",
+        "cards": "istanbul-2014-base-v1",
+        "tiles": "istanbul-2014-base-v1",
+        "random": "xorshift32-v1"
+      },
+      "reducerVersion": 1,
+      "schemaVersion": 1,
+      "rulesEdition": "istanbul-2014-base"
+    },
+    {
+      "id": "host-000076",
+      "actorUid": "host",
+      "clientSeq": "000076",
+      "createdAt": 76,
+      "type": "turn/moved",
+      "payload": {
+        "destination": 13,
+        "assistantAction": "drop",
+        "drawContextVersion": 1,
+        "automaticFinalBonus": true,
+        "botUid": "bot:host-000003",
+        "botVersion": 2,
+        "botState": "1:20:1:movement:4151305834"
+      },
+      "manifestVersions": {
+        "places": "istanbul-2014-base-v1",
+        "cards": "istanbul-2014-base-v1",
+        "tiles": "istanbul-2014-base-v1",
+        "random": "xorshift32-v1"
+      },
+      "reducerVersion": 1,
+      "schemaVersion": 1,
+      "rulesEdition": "istanbul-2014-base"
+    },
+    {
+      "id": "host-000077",
+      "actorUid": "host",
+      "clientSeq": "000077",
+      "createdAt": 77,
+      "type": "place/action-taken",
+      "payload": {
+        "choice": {
+          "kind": "sultan-buy",
+          "wildGoods": [
+            "fabric"
+          ]
+        },
+        "drawContextVersion": 1,
+        "automaticFinalBonus": true,
+        "botUid": "bot:host-000003",
+        "botVersion": 2,
+        "botState": "1:20:1:action:962327737"
+      },
+      "manifestVersions": {
+        "places": "istanbul-2014-base-v1",
+        "cards": "istanbul-2014-base-v1",
+        "tiles": "istanbul-2014-base-v1",
+        "random": "xorshift32-v1"
+      },
+      "reducerVersion": 1,
+      "schemaVersion": 1,
+      "rulesEdition": "istanbul-2014-base"
+    },
+    {
+      "id": "host-000078",
+      "actorUid": "host",
+      "clientSeq": "000078",
+      "createdAt": 78,
+      "type": "turn/ended",
+      "payload": {
+        "directAction": true,
+        "drawContextVersion": 1,
+        "automaticFinalBonus": true,
+        "botUid": "bot:host-000003",
+        "botVersion": 2,
+        "botState": "1:20:1:turn-end:2886699280"
+      },
+      "manifestVersions": {
+        "places": "istanbul-2014-base-v1",
+        "cards": "istanbul-2014-base-v1",
+        "tiles": "istanbul-2014-base-v1",
+        "random": "xorshift32-v1"
+      },
+      "reducerVersion": 1,
+      "schemaVersion": 1,
+      "rulesEdition": "istanbul-2014-base"
+    },
+    {
+      "id": "host-000079",
+      "actorUid": "host",
+      "clientSeq": "000079",
+      "createdAt": 79,
+      "type": "turn/moved",
+      "payload": {
+        "destination": 1,
+        "assistantAction": "drop",
+        "drawContextVersion": 1,
+        "automaticFinalBonus": true,
+        "botUid": "bot:host-000002",
+        "botVersion": 2,
+        "botState": "1:21:0:movement:733529520"
+      },
+      "manifestVersions": {
+        "places": "istanbul-2014-base-v1",
+        "cards": "istanbul-2014-base-v1",
+        "tiles": "istanbul-2014-base-v1",
+        "random": "xorshift32-v1"
+      },
+      "reducerVersion": 1,
+      "schemaVersion": 1,
+      "rulesEdition": "istanbul-2014-base"
+    },
+    {
+      "id": "host-000080",
+      "actorUid": "host",
+      "clientSeq": "000080",
+      "createdAt": 80,
+      "type": "place/action-taken",
+      "payload": {
+        "choice": {
+          "kind": "wainwright-buy"
+        },
+        "drawContextVersion": 1,
+        "automaticFinalBonus": true,
+        "botUid": "bot:host-000002",
+        "botVersion": 2,
+        "botState": "1:21:0:action:4290982921"
+      },
+      "manifestVersions": {
+        "places": "istanbul-2014-base-v1",
+        "cards": "istanbul-2014-base-v1",
+        "tiles": "istanbul-2014-base-v1",
+        "random": "xorshift32-v1"
+      },
+      "reducerVersion": 1,
+      "schemaVersion": 1,
+      "rulesEdition": "istanbul-2014-base"
+    },
+    {
+      "id": "host-000081",
+      "actorUid": "host",
+      "clientSeq": "000081",
+      "createdAt": 81,
+      "type": "turn/ended",
+      "payload": {
+        "directAction": true,
+        "drawContextVersion": 1,
+        "automaticFinalBonus": true,
+        "botUid": "bot:host-000002",
+        "botVersion": 2,
+        "botState": "1:21:0:turn-end:383075522"
+      },
+      "manifestVersions": {
+        "places": "istanbul-2014-base-v1",
+        "cards": "istanbul-2014-base-v1",
+        "tiles": "istanbul-2014-base-v1",
+        "random": "xorshift32-v1"
+      },
+      "reducerVersion": 1,
+      "schemaVersion": 1,
+      "rulesEdition": "istanbul-2014-base"
+    },
+    {
+      "id": "host-000082",
+      "actorUid": "host",
+      "clientSeq": "000082",
+      "createdAt": 82,
+      "type": "turn/moved",
+      "payload": {
+        "destination": 6,
+        "assistantAction": "pick-up",
+        "drawContextVersion": 1,
+        "automaticFinalBonus": true,
+        "botUid": "bot:host-000003",
+        "botVersion": 2,
+        "botState": "1:22:1:movement:1205725207"
+      },
+      "manifestVersions": {
+        "places": "istanbul-2014-base-v1",
+        "cards": "istanbul-2014-base-v1",
+        "tiles": "istanbul-2014-base-v1",
+        "random": "xorshift32-v1"
+      },
+      "reducerVersion": 1,
+      "schemaVersion": 1,
+      "rulesEdition": "istanbul-2014-base"
+    },
+    {
+      "id": "host-000083",
+      "actorUid": "host",
+      "clientSeq": "000083",
+      "createdAt": 83,
+      "type": "place/action-taken",
+      "payload": {
+        "choice": {
+          "kind": "caravansary-draw",
+          "drawSources": [
+            "deck",
+            "deck"
+          ]
+        },
+        "drawContextVersion": 1,
+        "automaticFinalBonus": true,
+        "botUid": "bot:host-000003",
+        "botVersion": 2,
+        "botState": "1:22:1:action:1385786919"
+      },
+      "manifestVersions": {
+        "places": "istanbul-2014-base-v1",
+        "cards": "istanbul-2014-base-v1",
+        "tiles": "istanbul-2014-base-v1",
+        "random": "xorshift32-v1"
+      },
+      "reducerVersion": 1,
+      "schemaVersion": 1,
+      "rulesEdition": "istanbul-2014-base"
+    },
+    {
+      "id": "host-000084",
+      "actorUid": "host",
+      "clientSeq": "000084",
+      "createdAt": 84,
+      "type": "place/action-taken",
+      "payload": {
+        "choice": {
+          "kind": "caravansary-discard",
+          "discardCardId": "bonus-repeat-post-2"
+        },
+        "drawContextVersion": 1,
+        "automaticFinalBonus": true,
+        "botUid": "bot:host-000003",
+        "botVersion": 2,
+        "botState": "1:22:1:action:2551003069"
+      },
+      "manifestVersions": {
+        "places": "istanbul-2014-base-v1",
+        "cards": "istanbul-2014-base-v1",
+        "tiles": "istanbul-2014-base-v1",
+        "random": "xorshift32-v1"
+      },
+      "reducerVersion": 1,
+      "schemaVersion": 1,
+      "rulesEdition": "istanbul-2014-base"
+    },
+    {
+      "id": "host-000085",
+      "actorUid": "host",
+      "clientSeq": "000085",
+      "createdAt": 85,
+      "type": "bonus/played",
+      "payload": {
+        "cardId": "bonus-gain-lira-4",
+        "choice": {
+          "kind": "gain-lira"
+        },
+        "drawContextVersion": 1,
+        "automaticFinalBonus": true,
+        "botUid": "bot:host-000003",
+        "botVersion": 2,
+        "botState": "1:22:1:turn-end:1489459862"
+      },
+      "manifestVersions": {
+        "places": "istanbul-2014-base-v1",
+        "cards": "istanbul-2014-base-v1",
+        "tiles": "istanbul-2014-base-v1",
+        "random": "xorshift32-v1"
+      },
+      "reducerVersion": 1,
+      "schemaVersion": 1,
+      "rulesEdition": "istanbul-2014-base"
+    },
+    {
+      "id": "host-000086",
+      "actorUid": "host",
+      "clientSeq": "000086",
+      "createdAt": 86,
+      "type": "turn/ended",
+      "payload": {
+        "directAction": true,
+        "drawContextVersion": 1,
+        "automaticFinalBonus": true,
+        "botUid": "bot:host-000003",
+        "botVersion": 2,
+        "botState": "1:22:1:turn-end:3407911008"
+      },
+      "manifestVersions": {
+        "places": "istanbul-2014-base-v1",
+        "cards": "istanbul-2014-base-v1",
+        "tiles": "istanbul-2014-base-v1",
+        "random": "xorshift32-v1"
+      },
+      "reducerVersion": 1,
+      "schemaVersion": 1,
+      "rulesEdition": "istanbul-2014-base"
+    },
+    {
+      "id": "host-000087",
+      "actorUid": "host",
+      "clientSeq": "000087",
+      "createdAt": 87,
+      "type": "turn/moved",
+      "payload": {
+        "destination": 9,
+        "assistantAction": "drop",
+        "drawContextVersion": 1,
+        "automaticFinalBonus": true,
+        "botUid": "bot:host-000002",
+        "botVersion": 2,
+        "botState": "1:23:0:movement:114666193"
+      },
+      "manifestVersions": {
+        "places": "istanbul-2014-base-v1",
+        "cards": "istanbul-2014-base-v1",
+        "tiles": "istanbul-2014-base-v1",
+        "random": "xorshift32-v1"
+      },
+      "reducerVersion": 1,
+      "schemaVersion": 1,
+      "rulesEdition": "istanbul-2014-base"
+    },
+    {
+      "id": "host-000088",
+      "actorUid": "host",
+      "clientSeq": "000088",
+      "createdAt": 88,
+      "type": "place/action-taken",
+      "payload": {
+        "choice": {
+          "kind": "tea-house-wager",
+          "wager": 7
+        },
+        "drawContextVersion": 1,
+        "automaticFinalBonus": true,
+        "botUid": "bot:host-000002",
+        "botVersion": 2,
+        "botState": "1:23:0:action:1136990628"
+      },
+      "manifestVersions": {
+        "places": "istanbul-2014-base-v1",
+        "cards": "istanbul-2014-base-v1",
+        "tiles": "istanbul-2014-base-v1",
+        "random": "xorshift32-v1"
+      },
+      "reducerVersion": 1,
+      "schemaVersion": 1,
+      "rulesEdition": "istanbul-2014-base"
+    },
+    {
+      "id": "host-000089",
+      "actorUid": "host",
+      "clientSeq": "000089",
+      "createdAt": 89,
+      "type": "mosque/ability-used",
+      "payload": {
+        "choice": {
+          "kind": "dice-adjust",
+          "adjustment": "none"
+        },
+        "drawContextVersion": 1,
+        "automaticFinalBonus": true,
+        "botUid": "bot:host-000002",
+        "botVersion": 2,
+        "botState": "1:23:0:mosque-ability:643694993"
+      },
+      "manifestVersions": {
+        "places": "istanbul-2014-base-v1",
+        "cards": "istanbul-2014-base-v1",
+        "tiles": "istanbul-2014-base-v1",
+        "random": "xorshift32-v1"
+      },
+      "reducerVersion": 1,
+      "schemaVersion": 1,
+      "rulesEdition": "istanbul-2014-base"
+    },
+    {
+      "id": "host-000090",
+      "actorUid": "host",
+      "clientSeq": "000090",
+      "createdAt": 90,
+      "type": "turn/ended",
+      "payload": {
+        "directAction": true,
+        "drawContextVersion": 1,
+        "automaticFinalBonus": true,
+        "botUid": "bot:host-000002",
+        "botVersion": 2,
+        "botState": "1:23:0:encounters:906483419"
+      },
+      "manifestVersions": {
+        "places": "istanbul-2014-base-v1",
+        "cards": "istanbul-2014-base-v1",
+        "tiles": "istanbul-2014-base-v1",
+        "random": "xorshift32-v1"
+      },
+      "reducerVersion": 1,
+      "schemaVersion": 1,
+      "rulesEdition": "istanbul-2014-base"
+    },
+    {
+      "id": "host-000091",
+      "actorUid": "host",
+      "clientSeq": "000091",
+      "createdAt": 91,
+      "type": "turn/moved",
+      "payload": {
+        "destination": 5,
+        "assistantAction": "drop",
+        "drawContextVersion": 1,
+        "automaticFinalBonus": true,
+        "botUid": "bot:host-000003",
+        "botVersion": 2,
+        "botState": "1:24:1:movement:1052786470"
+      },
+      "manifestVersions": {
+        "places": "istanbul-2014-base-v1",
+        "cards": "istanbul-2014-base-v1",
+        "tiles": "istanbul-2014-base-v1",
+        "random": "xorshift32-v1"
+      },
+      "reducerVersion": 1,
+      "schemaVersion": 1,
+      "rulesEdition": "istanbul-2014-base"
+    },
+    {
+      "id": "host-000092",
+      "actorUid": "host",
+      "clientSeq": "000092",
+      "createdAt": 92,
+      "type": "place/action-taken",
+      "payload": {
+        "choice": {
+          "kind": "post-office-collect"
+        },
+        "drawContextVersion": 1,
+        "automaticFinalBonus": true,
+        "botUid": "bot:host-000003",
+        "botVersion": 2,
+        "botState": "1:24:1:action:1958869971"
+      },
+      "manifestVersions": {
+        "places": "istanbul-2014-base-v1",
+        "cards": "istanbul-2014-base-v1",
+        "tiles": "istanbul-2014-base-v1",
+        "random": "xorshift32-v1"
+      },
+      "reducerVersion": 1,
+      "schemaVersion": 1,
+      "rulesEdition": "istanbul-2014-base"
+    },
+    {
+      "id": "host-000093",
+      "actorUid": "host",
+      "clientSeq": "000093",
+      "createdAt": 93,
+      "type": "turn/ended",
+      "payload": {
+        "directAction": true,
+        "drawContextVersion": 1,
+        "automaticFinalBonus": true,
+        "botUid": "bot:host-000003",
+        "botVersion": 2,
+        "botState": "1:24:1:turn-end:2895997610"
+      },
+      "manifestVersions": {
+        "places": "istanbul-2014-base-v1",
+        "cards": "istanbul-2014-base-v1",
+        "tiles": "istanbul-2014-base-v1",
+        "random": "xorshift32-v1"
+      },
+      "reducerVersion": 1,
+      "schemaVersion": 1,
+      "rulesEdition": "istanbul-2014-base"
+    },
+    {
+      "id": "host-000094",
+      "actorUid": "host",
+      "clientSeq": "000094",
+      "createdAt": 94,
+      "type": "turn/moved",
+      "payload": {
+        "destination": 1,
+        "assistantAction": "pick-up",
+        "drawContextVersion": 1,
+        "automaticFinalBonus": true,
+        "botUid": "bot:host-000002",
+        "botVersion": 2,
+        "botState": "1:25:0:movement:2069773447"
+      },
+      "manifestVersions": {
+        "places": "istanbul-2014-base-v1",
+        "cards": "istanbul-2014-base-v1",
+        "tiles": "istanbul-2014-base-v1",
+        "random": "xorshift32-v1"
+      },
+      "reducerVersion": 1,
+      "schemaVersion": 1,
+      "rulesEdition": "istanbul-2014-base"
+    },
+    {
+      "id": "host-000095",
+      "actorUid": "host",
+      "clientSeq": "000095",
+      "createdAt": 95,
+      "type": "place/action-taken",
+      "payload": {
+        "choice": {
+          "kind": "wainwright-buy"
+        },
+        "drawContextVersion": 1,
+        "automaticFinalBonus": true,
+        "botUid": "bot:host-000002",
+        "botVersion": 2,
+        "botState": "1:25:0:action:3767246673"
+      },
+      "manifestVersions": {
+        "places": "istanbul-2014-base-v1",
+        "cards": "istanbul-2014-base-v1",
+        "tiles": "istanbul-2014-base-v1",
+        "random": "xorshift32-v1"
+      },
+      "reducerVersion": 1,
+      "schemaVersion": 1,
+      "rulesEdition": "istanbul-2014-base"
+    },
+    {
+      "id": "host-000096",
+      "actorUid": "host",
+      "clientSeq": "000096",
+      "createdAt": 96,
+      "type": "turn/ended",
+      "payload": {
+        "directAction": true,
+        "drawContextVersion": 1,
+        "automaticFinalBonus": true,
+        "botUid": "bot:host-000002",
+        "botVersion": 2,
+        "botState": "1:25:0:turn-end:944496603"
+      },
+      "manifestVersions": {
+        "places": "istanbul-2014-base-v1",
+        "cards": "istanbul-2014-base-v1",
+        "tiles": "istanbul-2014-base-v1",
+        "random": "xorshift32-v1"
+      },
+      "reducerVersion": 1,
+      "schemaVersion": 1,
+      "rulesEdition": "istanbul-2014-base"
+    },
+    {
+      "id": "host-000097",
+      "actorUid": "host",
+      "clientSeq": "000097",
+      "createdAt": 97,
+      "type": "turn/moved",
+      "payload": {
+        "destination": 7,
+        "assistantAction": "fountain",
+        "drawContextVersion": 1,
+        "automaticFinalBonus": true,
+        "botUid": "bot:host-000003",
+        "botVersion": 2,
+        "botState": "1:26:1:movement:4157663124"
+      },
+      "manifestVersions": {
+        "places": "istanbul-2014-base-v1",
+        "cards": "istanbul-2014-base-v1",
+        "tiles": "istanbul-2014-base-v1",
+        "random": "xorshift32-v1"
+      },
+      "reducerVersion": 1,
+      "schemaVersion": 1,
+      "rulesEdition": "istanbul-2014-base"
+    },
+    {
+      "id": "host-000098",
+      "actorUid": "host",
+      "clientSeq": "000098",
+      "createdAt": 98,
+      "type": "place/action-taken",
+      "payload": {
+        "choice": {
+          "kind": "fountain-recall",
+          "assistantPlaces": [
+            5,
+            12,
+            13,
+            15
+          ]
+        },
+        "drawContextVersion": 1,
+        "automaticFinalBonus": true,
+        "botUid": "bot:host-000003",
+        "botVersion": 2,
+        "botState": "1:26:1:action:4050543843"
+      },
+      "manifestVersions": {
+        "places": "istanbul-2014-base-v1",
+        "cards": "istanbul-2014-base-v1",
+        "tiles": "istanbul-2014-base-v1",
+        "random": "xorshift32-v1"
+      },
+      "reducerVersion": 1,
+      "schemaVersion": 1,
+      "rulesEdition": "istanbul-2014-base"
+    },
+    {
+      "id": "host-000099",
+      "actorUid": "host",
+      "clientSeq": "000099",
+      "createdAt": 99,
+      "type": "turn/ended",
+      "payload": {
+        "directAction": true,
+        "drawContextVersion": 1,
+        "automaticFinalBonus": true,
+        "botUid": "bot:host-000003",
+        "botVersion": 2,
+        "botState": "1:26:1:encounters:4270897495"
+      },
+      "manifestVersions": {
+        "places": "istanbul-2014-base-v1",
+        "cards": "istanbul-2014-base-v1",
+        "tiles": "istanbul-2014-base-v1",
+        "random": "xorshift32-v1"
+      },
+      "reducerVersion": 1,
+      "schemaVersion": 1,
+      "rulesEdition": "istanbul-2014-base"
+    },
+    {
+      "id": "host-000100",
+      "actorUid": "host",
+      "clientSeq": "000100",
+      "createdAt": 100,
+      "type": "turn/moved",
+      "payload": {
+        "destination": 9,
+        "assistantAction": "pick-up",
+        "drawContextVersion": 1,
+        "automaticFinalBonus": true,
+        "botUid": "bot:host-000002",
+        "botVersion": 2,
+        "botState": "1:27:0:movement:2369196484"
+      },
+      "manifestVersions": {
+        "places": "istanbul-2014-base-v1",
+        "cards": "istanbul-2014-base-v1",
+        "tiles": "istanbul-2014-base-v1",
+        "random": "xorshift32-v1"
+      },
+      "reducerVersion": 1,
+      "schemaVersion": 1,
+      "rulesEdition": "istanbul-2014-base"
+    },
+    {
+      "id": "host-000101",
+      "actorUid": "host",
+      "clientSeq": "000101",
+      "createdAt": 101,
+      "type": "place/action-taken",
+      "payload": {
+        "choice": {
+          "kind": "tea-house-wager",
+          "wager": 7
+        },
+        "drawContextVersion": 1,
+        "automaticFinalBonus": true,
+        "botUid": "bot:host-000002",
+        "botVersion": 2,
+        "botState": "1:27:0:action:1305002928"
+      },
+      "manifestVersions": {
+        "places": "istanbul-2014-base-v1",
+        "cards": "istanbul-2014-base-v1",
+        "tiles": "istanbul-2014-base-v1",
+        "random": "xorshift32-v1"
+      },
+      "reducerVersion": 1,
+      "schemaVersion": 1,
+      "rulesEdition": "istanbul-2014-base"
+    },
+    {
+      "id": "host-000102",
+      "actorUid": "host",
+      "clientSeq": "000102",
+      "createdAt": 102,
+      "type": "mosque/ability-used",
+      "payload": {
+        "choice": {
+          "kind": "dice-adjust",
+          "adjustment": "none"
+        },
+        "drawContextVersion": 1,
+        "automaticFinalBonus": true,
+        "botUid": "bot:host-000002",
+        "botVersion": 2,
+        "botState": "1:27:0:mosque-ability:3291673912"
+      },
+      "manifestVersions": {
+        "places": "istanbul-2014-base-v1",
+        "cards": "istanbul-2014-base-v1",
+        "tiles": "istanbul-2014-base-v1",
+        "random": "xorshift32-v1"
+      },
+      "reducerVersion": 1,
+      "schemaVersion": 1,
+      "rulesEdition": "istanbul-2014-base"
+    },
+    {
+      "id": "host-000103",
+      "actorUid": "host",
+      "clientSeq": "000103",
+      "createdAt": 103,
+      "type": "turn/ended",
+      "payload": {
+        "directAction": true,
+        "drawContextVersion": 1,
+        "automaticFinalBonus": true,
+        "botUid": "bot:host-000002",
+        "botVersion": 2,
+        "botState": "1:27:0:encounters:2477069732"
+      },
+      "manifestVersions": {
+        "places": "istanbul-2014-base-v1",
+        "cards": "istanbul-2014-base-v1",
+        "tiles": "istanbul-2014-base-v1",
+        "random": "xorshift32-v1"
+      },
+      "reducerVersion": 1,
+      "schemaVersion": 1,
+      "rulesEdition": "istanbul-2014-base"
+    },
+    {
+      "id": "host-000104",
+      "actorUid": "host",
+      "clientSeq": "000104",
+      "createdAt": 104,
+      "type": "turn/moved",
+      "payload": {
+        "destination": 1,
+        "assistantAction": "drop",
+        "drawContextVersion": 1,
+        "automaticFinalBonus": true,
+        "botUid": "bot:host-000003",
+        "botVersion": 2,
+        "botState": "1:28:1:movement:3237937565"
+      },
+      "manifestVersions": {
+        "places": "istanbul-2014-base-v1",
+        "cards": "istanbul-2014-base-v1",
+        "tiles": "istanbul-2014-base-v1",
+        "random": "xorshift32-v1"
+      },
+      "reducerVersion": 1,
+      "schemaVersion": 1,
+      "rulesEdition": "istanbul-2014-base"
+    },
+    {
+      "id": "host-000105",
+      "actorUid": "host",
+      "clientSeq": "000105",
+      "createdAt": 105,
+      "type": "place/action-taken",
+      "payload": {
+        "choice": {
+          "kind": "wainwright-buy"
+        },
+        "drawContextVersion": 1,
+        "automaticFinalBonus": true,
+        "botUid": "bot:host-000003",
+        "botVersion": 2,
+        "botState": "1:28:1:action:647360822"
+      },
+      "manifestVersions": {
+        "places": "istanbul-2014-base-v1",
+        "cards": "istanbul-2014-base-v1",
+        "tiles": "istanbul-2014-base-v1",
+        "random": "xorshift32-v1"
+      },
+      "reducerVersion": 1,
+      "schemaVersion": 1,
+      "rulesEdition": "istanbul-2014-base"
+    },
+    {
+      "id": "host-000106",
+      "actorUid": "host",
+      "clientSeq": "000106",
+      "createdAt": 106,
+      "type": "turn/ended",
+      "payload": {
+        "directAction": true,
+        "drawContextVersion": 1,
+        "automaticFinalBonus": true,
+        "botUid": "bot:host-000003",
+        "botVersion": 2,
+        "botState": "1:28:1:turn-end:1369604647"
+      },
+      "manifestVersions": {
+        "places": "istanbul-2014-base-v1",
+        "cards": "istanbul-2014-base-v1",
+        "tiles": "istanbul-2014-base-v1",
+        "random": "xorshift32-v1"
+      },
+      "reducerVersion": 1,
+      "schemaVersion": 1,
+      "rulesEdition": "istanbul-2014-base"
+    },
+    {
+      "id": "host-000107",
+      "actorUid": "host",
+      "clientSeq": "000107",
+      "createdAt": 107,
+      "type": "turn/moved",
+      "payload": {
+        "destination": 1,
+        "assistantAction": "drop",
+        "drawContextVersion": 1,
+        "automaticFinalBonus": true,
+        "botUid": "bot:host-000002",
+        "botVersion": 2,
+        "botState": "1:29:0:movement:3887827340"
+      },
+      "manifestVersions": {
+        "places": "istanbul-2014-base-v1",
+        "cards": "istanbul-2014-base-v1",
+        "tiles": "istanbul-2014-base-v1",
+        "random": "xorshift32-v1"
+      },
+      "reducerVersion": 1,
+      "schemaVersion": 1,
+      "rulesEdition": "istanbul-2014-base"
+    },
+    {
+      "id": "host-000108",
+      "actorUid": "host",
+      "clientSeq": "000108",
+      "createdAt": 108,
+      "type": "turn/merchant-paid",
+      "payload": {
+        "recipientUids": [
+          "bot:host-000003"
+        ],
+        "neutralMerchantIds": [],
+        "drawContextVersion": 1,
+        "automaticFinalBonus": true,
+        "botUid": "bot:host-000002",
+        "botVersion": 2,
+        "botState": "1:29:0:merchant-payment:330819126"
+      },
+      "manifestVersions": {
+        "places": "istanbul-2014-base-v1",
+        "cards": "istanbul-2014-base-v1",
+        "tiles": "istanbul-2014-base-v1",
+        "random": "xorshift32-v1"
+      },
+      "reducerVersion": 1,
+      "schemaVersion": 1,
+      "rulesEdition": "istanbul-2014-base"
+    },
+    {
+      "id": "host-000109",
+      "actorUid": "host",
+      "clientSeq": "000109",
+      "createdAt": 109,
+      "type": "place/action-taken",
+      "payload": {
+        "choice": {
+          "kind": "wainwright-buy"
+        },
+        "drawContextVersion": 1,
+        "automaticFinalBonus": true,
+        "botUid": "bot:host-000002",
+        "botVersion": 2,
+        "botState": "1:29:0:action:2803175604"
+      },
+      "manifestVersions": {
+        "places": "istanbul-2014-base-v1",
+        "cards": "istanbul-2014-base-v1",
+        "tiles": "istanbul-2014-base-v1",
+        "random": "xorshift32-v1"
+      },
+      "reducerVersion": 1,
+      "schemaVersion": 1,
+      "rulesEdition": "istanbul-2014-base"
+    },
+    {
+      "id": "host-000110",
+      "actorUid": "host",
+      "clientSeq": "000110",
+      "createdAt": 110,
+      "type": "turn/ended",
+      "payload": {
+        "directAction": true,
+        "drawContextVersion": 1,
+        "automaticFinalBonus": true,
+        "botUid": "bot:host-000002",
+        "botVersion": 2,
+        "botState": "1:29:0:turn-end:1191587334"
+      },
+      "manifestVersions": {
+        "places": "istanbul-2014-base-v1",
+        "cards": "istanbul-2014-base-v1",
+        "tiles": "istanbul-2014-base-v1",
+        "random": "xorshift32-v1"
+      },
+      "reducerVersion": 1,
+      "schemaVersion": 1,
+      "rulesEdition": "istanbul-2014-base"
+    },
+    {
+      "id": "host-000111",
+      "actorUid": "host",
+      "clientSeq": "000111",
+      "createdAt": 111,
+      "type": "turn/moved",
+      "payload": {
+        "destination": 9,
+        "assistantAction": "drop",
+        "drawContextVersion": 1,
+        "automaticFinalBonus": true,
+        "botUid": "bot:host-000003",
+        "botVersion": 2,
+        "botState": "1:30:1:movement:520909388"
+      },
+      "manifestVersions": {
+        "places": "istanbul-2014-base-v1",
+        "cards": "istanbul-2014-base-v1",
+        "tiles": "istanbul-2014-base-v1",
+        "random": "xorshift32-v1"
+      },
+      "reducerVersion": 1,
+      "schemaVersion": 1,
+      "rulesEdition": "istanbul-2014-base"
+    },
+    {
+      "id": "host-000112",
+      "actorUid": "host",
+      "clientSeq": "000112",
+      "createdAt": 112,
+      "type": "place/action-taken",
+      "payload": {
+        "choice": {
+          "kind": "tea-house-wager",
+          "wager": 7
+        },
+        "drawContextVersion": 1,
+        "automaticFinalBonus": true,
+        "botUid": "bot:host-000003",
+        "botVersion": 2,
+        "botState": "1:30:1:action:278128081"
+      },
+      "manifestVersions": {
+        "places": "istanbul-2014-base-v1",
+        "cards": "istanbul-2014-base-v1",
+        "tiles": "istanbul-2014-base-v1",
+        "random": "xorshift32-v1"
+      },
+      "reducerVersion": 1,
+      "schemaVersion": 1,
+      "rulesEdition": "istanbul-2014-base"
+    },
+    {
+      "id": "host-000113",
+      "actorUid": "host",
+      "clientSeq": "000113",
+      "createdAt": 113,
+      "type": "turn/ended",
+      "payload": {
+        "directAction": true,
+        "drawContextVersion": 1,
+        "automaticFinalBonus": true,
+        "botUid": "bot:host-000003",
+        "botVersion": 2,
+        "botState": "1:30:1:encounters:4198634715"
+      },
+      "manifestVersions": {
+        "places": "istanbul-2014-base-v1",
+        "cards": "istanbul-2014-base-v1",
+        "tiles": "istanbul-2014-base-v1",
+        "random": "xorshift32-v1"
+      },
+      "reducerVersion": 1,
+      "schemaVersion": 1,
+      "rulesEdition": "istanbul-2014-base"
+    },
+    {
+      "id": "host-000114",
+      "actorUid": "host",
+      "clientSeq": "000114",
+      "createdAt": 114,
+      "type": "turn/moved",
+      "payload": {
+        "destination": 11,
+        "assistantAction": "drop",
+        "drawContextVersion": 1,
+        "automaticFinalBonus": true,
+        "botUid": "bot:host-000002",
+        "botVersion": 2,
+        "botState": "1:31:0:movement:3917659931"
+      },
+      "manifestVersions": {
+        "places": "istanbul-2014-base-v1",
+        "cards": "istanbul-2014-base-v1",
+        "tiles": "istanbul-2014-base-v1",
+        "random": "xorshift32-v1"
+      },
+      "reducerVersion": 1,
+      "schemaVersion": 1,
+      "rulesEdition": "istanbul-2014-base"
+    },
+    {
+      "id": "host-000115",
+      "actorUid": "host",
+      "clientSeq": "000115",
+      "createdAt": 115,
+      "type": "place/action-taken",
+      "payload": {
+        "choice": {
+          "kind": "market-sell",
+          "slotIndexes": [
+            0,
+            1,
+            2,
+            3,
+            4
+          ]
+        },
+        "drawContextVersion": 1,
+        "automaticFinalBonus": true,
+        "botUid": "bot:host-000002",
+        "botVersion": 2,
+        "botState": "1:31:0:action:921710296"
+      },
+      "manifestVersions": {
+        "places": "istanbul-2014-base-v1",
+        "cards": "istanbul-2014-base-v1",
+        "tiles": "istanbul-2014-base-v1",
+        "random": "xorshift32-v1"
+      },
+      "reducerVersion": 1,
+      "schemaVersion": 1,
+      "rulesEdition": "istanbul-2014-base"
+    },
+    {
+      "id": "host-000116",
+      "actorUid": "host",
+      "clientSeq": "000116",
+      "createdAt": 116,
+      "type": "turn/ended",
+      "payload": {
+        "directAction": true,
+        "drawContextVersion": 1,
+        "automaticFinalBonus": true,
+        "botUid": "bot:host-000002",
+        "botVersion": 2,
+        "botState": "1:31:0:turn-end:2839203759"
+      },
+      "manifestVersions": {
+        "places": "istanbul-2014-base-v1",
+        "cards": "istanbul-2014-base-v1",
+        "tiles": "istanbul-2014-base-v1",
+        "random": "xorshift32-v1"
+      },
+      "reducerVersion": 1,
+      "schemaVersion": 1,
+      "rulesEdition": "istanbul-2014-base"
+    },
+    {
+      "id": "host-000117",
+      "actorUid": "host",
+      "clientSeq": "000117",
+      "createdAt": 117,
+      "type": "turn/moved",
+      "payload": {
+        "destination": 1,
+        "assistantAction": "pick-up",
+        "drawContextVersion": 1,
+        "automaticFinalBonus": true,
+        "botUid": "bot:host-000003",
+        "botVersion": 2,
+        "botState": "1:32:1:movement:2802536744"
+      },
+      "manifestVersions": {
+        "places": "istanbul-2014-base-v1",
+        "cards": "istanbul-2014-base-v1",
+        "tiles": "istanbul-2014-base-v1",
+        "random": "xorshift32-v1"
+      },
+      "reducerVersion": 1,
+      "schemaVersion": 1,
+      "rulesEdition": "istanbul-2014-base"
+    },
+    {
+      "id": "host-000118",
+      "actorUid": "host",
+      "clientSeq": "000118",
+      "createdAt": 118,
+      "type": "place/action-taken",
+      "payload": {
+        "choice": {
+          "kind": "wainwright-buy"
+        },
+        "drawContextVersion": 1,
+        "automaticFinalBonus": true,
+        "botUid": "bot:host-000003",
+        "botVersion": 2,
+        "botState": "1:32:1:action:3873455795"
+      },
+      "manifestVersions": {
+        "places": "istanbul-2014-base-v1",
+        "cards": "istanbul-2014-base-v1",
+        "tiles": "istanbul-2014-base-v1",
+        "random": "xorshift32-v1"
+      },
+      "reducerVersion": 1,
+      "schemaVersion": 1,
+      "rulesEdition": "istanbul-2014-base"
+    },
+    {
+      "id": "host-000119",
+      "actorUid": "host",
+      "clientSeq": "000119",
+      "createdAt": 119,
+      "type": "turn/ended",
+      "payload": {
+        "directAction": true,
+        "drawContextVersion": 1,
+        "automaticFinalBonus": true,
+        "botUid": "bot:host-000003",
+        "botVersion": 2,
+        "botState": "1:32:1:turn-end:3554595851"
+      },
+      "manifestVersions": {
+        "places": "istanbul-2014-base-v1",
+        "cards": "istanbul-2014-base-v1",
+        "tiles": "istanbul-2014-base-v1",
+        "random": "xorshift32-v1"
+      },
+      "reducerVersion": 1,
+      "schemaVersion": 1,
+      "rulesEdition": "istanbul-2014-base"
+    },
+    {
+      "id": "host-000120",
+      "actorUid": "host",
+      "clientSeq": "000120",
+      "createdAt": 120,
+      "type": "turn/moved",
+      "payload": {
+        "destination": 3,
+        "assistantAction": "drop",
+        "drawContextVersion": 1,
+        "automaticFinalBonus": true,
+        "botUid": "bot:host-000002",
+        "botVersion": 2,
+        "botState": "1:33:0:movement:3153327046"
+      },
+      "manifestVersions": {
+        "places": "istanbul-2014-base-v1",
+        "cards": "istanbul-2014-base-v1",
+        "tiles": "istanbul-2014-base-v1",
+        "random": "xorshift32-v1"
+      },
+      "reducerVersion": 1,
+      "schemaVersion": 1,
+      "rulesEdition": "istanbul-2014-base"
+    },
+    {
+      "id": "host-000121",
+      "actorUid": "host",
+      "clientSeq": "000121",
+      "createdAt": 121,
+      "type": "place/action-taken",
+      "payload": {
+        "choice": {
+          "kind": "warehouse-fill",
+          "good": "spice"
+        },
+        "drawContextVersion": 1,
+        "automaticFinalBonus": true,
+        "botUid": "bot:host-000002",
+        "botVersion": 2,
+        "botState": "1:33:0:action:3680138937"
+      },
+      "manifestVersions": {
+        "places": "istanbul-2014-base-v1",
+        "cards": "istanbul-2014-base-v1",
+        "tiles": "istanbul-2014-base-v1",
+        "random": "xorshift32-v1"
+      },
+      "reducerVersion": 1,
+      "schemaVersion": 1,
+      "rulesEdition": "istanbul-2014-base"
+    },
+    {
+      "id": "host-000122",
+      "actorUid": "host",
+      "clientSeq": "000122",
+      "createdAt": 122,
+      "type": "mosque/ability-used",
+      "payload": {
+        "choice": {
+          "kind": "warehouse-extra",
+          "good": null
+        },
+        "drawContextVersion": 1,
+        "automaticFinalBonus": true,
+        "botUid": "bot:host-000002",
+        "botVersion": 2,
+        "botState": "1:33:0:mosque-ability:3701643906"
+      },
+      "manifestVersions": {
+        "places": "istanbul-2014-base-v1",
+        "cards": "istanbul-2014-base-v1",
+        "tiles": "istanbul-2014-base-v1",
+        "random": "xorshift32-v1"
+      },
+      "reducerVersion": 1,
+      "schemaVersion": 1,
+      "rulesEdition": "istanbul-2014-base"
+    },
+    {
+      "id": "host-000123",
+      "actorUid": "host",
+      "clientSeq": "000123",
+      "createdAt": 123,
+      "type": "turn/ended",
+      "payload": {
+        "directAction": true,
+        "drawContextVersion": 1,
+        "automaticFinalBonus": true,
+        "botUid": "bot:host-000002",
+        "botVersion": 2,
+        "botState": "1:33:0:turn-end:679204296"
+      },
+      "manifestVersions": {
+        "places": "istanbul-2014-base-v1",
+        "cards": "istanbul-2014-base-v1",
+        "tiles": "istanbul-2014-base-v1",
+        "random": "xorshift32-v1"
+      },
+      "reducerVersion": 1,
+      "schemaVersion": 1,
+      "rulesEdition": "istanbul-2014-base"
+    },
+    {
+      "id": "host-000124",
+      "actorUid": "host",
+      "clientSeq": "000124",
+      "createdAt": 124,
+      "type": "turn/moved",
+      "payload": {
+        "destination": 9,
+        "assistantAction": "pick-up",
+        "drawContextVersion": 1,
+        "automaticFinalBonus": true,
+        "botUid": "bot:host-000003",
+        "botVersion": 2,
+        "botState": "1:34:1:movement:3960555807"
+      },
+      "manifestVersions": {
+        "places": "istanbul-2014-base-v1",
+        "cards": "istanbul-2014-base-v1",
+        "tiles": "istanbul-2014-base-v1",
+        "random": "xorshift32-v1"
+      },
+      "reducerVersion": 1,
+      "schemaVersion": 1,
+      "rulesEdition": "istanbul-2014-base"
+    },
+    {
+      "id": "host-000125",
+      "actorUid": "host",
+      "clientSeq": "000125",
+      "createdAt": 125,
+      "type": "place/action-taken",
+      "payload": {
+        "choice": {
+          "kind": "tea-house-wager",
+          "wager": 7
+        },
+        "drawContextVersion": 1,
+        "automaticFinalBonus": true,
+        "botUid": "bot:host-000003",
+        "botVersion": 2,
+        "botState": "1:34:1:action:70984687"
+      },
+      "manifestVersions": {
+        "places": "istanbul-2014-base-v1",
+        "cards": "istanbul-2014-base-v1",
+        "tiles": "istanbul-2014-base-v1",
+        "random": "xorshift32-v1"
+      },
+      "reducerVersion": 1,
+      "schemaVersion": 1,
+      "rulesEdition": "istanbul-2014-base"
+    },
+    {
+      "id": "host-000126",
+      "actorUid": "host",
+      "clientSeq": "000126",
+      "createdAt": 126,
+      "type": "turn/ended",
+      "payload": {
+        "directAction": true,
+        "drawContextVersion": 1,
+        "automaticFinalBonus": true,
+        "botUid": "bot:host-000003",
+        "botVersion": 2,
+        "botState": "1:34:1:encounters:134507171"
+      },
+      "manifestVersions": {
+        "places": "istanbul-2014-base-v1",
+        "cards": "istanbul-2014-base-v1",
+        "tiles": "istanbul-2014-base-v1",
+        "random": "xorshift32-v1"
+      },
+      "reducerVersion": 1,
+      "schemaVersion": 1,
+      "rulesEdition": "istanbul-2014-base"
+    },
+    {
+      "id": "host-000127",
+      "actorUid": "host",
+      "clientSeq": "000127",
+      "createdAt": 127,
+      "type": "turn/moved",
+      "payload": {
+        "destination": 16,
+        "assistantAction": "drop",
+        "drawContextVersion": 1,
+        "automaticFinalBonus": true,
+        "botUid": "bot:host-000002",
+        "botVersion": 2,
+        "botState": "1:35:0:movement:3072812455"
+      },
+      "manifestVersions": {
+        "places": "istanbul-2014-base-v1",
+        "cards": "istanbul-2014-base-v1",
+        "tiles": "istanbul-2014-base-v1",
+        "random": "xorshift32-v1"
+      },
+      "reducerVersion": 1,
+      "schemaVersion": 1,
+      "rulesEdition": "istanbul-2014-base"
+    },
+    {
+      "id": "host-000128",
+      "actorUid": "host",
+      "clientSeq": "000128",
+      "createdAt": 128,
+      "type": "turn/merchant-paid",
+      "payload": {
+        "recipientUids": [],
+        "neutralMerchantIds": [
+          "neutral-3"
+        ],
+        "drawContextVersion": 1,
+        "automaticFinalBonus": true,
+        "botUid": "bot:host-000002",
+        "botVersion": 2,
+        "botState": "1:35:0:merchant-payment:2194078285"
+      },
+      "manifestVersions": {
+        "places": "istanbul-2014-base-v1",
+        "cards": "istanbul-2014-base-v1",
+        "tiles": "istanbul-2014-base-v1",
+        "random": "xorshift32-v1"
+      },
+      "reducerVersion": 1,
+      "schemaVersion": 1,
+      "rulesEdition": "istanbul-2014-base"
+    },
+    {
+      "id": "host-000129",
+      "actorUid": "host",
+      "clientSeq": "000129",
+      "createdAt": 129,
+      "type": "place/action-taken",
+      "payload": {
+        "choice": {
+          "kind": "gemstone-buy"
+        },
+        "drawContextVersion": 1,
+        "automaticFinalBonus": true,
+        "botUid": "bot:host-000002",
+        "botVersion": 2,
+        "botState": "1:35:0:action:1553452622"
+      },
+      "manifestVersions": {
+        "places": "istanbul-2014-base-v1",
+        "cards": "istanbul-2014-base-v1",
+        "tiles": "istanbul-2014-base-v1",
+        "random": "xorshift32-v1"
+      },
+      "reducerVersion": 1,
+      "schemaVersion": 1,
+      "rulesEdition": "istanbul-2014-base"
+    },
+    {
+      "id": "host-000130",
+      "actorUid": "host",
+      "clientSeq": "000130",
+      "createdAt": 130,
+      "type": "encounter/resolved",
+      "payload": {
+        "choice": {
+          "kind": "catch-family",
+          "familyUid": "bot:host-000003",
+          "reward": "lira"
+        },
+        "drawContextVersion": 1,
+        "automaticFinalBonus": true,
+        "botUid": "bot:host-000002",
+        "botVersion": 2,
+        "botState": "1:35:0:encounters:2430105195"
+      },
+      "manifestVersions": {
+        "places": "istanbul-2014-base-v1",
+        "cards": "istanbul-2014-base-v1",
+        "tiles": "istanbul-2014-base-v1",
+        "random": "xorshift32-v1"
+      },
+      "reducerVersion": 1,
+      "schemaVersion": 1,
+      "rulesEdition": "istanbul-2014-base"
+    },
+    {
+      "id": "host-000131",
+      "actorUid": "host",
+      "clientSeq": "000131",
+      "createdAt": 131,
+      "type": "turn/ended",
+      "payload": {
+        "directAction": true,
+        "drawContextVersion": 1,
+        "automaticFinalBonus": true,
+        "botUid": "bot:host-000002",
+        "botVersion": 2,
+        "botState": "1:35:0:turn-end:3222500390"
+      },
+      "manifestVersions": {
+        "places": "istanbul-2014-base-v1",
+        "cards": "istanbul-2014-base-v1",
+        "tiles": "istanbul-2014-base-v1",
+        "random": "xorshift32-v1"
+      },
+      "reducerVersion": 1,
+      "schemaVersion": 1,
+      "rulesEdition": "istanbul-2014-base"
+    },
+    {
+      "id": "host-000132",
+      "actorUid": "host",
+      "clientSeq": "000132",
+      "createdAt": 132,
+      "type": "turn/moved",
+      "payload": {
+        "destination": 1,
+        "assistantAction": "drop",
+        "drawContextVersion": 1,
+        "automaticFinalBonus": true,
+        "botUid": "bot:host-000003",
+        "botVersion": 2,
+        "botState": "1:36:1:movement:1600970312"
+      },
+      "manifestVersions": {
+        "places": "istanbul-2014-base-v1",
+        "cards": "istanbul-2014-base-v1",
+        "tiles": "istanbul-2014-base-v1",
+        "random": "xorshift32-v1"
+      },
+      "reducerVersion": 1,
+      "schemaVersion": 1,
+      "rulesEdition": "istanbul-2014-base"
+    },
+    {
+      "id": "host-000133",
+      "actorUid": "host",
+      "clientSeq": "000133",
+      "createdAt": 133,
+      "type": "place/action-taken",
+      "payload": {
+        "choice": {
+          "kind": "wainwright-buy"
+        },
+        "drawContextVersion": 1,
+        "automaticFinalBonus": true,
+        "botUid": "bot:host-000003",
+        "botVersion": 2,
+        "botState": "1:36:1:action:43336149"
+      },
+      "manifestVersions": {
+        "places": "istanbul-2014-base-v1",
+        "cards": "istanbul-2014-base-v1",
+        "tiles": "istanbul-2014-base-v1",
+        "random": "xorshift32-v1"
+      },
+      "reducerVersion": 1,
+      "schemaVersion": 1,
+      "rulesEdition": "istanbul-2014-base"
+    },
+    {
+      "id": "host-000134",
+      "actorUid": "host",
+      "clientSeq": "000134",
+      "createdAt": 134,
+      "type": "turn/ended",
+      "payload": {
+        "directAction": true,
+        "drawContextVersion": 1,
+        "automaticFinalBonus": true,
+        "botUid": "bot:host-000003",
+        "botVersion": 2,
+        "botState": "1:36:1:turn-end:3266494705"
+      },
+      "manifestVersions": {
+        "places": "istanbul-2014-base-v1",
+        "cards": "istanbul-2014-base-v1",
+        "tiles": "istanbul-2014-base-v1",
+        "random": "xorshift32-v1"
+      },
+      "reducerVersion": 1,
+      "schemaVersion": 1,
+      "rulesEdition": "istanbul-2014-base"
+    },
+    {
+      "id": "host-000135",
+      "actorUid": "host",
+      "clientSeq": "000135",
+      "createdAt": 135,
+      "type": "turn/moved",
+      "payload": {
+        "destination": 11,
+        "assistantAction": "pick-up",
+        "drawContextVersion": 1,
+        "automaticFinalBonus": true,
+        "botUid": "bot:host-000002",
+        "botVersion": 2,
+        "botState": "1:37:0:movement:572334952"
+      },
+      "manifestVersions": {
+        "places": "istanbul-2014-base-v1",
+        "cards": "istanbul-2014-base-v1",
+        "tiles": "istanbul-2014-base-v1",
+        "random": "xorshift32-v1"
+      },
+      "reducerVersion": 1,
+      "schemaVersion": 1,
+      "rulesEdition": "istanbul-2014-base"
+    },
+    {
+      "id": "host-000136",
+      "actorUid": "host",
+      "clientSeq": "000136",
+      "createdAt": 136,
+      "type": "place/action-taken",
+      "payload": {
+        "choice": {
+          "kind": "market-sell",
+          "slotIndexes": [
+            0,
+            1,
+            3,
+            4
+          ]
+        },
+        "drawContextVersion": 1,
+        "automaticFinalBonus": true,
+        "botUid": "bot:host-000002",
+        "botVersion": 2,
+        "botState": "1:37:0:action:1275117540"
+      },
+      "manifestVersions": {
+        "places": "istanbul-2014-base-v1",
+        "cards": "istanbul-2014-base-v1",
+        "tiles": "istanbul-2014-base-v1",
+        "random": "xorshift32-v1"
+      },
+      "reducerVersion": 1,
+      "schemaVersion": 1,
+      "rulesEdition": "istanbul-2014-base"
+    },
+    {
+      "id": "host-000137",
+      "actorUid": "host",
+      "clientSeq": "000137",
+      "createdAt": 137,
+      "type": "turn/ended",
+      "payload": {
+        "directAction": true,
+        "drawContextVersion": 1,
+        "automaticFinalBonus": true,
+        "botUid": "bot:host-000002",
+        "botVersion": 2,
+        "botState": "1:37:0:turn-end:435619720"
+      },
+      "manifestVersions": {
+        "places": "istanbul-2014-base-v1",
+        "cards": "istanbul-2014-base-v1",
+        "tiles": "istanbul-2014-base-v1",
+        "random": "xorshift32-v1"
+      },
+      "reducerVersion": 1,
+      "schemaVersion": 1,
+      "rulesEdition": "istanbul-2014-base"
+    },
+    {
+      "id": "host-000138",
+      "actorUid": "host",
+      "clientSeq": "000138",
+      "createdAt": 138,
+      "type": "turn/moved",
+      "payload": {
+        "destination": 6,
+        "assistantAction": "drop",
+        "drawContextVersion": 1,
+        "automaticFinalBonus": true,
+        "botUid": "bot:host-000003",
+        "botVersion": 2,
+        "botState": "1:38:1:movement:3360538861"
+      },
+      "manifestVersions": {
+        "places": "istanbul-2014-base-v1",
+        "cards": "istanbul-2014-base-v1",
+        "tiles": "istanbul-2014-base-v1",
+        "random": "xorshift32-v1"
+      },
+      "reducerVersion": 1,
+      "schemaVersion": 1,
+      "rulesEdition": "istanbul-2014-base"
+    },
+    {
+      "id": "host-000139",
+      "actorUid": "host",
+      "clientSeq": "000139",
+      "createdAt": 139,
+      "type": "place/action-taken",
+      "payload": {
+        "choice": {
+          "kind": "caravansary-draw",
+          "drawSources": [
+            "deck",
+            "deck"
+          ]
+        },
+        "drawContextVersion": 1,
+        "automaticFinalBonus": true,
+        "botUid": "bot:host-000003",
+        "botVersion": 2,
+        "botState": "1:38:1:action:1971837114"
+      },
+      "manifestVersions": {
+        "places": "istanbul-2014-base-v1",
+        "cards": "istanbul-2014-base-v1",
+        "tiles": "istanbul-2014-base-v1",
+        "random": "xorshift32-v1"
+      },
+      "reducerVersion": 1,
+      "schemaVersion": 1,
+      "rulesEdition": "istanbul-2014-base"
+    },
+    {
+      "id": "host-000140",
+      "actorUid": "host",
+      "clientSeq": "000140",
+      "createdAt": 140,
+      "type": "place/action-taken",
+      "payload": {
+        "choice": {
+          "kind": "caravansary-discard",
+          "discardCardId": "bonus-long-move-1"
+        },
+        "drawContextVersion": 1,
+        "automaticFinalBonus": true,
+        "botUid": "bot:host-000003",
+        "botVersion": 2,
+        "botState": "1:38:1:action:212627431"
+      },
+      "manifestVersions": {
+        "places": "istanbul-2014-base-v1",
+        "cards": "istanbul-2014-base-v1",
+        "tiles": "istanbul-2014-base-v1",
+        "random": "xorshift32-v1"
+      },
+      "reducerVersion": 1,
+      "schemaVersion": 1,
+      "rulesEdition": "istanbul-2014-base"
+    },
+    {
+      "id": "host-000141",
+      "actorUid": "host",
+      "clientSeq": "000141",
+      "createdAt": 141,
+      "type": "bonus/played",
+      "payload": {
+        "cardId": "bonus-gain-lira-3",
+        "choice": {
+          "kind": "gain-lira"
+        },
+        "drawContextVersion": 1,
+        "automaticFinalBonus": true,
+        "botUid": "bot:host-000003",
+        "botVersion": 2,
+        "botState": "1:38:1:turn-end:992289486"
+      },
+      "manifestVersions": {
+        "places": "istanbul-2014-base-v1",
+        "cards": "istanbul-2014-base-v1",
+        "tiles": "istanbul-2014-base-v1",
+        "random": "xorshift32-v1"
+      },
+      "reducerVersion": 1,
+      "schemaVersion": 1,
+      "rulesEdition": "istanbul-2014-base"
+    },
+    {
+      "id": "host-000142",
+      "actorUid": "host",
+      "clientSeq": "000142",
+      "createdAt": 142,
+      "type": "turn/ended",
+      "payload": {
+        "directAction": true,
+        "drawContextVersion": 1,
+        "automaticFinalBonus": true,
+        "botUid": "bot:host-000003",
+        "botVersion": 2,
+        "botState": "1:38:1:turn-end:2275936179"
+      },
+      "manifestVersions": {
+        "places": "istanbul-2014-base-v1",
+        "cards": "istanbul-2014-base-v1",
+        "tiles": "istanbul-2014-base-v1",
+        "random": "xorshift32-v1"
+      },
+      "reducerVersion": 1,
+      "schemaVersion": 1,
+      "rulesEdition": "istanbul-2014-base"
+    },
+    {
+      "id": "host-000143",
+      "actorUid": "host",
+      "clientSeq": "000143",
+      "createdAt": 143,
+      "type": "turn/moved",
+      "payload": {
+        "destination": 16,
+        "assistantAction": "pick-up",
+        "drawContextVersion": 1,
+        "automaticFinalBonus": true,
+        "botUid": "bot:host-000002",
+        "botVersion": 2,
+        "botState": "1:39:0:movement:4025993271"
+      },
+      "manifestVersions": {
+        "places": "istanbul-2014-base-v1",
+        "cards": "istanbul-2014-base-v1",
+        "tiles": "istanbul-2014-base-v1",
+        "random": "xorshift32-v1"
+      },
+      "reducerVersion": 1,
+      "schemaVersion": 1,
+      "rulesEdition": "istanbul-2014-base"
+    },
+    {
+      "id": "host-000144",
+      "actorUid": "host",
+      "clientSeq": "000144",
+      "createdAt": 144,
+      "type": "place/action-taken",
+      "payload": {
+        "choice": {
+          "kind": "gemstone-buy"
+        },
+        "drawContextVersion": 1,
+        "automaticFinalBonus": true,
+        "botUid": "bot:host-000002",
+        "botVersion": 2,
+        "botState": "1:39:0:action:1714306467"
+      },
+      "manifestVersions": {
+        "places": "istanbul-2014-base-v1",
+        "cards": "istanbul-2014-base-v1",
+        "tiles": "istanbul-2014-base-v1",
+        "random": "xorshift32-v1"
+      },
+      "reducerVersion": 1,
+      "schemaVersion": 1,
+      "rulesEdition": "istanbul-2014-base"
+    },
+    {
+      "id": "host-000145",
+      "actorUid": "host",
+      "clientSeq": "000145",
+      "createdAt": 145,
+      "type": "turn/ended",
+      "payload": {
+        "directAction": true,
+        "drawContextVersion": 1,
+        "automaticFinalBonus": true,
+        "botUid": "bot:host-000002",
+        "botVersion": 2,
+        "botState": "1:39:0:turn-end:802257952"
+      },
+      "manifestVersions": {
+        "places": "istanbul-2014-base-v1",
+        "cards": "istanbul-2014-base-v1",
+        "tiles": "istanbul-2014-base-v1",
+        "random": "xorshift32-v1"
+      },
+      "reducerVersion": 1,
+      "schemaVersion": 1,
+      "rulesEdition": "istanbul-2014-base"
+    },
+    {
+      "id": "host-000146",
+      "actorUid": "host",
+      "clientSeq": "000146",
+      "createdAt": 146,
+      "type": "turn/moved",
+      "payload": {
+        "destination": 5,
+        "assistantAction": "drop",
+        "drawContextVersion": 1,
+        "automaticFinalBonus": true,
+        "botUid": "bot:host-000003",
+        "botVersion": 2,
+        "botState": "1:40:1:movement:195075019"
+      },
+      "manifestVersions": {
+        "places": "istanbul-2014-base-v1",
+        "cards": "istanbul-2014-base-v1",
+        "tiles": "istanbul-2014-base-v1",
+        "random": "xorshift32-v1"
+      },
+      "reducerVersion": 1,
+      "schemaVersion": 1,
+      "rulesEdition": "istanbul-2014-base"
+    },
+    {
+      "id": "host-000147",
+      "actorUid": "host",
+      "clientSeq": "000147",
+      "createdAt": 147,
+      "type": "place/action-taken",
+      "payload": {
+        "choice": {
+          "kind": "post-office-collect"
+        },
+        "drawContextVersion": 1,
+        "automaticFinalBonus": true,
+        "botUid": "bot:host-000003",
+        "botVersion": 2,
+        "botState": "1:40:1:action:3477656415"
+      },
+      "manifestVersions": {
+        "places": "istanbul-2014-base-v1",
+        "cards": "istanbul-2014-base-v1",
+        "tiles": "istanbul-2014-base-v1",
+        "random": "xorshift32-v1"
+      },
+      "reducerVersion": 1,
+      "schemaVersion": 1,
+      "rulesEdition": "istanbul-2014-base"
+    },
+    {
+      "id": "host-000148",
+      "actorUid": "host",
+      "clientSeq": "000148",
+      "createdAt": 148,
+      "type": "turn/ended",
+      "payload": {
+        "directAction": true,
+        "drawContextVersion": 1,
+        "automaticFinalBonus": true,
+        "botUid": "bot:host-000003",
+        "botVersion": 2,
+        "botState": "1:40:1:turn-end:3291820915"
+      },
+      "manifestVersions": {
+        "places": "istanbul-2014-base-v1",
+        "cards": "istanbul-2014-base-v1",
+        "tiles": "istanbul-2014-base-v1",
+        "random": "xorshift32-v1"
+      },
+      "reducerVersion": 1,
+      "schemaVersion": 1,
+      "rulesEdition": "istanbul-2014-base"
+    },
+    {
+      "id": "host-000149",
+      "actorUid": "host",
+      "clientSeq": "000149",
+      "createdAt": 149,
+      "type": "turn/moved",
+      "payload": {
+        "destination": 3,
+        "assistantAction": "pick-up",
+        "drawContextVersion": 1,
+        "automaticFinalBonus": true,
+        "botUid": "bot:host-000002",
+        "botVersion": 2,
+        "botState": "1:41:0:movement:4258943281"
+      },
+      "manifestVersions": {
+        "places": "istanbul-2014-base-v1",
+        "cards": "istanbul-2014-base-v1",
+        "tiles": "istanbul-2014-base-v1",
+        "random": "xorshift32-v1"
+      },
+      "reducerVersion": 1,
+      "schemaVersion": 1,
+      "rulesEdition": "istanbul-2014-base"
+    },
+    {
+      "id": "host-000150",
+      "actorUid": "host",
+      "clientSeq": "000150",
+      "createdAt": 150,
+      "type": "place/action-taken",
+      "payload": {
+        "choice": {
+          "kind": "warehouse-fill",
+          "good": "spice"
+        },
+        "drawContextVersion": 1,
+        "automaticFinalBonus": true,
+        "botUid": "bot:host-000002",
+        "botVersion": 2,
+        "botState": "1:41:0:action:2270443445"
+      },
+      "manifestVersions": {
+        "places": "istanbul-2014-base-v1",
+        "cards": "istanbul-2014-base-v1",
+        "tiles": "istanbul-2014-base-v1",
+        "random": "xorshift32-v1"
+      },
+      "reducerVersion": 1,
+      "schemaVersion": 1,
+      "rulesEdition": "istanbul-2014-base"
+    },
+    {
+      "id": "host-000151",
+      "actorUid": "host",
+      "clientSeq": "000151",
+      "createdAt": 151,
+      "type": "mosque/ability-used",
+      "payload": {
+        "choice": {
+          "kind": "warehouse-extra",
+          "good": null
+        },
+        "drawContextVersion": 1,
+        "automaticFinalBonus": true,
+        "botUid": "bot:host-000002",
+        "botVersion": 2,
+        "botState": "1:41:0:mosque-ability:3099230555"
+      },
+      "manifestVersions": {
+        "places": "istanbul-2014-base-v1",
+        "cards": "istanbul-2014-base-v1",
+        "tiles": "istanbul-2014-base-v1",
+        "random": "xorshift32-v1"
+      },
+      "reducerVersion": 1,
+      "schemaVersion": 1,
+      "rulesEdition": "istanbul-2014-base"
+    },
+    {
+      "id": "host-000152",
+      "actorUid": "host",
+      "clientSeq": "000152",
+      "createdAt": 152,
+      "type": "turn/ended",
+      "payload": {
+        "directAction": true,
+        "drawContextVersion": 1,
+        "automaticFinalBonus": true,
+        "botUid": "bot:host-000002",
+        "botVersion": 2,
+        "botState": "1:41:0:turn-end:3755499839"
+      },
+      "manifestVersions": {
+        "places": "istanbul-2014-base-v1",
+        "cards": "istanbul-2014-base-v1",
+        "tiles": "istanbul-2014-base-v1",
+        "random": "xorshift32-v1"
+      },
+      "reducerVersion": 1,
+      "schemaVersion": 1,
+      "rulesEdition": "istanbul-2014-base"
+    },
+    {
+      "id": "host-000153",
+      "actorUid": "host",
+      "clientSeq": "000153",
+      "createdAt": 153,
+      "type": "turn/moved",
+      "payload": {
+        "destination": 12,
+        "assistantAction": "drop",
+        "drawContextVersion": 1,
+        "automaticFinalBonus": true,
+        "botUid": "bot:host-000003",
+        "botVersion": 2,
+        "botState": "1:42:1:movement:2252037822"
+      },
+      "manifestVersions": {
+        "places": "istanbul-2014-base-v1",
+        "cards": "istanbul-2014-base-v1",
+        "tiles": "istanbul-2014-base-v1",
+        "random": "xorshift32-v1"
+      },
+      "reducerVersion": 1,
+      "schemaVersion": 1,
+      "rulesEdition": "istanbul-2014-base"
+    },
+    {
+      "id": "host-000154",
+      "actorUid": "host",
+      "clientSeq": "000154",
+      "createdAt": 154,
+      "type": "place/action-taken",
+      "payload": {
+        "choice": {
+          "kind": "police-send",
+          "destination": 5
+        },
+        "drawContextVersion": 1,
+        "automaticFinalBonus": true,
+        "botUid": "bot:host-000003",
+        "botVersion": 2,
+        "botState": "1:42:1:action:4164805912"
+      },
+      "manifestVersions": {
+        "places": "istanbul-2014-base-v1",
+        "cards": "istanbul-2014-base-v1",
+        "tiles": "istanbul-2014-base-v1",
+        "random": "xorshift32-v1"
+      },
+      "reducerVersion": 1,
+      "schemaVersion": 1,
+      "rulesEdition": "istanbul-2014-base"
+    },
+    {
+      "id": "host-000155",
+      "actorUid": "host",
+      "clientSeq": "000155",
+      "createdAt": 155,
+      "type": "place/action-taken",
+      "payload": {
+        "choice": {
+          "kind": "post-office-collect"
+        },
+        "drawContextVersion": 1,
+        "automaticFinalBonus": true,
+        "botUid": "bot:host-000003",
+        "botVersion": 2,
+        "botState": "1:42:1:family-action:1271203705"
+      },
+      "manifestVersions": {
+        "places": "istanbul-2014-base-v1",
+        "cards": "istanbul-2014-base-v1",
+        "tiles": "istanbul-2014-base-v1",
+        "random": "xorshift32-v1"
+      },
+      "reducerVersion": 1,
+      "schemaVersion": 1,
+      "rulesEdition": "istanbul-2014-base"
+    },
+    {
+      "id": "host-000156",
+      "actorUid": "host",
+      "clientSeq": "000156",
+      "createdAt": 156,
+      "type": "turn/ended",
+      "payload": {
+        "directAction": true,
+        "drawContextVersion": 1,
+        "automaticFinalBonus": true,
+        "botUid": "bot:host-000003",
+        "botVersion": 2,
+        "botState": "1:42:1:turn-end:2654420950"
+      },
+      "manifestVersions": {
+        "places": "istanbul-2014-base-v1",
+        "cards": "istanbul-2014-base-v1",
+        "tiles": "istanbul-2014-base-v1",
+        "random": "xorshift32-v1"
+      },
+      "reducerVersion": 1,
+      "schemaVersion": 1,
+      "rulesEdition": "istanbul-2014-base"
+    },
+    {
+      "id": "host-000157",
+      "actorUid": "host",
+      "clientSeq": "000157",
+      "createdAt": 157,
+      "type": "turn/moved",
+      "payload": {
+        "destination": 11,
+        "assistantAction": "drop",
+        "drawContextVersion": 1,
+        "automaticFinalBonus": true,
+        "botUid": "bot:host-000002",
+        "botVersion": 2,
+        "botState": "1:43:0:movement:1103844611"
+      },
+      "manifestVersions": {
+        "places": "istanbul-2014-base-v1",
+        "cards": "istanbul-2014-base-v1",
+        "tiles": "istanbul-2014-base-v1",
+        "random": "xorshift32-v1"
+      },
+      "reducerVersion": 1,
+      "schemaVersion": 1,
+      "rulesEdition": "istanbul-2014-base"
+    },
+    {
+      "id": "host-000158",
+      "actorUid": "host",
+      "clientSeq": "000158",
+      "createdAt": 158,
+      "type": "place/action-taken",
+      "payload": {
+        "choice": {
+          "kind": "market-sell",
+          "slotIndexes": [
+            3,
+            4
+          ]
+        },
+        "drawContextVersion": 1,
+        "automaticFinalBonus": true,
+        "botUid": "bot:host-000002",
+        "botVersion": 2,
+        "botState": "1:43:0:action:1305447948"
+      },
+      "manifestVersions": {
+        "places": "istanbul-2014-base-v1",
+        "cards": "istanbul-2014-base-v1",
+        "tiles": "istanbul-2014-base-v1",
+        "random": "xorshift32-v1"
+      },
+      "reducerVersion": 1,
+      "schemaVersion": 1,
+      "rulesEdition": "istanbul-2014-base"
+    },
+    {
+      "id": "host-000159",
+      "actorUid": "host",
+      "clientSeq": "000159",
+      "createdAt": 159,
+      "type": "turn/ended",
+      "payload": {
+        "directAction": true,
+        "drawContextVersion": 1,
+        "automaticFinalBonus": true,
+        "botUid": "bot:host-000002",
+        "botVersion": 2,
+        "botState": "1:43:0:turn-end:3707809471"
+      },
+      "manifestVersions": {
+        "places": "istanbul-2014-base-v1",
+        "cards": "istanbul-2014-base-v1",
+        "tiles": "istanbul-2014-base-v1",
+        "random": "xorshift32-v1"
+      },
+      "reducerVersion": 1,
+      "schemaVersion": 1,
+      "rulesEdition": "istanbul-2014-base"
+    },
+    {
+      "id": "host-000160",
+      "actorUid": "host",
+      "clientSeq": "000160",
+      "createdAt": 160,
+      "type": "turn/moved",
+      "payload": {
+        "destination": 5,
+        "assistantAction": "pick-up",
+        "drawContextVersion": 1,
+        "automaticFinalBonus": true,
+        "botUid": "bot:host-000003",
+        "botVersion": 2,
+        "botState": "1:44:1:movement:339077542"
+      },
+      "manifestVersions": {
+        "places": "istanbul-2014-base-v1",
+        "cards": "istanbul-2014-base-v1",
+        "tiles": "istanbul-2014-base-v1",
+        "random": "xorshift32-v1"
+      },
+      "reducerVersion": 1,
+      "schemaVersion": 1,
+      "rulesEdition": "istanbul-2014-base"
+    },
+    {
+      "id": "host-000161",
+      "actorUid": "host",
+      "clientSeq": "000161",
+      "createdAt": 161,
+      "type": "place/action-taken",
+      "payload": {
+        "choice": {
+          "kind": "post-office-collect"
+        },
+        "drawContextVersion": 1,
+        "automaticFinalBonus": true,
+        "botUid": "bot:host-000003",
+        "botVersion": 2,
+        "botState": "1:44:1:action:4264365141"
+      },
+      "manifestVersions": {
+        "places": "istanbul-2014-base-v1",
+        "cards": "istanbul-2014-base-v1",
+        "tiles": "istanbul-2014-base-v1",
+        "random": "xorshift32-v1"
+      },
+      "reducerVersion": 1,
+      "schemaVersion": 1,
+      "rulesEdition": "istanbul-2014-base"
+    },
+    {
+      "id": "host-000162",
+      "actorUid": "host",
+      "clientSeq": "000162",
+      "createdAt": 162,
+      "type": "turn/ended",
+      "payload": {
+        "directAction": true,
+        "drawContextVersion": 1,
+        "automaticFinalBonus": true,
+        "botUid": "bot:host-000003",
+        "botVersion": 2,
+        "botState": "1:44:1:turn-end:212697766"
+      },
+      "manifestVersions": {
+        "places": "istanbul-2014-base-v1",
+        "cards": "istanbul-2014-base-v1",
+        "tiles": "istanbul-2014-base-v1",
+        "random": "xorshift32-v1"
+      },
+      "reducerVersion": 1,
+      "schemaVersion": 1,
+      "rulesEdition": "istanbul-2014-base"
+    },
+    {
+      "id": "host-000163",
+      "actorUid": "host",
+      "clientSeq": "000163",
+      "createdAt": 163,
+      "type": "turn/moved",
+      "payload": {
+        "destination": 3,
+        "assistantAction": "drop",
+        "drawContextVersion": 1,
+        "automaticFinalBonus": true,
+        "botUid": "bot:host-000002",
+        "botVersion": 2,
+        "botState": "1:45:0:movement:2375549791"
+      },
+      "manifestVersions": {
+        "places": "istanbul-2014-base-v1",
+        "cards": "istanbul-2014-base-v1",
+        "tiles": "istanbul-2014-base-v1",
+        "random": "xorshift32-v1"
+      },
+      "reducerVersion": 1,
+      "schemaVersion": 1,
+      "rulesEdition": "istanbul-2014-base"
+    },
+    {
+      "id": "host-000164",
+      "actorUid": "host",
+      "clientSeq": "000164",
+      "createdAt": 164,
+      "type": "place/action-taken",
+      "payload": {
+        "choice": {
+          "kind": "warehouse-fill",
+          "good": "spice"
+        },
+        "drawContextVersion": 1,
+        "automaticFinalBonus": true,
+        "botUid": "bot:host-000002",
+        "botVersion": 2,
+        "botState": "1:45:0:action:2271123219"
+      },
+      "manifestVersions": {
+        "places": "istanbul-2014-base-v1",
+        "cards": "istanbul-2014-base-v1",
+        "tiles": "istanbul-2014-base-v1",
+        "random": "xorshift32-v1"
+      },
+      "reducerVersion": 1,
+      "schemaVersion": 1,
+      "rulesEdition": "istanbul-2014-base"
+    },
+    {
+      "id": "host-000165",
+      "actorUid": "host",
+      "clientSeq": "000165",
+      "createdAt": 165,
+      "type": "mosque/ability-used",
+      "payload": {
+        "choice": {
+          "kind": "warehouse-extra",
+          "good": null
+        },
+        "drawContextVersion": 1,
+        "automaticFinalBonus": true,
+        "botUid": "bot:host-000002",
+        "botVersion": 2,
+        "botState": "1:45:0:mosque-ability:2158486282"
+      },
+      "manifestVersions": {
+        "places": "istanbul-2014-base-v1",
+        "cards": "istanbul-2014-base-v1",
+        "tiles": "istanbul-2014-base-v1",
+        "random": "xorshift32-v1"
+      },
+      "reducerVersion": 1,
+      "schemaVersion": 1,
+      "rulesEdition": "istanbul-2014-base"
+    },
+    {
+      "id": "host-000166",
+      "actorUid": "host",
+      "clientSeq": "000166",
+      "createdAt": 166,
+      "type": "turn/ended",
+      "payload": {
+        "directAction": true,
+        "drawContextVersion": 1,
+        "automaticFinalBonus": true,
+        "botUid": "bot:host-000002",
+        "botVersion": 2,
+        "botState": "1:45:0:turn-end:3588804084"
+      },
+      "manifestVersions": {
+        "places": "istanbul-2014-base-v1",
+        "cards": "istanbul-2014-base-v1",
+        "tiles": "istanbul-2014-base-v1",
+        "random": "xorshift32-v1"
+      },
+      "reducerVersion": 1,
+      "schemaVersion": 1,
+      "rulesEdition": "istanbul-2014-base"
+    },
+    {
+      "id": "host-000167",
+      "actorUid": "host",
+      "clientSeq": "000167",
+      "createdAt": 167,
+      "type": "turn/moved",
+      "payload": {
+        "destination": 14,
+        "assistantAction": "drop",
+        "drawContextVersion": 1,
+        "automaticFinalBonus": true,
+        "botUid": "bot:host-000003",
+        "botVersion": 2,
+        "botState": "1:46:1:movement:2797784719"
+      },
+      "manifestVersions": {
+        "places": "istanbul-2014-base-v1",
+        "cards": "istanbul-2014-base-v1",
+        "tiles": "istanbul-2014-base-v1",
+        "random": "xorshift32-v1"
+      },
+      "reducerVersion": 1,
+      "schemaVersion": 1,
+      "rulesEdition": "istanbul-2014-base"
+    },
+    {
+      "id": "host-000168",
+      "actorUid": "host",
+      "clientSeq": "000168",
+      "createdAt": 168,
+      "type": "place/action-taken",
+      "payload": {
+        "choice": {
+          "kind": "mosque-take",
+          "tileId": "mosque-fabric-4"
+        },
+        "drawContextVersion": 1,
+        "automaticFinalBonus": true,
+        "botUid": "bot:host-000003",
+        "botVersion": 2,
+        "botState": "1:46:1:action:3918115415"
+      },
+      "manifestVersions": {
+        "places": "istanbul-2014-base-v1",
+        "cards": "istanbul-2014-base-v1",
+        "tiles": "istanbul-2014-base-v1",
+        "random": "xorshift32-v1"
+      },
+      "reducerVersion": 1,
+      "schemaVersion": 1,
+      "rulesEdition": "istanbul-2014-base"
+    },
+    {
+      "id": "host-000169",
+      "actorUid": "host",
+      "clientSeq": "000169",
+      "createdAt": 169,
+      "type": "encounter/resolved",
+      "payload": {
+        "choice": {
+          "kind": "catch-family",
+          "familyUid": "bot:host-000002",
+          "reward": "lira"
+        },
+        "drawContextVersion": 1,
+        "automaticFinalBonus": true,
+        "botUid": "bot:host-000003",
+        "botVersion": 2,
+        "botState": "1:46:1:encounters:694744071"
+      },
+      "manifestVersions": {
+        "places": "istanbul-2014-base-v1",
+        "cards": "istanbul-2014-base-v1",
+        "tiles": "istanbul-2014-base-v1",
+        "random": "xorshift32-v1"
+      },
+      "reducerVersion": 1,
+      "schemaVersion": 1,
+      "rulesEdition": "istanbul-2014-base"
+    },
+    {
+      "id": "host-000170",
+      "actorUid": "host",
+      "clientSeq": "000170",
+      "createdAt": 170,
+      "type": "turn/ended",
+      "payload": {
+        "directAction": true,
+        "drawContextVersion": 1,
+        "automaticFinalBonus": true,
+        "botUid": "bot:host-000003",
+        "botVersion": 2,
+        "botState": "1:46:1:turn-end:1254398629"
+      },
+      "manifestVersions": {
+        "places": "istanbul-2014-base-v1",
+        "cards": "istanbul-2014-base-v1",
+        "tiles": "istanbul-2014-base-v1",
+        "random": "xorshift32-v1"
+      },
+      "reducerVersion": 1,
+      "schemaVersion": 1,
+      "rulesEdition": "istanbul-2014-base"
+    },
+    {
+      "id": "host-000171",
+      "actorUid": "host",
+      "clientSeq": "000171",
+      "createdAt": 171,
+      "type": "turn/moved",
+      "payload": {
+        "destination": 12,
+        "assistantAction": "drop",
+        "drawContextVersion": 1,
+        "automaticFinalBonus": true,
+        "botUid": "bot:host-000002",
+        "botVersion": 2,
+        "botState": "1:47:0:movement:4288686974"
+      },
+      "manifestVersions": {
+        "places": "istanbul-2014-base-v1",
+        "cards": "istanbul-2014-base-v1",
+        "tiles": "istanbul-2014-base-v1",
+        "random": "xorshift32-v1"
+      },
+      "reducerVersion": 1,
+      "schemaVersion": 1,
+      "rulesEdition": "istanbul-2014-base"
+    },
+    {
+      "id": "host-000172",
+      "actorUid": "host",
+      "clientSeq": "000172",
+      "createdAt": 172,
+      "type": "place/action-taken",
+      "payload": {
+        "choice": {
+          "kind": "police-send",
+          "destination": 5
+        },
+        "drawContextVersion": 1,
+        "automaticFinalBonus": true,
+        "botUid": "bot:host-000002",
+        "botVersion": 2,
+        "botState": "1:47:0:action:1728022897"
+      },
+      "manifestVersions": {
+        "places": "istanbul-2014-base-v1",
+        "cards": "istanbul-2014-base-v1",
+        "tiles": "istanbul-2014-base-v1",
+        "random": "xorshift32-v1"
+      },
+      "reducerVersion": 1,
+      "schemaVersion": 1,
+      "rulesEdition": "istanbul-2014-base"
+    },
+    {
+      "id": "host-000173",
+      "actorUid": "host",
+      "clientSeq": "000173",
+      "createdAt": 173,
+      "type": "place/action-taken",
+      "payload": {
+        "choice": {
+          "kind": "post-office-collect"
+        },
+        "drawContextVersion": 1,
+        "automaticFinalBonus": true,
+        "botUid": "bot:host-000002",
+        "botVersion": 2,
+        "botState": "1:47:0:family-action:2977317504"
+      },
+      "manifestVersions": {
+        "places": "istanbul-2014-base-v1",
+        "cards": "istanbul-2014-base-v1",
+        "tiles": "istanbul-2014-base-v1",
+        "random": "xorshift32-v1"
+      },
+      "reducerVersion": 1,
+      "schemaVersion": 1,
+      "rulesEdition": "istanbul-2014-base"
+    },
+    {
+      "id": "host-000174",
+      "actorUid": "host",
+      "clientSeq": "000174",
+      "createdAt": 174,
+      "type": "turn/ended",
+      "payload": {
+        "directAction": true,
+        "drawContextVersion": 1,
+        "automaticFinalBonus": true,
+        "botUid": "bot:host-000002",
+        "botVersion": 2,
+        "botState": "1:47:0:turn-end:2776401025"
+      },
+      "manifestVersions": {
+        "places": "istanbul-2014-base-v1",
+        "cards": "istanbul-2014-base-v1",
+        "tiles": "istanbul-2014-base-v1",
+        "random": "xorshift32-v1"
+      },
+      "reducerVersion": 1,
+      "schemaVersion": 1,
+      "rulesEdition": "istanbul-2014-base"
+    },
+    {
+      "id": "host-000175",
+      "actorUid": "host",
+      "clientSeq": "000175",
+      "createdAt": 175,
+      "type": "turn/moved",
+      "payload": {
+        "destination": 7,
+        "assistantAction": "fountain",
+        "drawContextVersion": 1,
+        "automaticFinalBonus": true,
+        "botUid": "bot:host-000003",
+        "botVersion": 2,
+        "botState": "1:48:1:movement:2377248920"
+      },
+      "manifestVersions": {
+        "places": "istanbul-2014-base-v1",
+        "cards": "istanbul-2014-base-v1",
+        "tiles": "istanbul-2014-base-v1",
+        "random": "xorshift32-v1"
+      },
+      "reducerVersion": 1,
+      "schemaVersion": 1,
+      "rulesEdition": "istanbul-2014-base"
+    },
+    {
+      "id": "host-000176",
+      "actorUid": "host",
+      "clientSeq": "000176",
+      "createdAt": 176,
+      "type": "place/action-taken",
+      "payload": {
+        "choice": {
+          "kind": "fountain-recall",
+          "assistantPlaces": [
+            1,
+            6,
+            12,
+            14
+          ]
+        },
+        "drawContextVersion": 1,
+        "automaticFinalBonus": true,
+        "botUid": "bot:host-000003",
+        "botVersion": 2,
+        "botState": "1:48:1:action:2859476827"
+      },
+      "manifestVersions": {
+        "places": "istanbul-2014-base-v1",
+        "cards": "istanbul-2014-base-v1",
+        "tiles": "istanbul-2014-base-v1",
+        "random": "xorshift32-v1"
+      },
+      "reducerVersion": 1,
+      "schemaVersion": 1,
+      "rulesEdition": "istanbul-2014-base"
+    },
+    {
+      "id": "host-000177",
+      "actorUid": "host",
+      "clientSeq": "000177",
+      "createdAt": 177,
+      "type": "turn/ended",
+      "payload": {
+        "directAction": true,
+        "drawContextVersion": 1,
+        "automaticFinalBonus": true,
+        "botUid": "bot:host-000003",
+        "botVersion": 2,
+        "botState": "1:48:1:encounters:1784596584"
+      },
+      "manifestVersions": {
+        "places": "istanbul-2014-base-v1",
+        "cards": "istanbul-2014-base-v1",
+        "tiles": "istanbul-2014-base-v1",
+        "random": "xorshift32-v1"
+      },
+      "reducerVersion": 1,
+      "schemaVersion": 1,
+      "rulesEdition": "istanbul-2014-base"
+    },
+    {
+      "id": "host-000178",
+      "actorUid": "host",
+      "clientSeq": "000178",
+      "createdAt": 178,
+      "type": "turn/moved",
+      "payload": {
+        "destination": 5,
+        "assistantAction": "drop",
+        "drawContextVersion": 1,
+        "automaticFinalBonus": true,
+        "botUid": "bot:host-000002",
+        "botVersion": 2,
+        "botState": "1:49:0:movement:4140225819"
+      },
+      "manifestVersions": {
+        "places": "istanbul-2014-base-v1",
+        "cards": "istanbul-2014-base-v1",
+        "tiles": "istanbul-2014-base-v1",
+        "random": "xorshift32-v1"
+      },
+      "reducerVersion": 1,
+      "schemaVersion": 1,
+      "rulesEdition": "istanbul-2014-base"
+    },
+    {
+      "id": "host-000179",
+      "actorUid": "host",
+      "clientSeq": "000179",
+      "createdAt": 179,
+      "type": "place/action-taken",
+      "payload": {
+        "choice": {
+          "kind": "post-office-collect"
+        },
+        "drawContextVersion": 1,
+        "automaticFinalBonus": true,
+        "botUid": "bot:host-000002",
+        "botVersion": 2,
+        "botState": "1:49:0:action:2906511272"
+      },
+      "manifestVersions": {
+        "places": "istanbul-2014-base-v1",
+        "cards": "istanbul-2014-base-v1",
+        "tiles": "istanbul-2014-base-v1",
+        "random": "xorshift32-v1"
+      },
+      "reducerVersion": 1,
+      "schemaVersion": 1,
+      "rulesEdition": "istanbul-2014-base"
+    },
+    {
+      "id": "host-000180",
+      "actorUid": "host",
+      "clientSeq": "000180",
+      "createdAt": 180,
+      "type": "encounter/resolved",
+      "payload": {
+        "choice": {
+          "kind": "catch-family",
+          "familyUid": "bot:host-000003",
+          "reward": "lira"
+        },
+        "drawContextVersion": 1,
+        "automaticFinalBonus": true,
+        "botUid": "bot:host-000002",
+        "botVersion": 2,
+        "botState": "1:49:0:encounters:945102554"
+      },
+      "manifestVersions": {
+        "places": "istanbul-2014-base-v1",
+        "cards": "istanbul-2014-base-v1",
+        "tiles": "istanbul-2014-base-v1",
+        "random": "xorshift32-v1"
+      },
+      "reducerVersion": 1,
+      "schemaVersion": 1,
+      "rulesEdition": "istanbul-2014-base"
+    },
+    {
+      "id": "host-000181",
+      "actorUid": "host",
+      "clientSeq": "000181",
+      "createdAt": 181,
+      "type": "turn/ended",
+      "payload": {
+        "directAction": true,
+        "drawContextVersion": 1,
+        "automaticFinalBonus": true,
+        "botUid": "bot:host-000002",
+        "botVersion": 2,
+        "botState": "1:49:0:turn-end:1661854476"
+      },
+      "manifestVersions": {
+        "places": "istanbul-2014-base-v1",
+        "cards": "istanbul-2014-base-v1",
+        "tiles": "istanbul-2014-base-v1",
+        "random": "xorshift32-v1"
+      },
+      "reducerVersion": 1,
+      "schemaVersion": 1,
+      "rulesEdition": "istanbul-2014-base"
+    },
+    {
+      "id": "host-000182",
+      "actorUid": "host",
+      "clientSeq": "000182",
+      "createdAt": 182,
+      "type": "turn/moved",
+      "payload": {
+        "destination": 3,
+        "assistantAction": "drop",
+        "drawContextVersion": 1,
+        "automaticFinalBonus": true,
+        "botUid": "bot:host-000003",
+        "botVersion": 2,
+        "botState": "1:50:1:movement:2833025313"
+      },
+      "manifestVersions": {
+        "places": "istanbul-2014-base-v1",
+        "cards": "istanbul-2014-base-v1",
+        "tiles": "istanbul-2014-base-v1",
+        "random": "xorshift32-v1"
+      },
+      "reducerVersion": 1,
+      "schemaVersion": 1,
+      "rulesEdition": "istanbul-2014-base"
+    },
+    {
+      "id": "host-000183",
+      "actorUid": "host",
+      "clientSeq": "000183",
+      "createdAt": 183,
+      "type": "place/action-taken",
+      "payload": {
+        "choice": {
+          "kind": "warehouse-fill",
+          "good": "spice"
+        },
+        "drawContextVersion": 1,
+        "automaticFinalBonus": true,
+        "botUid": "bot:host-000003",
+        "botVersion": 2,
+        "botState": "1:50:1:action:3552712802"
+      },
+      "manifestVersions": {
+        "places": "istanbul-2014-base-v1",
+        "cards": "istanbul-2014-base-v1",
+        "tiles": "istanbul-2014-base-v1",
+        "random": "xorshift32-v1"
+      },
+      "reducerVersion": 1,
+      "schemaVersion": 1,
+      "rulesEdition": "istanbul-2014-base"
+    },
+    {
+      "id": "host-000184",
+      "actorUid": "host",
+      "clientSeq": "000184",
+      "createdAt": 184,
+      "type": "turn/ended",
+      "payload": {
+        "directAction": true,
+        "drawContextVersion": 1,
+        "automaticFinalBonus": true,
+        "botUid": "bot:host-000003",
+        "botVersion": 2,
+        "botState": "1:50:1:turn-end:4105734672"
+      },
+      "manifestVersions": {
+        "places": "istanbul-2014-base-v1",
+        "cards": "istanbul-2014-base-v1",
+        "tiles": "istanbul-2014-base-v1",
+        "random": "xorshift32-v1"
+      },
+      "reducerVersion": 1,
+      "schemaVersion": 1,
+      "rulesEdition": "istanbul-2014-base"
+    },
+    {
+      "id": "host-000185",
+      "actorUid": "host",
+      "clientSeq": "000185",
+      "createdAt": 185,
+      "type": "turn/moved",
+      "payload": {
+        "destination": 7,
+        "assistantAction": "fountain",
+        "drawContextVersion": 1,
+        "automaticFinalBonus": true,
+        "botUid": "bot:host-000002",
+        "botVersion": 2,
+        "botState": "1:51:0:movement:778513143"
+      },
+      "manifestVersions": {
+        "places": "istanbul-2014-base-v1",
+        "cards": "istanbul-2014-base-v1",
+        "tiles": "istanbul-2014-base-v1",
+        "random": "xorshift32-v1"
+      },
+      "reducerVersion": 1,
+      "schemaVersion": 1,
+      "rulesEdition": "istanbul-2014-base"
+    },
+    {
+      "id": "host-000186",
+      "actorUid": "host",
+      "clientSeq": "000186",
+      "createdAt": 186,
+      "type": "place/action-taken",
+      "payload": {
+        "choice": {
+          "kind": "fountain-recall",
+          "assistantPlaces": [
+            1,
+            3,
+            5,
+            11,
+            12
+          ]
+        },
+        "drawContextVersion": 1,
+        "automaticFinalBonus": true,
+        "botUid": "bot:host-000002",
+        "botVersion": 2,
+        "botState": "1:51:0:action:4203880035"
+      },
+      "manifestVersions": {
+        "places": "istanbul-2014-base-v1",
+        "cards": "istanbul-2014-base-v1",
+        "tiles": "istanbul-2014-base-v1",
+        "random": "xorshift32-v1"
+      },
+      "reducerVersion": 1,
+      "schemaVersion": 1,
+      "rulesEdition": "istanbul-2014-base"
+    },
+    {
+      "id": "host-000187",
+      "actorUid": "host",
+      "clientSeq": "000187",
+      "createdAt": 187,
+      "type": "turn/ended",
+      "payload": {
+        "directAction": true,
+        "drawContextVersion": 1,
+        "automaticFinalBonus": true,
+        "botUid": "bot:host-000002",
+        "botVersion": 2,
+        "botState": "1:51:0:encounters:2217750354"
+      },
+      "manifestVersions": {
+        "places": "istanbul-2014-base-v1",
+        "cards": "istanbul-2014-base-v1",
+        "tiles": "istanbul-2014-base-v1",
+        "random": "xorshift32-v1"
+      },
+      "reducerVersion": 1,
+      "schemaVersion": 1,
+      "rulesEdition": "istanbul-2014-base"
+    },
+    {
+      "id": "host-000188",
+      "actorUid": "host",
+      "clientSeq": "000188",
+      "createdAt": 188,
+      "type": "turn/moved",
+      "payload": {
+        "destination": 14,
+        "assistantAction": "drop",
+        "drawContextVersion": 1,
+        "automaticFinalBonus": true,
+        "botUid": "bot:host-000003",
+        "botVersion": 2,
+        "botState": "1:52:1:movement:4241574261"
+      },
+      "manifestVersions": {
+        "places": "istanbul-2014-base-v1",
+        "cards": "istanbul-2014-base-v1",
+        "tiles": "istanbul-2014-base-v1",
+        "random": "xorshift32-v1"
+      },
+      "reducerVersion": 1,
+      "schemaVersion": 1,
+      "rulesEdition": "istanbul-2014-base"
+    },
+    {
+      "id": "host-000189",
+      "actorUid": "host",
+      "clientSeq": "000189",
+      "createdAt": 189,
+      "type": "place/action-taken",
+      "payload": {
+        "choice": {
+          "kind": "mosque-take",
+          "tileId": "mosque-spice-4"
+        },
+        "drawContextVersion": 1,
+        "automaticFinalBonus": true,
+        "botUid": "bot:host-000003",
+        "botVersion": 2,
+        "botState": "1:52:1:action:2299698506"
+      },
+      "manifestVersions": {
+        "places": "istanbul-2014-base-v1",
+        "cards": "istanbul-2014-base-v1",
+        "tiles": "istanbul-2014-base-v1",
+        "random": "xorshift32-v1"
+      },
+      "reducerVersion": 1,
+      "schemaVersion": 1,
+      "rulesEdition": "istanbul-2014-base"
+    },
+    {
+      "id": "host-000190",
+      "actorUid": "host",
+      "clientSeq": "000190",
+      "createdAt": 190,
+      "type": "turn/ended",
+      "payload": {
+        "directAction": true,
+        "drawContextVersion": 1,
+        "automaticFinalBonus": true,
+        "botUid": "bot:host-000003",
+        "botVersion": 2,
+        "botState": "1:52:1:turn-end:2357381503"
+      },
+      "manifestVersions": {
+        "places": "istanbul-2014-base-v1",
+        "cards": "istanbul-2014-base-v1",
+        "tiles": "istanbul-2014-base-v1",
+        "random": "xorshift32-v1"
+      },
+      "reducerVersion": 1,
+      "schemaVersion": 1,
+      "rulesEdition": "istanbul-2014-base"
+    },
+    {
+      "id": "host-000191",
+      "actorUid": "host",
+      "clientSeq": "000191",
+      "createdAt": 191,
+      "type": "turn/moved",
+      "payload": {
+        "destination": 5,
+        "assistantAction": "drop",
+        "drawContextVersion": 1,
+        "automaticFinalBonus": true,
+        "botUid": "bot:host-000002",
+        "botVersion": 2,
+        "botState": "1:53:0:movement:2184468106"
+      },
+      "manifestVersions": {
+        "places": "istanbul-2014-base-v1",
+        "cards": "istanbul-2014-base-v1",
+        "tiles": "istanbul-2014-base-v1",
+        "random": "xorshift32-v1"
+      },
+      "reducerVersion": 1,
+      "schemaVersion": 1,
+      "rulesEdition": "istanbul-2014-base"
+    },
+    {
+      "id": "host-000192",
+      "actorUid": "host",
+      "clientSeq": "000192",
+      "createdAt": 192,
+      "type": "place/action-taken",
+      "payload": {
+        "choice": {
+          "kind": "post-office-collect"
+        },
+        "drawContextVersion": 1,
+        "automaticFinalBonus": true,
+        "botUid": "bot:host-000002",
+        "botVersion": 2,
+        "botState": "1:53:0:action:1878594022"
+      },
+      "manifestVersions": {
+        "places": "istanbul-2014-base-v1",
+        "cards": "istanbul-2014-base-v1",
+        "tiles": "istanbul-2014-base-v1",
+        "random": "xorshift32-v1"
+      },
+      "reducerVersion": 1,
+      "schemaVersion": 1,
+      "rulesEdition": "istanbul-2014-base"
+    },
+    {
+      "id": "host-000193",
+      "actorUid": "host",
+      "clientSeq": "000193",
+      "createdAt": 193,
+      "type": "turn/ended",
+      "payload": {
+        "directAction": true,
+        "drawContextVersion": 1,
+        "automaticFinalBonus": true,
+        "botUid": "bot:host-000002",
+        "botVersion": 2,
+        "botState": "1:53:0:turn-end:1042145444"
+      },
+      "manifestVersions": {
+        "places": "istanbul-2014-base-v1",
+        "cards": "istanbul-2014-base-v1",
+        "tiles": "istanbul-2014-base-v1",
+        "random": "xorshift32-v1"
+      },
+      "reducerVersion": 1,
+      "schemaVersion": 1,
+      "rulesEdition": "istanbul-2014-base"
+    },
+    {
+      "id": "host-000194",
+      "actorUid": "host",
+      "clientSeq": "000194",
+      "createdAt": 194,
+      "type": "turn/moved",
+      "payload": {
+        "destination": 5,
+        "assistantAction": "drop",
+        "drawContextVersion": 1,
+        "automaticFinalBonus": true,
+        "botUid": "bot:host-000003",
+        "botVersion": 2,
+        "botState": "1:54:1:movement:2685207655"
+      },
+      "manifestVersions": {
+        "places": "istanbul-2014-base-v1",
+        "cards": "istanbul-2014-base-v1",
+        "tiles": "istanbul-2014-base-v1",
+        "random": "xorshift32-v1"
+      },
+      "reducerVersion": 1,
+      "schemaVersion": 1,
+      "rulesEdition": "istanbul-2014-base"
+    },
+    {
+      "id": "host-000195",
+      "actorUid": "host",
+      "clientSeq": "000195",
+      "createdAt": 195,
+      "type": "turn/merchant-paid",
+      "payload": {
+        "recipientUids": [
+          "bot:host-000002"
+        ],
+        "neutralMerchantIds": [],
+        "drawContextVersion": 1,
+        "automaticFinalBonus": true,
+        "botUid": "bot:host-000003",
+        "botVersion": 2,
+        "botState": "1:54:1:merchant-payment:3690248168"
+      },
+      "manifestVersions": {
+        "places": "istanbul-2014-base-v1",
+        "cards": "istanbul-2014-base-v1",
+        "tiles": "istanbul-2014-base-v1",
+        "random": "xorshift32-v1"
+      },
+      "reducerVersion": 1,
+      "schemaVersion": 1,
+      "rulesEdition": "istanbul-2014-base"
+    },
+    {
+      "id": "host-000196",
+      "actorUid": "host",
+      "clientSeq": "000196",
+      "createdAt": 196,
+      "type": "place/action-taken",
+      "payload": {
+        "choice": {
+          "kind": "post-office-collect"
+        },
+        "drawContextVersion": 1,
+        "automaticFinalBonus": true,
+        "botUid": "bot:host-000003",
+        "botVersion": 2,
+        "botState": "1:54:1:action:145175322"
+      },
+      "manifestVersions": {
+        "places": "istanbul-2014-base-v1",
+        "cards": "istanbul-2014-base-v1",
+        "tiles": "istanbul-2014-base-v1",
+        "random": "xorshift32-v1"
+      },
+      "reducerVersion": 1,
+      "schemaVersion": 1,
+      "rulesEdition": "istanbul-2014-base"
+    },
+    {
+      "id": "host-000197",
+      "actorUid": "host",
+      "clientSeq": "000197",
+      "createdAt": 197,
+      "type": "encounter/resolved",
+      "payload": {
+        "choice": {
+          "kind": "catch-family",
+          "familyUid": "bot:host-000002",
+          "reward": "lira"
+        },
+        "drawContextVersion": 1,
+        "automaticFinalBonus": true,
+        "botUid": "bot:host-000003",
+        "botVersion": 2,
+        "botState": "1:54:1:encounters:2789584393"
+      },
+      "manifestVersions": {
+        "places": "istanbul-2014-base-v1",
+        "cards": "istanbul-2014-base-v1",
+        "tiles": "istanbul-2014-base-v1",
+        "random": "xorshift32-v1"
+      },
+      "reducerVersion": 1,
+      "schemaVersion": 1,
+      "rulesEdition": "istanbul-2014-base"
+    },
+    {
+      "id": "host-000198",
+      "actorUid": "host",
+      "clientSeq": "000198",
+      "createdAt": 198,
+      "type": "turn/ended",
+      "payload": {
+        "directAction": true,
+        "drawContextVersion": 1,
+        "automaticFinalBonus": true,
+        "botUid": "bot:host-000003",
+        "botVersion": 2,
+        "botState": "1:54:1:turn-end:2122619603"
+      },
+      "manifestVersions": {
+        "places": "istanbul-2014-base-v1",
+        "cards": "istanbul-2014-base-v1",
+        "tiles": "istanbul-2014-base-v1",
+        "random": "xorshift32-v1"
+      },
+      "reducerVersion": 1,
+      "schemaVersion": 1,
+      "rulesEdition": "istanbul-2014-base"
+    },
+    {
+      "id": "host-000199",
+      "actorUid": "host",
+      "clientSeq": "000199",
+      "createdAt": 199,
+      "type": "turn/moved",
+      "payload": {
+        "destination": 12,
+        "assistantAction": "drop",
+        "drawContextVersion": 1,
+        "automaticFinalBonus": true,
+        "botUid": "bot:host-000002",
+        "botVersion": 2,
+        "botState": "1:55:0:movement:1734616466"
+      },
+      "manifestVersions": {
+        "places": "istanbul-2014-base-v1",
+        "cards": "istanbul-2014-base-v1",
+        "tiles": "istanbul-2014-base-v1",
+        "random": "xorshift32-v1"
+      },
+      "reducerVersion": 1,
+      "schemaVersion": 1,
+      "rulesEdition": "istanbul-2014-base"
+    },
+    {
+      "id": "host-000200",
+      "actorUid": "host",
+      "clientSeq": "000200",
+      "createdAt": 200,
+      "type": "place/action-taken",
+      "payload": {
+        "choice": {
+          "kind": "police-send",
+          "destination": 16
+        },
+        "drawContextVersion": 1,
+        "automaticFinalBonus": true,
+        "botUid": "bot:host-000002",
+        "botVersion": 2,
+        "botState": "1:55:0:action:1413758094"
+      },
+      "manifestVersions": {
+        "places": "istanbul-2014-base-v1",
+        "cards": "istanbul-2014-base-v1",
+        "tiles": "istanbul-2014-base-v1",
+        "random": "xorshift32-v1"
+      },
+      "reducerVersion": 1,
+      "schemaVersion": 1,
+      "rulesEdition": "istanbul-2014-base"
+    },
+    {
+      "id": "host-000201",
+      "actorUid": "host",
+      "clientSeq": "000201",
+      "createdAt": 201,
+      "type": "place/action-taken",
+      "payload": {
+        "choice": {
+          "kind": "gemstone-buy"
+        },
+        "drawContextVersion": 1,
+        "automaticFinalBonus": true,
+        "botUid": "bot:host-000002",
+        "botVersion": 2,
+        "botState": "1:55:0:family-action:4192859155"
+      },
+      "manifestVersions": {
+        "places": "istanbul-2014-base-v1",
+        "cards": "istanbul-2014-base-v1",
+        "tiles": "istanbul-2014-base-v1",
+        "random": "xorshift32-v1"
+      },
+      "reducerVersion": 1,
+      "schemaVersion": 1,
+      "rulesEdition": "istanbul-2014-base"
+    },
+    {
+      "id": "host-000202",
+      "actorUid": "host",
+      "clientSeq": "000202",
+      "createdAt": 202,
+      "type": "turn/ended",
+      "payload": {
+        "directAction": true,
+        "drawContextVersion": 1,
+        "automaticFinalBonus": true,
+        "botUid": "bot:host-000002",
+        "botVersion": 2,
+        "botState": "1:55:0:turn-end:2900234397"
+      },
+      "manifestVersions": {
+        "places": "istanbul-2014-base-v1",
+        "cards": "istanbul-2014-base-v1",
+        "tiles": "istanbul-2014-base-v1",
+        "random": "xorshift32-v1"
+      },
+      "reducerVersion": 1,
+      "schemaVersion": 1,
+      "rulesEdition": "istanbul-2014-base"
+    },
+    {
+      "id": "host-000203",
+      "actorUid": "host",
+      "clientSeq": "000203",
+      "createdAt": 203,
+      "type": "turn/moved",
+      "payload": {
+        "destination": 15,
+        "assistantAction": "drop",
+        "drawContextVersion": 1,
+        "automaticFinalBonus": true,
+        "botUid": "bot:host-000003",
+        "botVersion": 2,
+        "botState": "1:56:1:movement:4012913044"
+      },
+      "manifestVersions": {
+        "places": "istanbul-2014-base-v1",
+        "cards": "istanbul-2014-base-v1",
+        "tiles": "istanbul-2014-base-v1",
+        "random": "xorshift32-v1"
+      },
+      "reducerVersion": 1,
+      "schemaVersion": 1,
+      "rulesEdition": "istanbul-2014-base"
+    },
+    {
+      "id": "host-000204",
+      "actorUid": "host",
+      "clientSeq": "000204",
+      "createdAt": 204,
+      "type": "place/action-taken",
+      "payload": {
+        "choice": {
+          "kind": "mosque-take",
+          "tileId": "mosque-jewelry-4"
+        },
+        "drawContextVersion": 1,
+        "automaticFinalBonus": true,
+        "botUid": "bot:host-000003",
+        "botVersion": 2,
+        "botState": "1:56:1:action:2150331636"
+      },
+      "manifestVersions": {
+        "places": "istanbul-2014-base-v1",
+        "cards": "istanbul-2014-base-v1",
+        "tiles": "istanbul-2014-base-v1",
+        "random": "xorshift32-v1"
+      },
+      "reducerVersion": 1,
+      "schemaVersion": 1,
+      "rulesEdition": "istanbul-2014-base"
+    },
+    {
+      "id": "host-000205",
+      "actorUid": "host",
+      "clientSeq": "000205",
+      "createdAt": 205,
+      "type": "turn/ended",
+      "payload": {
+        "directAction": true,
+        "drawContextVersion": 1,
+        "automaticFinalBonus": true,
+        "botUid": "bot:host-000003",
+        "botVersion": 2,
+        "botState": "1:56:1:turn-end:3810073926"
+      },
+      "manifestVersions": {
+        "places": "istanbul-2014-base-v1",
+        "cards": "istanbul-2014-base-v1",
+        "tiles": "istanbul-2014-base-v1",
+        "random": "xorshift32-v1"
+      },
+      "reducerVersion": 1,
+      "schemaVersion": 1,
+      "rulesEdition": "istanbul-2014-base"
+    },
+    {
+      "id": "host-000206",
+      "actorUid": "host",
+      "clientSeq": "000206",
+      "createdAt": 206,
+      "type": "turn/moved",
+      "payload": {
+        "destination": 7,
+        "assistantAction": "fountain",
+        "drawContextVersion": 1,
+        "automaticFinalBonus": true,
+        "botUid": "bot:host-000002",
+        "botVersion": 2,
+        "botState": "1:57:0:movement:2189272759"
+      },
+      "manifestVersions": {
+        "places": "istanbul-2014-base-v1",
+        "cards": "istanbul-2014-base-v1",
+        "tiles": "istanbul-2014-base-v1",
+        "random": "xorshift32-v1"
+      },
+      "reducerVersion": 1,
+      "schemaVersion": 1,
+      "rulesEdition": "istanbul-2014-base"
+    },
+    {
+      "id": "host-000207",
+      "actorUid": "host",
+      "clientSeq": "000207",
+      "createdAt": 207,
+      "type": "place/action-taken",
+      "payload": {
+        "choice": {
+          "kind": "fountain-recall",
+          "assistantPlaces": [
+            5,
+            12
+          ]
+        },
+        "drawContextVersion": 1,
+        "automaticFinalBonus": true,
+        "botUid": "bot:host-000002",
+        "botVersion": 2,
+        "botState": "1:57:0:action:3511237835"
+      },
+      "manifestVersions": {
+        "places": "istanbul-2014-base-v1",
+        "cards": "istanbul-2014-base-v1",
+        "tiles": "istanbul-2014-base-v1",
+        "random": "xorshift32-v1"
+      },
+      "reducerVersion": 1,
+      "schemaVersion": 1,
+      "rulesEdition": "istanbul-2014-base"
+    },
+    {
+      "id": "host-000208",
+      "actorUid": "host",
+      "clientSeq": "000208",
+      "createdAt": 208,
+      "type": "turn/ended",
+      "payload": {
+        "directAction": true,
+        "drawContextVersion": 1,
+        "automaticFinalBonus": true,
+        "botUid": "bot:host-000002",
+        "botVersion": 2,
+        "botState": "1:57:0:encounters:1555480545"
+      },
+      "manifestVersions": {
+        "places": "istanbul-2014-base-v1",
+        "cards": "istanbul-2014-base-v1",
+        "tiles": "istanbul-2014-base-v1",
+        "random": "xorshift32-v1"
+      },
+      "reducerVersion": 1,
+      "schemaVersion": 1,
+      "rulesEdition": "istanbul-2014-base"
+    },
+    {
+      "id": "host-000209",
+      "actorUid": "host",
+      "clientSeq": "000209",
+      "createdAt": 209,
+      "type": "turn/moved",
+      "payload": {
+        "destination": 5,
+        "assistantAction": "pick-up",
+        "drawContextVersion": 1,
+        "automaticFinalBonus": true,
+        "botUid": "bot:host-000003",
+        "botVersion": 2,
+        "botState": "1:58:1:movement:427277612"
+      },
+      "manifestVersions": {
+        "places": "istanbul-2014-base-v1",
+        "cards": "istanbul-2014-base-v1",
+        "tiles": "istanbul-2014-base-v1",
+        "random": "xorshift32-v1"
+      },
+      "reducerVersion": 1,
+      "schemaVersion": 1,
+      "rulesEdition": "istanbul-2014-base"
+    },
+    {
+      "id": "host-000210",
+      "actorUid": "host",
+      "clientSeq": "000210",
+      "createdAt": 210,
+      "type": "place/action-taken",
+      "payload": {
+        "choice": {
+          "kind": "post-office-collect"
+        },
+        "drawContextVersion": 1,
+        "automaticFinalBonus": true,
+        "botUid": "bot:host-000003",
+        "botVersion": 2,
+        "botState": "1:58:1:action:3741751852"
+      },
+      "manifestVersions": {
+        "places": "istanbul-2014-base-v1",
+        "cards": "istanbul-2014-base-v1",
+        "tiles": "istanbul-2014-base-v1",
+        "random": "xorshift32-v1"
+      },
+      "reducerVersion": 1,
+      "schemaVersion": 1,
+      "rulesEdition": "istanbul-2014-base"
+    },
+    {
+      "id": "host-000211",
+      "actorUid": "host",
+      "clientSeq": "000211",
+      "createdAt": 211,
+      "type": "turn/ended",
+      "payload": {
+        "directAction": true,
+        "drawContextVersion": 1,
+        "automaticFinalBonus": true,
+        "botUid": "bot:host-000003",
+        "botVersion": 2,
+        "botState": "1:58:1:turn-end:3033521582"
+      },
+      "manifestVersions": {
+        "places": "istanbul-2014-base-v1",
+        "cards": "istanbul-2014-base-v1",
+        "tiles": "istanbul-2014-base-v1",
+        "random": "xorshift32-v1"
+      },
+      "reducerVersion": 1,
+      "schemaVersion": 1,
+      "rulesEdition": "istanbul-2014-base"
+    },
+    {
+      "id": "host-000212",
+      "actorUid": "host",
+      "clientSeq": "000212",
+      "createdAt": 212,
+      "type": "turn/moved",
+      "payload": {
+        "destination": 11,
+        "assistantAction": "drop",
+        "drawContextVersion": 1,
+        "automaticFinalBonus": true,
+        "botUid": "bot:host-000002",
+        "botVersion": 2,
+        "botState": "1:59:0:movement:2458991561"
+      },
+      "manifestVersions": {
+        "places": "istanbul-2014-base-v1",
+        "cards": "istanbul-2014-base-v1",
+        "tiles": "istanbul-2014-base-v1",
+        "random": "xorshift32-v1"
+      },
+      "reducerVersion": 1,
+      "schemaVersion": 1,
+      "rulesEdition": "istanbul-2014-base"
+    },
+    {
+      "id": "host-000213",
+      "actorUid": "host",
+      "clientSeq": "000213",
+      "createdAt": 213,
+      "type": "place/action-taken",
+      "payload": {
+        "choice": {
+          "kind": "market-sell",
+          "slotIndexes": [
+            1,
+            2,
+            3,
+            4
+          ]
+        },
+        "drawContextVersion": 1,
+        "automaticFinalBonus": true,
+        "botUid": "bot:host-000002",
+        "botVersion": 2,
+        "botState": "1:59:0:action:1486693094"
+      },
+      "manifestVersions": {
+        "places": "istanbul-2014-base-v1",
+        "cards": "istanbul-2014-base-v1",
+        "tiles": "istanbul-2014-base-v1",
+        "random": "xorshift32-v1"
+      },
+      "reducerVersion": 1,
+      "schemaVersion": 1,
+      "rulesEdition": "istanbul-2014-base"
+    },
+    {
+      "id": "host-000214",
+      "actorUid": "host",
+      "clientSeq": "000214",
+      "createdAt": 214,
+      "type": "turn/ended",
+      "payload": {
+        "directAction": true,
+        "drawContextVersion": 1,
+        "automaticFinalBonus": true,
+        "botUid": "bot:host-000002",
+        "botVersion": 2,
+        "botState": "1:59:0:turn-end:1459258840"
+      },
+      "manifestVersions": {
+        "places": "istanbul-2014-base-v1",
+        "cards": "istanbul-2014-base-v1",
+        "tiles": "istanbul-2014-base-v1",
+        "random": "xorshift32-v1"
+      },
+      "reducerVersion": 1,
+      "schemaVersion": 1,
+      "rulesEdition": "istanbul-2014-base"
+    },
+    {
+      "id": "host-000215",
+      "actorUid": "host",
+      "clientSeq": "000215",
+      "createdAt": 215,
+      "type": "turn/moved",
+      "payload": {
+        "destination": 12,
+        "assistantAction": "drop",
+        "drawContextVersion": 1,
+        "automaticFinalBonus": true,
+        "botUid": "bot:host-000003",
+        "botVersion": 2,
+        "botState": "1:60:1:movement:1229385667"
+      },
+      "manifestVersions": {
+        "places": "istanbul-2014-base-v1",
+        "cards": "istanbul-2014-base-v1",
+        "tiles": "istanbul-2014-base-v1",
+        "random": "xorshift32-v1"
+      },
+      "reducerVersion": 1,
+      "schemaVersion": 1,
+      "rulesEdition": "istanbul-2014-base"
+    },
+    {
+      "id": "host-000216",
+      "actorUid": "host",
+      "clientSeq": "000216",
+      "createdAt": 216,
+      "type": "place/action-taken",
+      "payload": {
+        "choice": {
+          "kind": "police-send",
+          "destination": 13
+        },
+        "drawContextVersion": 1,
+        "automaticFinalBonus": true,
+        "botUid": "bot:host-000003",
+        "botVersion": 2,
+        "botState": "1:60:1:action:2869220789"
+      },
+      "manifestVersions": {
+        "places": "istanbul-2014-base-v1",
+        "cards": "istanbul-2014-base-v1",
+        "tiles": "istanbul-2014-base-v1",
+        "random": "xorshift32-v1"
+      },
+      "reducerVersion": 1,
+      "schemaVersion": 1,
+      "rulesEdition": "istanbul-2014-base"
+    },
+    {
+      "id": "host-000217",
+      "actorUid": "host",
+      "clientSeq": "000217",
+      "createdAt": 217,
+      "type": "place/action-taken",
+      "payload": {
+        "choice": {
+          "kind": "sultan-buy",
+          "wildGoods": [
+            "fabric"
+          ]
+        },
+        "drawContextVersion": 1,
+        "automaticFinalBonus": true,
+        "botUid": "bot:host-000003",
+        "botVersion": 2,
+        "botState": "1:60:1:family-action:3116504720"
+      },
+      "manifestVersions": {
+        "places": "istanbul-2014-base-v1",
+        "cards": "istanbul-2014-base-v1",
+        "tiles": "istanbul-2014-base-v1",
+        "random": "xorshift32-v1"
+      },
+      "reducerVersion": 1,
+      "schemaVersion": 1,
+      "rulesEdition": "istanbul-2014-base"
+    },
+    {
+      "id": "host-000218",
+      "actorUid": "host",
+      "clientSeq": "000218",
+      "createdAt": 218,
+      "type": "turn/ended",
+      "payload": {
+        "directAction": true,
+        "drawContextVersion": 1,
+        "automaticFinalBonus": true,
+        "botUid": "bot:host-000003",
+        "botVersion": 2,
+        "botState": "1:60:1:turn-end:217663433"
+      },
+      "manifestVersions": {
+        "places": "istanbul-2014-base-v1",
+        "cards": "istanbul-2014-base-v1",
+        "tiles": "istanbul-2014-base-v1",
+        "random": "xorshift32-v1"
+      },
+      "reducerVersion": 1,
+      "schemaVersion": 1,
+      "rulesEdition": "istanbul-2014-base"
+    }
+  ]
+}

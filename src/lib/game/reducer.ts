@@ -1,5 +1,6 @@
 import { rematchSeats } from './rematch';
-import { botStateKey, nextBotAction, botPolicyVersion, matchesBotAction } from './bot';
+import { botStateKey, matchesBotAction } from './bot';
+import { policyAction, policyVersion } from './bot-policy';
 import { arrivalAction } from './direct-actions';
 import {
   isTablePosition,
@@ -448,8 +449,11 @@ export function applyEvent(state: ReplayProjection, event: CanonicalEvent): bool
     if (state.room.tabletopOwned && (!isTablePosition(position) || state.room.seats.some(s => s.tablePosition === position))) {
       reject(state, event, 'invalid-table-position'); return false;
     }
+    const policy = event.payload.policy;
+    if (policy !== undefined && policy !== 'money-v1' && policy !== 'rl-v1') { reject(state,event,'invalid-bot-policy'); return false; }
     const botNumber = Array.from({ length: 5 }, (_, i) => i + 1).find(i => !state.room!.seats.some(s => s.name === `Bot ${i}`))!;
     state.room.seats.push({ uid: `bot:${event.id}`, name: `Bot ${botNumber}`, bot: true, ready: true,
+      ...(policy === 'rl-v1' ? { botPolicy: policy } : {}),
       ...(state.room.tabletopOwned ? { tablePosition: position as import('./protocol').TablePosition } : {}) });
     if (state.room.tabletopOwned) state.room.seats.sort((a, b) => a.tablePosition! - b.tablePosition!);
     return true;
@@ -603,9 +607,10 @@ export function applyEvent(state: ReplayProjection, event: CanonicalEvent): bool
     }
     // A second host tab or a delayed write may have already advanced this decision.
     if (event.payload.botUid !== player.uid || event.payload.botState !== botStateKey(state.game)) return false;
-    const decision = nextBotAction(state.game);
+    const policy = state.room.seats.find(s => s.uid === player.uid)?.botPolicy;
+    const decision = policyAction(state.game, policy);
     const { botUid, botState, botVersion, drawContextVersion, automaticFinalBonus, ...payload } = event.payload;
-    if (botVersion !== botPolicyVersion || !decision || !matchesBotAction(decision, event.type, payload)) {
+    if (botVersion !== policyVersion(policy) || !decision || !matchesBotAction(decision, event.type, payload)) {
       reject(state, event, 'invalid-bot-decision'); return false;
     }
   }
@@ -637,7 +642,9 @@ export function applyEvent(state: ReplayProjection, event: CanonicalEvent): bool
   }
 
   if (event.type === 'bonus/played') {
-    const accepted = applyBonus(state, event);
+    const player = state.game.players[state.game.turnSeat];
+    // The versioned bot action was authenticated above; only that bot may use its private hand.
+    const accepted = applyBonus(state, event.payload.botUid === player.uid ? { ...event, actorUid: player.uid } : event);
     if (accepted && event.payload.directAction === true && (event.payload.choice as { kind?: string })?.kind === 'stay') finishArrival(state, event);
     return accepted;
   }

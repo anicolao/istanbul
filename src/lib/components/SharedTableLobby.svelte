@@ -1,11 +1,14 @@
 <script lang="ts">
   import { tablePositionNames, tablePositions, type LayoutKind, type RoomProjection, type TablePosition } from '$lib/game/protocol';
+  import BotPolicyChoice from './BotPolicyChoice.svelte';
+  import type { BotPolicy } from '$lib/game/bot-policy';
   import SeatQr from './SeatQr.svelte';
 
   let {
-    room, invitationFor, layoutNames, canConfigure = false, canStart = false, actionPending = false,
+    botPolicy = $bindable<BotPolicy>('money-v1'), room, invitationFor, layoutNames, canConfigure = false, canStart = false, actionPending = false,
     onConfigure = () => {}, onStart = () => {}, onAddBot = () => {}, onRemoveBot = () => {}
   }: {
+    botPolicy?: BotPolicy;
     room: RoomProjection;
     invitationFor: (position: TablePosition) => string;
     layoutNames: Record<LayoutKind, string>;
@@ -32,7 +35,7 @@
         <span class="seat-number">Position {position} · {tablePositionNames[position]}</span>
         {#if seat}
           <div class="claimed-token">{seat.name.slice(0, 1).toUpperCase()}</div>
-          <h2>{seat.name}</h2><p>{seat.bot ? 'Bot · easy' : seat.ready ? 'Ready' : 'Getting ready'}</p>
+          <h2>{seat.name}</h2><p>{seat.bot ? seat.botPolicy === 'rl-v1' ? 'Bot · trained' : 'Bot · easy' : seat.ready ? 'Ready' : 'Getting ready'}</p>
           {#if seat.bot && canConfigure}<button class="bot-button" aria-label={`Remove ${seat.name}`} disabled={actionPending} onclick={() => onRemoveBot(seat.uid)}>Remove</button>{/if}
         {:else if room.seats.length < room.maxPlayers}
           <SeatQr url={invitationFor(position)} label={`Join position ${position}`} />
@@ -50,6 +53,7 @@
           <option value="short-path">Short Path</option><option value="long-path">Long Path</option><option value="number-order">Number Order</option><option value="random">Seeded Random</option>
         </select>
       </label>
+      {#if canConfigure}<BotPolicyChoice bind:value={botPolicy} disabled={actionPending} />{/if}
       <p class="ready-copy"><strong>{layoutNames[room.layout]}</strong><span>{room.seats.length < 2 ? 'At least two merchants must join.' : canStart ? 'Everyone here is ready.' : 'Waiting for everyone to get ready.'}</span></p>
       <button onclick={onStart} disabled={!canStart || actionPending}>Open the bazaar</button>
     </section>
