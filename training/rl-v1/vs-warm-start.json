@@ -1,0 +1,69 @@
+{
+  "failures": [],
+  "pairedBootstrap95": [
+    0.7475,
+    0.80625
+  ],
+  "seed": "istanbul-rl-v1:release-test-2026-11-03",
+  "players": 2,
+  "opponent": "training/rl-v1/warm-start.json",
+  "features": 42,
+  "games": 800,
+  "score": 0.7775,
+  "wins": 622,
+  "ties": 0,
+  "truncated": 0,
+  "meanTurns": 65.325,
+  "byLayout": {
+    "short-path": {
+      "games": 200,
+      "score": 0.84,
+      "wins": 168,
+      "ties": 0,
+      "truncated": 0,
+      "meanTurns": 68.46
+    },
+    "long-path": {
+      "games": 200,
+      "score": 0.815,
+      "wins": 163,
+      "ties": 0,
+      "truncated": 0,
+      "meanTurns": 60.71
+    },
+    "number-order": {
+      "games": 200,
+      "score": 0.66,
+      "wins": 132,
+      "ties": 0,
+      "truncated": 0,
+      "meanTurns": 67.17
+    },
+    "random": {
+      "games": 200,
+      "score": 0.795,
+      "wins": 159,
+      "ties": 0,
+      "truncated": 0,
+      "meanTurns": 64.96
+    }
+  },
+  "bySeat": [
+    {
+      "games": 400,
+      "score": 0.78,
+      "wins": 312,
+      "ties": 0,
+      "truncated": 0,
+      "meanTurns": 66.105
+    },
+    {
+      "games": 400,
+      "score": 0.775,
+      "wins": 310,
+      "ties": 0,
+      "truncated": 0,
+      "meanTurns": 64.545
+    }
+  ]
+}

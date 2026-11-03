@@ -1,0 +1,18 @@
+{
+  "algorithm": "linear softmax REINFORCE with Adam and resource-progress reward shaping",
+  "seed": "istanbul-rl-v1",
+  "moneyEpisodes": 8192,
+  "selfPlayEpisodes": 16384,
+  "selectedSelfPlayEpisode": 15360,
+  "featureCount": 42,
+  "runtimePolicy": "rl-v1",
+  "eventPolicyVersion": 2,
+  "trainingBaseCommit": "927cdfbe3800cda3b3468825234e3f41ff461d3d",
+  "sha256": {
+    "src/lib/game/rl/options.ts": "ba12cdcd95265ae02b7fd24794a582f144c9b8ff96c8043ebd7baa665d6ea82e",
+    "src/lib/game/rl/policy.ts": "8f6ce655a1c67e44c130379c2bbeb16b2b32bfbd736fdd9fa387152d142ac5e8",
+    "scripts/rl/train.ts": "43b5bec457d2dfdd3b7df7565fc396c33c99db7b8e28f1a9dfa51d7d7746634d",
+    "scripts/rl/environment.ts": "79f84be41204c488776c03972e300535af796ed1d741aced2dc5d95293ef287a",
+    "src/lib/game/rl/model-v1.json": "bce17bcd6cbf4c19a914dea7d834bae83373be3e3b307af9c520d92141a0677d"
+  }
+}

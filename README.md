@@ -228,3 +228,7 @@ Authentication and Firestore Security Rules provide attribution and immutable
 history, not server-side game-action validation or cheating prevention. Never
 commit service-account credentials, private keys, Firebase CLI tokens, or
 production data.
+
+## Trained bot
+
+The lobby's **Bot strategy** selector offers the original money bot and a locally running trained opponent. See [the RL player guide](docs/RL_PLAYER.md) for training, self-play evaluation, limitations, and replay-versioning requirements.

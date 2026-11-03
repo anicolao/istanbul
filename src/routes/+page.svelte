@@ -7,7 +7,9 @@
   import GameResults from '$lib/components/GameResults.svelte';
   import { rematchSeats } from '$lib/game/rematch';
   import UndoRequest from '$lib/components/UndoRequest.svelte';
-  import { botStateKey, nextBotAction, botPolicyVersion } from '$lib/game/bot';
+  import { botStateKey } from '$lib/game/bot';
+  import { policyAction, policyVersion, type BotPolicy } from '$lib/game/bot-policy';
+  import BotPolicyChoice from '$lib/components/BotPolicyChoice.svelte';
   import { appTitle } from '$lib/app-metadata';
   import { setStoredValue } from '$lib/browser-storage';
   import TabletopSurface from '$lib/components/TabletopSurface.svelte';
@@ -506,7 +508,8 @@
       botStateKey(game) !== expectedState
     )
       return;
-    const decision = nextBotAction(game);
+    const policy = room?.seats.find(s => s.uid === game!.players[game!.turnSeat].uid)?.botPolicy;
+    const decision = policyAction(game, policy);
     if (!decision) {
       botError = 'The bot could not choose a move.';
       return;
@@ -517,7 +520,7 @@
         ...decision.payload,
         botUid: game.players[game.turnSeat].uid,
         botState: expectedState,
-        botVersion: botPolicyVersion
+        botVersion: policyVersion(policy)
       });
     } catch (error) {
       botError =
@@ -531,13 +534,15 @@
     }
   }
 
+  let newBotPolicy = $state<BotPolicy>('money-v1');
+
   async function addBot(tablePosition?: TablePosition) {
     if (!repository || !isHost || actionPending) return;
     actionPending = true;
     try {
       await repository.append(
         'bot/added',
-        tablePosition ? { tablePosition } : {}
+        { ...(tablePosition ? { tablePosition } : {}), ...(newBotPolicy === 'rl-v1' ? { policy: newBotPolicy } : {}) }
       );
     } catch (error) {
       message = error instanceof Error ? error.message : 'Could not add a bot.';
@@ -1246,7 +1251,7 @@
                       >{seat.name}{seat.uid === userUid ? ' · you' : ''}</strong
                     ><small
                       >{seat.bot
-                        ? 'Bot · easy'
+                        ? seat.botPolicy === 'rl-v1' ? 'Bot · trained' : 'Bot · easy'
                         : seat.uid === room.hostUid
                           ? 'Room creator'
                           : 'Guest merchant'}</small
@@ -1270,11 +1275,11 @@
                     ><strong>Room is open</strong><small
                       >Another merchant may still join</small
                     ></span
-                  >{#if isHost}<button
+                  >{#if isHost}<div class="bot-add-controls"><BotPolicyChoice bind:value={newBotPolicy} disabled={actionPending} /><button
                       class="bot-lobby-button"
                       onclick={() => void addBot()}
                       disabled={actionPending}>Add bot</button
-                    >{:else}<span class="readiness">Inviting</span>{/if}
+                    ></div>{:else}<span class="readiness">Inviting</span>{/if}
                 </li>
               {/if}
             </ol>
@@ -1378,6 +1383,7 @@
       </section>
     {:else if screen === 'shared-display' && room && !game}
       <SharedTableLobby
+        bind:botPolicy={newBotPolicy}
         {room}
         invitationFor={(position) =>
           makeInviteUrl(room.roomCode, { seat: position })}
@@ -1478,6 +1484,8 @@
 </main>
 
 <style>
+  .bot-add-controls { display: flex; align-items: center; gap: .3rem; min-width: 0; }
+  .bot-add-controls :global(label) { flex: 1; }
   .bot-lobby-button {
     padding: 0.25rem 0.5rem;
     border: 1px solid #173f43;
@@ -2371,6 +2379,7 @@
     .readiness {
       display: none;
     }
+    .seats .bot-add-controls { grid-column: 1 / -1; }
     .seats .bot-lobby-button {
       grid-column: 1 / -1;
     }

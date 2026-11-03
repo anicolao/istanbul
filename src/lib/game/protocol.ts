@@ -45,6 +45,7 @@ export interface Seat {
   name: string;
   ready: boolean;
   bot?: boolean;
+  botPolicy?: import('./bot-policy').BotPolicy;
   left?: boolean;
   tablePosition?: TablePosition;
 }
