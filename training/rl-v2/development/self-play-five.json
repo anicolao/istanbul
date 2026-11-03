@@ -1,0 +1,107 @@
+{
+  "seed": "istanbul-rl-v2:release-self-2026-11-03",
+  "players": 5,
+  "opponent": "src/lib/game/rl/v2/model.json",
+  "modelSha256": "71cc89364b4ce27693fa657de3e6c0c5130b3ad6e4aa4c8aad48f6d437c1eecb",
+  "games": 200,
+  "winShare": 0.2,
+  "truncated": 0,
+  "meanTurns": 115.625,
+  "pairedBootstrap95": [
+    0.2000000000000001,
+    0.2000000000000001
+  ],
+  "byLayout": {
+    "short-path": {
+      "games": 50,
+      "winShare": 0.2,
+      "truncated": 0,
+      "meanTurns": 122.5
+    },
+    "long-path": {
+      "games": 50,
+      "winShare": 0.2,
+      "truncated": 0,
+      "meanTurns": 114
+    },
+    "number-order": {
+      "games": 50,
+      "winShare": 0.2,
+      "truncated": 0,
+      "meanTurns": 115.5
+    },
+    "random": {
+      "games": 50,
+      "winShare": 0.2,
+      "truncated": 0,
+      "meanTurns": 110.5
+    }
+  },
+  "bySeat": [
+    {
+      "games": 40,
+      "winShare": 0.15,
+      "truncated": 0,
+      "meanTurns": 115.625
+    },
+    {
+      "games": 40,
+      "winShare": 0.225,
+      "truncated": 0,
+      "meanTurns": 115.625
+    },
+    {
+      "games": 40,
+      "winShare": 0.25,
+      "truncated": 0,
+      "meanTurns": 115.625
+    },
+    {
+      "games": 40,
+      "winShare": 0.15,
+      "truncated": 0,
+      "meanTurns": 115.625
+    },
+    {
+      "games": 40,
+      "winShare": 0.225,
+      "truncated": 0,
+      "meanTurns": 115.625
+    }
+  ],
+  "failures": [],
+  "actionCounts": {
+    "gain-lira": 105,
+    "turn/moved": 4610,
+    "turn/merchant-paid": 675,
+    "post-office-collect": 1189,
+    "turn/ended": 4633,
+    "fountain-recall": 419,
+    "police-send": 604,
+    "black-market-roll": 452,
+    "mosque-take": 335,
+    "sultan-buy": 202,
+    "market-sell": 161,
+    "wainwright-buy": 488,
+    "warehouse-fill": 156,
+    "catch-family": 522,
+    "tea-house-wager": 587,
+    "gemstone-buy": 300,
+    "caravansary-draw": 262,
+    "caravansary-discard": 262,
+    "gain-good": 77,
+    "warehouse-extra": 31,
+    "return-family": 32,
+    "dice-adjust": 243,
+    "repeat-action": 47,
+    "stay": 15,
+    "long-move": 14,
+    "return-assistant": 33,
+    "smuggler-trade": 25,
+    "smuggler-roll": 21,
+    "governor-visit": 3,
+    "governor-pay": 1,
+    "governor-roll": 1,
+    "wild-small-market": 3
+  }
+}

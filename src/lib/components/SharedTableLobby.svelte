@@ -35,7 +35,7 @@
         <span class="seat-number">Position {position} · {tablePositionNames[position]}</span>
         {#if seat}
           <div class="claimed-token">{seat.name.slice(0, 1).toUpperCase()}</div>
-          <h2>{seat.name}</h2><p>{seat.bot ? seat.botPolicy === 'rl-v1' ? 'Bot · trained' : 'Bot · easy' : seat.ready ? 'Ready' : 'Getting ready'}</p>
+          <h2>{seat.name}</h2><p>{seat.bot ? seat.botPolicy?.startsWith('rl-') ? 'Bot · trained' : 'Bot · easy' : seat.ready ? 'Ready' : 'Getting ready'}</p>
           {#if seat.bot && canConfigure}<button class="bot-button" aria-label={`Remove ${seat.name}`} disabled={actionPending} onclick={() => onRemoveBot(seat.uid)}>Remove</button>{/if}
         {:else if room.seats.length < room.maxPlayers}
           <SeatQr url={invitationFor(position)} label={`Join position ${position}`} />

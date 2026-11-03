@@ -1,0 +1,68 @@
+{
+  "seed": "istanbul-rl-v2:mobility-selection",
+  "gamesPerOpponent": 1200,
+  "criterion": "sum of money/v1 win shares; zero truncated games; seven-decimal weights; explicit deployment selection",
+  "selected": "self-1024",
+  "results": [
+    {
+      "name": "self-2048",
+      "scores": [
+        {
+          "opponent": "money",
+          "winShare": 0.9058333333333334,
+          "truncated": 0
+        },
+        {
+          "opponent": "v1",
+          "winShare": 0.6383333333333333,
+          "truncated": 0
+        }
+      ]
+    },
+    {
+      "name": "self-1536",
+      "scores": [
+        {
+          "opponent": "money",
+          "winShare": 0.945,
+          "truncated": 0
+        },
+        {
+          "opponent": "v1",
+          "winShare": 0.7041666666666667,
+          "truncated": 0
+        }
+      ]
+    },
+    {
+      "name": "self-1024",
+      "scores": [
+        {
+          "opponent": "money",
+          "winShare": 0.95,
+          "truncated": 0
+        },
+        {
+          "opponent": "v1",
+          "winShare": 0.7083333333333334,
+          "truncated": 0
+        }
+      ]
+    },
+    {
+      "name": "self-512",
+      "scores": [
+        {
+          "opponent": "money",
+          "winShare": 0.9558333333333333,
+          "truncated": 0
+        },
+        {
+          "opponent": "v1",
+          "winShare": 0.6358333333333334,
+          "truncated": 0
+        }
+      ]
+    }
+  ]
+}

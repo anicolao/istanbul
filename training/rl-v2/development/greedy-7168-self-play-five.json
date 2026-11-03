@@ -1,0 +1,103 @@
+{
+  "seed": "istanbul-rl-v2:release-final-self-2026-11-03",
+  "players": 5,
+  "opponent": "src/lib/game/rl/v2/model.json",
+  "modelSha256": "fd2f696233ac946409aed41dd27cc2fa667da194f28f475deff0ccc8bee41cb3",
+  "games": 200,
+  "winShare": 0.2,
+  "truncated": 0,
+  "meanTurns": 119.5,
+  "pairedBootstrap95": [
+    0.2000000000000001,
+    0.2000000000000001
+  ],
+  "byLayout": {
+    "short-path": {
+      "games": 50,
+      "winShare": 0.2,
+      "truncated": 0,
+      "meanTurns": 122
+    },
+    "long-path": {
+      "games": 50,
+      "winShare": 0.2,
+      "truncated": 0,
+      "meanTurns": 113.5
+    },
+    "number-order": {
+      "games": 50,
+      "winShare": 0.2,
+      "truncated": 0,
+      "meanTurns": 125
+    },
+    "random": {
+      "games": 50,
+      "winShare": 0.2,
+      "truncated": 0,
+      "meanTurns": 117.5
+    }
+  },
+  "bySeat": [
+    {
+      "games": 40,
+      "winShare": 0.25,
+      "truncated": 0,
+      "meanTurns": 119.5
+    },
+    {
+      "games": 40,
+      "winShare": 0.275,
+      "truncated": 0,
+      "meanTurns": 119.5
+    },
+    {
+      "games": 40,
+      "winShare": 0.1,
+      "truncated": 0,
+      "meanTurns": 119.5
+    },
+    {
+      "games": 40,
+      "winShare": 0.075,
+      "truncated": 0,
+      "meanTurns": 119.5
+    },
+    {
+      "games": 40,
+      "winShare": 0.3,
+      "truncated": 0,
+      "meanTurns": 119.5
+    }
+  ],
+  "failures": [],
+  "actionCounts": {
+    "gain-lira": 122,
+    "turn/moved": 4754,
+    "tea-house-wager": 529,
+    "turn/ended": 4776,
+    "gemstone-buy": 342,
+    "warehouse-fill": 54,
+    "police-send": 576,
+    "post-office-collect": 1387,
+    "fountain-recall": 416,
+    "catch-family": 477,
+    "caravansary-draw": 314,
+    "caravansary-discard": 314,
+    "wainwright-buy": 521,
+    "turn/merchant-paid": 640,
+    "repeat-action": 53,
+    "mosque-take": 338,
+    "dice-adjust": 259,
+    "market-sell": 218,
+    "return-family": 51,
+    "black-market-roll": 427,
+    "sultan-buy": 189,
+    "gain-good": 100,
+    "long-move": 22,
+    "stay": 26,
+    "warehouse-extra": 9,
+    "return-assistant": 16,
+    "wild-small-market": 1,
+    "yellow-recall": 1
+  }
+}

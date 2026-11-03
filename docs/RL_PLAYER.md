@@ -1,4 +1,6 @@
-# Trained Istanbul player
+# Trained Istanbul player (v1)
+
+New trained seats use [the complete-action v2 network](RL_PLAYER_V2.md). This document records the frozen first iteration for existing games and benchmarks.
 
 Choose **Trained bot** in the lobby's **Bot strategy** control, then add a bot. This works in personal-screen and shared-table games. The money bot remains available and is still the default. Keep the host/tabletop tab open, as with the existing bot; inference runs in that browser, with no server or Python dependency.
 

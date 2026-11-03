@@ -182,7 +182,7 @@ test('a trained bot plays its private cards and resumes after reload', async ({p
   await page.goto(`/?e2eRoom=${code}&e2eSeed=bot-2`);
   await page.getByLabel('Your merchant name').fill('Ada');
   await page.getByRole('button',{name:/Create private room/}).click();
-  await page.getByLabel('Bot strategy').selectOption('rl-v1');
+  await page.getByLabel('Bot strategy').selectOption('rl-v2');
   await page.getByRole('button',{name:'Add bot',exact:true}).click();
   await expect(page.getByText('Bot · trained',{exact:true})).toBeVisible();
   await steps.step('trained-bot-ready',{description:'The lobby identifies the trained opponent',verifications:[{spec:'A trained bot is seated and ready',check:async()=>expectState(page,{seatCount:2,ready:[false,true],diagnosticCount:0})}]});

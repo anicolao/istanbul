@@ -1,0 +1,100 @@
+{
+  "seed": "istanbul-rl-v2:release-multi-2026-11-03",
+  "players": 4,
+  "opponent": "money",
+  "modelSha256": "71cc89364b4ce27693fa657de3e6c0c5130b3ad6e4aa4c8aad48f6d437c1eecb",
+  "games": 320,
+  "winShare": 0.68125,
+  "truncated": 0,
+  "meanTurns": 92.5875,
+  "pairedBootstrap95": [
+    0.621875,
+    0.7375
+  ],
+  "byLayout": {
+    "short-path": {
+      "games": 80,
+      "winShare": 0.6,
+      "truncated": 0,
+      "meanTurns": 91.4
+    },
+    "long-path": {
+      "games": 80,
+      "winShare": 0.7375,
+      "truncated": 0,
+      "meanTurns": 89.5
+    },
+    "number-order": {
+      "games": 80,
+      "winShare": 0.825,
+      "truncated": 0,
+      "meanTurns": 96.7
+    },
+    "random": {
+      "games": 80,
+      "winShare": 0.5625,
+      "truncated": 0,
+      "meanTurns": 92.75
+    }
+  },
+  "bySeat": [
+    {
+      "games": 80,
+      "winShare": 0.7125,
+      "truncated": 0,
+      "meanTurns": 92.35
+    },
+    {
+      "games": 80,
+      "winShare": 0.6625,
+      "truncated": 0,
+      "meanTurns": 91.6
+    },
+    {
+      "games": 80,
+      "winShare": 0.625,
+      "truncated": 0,
+      "meanTurns": 92.45
+    },
+    {
+      "games": 80,
+      "winShare": 0.725,
+      "truncated": 0,
+      "meanTurns": 93.95
+    }
+  ],
+  "failures": [],
+  "actionCounts": {
+    "turn/moved": 7382,
+    "post-office-collect": 2146,
+    "turn/ended": 7426,
+    "return-assistant": 44,
+    "turn/merchant-paid": 465,
+    "police-send": 481,
+    "mosque-take": 1073,
+    "caravansary-draw": 446,
+    "caravansary-discard": 446,
+    "fountain-recall": 466,
+    "tea-house-wager": 617,
+    "dice-adjust": 628,
+    "gain-lira": 167,
+    "gain-good": 139,
+    "wainwright-buy": 849,
+    "smuggler-trade": 42,
+    "smuggler-roll": 41,
+    "catch-family": 710,
+    "gemstone-buy": 179,
+    "sultan-buy": 566,
+    "black-market-roll": 601,
+    "repeat-action": 74,
+    "market-sell": 112,
+    "return-family": 51,
+    "warehouse-fill": 135,
+    "stay": 25,
+    "long-move": 14,
+    "warehouse-extra": 71,
+    "governor-visit": 3,
+    "governor-pay": 2,
+    "governor-roll": 2
+  }
+}

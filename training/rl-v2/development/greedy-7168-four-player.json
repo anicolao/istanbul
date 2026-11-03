@@ -1,0 +1,96 @@
+{
+  "seed": "istanbul-rl-v2:release-final-multi-2026-11-03",
+  "players": 4,
+  "opponent": "money",
+  "modelSha256": "fd2f696233ac946409aed41dd27cc2fa667da194f28f475deff0ccc8bee41cb3",
+  "games": 320,
+  "winShare": 0.7625,
+  "truncated": 0,
+  "meanTurns": 91.025,
+  "pairedBootstrap95": [
+    0.70625,
+    0.815625
+  ],
+  "byLayout": {
+    "short-path": {
+      "games": 80,
+      "winShare": 0.75,
+      "truncated": 0,
+      "meanTurns": 89.65
+    },
+    "long-path": {
+      "games": 80,
+      "winShare": 0.85,
+      "truncated": 0,
+      "meanTurns": 86.15
+    },
+    "number-order": {
+      "games": 80,
+      "winShare": 0.85,
+      "truncated": 0,
+      "meanTurns": 96.6
+    },
+    "random": {
+      "games": 80,
+      "winShare": 0.6,
+      "truncated": 0,
+      "meanTurns": 91.7
+    }
+  },
+  "bySeat": [
+    {
+      "games": 80,
+      "winShare": 0.85,
+      "truncated": 0,
+      "meanTurns": 90.25
+    },
+    {
+      "games": 80,
+      "winShare": 0.7125,
+      "truncated": 0,
+      "meanTurns": 91.4
+    },
+    {
+      "games": 80,
+      "winShare": 0.75,
+      "truncated": 0,
+      "meanTurns": 90.6
+    },
+    {
+      "games": 80,
+      "winShare": 0.7375,
+      "truncated": 0,
+      "meanTurns": 91.85
+    }
+  ],
+  "failures": [],
+  "actionCounts": {
+    "gain-lira": 221,
+    "turn/moved": 7257,
+    "post-office-collect": 2355,
+    "turn/ended": 7285,
+    "caravansary-draw": 516,
+    "caravansary-discard": 516,
+    "gain-good": 189,
+    "tea-house-wager": 567,
+    "mosque-take": 1086,
+    "police-send": 461,
+    "repeat-action": 82,
+    "dice-adjust": 560,
+    "catch-family": 670,
+    "wainwright-buy": 857,
+    "sultan-buy": 561,
+    "fountain-recall": 360,
+    "gemstone-buy": 222,
+    "turn/merchant-paid": 425,
+    "black-market-roll": 447,
+    "market-sell": 136,
+    "return-assistant": 25,
+    "return-family": 55,
+    "stay": 25,
+    "warehouse-fill": 76,
+    "warehouse-extra": 38,
+    "long-move": 11,
+    "wild-small-market": 1
+  }
+}

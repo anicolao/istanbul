@@ -1,0 +1,101 @@
+{
+  "seed": "istanbul-rl-v2:release-mobility-self-2026-11-03",
+  "players": 5,
+  "opponent": "src/lib/game/rl/v2/model.json",
+  "modelSha256": "ebfe250f1da2edabca51ab000706d8249aaa7f0826474f7a3b564cb21899b0f2",
+  "games": 200,
+  "winShare": 0.2,
+  "truncated": 0,
+  "meanTurns": 114.375,
+  "pairedBootstrap95": [
+    0.2000000000000001,
+    0.2000000000000001
+  ],
+  "byLayout": {
+    "short-path": {
+      "games": 50,
+      "winShare": 0.2,
+      "truncated": 0,
+      "meanTurns": 113
+    },
+    "long-path": {
+      "games": 50,
+      "winShare": 0.2,
+      "truncated": 0,
+      "meanTurns": 113.5
+    },
+    "number-order": {
+      "games": 50,
+      "winShare": 0.2,
+      "truncated": 0,
+      "meanTurns": 112.5
+    },
+    "random": {
+      "games": 50,
+      "winShare": 0.2,
+      "truncated": 0,
+      "meanTurns": 118.5
+    }
+  },
+  "bySeat": [
+    {
+      "games": 40,
+      "winShare": 0.2,
+      "truncated": 0,
+      "meanTurns": 114.375
+    },
+    {
+      "games": 40,
+      "winShare": 0.2,
+      "truncated": 0,
+      "meanTurns": 114.375
+    },
+    {
+      "games": 40,
+      "winShare": 0.25,
+      "truncated": 0,
+      "meanTurns": 114.375
+    },
+    {
+      "games": 40,
+      "winShare": 0.175,
+      "truncated": 0,
+      "meanTurns": 114.375
+    },
+    {
+      "games": 40,
+      "winShare": 0.175,
+      "truncated": 0,
+      "meanTurns": 114.375
+    }
+  ],
+  "failures": [],
+  "actionCounts": {
+    "turn/moved": 4559,
+    "police-send": 633,
+    "post-office-collect": 1300,
+    "turn/ended": 4577,
+    "return-assistant": 16,
+    "black-market-roll": 328,
+    "sultan-buy": 207,
+    "turn/merchant-paid": 757,
+    "caravansary-draw": 104,
+    "caravansary-discard": 104,
+    "repeat-action": 23,
+    "mosque-take": 325,
+    "gemstone-buy": 369,
+    "fountain-recall": 460,
+    "tea-house-wager": 700,
+    "wainwright-buy": 429,
+    "stay": 16,
+    "market-sell": 141,
+    "warehouse-fill": 174,
+    "catch-family": 541,
+    "warehouse-extra": 36,
+    "gain-lira": 64,
+    "gain-good": 51,
+    "return-family": 24,
+    "dice-adjust": 220,
+    "long-move": 4
+  }
+}

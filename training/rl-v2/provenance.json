@@ -1,0 +1,59 @@
+{
+  "policy": "rl-v2",
+  "eventPolicyVersion": 3,
+  "baseCommit": "5c9cfd72c67b94dc374e918867a43bb585caf821",
+  "baseTraining": {
+    "seed": "istanbul-rl-v2",
+    "imitationGames": 1024,
+    "moneyGames": 4096,
+    "selfPlayGames": 8192,
+    "continuedCheckpoint": "self-5632"
+  },
+  "mobilityCurriculum": {
+    "examples": 15626,
+    "weights": [
+      -6.369385734268886,
+      -0.45915669034248774
+    ],
+    "seed": "istanbul-rl-v2:mobility-curriculum",
+    "base": "/tmp/istanbul-rl-v2-run1/self-5632.json",
+    "out": "/tmp/rl-v2-mobility.json"
+  },
+  "fineTuning": {
+    "seed": "istanbul-rl-v2:mobility-finetune",
+    "selfPlayGames": 2048,
+    "selectedCheckpoint": "self-1024"
+  },
+  "selection": {
+    "gamesPerOpponentPerCheckpoint": 1200,
+    "seed": "istanbul-rl-v2:mobility-selection",
+    "criterion": "zero truncated games; maximum sum of money and v1 win shares"
+  },
+  "network": {
+    "observationInputs": 1314,
+    "actionInputs": 191,
+    "hiddenUnits": 24,
+    "parameters": 36359,
+    "deployment": "greedy",
+    "decimalPlaces": 7
+  },
+  "releaseGames": 2760,
+  "releaseFailures": 0,
+  "sha256": {
+    "src/lib/game/rl/v2/actions.ts": "707f2db6c66879da48034d8e0cc1fb886358700cfe56dda7b8928fe0bd992e71",
+    "src/lib/game/rl/v2/observation.ts": "a7ae01984c5d8781bb5afc8609272cf327df64914796ebb8789dcd0cc0defe27",
+    "src/lib/game/rl/v2/features.ts": "37dfe123f9ac80a47c6c4973617f14a53f0f43d9ed2c0aacd9e78646f9b1586f",
+    "src/lib/game/rl/v2/mobility.ts": "d8f11d4420580eadc9c88210333d94d04d59392fac9866a3e455adea693e6d35",
+    "src/lib/game/rl/v2/network.ts": "5b63ea9068d636f7f5413ad243c63105ade8c19aa2da7c6d38f973461766297b",
+    "src/lib/game/rl/v2/model.json": "ebfe250f1da2edabca51ab000706d8249aaa7f0826474f7a3b564cb21899b0f2",
+    "scripts/rl/train-v2.ts": "1230f70fe23e4bb4dc93636f4015e5ee8f07bdab1e7a5e4ab8a33cb1fb4c96af",
+    "scripts/rl/environment-v2.ts": "95cd2743e6c2e26c1d4928346d9240dc99436b2346049199fd15a69d97bac586",
+    "scripts/rl/evaluate-v2.ts": "f7bd6a409634c6d5e37e6ff684fd5ac6de24aae8cfb37eef62fb0e6174f02105",
+    "scripts/rl/select-v2.ts": "480ad5447fdb4da8094ef35f5466f4d9df387771f4037fbe8ba736adbb7f8c0d",
+    "scripts/rl/mobility-v2.ts": "189fbcd92f1ffd583fa8f15bd6978cc04aa29226a016dbc5ff8e6072ddfdea0c",
+    "src/lib/game/rl/options.ts": "ba12cdcd95265ae02b7fd24794a582f144c9b8ff96c8043ebd7baa665d6ea82e",
+    "src/lib/game/rl/model-v1.json": "bce17bcd6cbf4c19a914dea7d834bae83373be3e3b307af9c520d92141a0677d"
+  },
+  "baseCheckpointSha256": "53bef5618102625f447886615bf5c62a0c1722066f990c347b83b078fa297eed",
+  "mobilityCheckpointSha256": "a74fb0cac584b9f856952bbd3f765d3b362d2094c02f999ea31c3121371cfe7a"
+}

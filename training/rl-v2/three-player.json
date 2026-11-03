@@ -1,0 +1,90 @@
+{
+  "seed": "istanbul-rl-v2:release-mobility-multi-2026-11-03",
+  "players": 3,
+  "opponent": "money",
+  "modelSha256": "ebfe250f1da2edabca51ab000706d8249aaa7f0826474f7a3b564cb21899b0f2",
+  "games": 240,
+  "winShare": 0.8791666666666667,
+  "truncated": 0,
+  "meanTurns": 68.725,
+  "pairedBootstrap95": [
+    0.8333333333333334,
+    0.9166666666666666
+  ],
+  "byLayout": {
+    "short-path": {
+      "games": 60,
+      "winShare": 0.9166666666666666,
+      "truncated": 0,
+      "meanTurns": 66.05
+    },
+    "long-path": {
+      "games": 60,
+      "winShare": 0.9166666666666666,
+      "truncated": 0,
+      "meanTurns": 63.4
+    },
+    "number-order": {
+      "games": 60,
+      "winShare": 0.8833333333333333,
+      "truncated": 0,
+      "meanTurns": 75.15
+    },
+    "random": {
+      "games": 60,
+      "winShare": 0.8,
+      "truncated": 0,
+      "meanTurns": 70.3
+    }
+  },
+  "bySeat": [
+    {
+      "games": 80,
+      "winShare": 0.8875,
+      "truncated": 0,
+      "meanTurns": 68.625
+    },
+    {
+      "games": 80,
+      "winShare": 0.875,
+      "truncated": 0,
+      "meanTurns": 67.575
+    },
+    {
+      "games": 80,
+      "winShare": 0.875,
+      "truncated": 0,
+      "meanTurns": 69.975
+    }
+  ],
+  "failures": [],
+  "actionCounts": {
+    "turn/moved": 5486,
+    "post-office-collect": 1849,
+    "turn/ended": 5498,
+    "turn/merchant-paid": 228,
+    "police-send": 433,
+    "mosque-take": 819,
+    "sultan-buy": 335,
+    "caravansary-draw": 132,
+    "caravansary-discard": 132,
+    "wainwright-buy": 468,
+    "market-sell": 48,
+    "tea-house-wager": 872,
+    "dice-adjust": 667,
+    "warehouse-fill": 76,
+    "warehouse-extra": 38,
+    "catch-family": 847,
+    "gain-good": 63,
+    "fountain-recall": 285,
+    "gain-lira": 75,
+    "gemstone-buy": 348,
+    "repeat-action": 31,
+    "black-market-roll": 209,
+    "return-family": 35,
+    "return-assistant": 20,
+    "stay": 12,
+    "long-move": 2,
+    "wild-small-market": 1
+  }
+}

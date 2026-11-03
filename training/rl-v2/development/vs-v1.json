@@ -1,0 +1,109 @@
+{
+  "seed": "istanbul-rl-v2:release-2026-11-03",
+  "players": 2,
+  "opponent": "v1",
+  "modelSha256": "71cc89364b4ce27693fa657de3e6c0c5130b3ad6e4aa4c8aad48f6d437c1eecb",
+  "games": 800,
+  "winShare": 0.55,
+  "truncated": 2,
+  "meanTurns": 62.13625,
+  "pairedBootstrap95": [
+    0.5175,
+    0.585
+  ],
+  "byLayout": {
+    "short-path": {
+      "games": 200,
+      "winShare": 0.545,
+      "truncated": 0,
+      "meanTurns": 63.81
+    },
+    "long-path": {
+      "games": 200,
+      "winShare": 0.61,
+      "truncated": 1,
+      "meanTurns": 58.57
+    },
+    "number-order": {
+      "games": 200,
+      "winShare": 0.52,
+      "truncated": 0,
+      "meanTurns": 63.6
+    },
+    "random": {
+      "games": 200,
+      "winShare": 0.525,
+      "truncated": 1,
+      "meanTurns": 62.565
+    }
+  },
+  "bySeat": [
+    {
+      "games": 400,
+      "winShare": 0.575,
+      "truncated": 2,
+      "meanTurns": 62.1425
+    },
+    {
+      "games": 400,
+      "winShare": 0.525,
+      "truncated": 0,
+      "meanTurns": 62.13
+    }
+  ],
+  "failures": [
+    {
+      "score": 0,
+      "turns": 13,
+      "truncated": true,
+      "failure": "no-action:movement:seat0",
+      "seat": 0,
+      "layout": "random",
+      "game": 182
+    },
+    {
+      "score": 0,
+      "turns": 18,
+      "truncated": true,
+      "failure": "no-action:movement:seat0",
+      "seat": 0,
+      "layout": "long-path",
+      "game": 690
+    }
+  ],
+  "actionCounts": {
+    "turn/moved": 24796,
+    "post-office-collect": 7298,
+    "turn/ended": 24860,
+    "police-send": 2153,
+    "tea-house-wager": 3720,
+    "fountain-recall": 1991,
+    "wainwright-buy": 2281,
+    "market-sell": 759,
+    "warehouse-fill": 723,
+    "turn/merchant-paid": 2515,
+    "mosque-take": 2167,
+    "catch-family": 1146,
+    "warehouse-extra": 385,
+    "gemstone-buy": 1524,
+    "caravansary-draw": 1066,
+    "caravansary-discard": 1066,
+    "gain-lira": 370,
+    "gain-good": 347,
+    "return-family": 190,
+    "sultan-buy": 1191,
+    "return-assistant": 123,
+    "black-market-roll": 1702,
+    "dice-adjust": 2445,
+    "repeat-action": 186,
+    "wild-small-market": 4,
+    "smuggler-trade": 243,
+    "smuggler-roll": 230,
+    "long-move": 31,
+    "stay": 57,
+    "governor-visit": 25,
+    "yellow-recall": 3,
+    "governor-pay": 10,
+    "governor-roll": 10
+  }
+}

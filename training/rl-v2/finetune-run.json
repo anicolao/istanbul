@@ -1,0 +1,12 @@
+{
+  "seed": "istanbul-rl-v2:mobility-finetune",
+  "warm": 0,
+  "money": 0,
+  "self": 2048,
+  "selection": "sum of win shares vs money and v1, zero validation truncations",
+  "best": 1.6875,
+  "inputs": 1314,
+  "actions": 191,
+  "hidden": 24,
+  "parameters": 36359
+}
