@@ -47,24 +47,31 @@ test('an unaffordable merchant waits for acknowledgement before the bot can act'
       game: { currentTurn: 'Alex', turnNumber: 6, phase: 'movement' }
     });
     const before = await readState(page);
+    // Capture the real animation when Svelte creates it. getAnimations() after
+    // click races the one-second animation finishing on a busy CI runner.
+    const zoomAnimations: Array<{ duration: unknown; frames: string[] }> = [];
+    await page.exposeFunction('recordBlockedRoomZoom', (animation: { duration: unknown; frames: string[] }) => {
+      zoomAnimations.push(animation);
+    });
+    await page.evaluate(() => {
+      const original = Element.prototype.animate;
+      Element.prototype.animate = function (...args: Parameters<Element['animate']>) {
+        const animation = original.apply(this, args);
+        if (this.matches('.zoom-tile[data-zoom-place="9"]')) {
+          void (window as unknown as {
+            recordBlockedRoomZoom: (value: { duration: unknown; frames: string[] }) => Promise<void>;
+          }).recordBlockedRoomZoom({
+            duration: animation.effect?.getTiming().duration,
+            frames: (animation.effect as KeyframeEffect)?.getKeyframes().map(frame => String(frame.transform)) ?? []
+          });
+        }
+        return animation;
+      };
+    });
     await page.locator('[data-place-id="9"]').click();
-    const animation = await tile.evaluate((el) =>
-      el
-        .getAnimations()
-        .map((a) => ({
-          duration: a.effect?.getTiming().duration,
-          frames: (a.effect as KeyframeEffect)
-            ?.getKeyframes()
-            .map((f) => f.transform)
-        }))
-    );
-    expect(
-      animation.some(
-        (a) =>
-          a.duration === 1000 &&
-          String(a.frames.at(-1)).includes('rotate(-90deg)')
-      )
-    ).toBe(true);
+    await expect.poll(() => zoomAnimations.some(animation =>
+      animation.duration === 1000 && animation.frames.at(-1)?.includes('rotate(-90deg)')
+    )).toBe(true);
     await steps.step('unaffordable-merchant', {
       description:
         'The Tea House shows the neutral merchant and explains the lost turn before moving',
