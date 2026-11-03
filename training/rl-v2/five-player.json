@@ -1,0 +1,101 @@
+{
+  "seed": "istanbul-rl-v2:release-mobility-multi-2026-11-03",
+  "players": 5,
+  "opponent": "money",
+  "modelSha256": "ebfe250f1da2edabca51ab000706d8249aaa7f0826474f7a3b564cb21899b0f2",
+  "games": 400,
+  "winShare": 0.8125,
+  "truncated": 0,
+  "meanTurns": 113.9875,
+  "pairedBootstrap95": [
+    0.7674999999999998,
+    0.8574999999999997
+  ],
+  "byLayout": {
+    "short-path": {
+      "games": 100,
+      "winShare": 0.64,
+      "truncated": 0,
+      "meanTurns": 114.05
+    },
+    "long-path": {
+      "games": 100,
+      "winShare": 0.87,
+      "truncated": 0,
+      "meanTurns": 111.85
+    },
+    "number-order": {
+      "games": 100,
+      "winShare": 0.95,
+      "truncated": 0,
+      "meanTurns": 116.85
+    },
+    "random": {
+      "games": 100,
+      "winShare": 0.79,
+      "truncated": 0,
+      "meanTurns": 113.2
+    }
+  },
+  "bySeat": [
+    {
+      "games": 80,
+      "winShare": 0.825,
+      "truncated": 0,
+      "meanTurns": 115.125
+    },
+    {
+      "games": 80,
+      "winShare": 0.8,
+      "truncated": 0,
+      "meanTurns": 114.625
+    },
+    {
+      "games": 80,
+      "winShare": 0.85,
+      "truncated": 0,
+      "meanTurns": 114.375
+    },
+    {
+      "games": 80,
+      "winShare": 0.7875,
+      "truncated": 0,
+      "meanTurns": 114.1875
+    },
+    {
+      "games": 80,
+      "winShare": 0.8,
+      "truncated": 0,
+      "meanTurns": 111.625
+    }
+  ],
+  "failures": [],
+  "actionCounts": {
+    "turn/moved": 9097,
+    "turn/merchant-paid": 951,
+    "post-office-collect": 2713,
+    "turn/ended": 9117,
+    "police-send": 693,
+    "mosque-take": 1286,
+    "warehouse-fill": 197,
+    "tea-house-wager": 1134,
+    "dice-adjust": 909,
+    "catch-family": 1437,
+    "warehouse-extra": 84,
+    "gemstone-buy": 416,
+    "wainwright-buy": 941,
+    "fountain-recall": 727,
+    "sultan-buy": 688,
+    "gain-lira": 143,
+    "black-market-roll": 552,
+    "repeat-action": 57,
+    "caravansary-draw": 271,
+    "caravansary-discard": 271,
+    "stay": 22,
+    "return-family": 57,
+    "gain-good": 106,
+    "return-assistant": 38,
+    "market-sell": 87,
+    "long-move": 4
+  }
+}

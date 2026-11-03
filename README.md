@@ -231,4 +231,4 @@ production data.
 
 ## Trained bot
 
-The lobby's **Bot strategy** selector offers the original money bot and a locally running trained opponent. See [the RL player guide](docs/RL_PLAYER.md) for training, self-play evaluation, limitations, and replay-versioning requirements.
+The lobby's **Bot strategy** selector offers the original money bot and a locally running trained opponent. See [the RL player guide](docs/RL_PLAYER_V2.md) for training, self-play evaluation, limitations, and replay-versioning requirements.

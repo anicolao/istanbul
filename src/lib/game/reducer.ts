@@ -450,10 +450,10 @@ export function applyEvent(state: ReplayProjection, event: CanonicalEvent): bool
       reject(state, event, 'invalid-table-position'); return false;
     }
     const policy = event.payload.policy;
-    if (policy !== undefined && policy !== 'money-v1' && policy !== 'rl-v1') { reject(state,event,'invalid-bot-policy'); return false; }
+    if (policy !== undefined && policy !== 'money-v1' && policy !== 'rl-v1' && policy !== 'rl-v2') { reject(state,event,'invalid-bot-policy'); return false; }
     const botNumber = Array.from({ length: 5 }, (_, i) => i + 1).find(i => !state.room!.seats.some(s => s.name === `Bot ${i}`))!;
     state.room.seats.push({ uid: `bot:${event.id}`, name: `Bot ${botNumber}`, bot: true, ready: true,
-      ...(policy === 'rl-v1' ? { botPolicy: policy } : {}),
+      ...(policy === 'rl-v1' || policy === 'rl-v2' ? { botPolicy: policy } : {}),
       ...(state.room.tabletopOwned ? { tablePosition: position as import('./protocol').TablePosition } : {}) });
     if (state.room.tabletopOwned) state.room.seats.sort((a, b) => a.tablePosition! - b.tablePosition!);
     return true;

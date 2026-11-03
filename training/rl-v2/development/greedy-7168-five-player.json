@@ -1,0 +1,102 @@
+{
+  "seed": "istanbul-rl-v2:release-final-multi-2026-11-03",
+  "players": 5,
+  "opponent": "money",
+  "modelSha256": "fd2f696233ac946409aed41dd27cc2fa667da194f28f475deff0ccc8bee41cb3",
+  "games": 400,
+  "winShare": 0.7925,
+  "truncated": 0,
+  "meanTurns": 115.8875,
+  "pairedBootstrap95": [
+    0.7349999999999997,
+    0.8449999999999994
+  ],
+  "byLayout": {
+    "short-path": {
+      "games": 100,
+      "winShare": 0.7,
+      "truncated": 0,
+      "meanTurns": 116.4
+    },
+    "long-path": {
+      "games": 100,
+      "winShare": 0.85,
+      "truncated": 0,
+      "meanTurns": 114.05
+    },
+    "number-order": {
+      "games": 100,
+      "winShare": 0.95,
+      "truncated": 0,
+      "meanTurns": 117.15
+    },
+    "random": {
+      "games": 100,
+      "winShare": 0.67,
+      "truncated": 0,
+      "meanTurns": 115.95
+    }
+  },
+  "bySeat": [
+    {
+      "games": 80,
+      "winShare": 0.7875,
+      "truncated": 0,
+      "meanTurns": 113.9375
+    },
+    {
+      "games": 80,
+      "winShare": 0.8125,
+      "truncated": 0,
+      "meanTurns": 115.5625
+    },
+    {
+      "games": 80,
+      "winShare": 0.7625,
+      "truncated": 0,
+      "meanTurns": 117.625
+    },
+    {
+      "games": 80,
+      "winShare": 0.85,
+      "truncated": 0,
+      "meanTurns": 114.875
+    },
+    {
+      "games": 80,
+      "winShare": 0.75,
+      "truncated": 0,
+      "meanTurns": 117.4375
+    }
+  ],
+  "failures": [],
+  "actionCounts": {
+    "gain-lira": 299,
+    "turn/moved": 9235,
+    "wainwright-buy": 1141,
+    "turn/ended": 9268,
+    "tea-house-wager": 642,
+    "catch-family": 968,
+    "gemstone-buy": 270,
+    "caravansary-draw": 814,
+    "caravansary-discard": 814,
+    "post-office-collect": 2781,
+    "repeat-action": 127,
+    "mosque-take": 1332,
+    "turn/merchant-paid": 784,
+    "black-market-roll": 679,
+    "sultan-buy": 692,
+    "gain-good": 265,
+    "police-send": 558,
+    "return-family": 106,
+    "dice-adjust": 623,
+    "market-sell": 174,
+    "return-assistant": 31,
+    "fountain-recall": 543,
+    "warehouse-fill": 95,
+    "warehouse-extra": 39,
+    "long-move": 17,
+    "stay": 36,
+    "yellow-recall": 1
+  }
+}

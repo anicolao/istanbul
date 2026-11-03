@@ -1,0 +1,314 @@
+[
+  {
+    "stage": "imitation",
+    "episode": 512,
+    "vsMoney": {
+      "score": 0.7916666666666666,
+      "failures": 0
+    },
+    "vsV1": {
+      "score": 0.2916666666666667,
+      "failures": 0
+    }
+  },
+  {
+    "stage": "imitation",
+    "episode": 1024,
+    "vsMoney": {
+      "score": 0.7916666666666666,
+      "failures": 0
+    },
+    "vsV1": {
+      "score": 0.3958333333333333,
+      "failures": 0
+    }
+  },
+  {
+    "stage": "money",
+    "episode": 512,
+    "vsMoney": {
+      "score": 0.8541666666666666,
+      "failures": 0
+    },
+    "vsV1": {
+      "score": 0.3958333333333333,
+      "failures": 0
+    }
+  },
+  {
+    "stage": "money",
+    "episode": 1024,
+    "vsMoney": {
+      "score": 0.875,
+      "failures": 0
+    },
+    "vsV1": {
+      "score": 0.5833333333333334,
+      "failures": 0
+    }
+  },
+  {
+    "stage": "money",
+    "episode": 1536,
+    "vsMoney": {
+      "score": 0.8541666666666666,
+      "failures": 2
+    },
+    "vsV1": {
+      "score": 0.3333333333333333,
+      "failures": 0
+    }
+  },
+  {
+    "stage": "money",
+    "episode": 2048,
+    "vsMoney": {
+      "score": 0.9375,
+      "failures": 0
+    },
+    "vsV1": {
+      "score": 0.4375,
+      "failures": 0
+    }
+  },
+  {
+    "stage": "money",
+    "episode": 2560,
+    "vsMoney": {
+      "score": 0.9375,
+      "failures": 0
+    },
+    "vsV1": {
+      "score": 0.3958333333333333,
+      "failures": 0
+    }
+  },
+  {
+    "stage": "money",
+    "episode": 3072,
+    "vsMoney": {
+      "score": 0.9166666666666666,
+      "failures": 0
+    },
+    "vsV1": {
+      "score": 0.4375,
+      "failures": 0
+    }
+  },
+  {
+    "stage": "money",
+    "episode": 3584,
+    "vsMoney": {
+      "score": 0.9375,
+      "failures": 0
+    },
+    "vsV1": {
+      "score": 0.375,
+      "failures": 0
+    }
+  },
+  {
+    "stage": "money",
+    "episode": 4096,
+    "vsMoney": {
+      "score": 0.8958333333333334,
+      "failures": 0
+    },
+    "vsV1": {
+      "score": 0.3958333333333333,
+      "failures": 0
+    }
+  },
+  {
+    "stage": "self",
+    "episode": 512,
+    "vsMoney": {
+      "score": 0.9166666666666666,
+      "failures": 0
+    },
+    "vsV1": {
+      "score": 0.3958333333333333,
+      "failures": 0
+    }
+  },
+  {
+    "stage": "self",
+    "episode": 1024,
+    "vsMoney": {
+      "score": 0.9375,
+      "failures": 0
+    },
+    "vsV1": {
+      "score": 0.375,
+      "failures": 0
+    }
+  },
+  {
+    "stage": "self",
+    "episode": 1536,
+    "vsMoney": {
+      "score": 0.9583333333333334,
+      "failures": 0
+    },
+    "vsV1": {
+      "score": 0.5833333333333334,
+      "failures": 0
+    }
+  },
+  {
+    "stage": "self",
+    "episode": 2048,
+    "vsMoney": {
+      "score": 0.9375,
+      "failures": 0
+    },
+    "vsV1": {
+      "score": 0.5208333333333334,
+      "failures": 0
+    }
+  },
+  {
+    "stage": "self",
+    "episode": 2560,
+    "vsMoney": {
+      "score": 0.8541666666666666,
+      "failures": 0
+    },
+    "vsV1": {
+      "score": 0.4375,
+      "failures": 0
+    }
+  },
+  {
+    "stage": "self",
+    "episode": 3072,
+    "vsMoney": {
+      "score": 0.9583333333333334,
+      "failures": 0
+    },
+    "vsV1": {
+      "score": 0.4375,
+      "failures": 0
+    }
+  },
+  {
+    "stage": "self",
+    "episode": 3584,
+    "vsMoney": {
+      "score": 0.8958333333333334,
+      "failures": 0
+    },
+    "vsV1": {
+      "score": 0.4583333333333333,
+      "failures": 0
+    }
+  },
+  {
+    "stage": "self",
+    "episode": 4096,
+    "vsMoney": {
+      "score": 0.9166666666666666,
+      "failures": 0
+    },
+    "vsV1": {
+      "score": 0.5625,
+      "failures": 0
+    }
+  },
+  {
+    "stage": "self",
+    "episode": 4608,
+    "vsMoney": {
+      "score": 0.9166666666666666,
+      "failures": 0
+    },
+    "vsV1": {
+      "score": 0.4791666666666667,
+      "failures": 0
+    }
+  },
+  {
+    "stage": "self",
+    "episode": 5120,
+    "vsMoney": {
+      "score": 0.8333333333333334,
+      "failures": 0
+    },
+    "vsV1": {
+      "score": 0.4166666666666667,
+      "failures": 0
+    }
+  },
+  {
+    "stage": "self",
+    "episode": 5632,
+    "vsMoney": {
+      "score": 0.9583333333333334,
+      "failures": 0
+    },
+    "vsV1": {
+      "score": 0.5208333333333334,
+      "failures": 0
+    }
+  },
+  {
+    "stage": "self",
+    "episode": 6144,
+    "vsMoney": {
+      "score": 0.9166666666666666,
+      "failures": 0
+    },
+    "vsV1": {
+      "score": 0.5625,
+      "failures": 0
+    }
+  },
+  {
+    "stage": "self",
+    "episode": 6656,
+    "vsMoney": {
+      "score": 0.9166666666666666,
+      "failures": 0
+    },
+    "vsV1": {
+      "score": 0.5208333333333334,
+      "failures": 0
+    }
+  },
+  {
+    "stage": "self",
+    "episode": 7168,
+    "vsMoney": {
+      "score": 0.9583333333333334,
+      "failures": 0
+    },
+    "vsV1": {
+      "score": 0.5208333333333334,
+      "failures": 0
+    }
+  },
+  {
+    "stage": "self",
+    "episode": 7680,
+    "vsMoney": {
+      "score": 1,
+      "failures": 0
+    },
+    "vsV1": {
+      "score": 0.5208333333333334,
+      "failures": 0
+    }
+  },
+  {
+    "stage": "self",
+    "episode": 8192,
+    "vsMoney": {
+      "score": 0.9583333333333334,
+      "failures": 0
+    },
+    "vsV1": {
+      "score": 0.6875,
+      "failures": 0
+    }
+  }
+]

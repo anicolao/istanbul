@@ -1,0 +1,96 @@
+{
+  "seed": "istanbul-rl-v2:release-multi-2026-11-03",
+  "players": 3,
+  "opponent": "money",
+  "modelSha256": "71cc89364b4ce27693fa657de3e6c0c5130b3ad6e4aa4c8aad48f6d437c1eecb",
+  "games": 240,
+  "winShare": 0.8083333333333333,
+  "truncated": 0,
+  "meanTurns": 74.125,
+  "pairedBootstrap95": [
+    0.7541666666666662,
+    0.8624999999999996
+  ],
+  "byLayout": {
+    "short-path": {
+      "games": 60,
+      "winShare": 0.75,
+      "truncated": 0,
+      "meanTurns": 73.45
+    },
+    "long-path": {
+      "games": 60,
+      "winShare": 0.8666666666666667,
+      "truncated": 0,
+      "meanTurns": 68.5
+    },
+    "number-order": {
+      "games": 60,
+      "winShare": 0.9166666666666666,
+      "truncated": 0,
+      "meanTurns": 78.8
+    },
+    "random": {
+      "games": 60,
+      "winShare": 0.7,
+      "truncated": 0,
+      "meanTurns": 75.75
+    }
+  },
+  "bySeat": [
+    {
+      "games": 80,
+      "winShare": 0.8,
+      "truncated": 0,
+      "meanTurns": 74.325
+    },
+    {
+      "games": 80,
+      "winShare": 0.7875,
+      "truncated": 0,
+      "meanTurns": 74.1
+    },
+    {
+      "games": 80,
+      "winShare": 0.8375,
+      "truncated": 0,
+      "meanTurns": 73.95
+    }
+  ],
+  "failures": [],
+  "actionCounts": {
+    "turn/moved": 5919,
+    "post-office-collect": 1851,
+    "turn/ended": 5946,
+    "return-assistant": 32,
+    "caravansary-draw": 341,
+    "caravansary-discard": 341,
+    "police-send": 406,
+    "return-family": 56,
+    "tea-house-wager": 588,
+    "mosque-take": 871,
+    "fountain-recall": 333,
+    "wainwright-buy": 664,
+    "dice-adjust": 571,
+    "catch-family": 597,
+    "warehouse-fill": 104,
+    "gemstone-buy": 190,
+    "warehouse-extra": 63,
+    "sultan-buy": 342,
+    "turn/merchant-paid": 271,
+    "gain-good": 102,
+    "gain-lira": 114,
+    "stay": 11,
+    "market-sell": 115,
+    "black-market-roll": 387,
+    "wild-small-market": 1,
+    "smuggler-trade": 31,
+    "smuggler-roll": 28,
+    "repeat-action": 44,
+    "governor-visit": 6,
+    "governor-pay": 2,
+    "governor-roll": 2,
+    "long-move": 9,
+    "yellow-recall": 1
+  }
+}

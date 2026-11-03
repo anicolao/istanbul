@@ -1,0 +1,96 @@
+{
+  "seed": "istanbul-rl-v2:release-mobility-multi-2026-11-03",
+  "players": 4,
+  "opponent": "money",
+  "modelSha256": "ebfe250f1da2edabca51ab000706d8249aaa7f0826474f7a3b564cb21899b0f2",
+  "games": 320,
+  "winShare": 0.815625,
+  "truncated": 0,
+  "meanTurns": 88.7125,
+  "pairedBootstrap95": [
+    0.7625,
+    0.865625
+  ],
+  "byLayout": {
+    "short-path": {
+      "games": 80,
+      "winShare": 0.775,
+      "truncated": 0,
+      "meanTurns": 89.5
+    },
+    "long-path": {
+      "games": 80,
+      "winShare": 0.875,
+      "truncated": 0,
+      "meanTurns": 81.65
+    },
+    "number-order": {
+      "games": 80,
+      "winShare": 0.8875,
+      "truncated": 0,
+      "meanTurns": 95.2
+    },
+    "random": {
+      "games": 80,
+      "winShare": 0.725,
+      "truncated": 0,
+      "meanTurns": 88.5
+    }
+  },
+  "bySeat": [
+    {
+      "games": 80,
+      "winShare": 0.8875,
+      "truncated": 0,
+      "meanTurns": 88.5
+    },
+    {
+      "games": 80,
+      "winShare": 0.7625,
+      "truncated": 0,
+      "meanTurns": 89.4
+    },
+    {
+      "games": 80,
+      "winShare": 0.8,
+      "truncated": 0,
+      "meanTurns": 88.5
+    },
+    {
+      "games": 80,
+      "winShare": 0.8125,
+      "truncated": 0,
+      "meanTurns": 88.45
+    }
+  ],
+  "failures": [],
+  "actionCounts": {
+    "turn/moved": 7079,
+    "turn/merchant-paid": 499,
+    "post-office-collect": 2221,
+    "turn/ended": 7098,
+    "fountain-recall": 479,
+    "mosque-take": 1026,
+    "police-send": 537,
+    "caravansary-draw": 199,
+    "caravansary-discard": 199,
+    "gain-lira": 110,
+    "wainwright-buy": 667,
+    "gemstone-buy": 390,
+    "tea-house-wager": 941,
+    "dice-adjust": 765,
+    "catch-family": 1075,
+    "warehouse-fill": 127,
+    "repeat-action": 39,
+    "sultan-buy": 540,
+    "black-market-roll": 344,
+    "gain-good": 85,
+    "warehouse-extra": 51,
+    "market-sell": 66,
+    "return-family": 49,
+    "yellow-recall": 1,
+    "long-move": 8,
+    "return-assistant": 28,
+    "stay": 18
+  }
+}

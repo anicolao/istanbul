@@ -1,0 +1,85 @@
+{
+  "seed": "istanbul-rl-v2:release-mobility-2026-11-03",
+  "players": 2,
+  "opponent": "money",
+  "modelSha256": "ebfe250f1da2edabca51ab000706d8249aaa7f0826474f7a3b564cb21899b0f2",
+  "games": 800,
+  "winShare": 0.94,
+  "truncated": 0,
+  "meanTurns": 59.2575,
+  "pairedBootstrap95": [
+    0.92375,
+    0.95625
+  ],
+  "byLayout": {
+    "short-path": {
+      "games": 200,
+      "winShare": 0.955,
+      "truncated": 0,
+      "meanTurns": 56.47
+    },
+    "long-path": {
+      "games": 200,
+      "winShare": 0.98,
+      "truncated": 0,
+      "meanTurns": 55.15
+    },
+    "number-order": {
+      "games": 200,
+      "winShare": 0.92,
+      "truncated": 0,
+      "meanTurns": 65.31
+    },
+    "random": {
+      "games": 200,
+      "winShare": 0.905,
+      "truncated": 0,
+      "meanTurns": 60.1
+    }
+  },
+  "bySeat": [
+    {
+      "games": 400,
+      "winShare": 0.9425,
+      "truncated": 0,
+      "meanTurns": 59.215
+    },
+    {
+      "games": 400,
+      "winShare": 0.9375,
+      "truncated": 0,
+      "meanTurns": 59.3
+    }
+  ],
+  "failures": [],
+  "actionCounts": {
+    "gain-lira": 251,
+    "turn/moved": 23668,
+    "post-office-collect": 7759,
+    "turn/ended": 23707,
+    "police-send": 1283,
+    "turn/merchant-paid": 2390,
+    "mosque-take": 2668,
+    "gemstone-buy": 1647,
+    "sultan-buy": 1316,
+    "fountain-recall": 1715,
+    "wainwright-buy": 1935,
+    "black-market-roll": 598,
+    "dice-adjust": 3087,
+    "market-sell": 358,
+    "tea-house-wager": 4494,
+    "catch-family": 2392,
+    "warehouse-fill": 432,
+    "warehouse-extra": 245,
+    "gain-good": 215,
+    "caravansary-draw": 487,
+    "caravansary-discard": 487,
+    "repeat-action": 106,
+    "return-family": 126,
+    "stay": 35,
+    "return-assistant": 73,
+    "long-move": 8,
+    "yellow-recall": 1,
+    "wild-small-market": 2
+  }
+}

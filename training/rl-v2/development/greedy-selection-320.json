@@ -1,0 +1,98 @@
+{
+  "seed": "istanbul-rl-v2:selection",
+  "gamesPerOpponent": 320,
+  "criterion": "sum of money/v1 win shares; zero truncated games; seven-decimal weights; explicit deployment selection",
+  "selected": "self-7168",
+  "results": [
+    {
+      "name": "self-8192",
+      "scores": [
+        {
+          "opponent": "money",
+          "winShare": 0.896875,
+          "truncated": 0
+        },
+        {
+          "opponent": "v1",
+          "winShare": 0.571875,
+          "truncated": 0
+        }
+      ]
+    },
+    {
+      "name": "self-1536",
+      "scores": [
+        {
+          "opponent": "money",
+          "winShare": 0.89375,
+          "truncated": 0
+        },
+        {
+          "opponent": "v1",
+          "winShare": 0.490625,
+          "truncated": 0
+        }
+      ]
+    },
+    {
+      "name": "self-7680",
+      "scores": [
+        {
+          "opponent": "money",
+          "winShare": 0.846875,
+          "truncated": 0
+        },
+        {
+          "opponent": "v1",
+          "winShare": 0.5625,
+          "truncated": 0
+        }
+      ]
+    },
+    {
+      "name": "self-5632",
+      "scores": [
+        {
+          "opponent": "money",
+          "winShare": 0.89375,
+          "truncated": 0
+        },
+        {
+          "opponent": "v1",
+          "winShare": 0.6375,
+          "truncated": 0
+        }
+      ]
+    },
+    {
+      "name": "self-7168",
+      "scores": [
+        {
+          "opponent": "money",
+          "winShare": 0.9125,
+          "truncated": 0
+        },
+        {
+          "opponent": "v1",
+          "winShare": 0.628125,
+          "truncated": 0
+        }
+      ]
+    },
+    {
+      "name": "self-4096",
+      "scores": [
+        {
+          "opponent": "money",
+          "winShare": 0.928125,
+          "truncated": 0
+        },
+        {
+          "opponent": "v1",
+          "winShare": 0.58125,
+          "truncated": 0
+        }
+      ]
+    }
+  ]
+}

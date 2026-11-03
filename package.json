@@ -18,7 +18,9 @@
     "emulators": "firebase emulators:start --project istanbul-e2e",
     "verify:change": "bash scripts/verify-change.sh",
     "train:bot": "bun scripts/rl/train.ts",
-    "evaluate:bot": "bun scripts/rl/evaluate.ts"
+    "evaluate:bot": "bun scripts/rl/evaluate.ts",
+    "train:bot:v2": "bun scripts/rl/train-v2.ts",
+    "evaluate:bot:v2": "bun scripts/rl/evaluate-v2.ts"
   },
   "dependencies": {
     "@fontsource/atkinson-hyperlegible": "^5.2.8",

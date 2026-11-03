@@ -1,0 +1,50 @@
+[
+  {
+    "stage": "self",
+    "episode": 512,
+    "vsMoney": {
+      "score": 0.9375,
+      "failures": 0
+    },
+    "vsV1": {
+      "score": 0.5625,
+      "failures": 0
+    }
+  },
+  {
+    "stage": "self",
+    "episode": 1024,
+    "vsMoney": {
+      "score": 0.9583333333333334,
+      "failures": 0
+    },
+    "vsV1": {
+      "score": 0.6458333333333334,
+      "failures": 0
+    }
+  },
+  {
+    "stage": "self",
+    "episode": 1536,
+    "vsMoney": {
+      "score": 0.875,
+      "failures": 0
+    },
+    "vsV1": {
+      "score": 0.75,
+      "failures": 0
+    }
+  },
+  {
+    "stage": "self",
+    "episode": 2048,
+    "vsMoney": {
+      "score": 0.9166666666666666,
+      "failures": 0
+    },
+    "vsV1": {
+      "score": 0.7708333333333334,
+      "failures": 0
+    }
+  }
+]

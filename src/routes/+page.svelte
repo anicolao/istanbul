@@ -542,7 +542,7 @@
     try {
       await repository.append(
         'bot/added',
-        { ...(tablePosition ? { tablePosition } : {}), ...(newBotPolicy === 'rl-v1' ? { policy: newBotPolicy } : {}) }
+        { ...(tablePosition ? { tablePosition } : {}), ...(newBotPolicy !== 'money-v1' ? { policy: newBotPolicy } : {}) }
       );
     } catch (error) {
       message = error instanceof Error ? error.message : 'Could not add a bot.';
@@ -1251,7 +1251,7 @@
                       >{seat.name}{seat.uid === userUid ? ' · you' : ''}</strong
                     ><small
                       >{seat.bot
-                        ? seat.botPolicy === 'rl-v1' ? 'Bot · trained' : 'Bot · easy'
+                        ? seat.botPolicy?.startsWith('rl-') ? 'Bot · trained' : 'Bot · easy'
                         : seat.uid === room.hostUid
                           ? 'Room creator'
                           : 'Guest merchant'}</small

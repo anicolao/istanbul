@@ -1,0 +1,100 @@
+{
+  "seed": "istanbul-rl-v2:release-2026-11-03",
+  "players": 2,
+  "opponent": "money",
+  "modelSha256": "71cc89364b4ce27693fa657de3e6c0c5130b3ad6e4aa4c8aad48f6d437c1eecb",
+  "games": 800,
+  "winShare": 0.9175,
+  "truncated": 1,
+  "meanTurns": 63.1725,
+  "pairedBootstrap95": [
+    0.89875,
+    0.935
+  ],
+  "byLayout": {
+    "short-path": {
+      "games": 200,
+      "winShare": 0.88,
+      "truncated": 0,
+      "meanTurns": 64.03
+    },
+    "long-path": {
+      "games": 200,
+      "winShare": 0.94,
+      "truncated": 0,
+      "meanTurns": 60.8
+    },
+    "number-order": {
+      "games": 200,
+      "winShare": 0.96,
+      "truncated": 0,
+      "meanTurns": 64.75
+    },
+    "random": {
+      "games": 200,
+      "winShare": 0.89,
+      "truncated": 1,
+      "meanTurns": 63.11
+    }
+  },
+  "bySeat": [
+    {
+      "games": 400,
+      "winShare": 0.9175,
+      "truncated": 0,
+      "meanTurns": 63.715
+    },
+    {
+      "games": 400,
+      "winShare": 0.9175,
+      "truncated": 1,
+      "meanTurns": 62.63
+    }
+  ],
+  "failures": [
+    {
+      "score": 0,
+      "turns": 26,
+      "truncated": true,
+      "failure": "no-action:movement:seat1",
+      "seat": 1,
+      "layout": "random",
+      "game": 631
+    }
+  ],
+  "actionCounts": {
+    "turn/moved": 25217,
+    "post-office-collect": 8036,
+    "turn/ended": 25303,
+    "police-send": 1332,
+    "turn/merchant-paid": 2457,
+    "mosque-take": 2782,
+    "fountain-recall": 1890,
+    "black-market-roll": 1352,
+    "sultan-buy": 1493,
+    "wainwright-buy": 2279,
+    "caravansary-draw": 1086,
+    "caravansary-discard": 1086,
+    "gain-lira": 392,
+    "repeat-action": 167,
+    "warehouse-fill": 575,
+    "warehouse-extra": 358,
+    "gemstone-buy": 1201,
+    "market-sell": 676,
+    "gain-good": 353,
+    "tea-house-wager": 3392,
+    "dice-adjust": 2798,
+    "catch-family": 1857,
+    "long-move": 30,
+    "return-family": 175,
+    "smuggler-trade": 215,
+    "smuggler-roll": 201,
+    "stay": 51,
+    "return-assistant": 114,
+    "governor-visit": 18,
+    "governor-pay": 6,
+    "governor-roll": 6,
+    "yellow-recall": 2,
+    "wild-small-market": 2
+  }
+}
