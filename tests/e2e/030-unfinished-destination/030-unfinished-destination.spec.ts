@@ -65,7 +65,38 @@ test('ending optional gemstone encounters still offers the repeat card', async (
   const room = page.locator('.zoom-tile:not([inert])');
   await expect(room.getByRole('button', { name: 'Smuggler: take spice', exact: true })).toBeVisible();
   await room.getByRole('button', { name: 'End turn', exact: true }).click();
+  await expect(room.getByRole('alert')).toContainText("You haven't interacted with the Smuggler");
+  await room.getByRole('button', { name: 'End turn anyway' }).click();
   await expect(room.getByRole('alert')).toContainText('gain another ruby with a Bonus card');
   await room.getByRole('button', { name: 'End turn anyway' }).click();
   await expect(page.getByText(/Turn 2\. Bora\./)).toBeAttached();
 });
+
+for (const surface of ['personal-screens', 'shared-table']) {
+  for (const [scenario, visitors] of [
+    ['governor', 'the Governor'],
+    ['smuggler', 'the Smuggler'],
+    ['fountain-encounters', 'the Governor or the Smuggler'],
+    ['warehouse-visitors', 'the Governor or the Smuggler']
+  ]) {
+    test(`${surface}: confirm skipping ${scenario}`, async ({ page }) => {
+      await page.goto(`/dev/animations/?scenario=${scenario}&players=4&surface=${surface}`);
+      await expect(page.locator('.mat')).toHaveCount(4);
+      if (scenario === 'fountain-encounters')
+        await page.getByRole('button', { name: 'Trigger', exact: true }).click();
+      else await page.getByRole('button', { name: /^Animation lab/ }).click();
+      const room = page.locator('.zoom-tile:not([inert])');
+      await room.getByRole('button', { name: 'End turn', exact: true }).click();
+      await expect(room.getByRole('alert')).toContainText(`You haven't interacted with ${visitors}.`);
+      await expect(page.getByText(/Turn 1\. Ada\./)).toBeAttached();
+      await room.getByRole('button', { name: 'Continue choosing' }).click();
+      await expect(room.getByRole('alert')).toHaveCount(0);
+      if (scenario !== 'smuggler')
+        await expect(room.getByRole('button', { name: 'Draw a Bonus card from the Governor' })).toBeVisible();
+      else await expect(room.getByRole('button', { name: 'Smuggler: take spice', exact: true })).toBeVisible();
+      await room.getByRole('button', { name: 'End turn', exact: true }).click();
+      await room.getByRole('button', { name: 'End turn anyway' }).click();
+      await expect(page.getByText(/Turn 2\. Bora\./)).toBeAttached();
+    });
+  }
+}

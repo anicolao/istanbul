@@ -69,6 +69,7 @@ export const scenarios = [
     ['hand-review', 'Review a small Bonus hand'],
     ['legibility-review', 'Legibility · icons, visitors and player dock'],
     ['green', 'Green power · extra good'],
+    ['warehouse-visitors', 'Warehouse · green power and visitors'],
     ['red', 'Red power · change a die'],
     ['reroll', 'Red power · reroll'],
     ['yellow', 'Yellow power · recall an assistant'],
@@ -298,7 +299,11 @@ export function fixture(
         choice: { kind: 'governor-pay', payment: 'lira' }
       });
     }
-  } else if (id === 'green') {
+  } else if (id === 'green' || id === 'warehouse-visitors') {
+    if (id === 'warehouse-visitors') {
+      game.governorPlace = 3;
+      game.smugglerPlace = 3;
+    }
     player.mosqueTileIds = ['mosque-spice-2'];
     prepare(action(roomActions[3]));
     trigger = command('mosque/ability-used', {

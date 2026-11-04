@@ -374,11 +374,14 @@
   });
   function requestEndTurn() {
     if (busy || !canEnd || finishEncountersForRepeat) return;
-    // Ending already declines optional visitors; preserve the chance to repeat
-    // the destination action once those encounter events have completed.
-    if (pending?.kind === 'encounters' && availableRepeatCard({ ...game, phase: 'turn-end' })) {
-      repeatEncounterStep = '';
-      finishEncountersForRepeat = true;
+    const encounters = pending?.kind === 'encounters' ? pending : warehouseEncounters;
+    const visitors = [
+      encounters?.governor === 'available' ? 'the Governor' : null,
+      encounters?.smuggler ? 'the Smuggler' : null
+    ].filter(Boolean);
+    if (visitors.length) {
+      endWarning = `You haven't interacted with ${visitors.join(' or ')}. Skip ${visitors.length > 1 ? 'these interactions' : 'this interaction'} and end your turn?`;
+      open();
       return;
     }
     const unfinished = unfinishedDestination(game);
@@ -395,7 +398,12 @@
   function confirmEndTurn() {
     if (busy || !canEnd) return;
     endWarning = null;
-    onEndTurn();
+    // Only decline visitors after acknowledgement, then preserve the separate
+    // opportunity to use a repeat card once the encounters are resolved.
+    if (pending?.kind === 'encounters' && availableRepeatCard({ ...game, phase: 'turn-end' })) {
+      repeatEncounterStep = '';
+      finishEncountersForRepeat = true;
+    } else onEndTurn();
   }
   function open(id = activePlace) {
     zoom = id;

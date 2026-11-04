@@ -73,4 +73,7 @@ test('Tea House outcome is not replayed after visitor interactions', async ({ pa
   await expect(tile.locator('.content')).toContainText('Smuggler');
   await expect(tile.locator('.content')).not.toContainText('Wagered');
   await expect(tile.locator('.dice')).toHaveCount(0);
+  await tile.getByRole('button', { name: 'End turn', exact: true }).click();
+  await expect(tile.getByRole('alert')).toHaveCount(0);
+  await expect(page.getByText(/Turn 2\. Bora\./)).toBeAttached();
 });
