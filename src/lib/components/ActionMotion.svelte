@@ -70,12 +70,24 @@
   }
   function anchor(root: HTMLElement, a: Anchor) {
     let scope: HTMLElement | null = null;
-    if (a.uid)
+    if (a.uid) {
+      const summary = Array.from(root.querySelectorAll<HTMLElement>('[data-summary-uid]'))
+        .find(el => el.dataset.summaryUid === a.uid);
+      // The dock stays closed for components represented in its summary.
+      // Resolve both ends here so spending and undo follow the same path.
+      if (summary && !a.selector?.includes('data-power-slot')) {
+        const good = a.selector?.match(/data-good="([^"]+)"/)?.[1];
+        const key = good ?? (a.selector?.includes('data-lira') ? 'lira'
+          : a.selector?.includes('data-ruby-slot') ? 'ruby'
+          : a.selector?.includes('data-wheelbarrow') ? 'wheelbarrow' : 'name');
+        const target = summary.querySelector<HTMLElement>(`[data-summary-anchor="${key}"]`);
+        if (target) return target.querySelector<HTMLElement>('img') ?? target;
+      }
       scope =
         Array.from(
           root.querySelectorAll<HTMLElement>('[data-player-uid]')
         ).find((el) => el.dataset.playerUid === a.uid) ?? null;
-    else if (a.place) {
+    } else if (a.place) {
       if (!a.board)
         scope = root.querySelector<HTMLElement>(
           `.zoom-tile[data-zoom-place="${a.place}"]`
@@ -212,12 +224,14 @@
             delay: 0,
             fill: 'none'
           });
+        const summaryWheelbarrow = Boolean(to.closest('[data-summary-anchor="wheelbarrow"]'));
         const flight = flyComponent(token, from, to, root!, {
           duration: s.duration,
           delay: 0,
           aspectRatio: s.card?.length ? 0.5 : s.badge !== undefined ? 0.75 : 1,
           minSize: s.badge !== undefined ? 36 : 24,
-          fade: s.fade
+          fade: summaryWheelbarrow ? false : s.fade,
+          direct: summaryWheelbarrow
         });
         animations.push(flight);
         await flight.finished;
