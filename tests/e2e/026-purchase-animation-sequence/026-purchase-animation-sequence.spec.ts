@@ -85,6 +85,9 @@ test('arrival payments wait for zoom and a purchased gemstone stays off the offe
     .locator('.zoom-tile')
     .getByRole('button', { name: 'End turn', exact: true })
     .click();
+  await expect(page.getByRole('alert')).toContainText("You haven't interacted with the Smuggler");
+  await page.getByRole('button', { name: 'End turn anyway', exact: true }).click();
+  await expect(page.getByRole('alert')).toContainText('gain another ruby with a Bonus card');
   await page.getByRole('button', { name: 'End turn anyway', exact: true }).click();
   const next = page.locator('[data-place-id="16"] [data-price-step="0"]');
   await expect(next).toHaveAttribute('data-price', '19');
