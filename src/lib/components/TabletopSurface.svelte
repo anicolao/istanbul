@@ -701,7 +701,8 @@
         ? 'Your action.'
         : 'Waiting for this merchant.'}
     </p>
-    <div role="group" aria-label="Player mat dock" class:mat-dock={personal} class:revealed={!handOpen && (Boolean(dockSelected) || Boolean(motion))} class:dock-aligned={dockFits}>
+    <div role="group" aria-label="Player mat dock" class:mat-dock={personal} class:revealed={!handOpen && (Boolean(dockSelected) || Boolean(motion?.steps.some(step =>
+      [step.from, step.to].some(anchor => anchor.uid && anchor.selector?.includes('data-power-slot')))))} class:dock-aligned={dockFits}>
     {#if personal}<div class="dock-pull">
       <div class="dock-summaries" aria-label="Player summaries">
         {#each dockPlayers as p}

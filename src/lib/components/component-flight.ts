@@ -9,6 +9,7 @@ export function flyComponent(
     delay?: number;
     fade?: boolean;
     emerge?: boolean;
+    direct?: boolean;
     aspectRatio?: number;
     minSize?: number;
   }
@@ -53,11 +54,11 @@ export function flyComponent(
             }
           ]
         : []),
-      {
+      ...(options.direct ? [] : [{
         transform: `translate(${x + (tx - x) * 0.45}px,${y + (ty - y) * 0.45 - 45}px) scale(1.25) rotate(${startAngle + turn * 0.45}deg)`,
         opacity: 1,
         offset: 0.45
-      },
+      }]),
       {
         transform: `translate(${tx}px,${ty}px) scale(${scale}) rotate(${angle}deg)`,
         opacity: options.fade ? 0 : 1
