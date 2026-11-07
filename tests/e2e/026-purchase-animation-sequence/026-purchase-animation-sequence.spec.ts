@@ -94,31 +94,39 @@ test('arrival payments wait for zoom and a purchased gemstone stays off the offe
   await expect(next.locator('[data-gemstone-ruby]')).toBeVisible();
 });
 
-test('dice show several different full faces before settling', async ({
-  page
-}) => {
-  await page.goto(
-    '/dev/animations/?scenario=action-9&players=4&surface=shared-table&seat=6'
-  );
+test('ruby dice tumble in 3D and settle into the recorded result', async ({ page }, info) => {
+  const errors: string[] = [];
+  page.on('pageerror', error => errors.push(error.message));
+  await page.goto('/dev/animations/?scenario=action-9&players=4&surface=shared-table&seat=6');
+  await expect(page.locator('.zoom-tile')).toBeVisible();
+  await page.waitForFunction(() => document.querySelector('.zoom-tile')?.getAnimations().every(a => a.playState !== 'running'));
+  await page.getByLabel('Playback speed').selectOption('0.1');
   await page.getByRole('button', { name: 'Trigger', exact: true }).click();
-  const faces = await page.evaluate(async () => {
-    const seen = new Set<string>();
-    const until = performance.now() + 1200;
-    while (performance.now() < until) {
-      for (const die of document.querySelectorAll('.die-strip'))
-        seen.add(String(new DOMMatrix(getComputedStyle(die).transform).m42));
-      await new Promise(requestAnimationFrame);
-    }
-    return [...seen];
-  });
-  expect(faces.length).toBeGreaterThanOrEqual(3);
-  for (const face of faces) {
-    expect(Math.abs(Number(face) % 60)).toBe(0);
+  const canvas = page.locator('.dice-motion canvas');
+  await expect(canvas).toBeVisible();
+  await page.waitForFunction(() => Boolean(document.querySelector('[data-dice-clock]')?.getAnimations().length));
+  await page.locator('.dice-motion').evaluate(el => el.getAnimations({ subtree: true }).forEach(a => a.pause()));
+  const samples: Buffer[] = [];
+  for (const progress of [.15, .55, 1]) {
+    await page.locator('[data-dice-clock]').evaluate((el, progress) => {
+      const animation = el.getAnimations()[0];
+      animation.currentTime = Number(animation.effect!.getTiming().duration) * progress;
+    }, progress);
+    await expect.poll(async () => Number(await canvas.getAttribute('data-progress'))).toBeCloseTo(progress, 2);
+    samples.push(await canvas.screenshot({ path: info.outputPath(`ruby-dice-${progress}.png`) }));
   }
-  await expect(page.locator('[data-motion-active]')).toHaveAttribute(
-    'data-motion-active',
-    'false'
-  );
+  expect(samples[0].equals(samples[1])).toBe(false);
+  expect(samples[1].equals(samples[2])).toBe(false);
+  expect(samples.every(sample => sample.length > 1500)).toBe(true);
+  const result = await canvas.getAttribute('data-dice-values');
+  await page.getByRole('button', { name: /^Animation lab/ }).click();
+  await page.getByLabel('Playback speed').selectOption('1');
+  await page.locator('.dice-motion').evaluate(el => el.getAnimations({ subtree: true }).forEach(a => {
+    a.finish();
+  }));
+  await expect(page.locator('[data-motion-active]')).toHaveAttribute('data-motion-active', 'false');
+  await expect(page.locator('.zoom-tile canvas')).toHaveAttribute('data-dice-values', result!);
+  expect(errors).toEqual([]);
 });
 
 for (const [place, label, selector] of [

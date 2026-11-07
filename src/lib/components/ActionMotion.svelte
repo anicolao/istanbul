@@ -3,6 +3,7 @@
   import { base } from '$app/paths';
   import { bonusCards } from '$lib/game/manifests';
   import BonusCard from './BonusCard.svelte';
+  import Dice from './Dice.svelte';
   import { flyComponent } from './component-flight';
   import type { ActionMotion, Anchor, MotionStep } from './action-motion';
   let {
@@ -20,39 +21,6 @@
     onBoardComplete: () => void;
     onComplete: () => void;
   } = $props();
-  const pipPositions = [
-    [[50, 50]],
-    [
-      [25, 25],
-      [75, 75]
-    ],
-    [
-      [25, 25],
-      [50, 50],
-      [75, 75]
-    ],
-    [
-      [25, 25],
-      [75, 25],
-      [25, 75],
-      [75, 75]
-    ],
-    [
-      [25, 25],
-      [75, 25],
-      [50, 50],
-      [25, 75],
-      [75, 75]
-    ],
-    [
-      [25, 25],
-      [75, 25],
-      [25, 50],
-      [75, 50],
-      [25, 75],
-      [75, 75]
-    ]
-  ];
   const tokens = new Map<number, HTMLElement>();
   let release: (() => void) | undefined;
   let roomReady = false;
@@ -170,52 +138,22 @@
       } else if (s.effect === 'dice' && token) {
         const box = from.getBoundingClientRect(),
           bounds = root!.getBoundingClientRect();
-        token.style.width = '136px';
-        token.style.height = '60px';
-        token.style.left = `${box.left + box.width / 2 - bounds.left - 68}px`;
-        token.style.top = `${box.top + box.height / 2 - bounds.top - 30}px`;
-        const dice = Array.from(
-          token.querySelectorAll<HTMLElement>('.die-strip')
-        );
-        const spins = dice.map(
-          (die, i) =>
-            play(
-              die,
-              s.adjustDie
-                ? [
-                    {
-                      transform: `translateY(-${((s.oldDice?.[i] ?? 1) - 1) * 60}px)`,
-                      easing: 'steps(1,end)'
-                    },
-                    { transform: `translateY(-${(s.dice![i] - 1) * 60}px)` }
-                  ]
-                : Array.from({ length: 15 }, (_, frame) => ({
-                    transform: `translateY(-${(frame === 14 ? s.dice![i] - 1 : Math.floor(Math.random() * 6)) * 60}px)`,
-                    offset: frame / 14,
-                    easing: 'steps(1,end)'
-                  })),
-              {
-                ...options,
-                easing: 'linear',
-                fill: 'forwards'
-              }
-            ).finished
-        );
+        const width = 240, height = 192;
+        token.style.width = `${width}px`;
+        token.style.height = `${height}px`;
+        token.style.left = `${box.left + box.width / 2 - bounds.left - width / 2}px`;
+        token.style.top = `${box.top + box.height / 2 - bounds.top - height / 2}px`;
+        const room = from.closest<HTMLElement>('.zoom-tile');
+        const facing = room ? parseFloat(getComputedStyle(room).getPropertyValue('--facing')) || 0 : 0;
+        token.style.transform = `rotate(${facing}deg)`;
+        const clock = token.querySelector<HTMLElement>('[data-dice-clock]')!;
         await Promise.all([
-          play(
-            token,
-            [
-              { opacity: 1, transform: 'rotate(-12deg) scale(.8)' },
-              {
-                opacity: 1,
-                transform: 'rotate(10deg) scale(1.15)',
-                offset: 0.45
-              },
-              { opacity: 1, transform: 'rotate(0deg) scale(1)' }
-            ],
-            { ...options, fill: 'forwards' }
-          ).finished,
-          ...spins
+          play(clock, [{ opacity: 0 }, { opacity: 1 }], {
+            ...options, easing: 'linear', fill: 'forwards'
+          }).finished,
+          play(token, [{ opacity: 1 }, { opacity: 1 }], {
+            ...options, fill: 'forwards'
+          }).finished
         ]);
       } else if (token) {
         if (s.hideSource)
@@ -287,14 +225,7 @@
       use:register={step.id}
       aria-hidden="true"
     >
-      {#if step.effect === 'dice'}{#each [0, 1] as i}<span class="die-window"
-            ><span class="die-strip"
-              >{#each pipPositions as pips}<b
-                  >{#each pips as [x, y]}<i style={`left:${x}%;top:${y}%`}
-                    ></i>{/each}</b
-                >{/each}</span
-            ></span
-          >{/each}
+      {#if step.effect === 'dice'}<Dice values={step.dice!} oldValues={step.oldDice} rolling adjusting={step.adjustDie} />
       {:else if step.card}<BonusCard
           card={step.faceDown
             ? undefined
@@ -344,39 +275,5 @@
     right: -5%;
     bottom: 0;
   }
-  .dice-motion {
-    display: flex;
-    gap: 8px;
-    color: #263d32;
-  }
-  .die-window {
-    display: block;
-    flex: none;
-    width: 60px;
-    height: 60px;
-    overflow: hidden;
-    background: #f3e3bc;
-    border: 2px solid #b59154;
-    border-radius: 9px;
-    box-shadow: 0 4px 5px #0006;
-  }
-  .die-strip {
-    display: block;
-  }
-  .die-strip i {
-    position: absolute;
-    width: 10px;
-    height: 10px;
-    border-radius: 50%;
-    background: #263d32;
-    transform: translate(-50%, -50%);
-  }
-  .die-strip b {
-    position: relative;
-    display: block;
-    font: 54px/60px serif;
-    width: 60px;
-    height: 60px;
-    text-align: center;
-  }
+  .dice-motion { filter: drop-shadow(0 4px 4px #0005); }
 </style>
