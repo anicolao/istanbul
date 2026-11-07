@@ -36,7 +36,7 @@ export default defineConfig({
   projects: [
     {
       name: 'webkit-phone',
-      testMatch: ['**/035-bonus-card-rendering/*.spec.ts', '**/026-purchase-animation-sequence/*.spec.ts'],
+      testMatch: ['**/035-bonus-card-rendering/*.spec.ts', '**/037-ruby-dice/*.spec.ts'],
       use: {
         browserName: 'webkit', viewport: { width: 393, height: 852 },
         isMobile: true, hasTouch: true,
@@ -47,7 +47,7 @@ export default defineConfig({
     },
     {
       name: 'webkit-desktop',
-      testMatch: ['**/035-bonus-card-rendering/*.spec.ts', '**/036-occupied-table-edges/*.spec.ts', '**/026-purchase-animation-sequence/*.spec.ts'],
+      testMatch: ['**/035-bonus-card-rendering/*.spec.ts', '**/036-occupied-table-edges/*.spec.ts', '**/037-ruby-dice/*.spec.ts'],
       use: {
         browserName: 'webkit', viewport: { width: 1280, height: 1000 },
         // WebKit previews contain no invitation URL; use the server directly.
