@@ -27,7 +27,7 @@
     piece?: PieceKind | 'neutral-merchant' | 'governor' | 'smuggler' | 'first-player' | 'dice-pair';
     color?: PlayerColorName;
     component?: Good | 'any' | 'lira' | 'ruby' | 'wheelbarrow' | 'die' | 'mail' | 'mosque-fabric' | 'mosque-spice' | 'mosque-fruit' | 'mosque-jewelry' | 'demand-large' | 'demand-small' | 'ruby-supply' | 'goods-supply';
-    renderSize?: 'full' | 'compact';
+    renderSize?: 'full' | 'compact' | 'well';
     label?: string;
     class?: string;
   } = $props();
@@ -79,6 +79,7 @@
       return componentPaths[component];
     }
     if (kind === 'piece' && piece) {
+      if (renderSize === 'well') return `art/game/pieces/wells/${piece === 'merchant' ? `merchant-${color}` : piece}.png`;
       if ((piece === 'merchant' || piece === 'assistant' || piece === 'family') && color) return pieceArt[piece][color];
       if (piece === 'neutral-merchant') return pieceArt.neutralMerchant;
       if (piece === 'governor') return pieceArt.governor;
@@ -98,7 +99,7 @@
   class:piece={kind === 'piece'}
   class:mat={kind === 'mat'}
   class:component={kind === 'component'}
-  style={`--game-art: url('${artPath(base, asset)}')`}
+  style={renderSize === 'well' ? undefined : `--game-art: url('${artPath(base, asset)}')`}
   role={help ? 'img' : undefined}
   aria-label={help}
   tabindex={help && kind === 'piece' ? 0 : undefined}
@@ -109,9 +110,10 @@
   data-piece={kind === 'piece' ? piece : undefined}
   data-color={kind === 'piece' ? color : undefined}
   data-component="GameArt"
-></span>
+>{#if renderSize === 'well'}<img src={artPath(base, asset)} alt="" draggable="false" />{/if}</span>
 
 <style>
+  .game-art > img { display: block; width: 100%; height: 100%; object-fit: contain; }
   .game-art { display: inline-block; background-image: var(--game-art); background-position: center; background-repeat: no-repeat; background-size: cover; }
   .piece, .component { background-size: contain; }
   .location, .mat { width: 100%; height: 100%; }

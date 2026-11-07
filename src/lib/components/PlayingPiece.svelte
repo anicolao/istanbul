@@ -7,6 +7,7 @@
     color,
     label,
     glow = true,
+    well = false,
     ownerUid,
     assistantCount,
     class: className = ''
@@ -15,6 +16,7 @@
     color?: PlayerColorName;
     label?: string;
     glow?: boolean;
+    well?: boolean;
     ownerUid?: string;
     assistantCount?: number;
     class?: string;
@@ -29,7 +31,7 @@
   data-piece-kind={piece}
   data-piece-glow={glow}
 >
-  <GameArt kind="piece" {piece} {color} {label} />
+  <GameArt kind="piece" {piece} {color} {label} renderSize={well ? 'well' : 'full'} />
   {#if assistantCount !== undefined}<b
       class="assistant-count"
       aria-label={`${assistantCount} assistants carried`}>{assistantCount}</b

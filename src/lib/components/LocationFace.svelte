@@ -90,6 +90,7 @@
     aria-label="Merchants and visitors"
   >
     {#each merchants as p}<PlayingPiece
+        well
         piece="merchant"
         ownerUid={p.uid}
         assistantCount={p.assistantsCarried}
@@ -97,10 +98,11 @@
         label={`${p.name}'s merchant`}
       />{/each}
     {#each game.neutralMerchants.filter((p) => p.place === placeId) as p (p.id)}<PlayingPiece
+        well
         piece="neutral-merchant"
       />{/each}
-    {#if game.governorPlace === placeId}<PlayingPiece piece="governor" />{/if}
-    {#if game.smugglerPlace === placeId}<PlayingPiece piece="smuggler" />{/if}
+    {#if game.governorPlace === placeId}<PlayingPiece well piece="governor" />{/if}
+    {#if game.smugglerPlace === placeId}<PlayingPiece well piece="smuggler" />{/if}
   </span>
   <span
     class="piece-well workers"
@@ -127,7 +129,7 @@
       ><GameArt kind="component" component={reward} /></span
     >{/if}
   <span class="location-number" aria-label={`Location ${placeId}`}
-    >{placeId}</span
+    ><span>{placeId}</span></span
   >
   {#if placeId === 5}<span class="mail-position"
       ><MailTrack lower={game.postOfficeLower} /></span
@@ -239,7 +241,7 @@
     bottom: 25%;
     --pile-width: 42%;
     --picked-width: 30%;
-    --pile-count-size: 1.2cqw;
+    --pile-count-size: 2.6cqw;
   }
   .expanded .caravan-position {
     pointer-events: auto;
@@ -337,14 +339,44 @@
     min-height: 0;
     filter: drop-shadow(0 0.2cqw 0.2cqw #000);
   }
-  .merchants :global([data-piece-kind='merchant']),
+  /* Size the visible pawn, excluding transparent margins in its source art. */
+  .merchants :global(.playing-piece) {
+    width: 92%;
+    height: auto;
+    aspect-ratio: var(--pawn-ratio);
+    filter: none;
+  }
+  .merchants :global(.playing-piece:has([data-color='ruby'])) {
+    --pawn-ratio: 713 / 1123;
+  }
+  .merchants :global(.playing-piece:has([data-color='saffron'])) {
+    --pawn-ratio: 713 / 1184;
+  }
+  .merchants :global(.playing-piece:has([data-color='teal'])) {
+    --pawn-ratio: 737 / 1230;
+  }
+  .merchants :global(.playing-piece:has([data-color='indigo'])) {
+    --pawn-ratio: 749 / 1206;
+  }
+  .merchants :global(.playing-piece:has([data-color='plum'])) {
+    --pawn-ratio: 795 / 1271;
+  }
   .merchants :global([data-piece-kind='neutral-merchant']) {
-    width: 9cqw;
-    height: 9cqw;
+    --pawn-ratio: 664 / 1093;
+  }
+  .merchants :global([data-piece-kind='governor']) {
+    --pawn-ratio: 763 / 1265;
+  }
+  .merchants :global([data-piece-kind='smuggler']) {
+    --pawn-ratio: 743 / 1206;
   }
   .workers :global(.playing-piece) {
     width: 5.8cqw;
     height: 5.8cqw;
+  }
+  .workers :global([data-piece-kind='assistant']) {
+    width: 7.5cqw;
+    height: 7.5cqw;
   }
   .reward,
   .location-number {
@@ -364,12 +396,22 @@
     height: 95%;
     filter: drop-shadow(0 0.2cqw 0.3cqw #000);
   }
+  .reward[data-location-reward='ruby'] :global(.game-art) {
+    /* Optical alignment of the ruby artwork within the frame's round well. */
+    transform: translate(-0.15cqw, -0.15cqw);
+  }
   .location-number {
     right: 4.8%;
+    bottom: 9.3%;
     font:
       700 6cqw/1 'Cormorant Garamond',
       serif;
     text-shadow: 0 1px 3px #000;
+  }
+  .location-number > span {
+    /* Center the old-style “11” in the well. Keep this same baseline for all
+       locations, including numerals with ascenders and descenders. */
+    transform: translateY(-0.122em);
   }
   .state-area {
     position: absolute;
