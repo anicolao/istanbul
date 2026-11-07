@@ -4,6 +4,7 @@
   import { gemstoneDisplay } from './gemstone-offer';
   import { untrack } from 'svelte';
   import ActionMotion from './ActionMotion.svelte';
+  import Dice from './Dice.svelte';
   import {
     planActionMotion,
     projectMotion,
@@ -982,7 +983,7 @@
                           adjustment:
                             i === 0 ? 'first-to-four' : 'second-to-four'
                         })}
-                      ><b>{['', '⚀', '⚁', '⚂', '⚃', '⚄', '⚅'][die]}</b><small
+                      ><Dice values={[die]} /><small
                         >→ ⚃</small
                       ></button
                     >{/each}
@@ -1014,9 +1015,7 @@
                 {#if !game.encounterLog.length && game.lastRoll?.playerUid === player.uid && game.lastRoll.place === activePlace}<div
                     class="dice"
                   >
-                    {#each game.lastRoll.dice as die}<b
-                        >{['', '⚀', '⚁', '⚂', '⚃', '⚄', '⚅'][die]}</b
-                      >{/each}
+                    <Dice values={game.lastRoll.dice} />
                   </div>{/if}
               {:else if game.phase === 'final-bonus'}<div class="small-card">
                   <BonusCard reverse="card-back" />
@@ -1600,10 +1599,6 @@
     gap: 1cqw;
     align-items: center;
     justify-content: center;
-  }
-  .dice b {
-    font-size: 4cqw;
-    line-height: 1;
   }
   .dice small {
     display: block;
