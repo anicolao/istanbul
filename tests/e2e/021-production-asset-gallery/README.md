@@ -13,7 +13,7 @@ The reviewer opens the dedicated gallery without creating a game and walks every
 - [x] The gallery declares 84 rendered review states backed by the complete 72-asset manifest
 - [x] All six logical-component category totals are immediately visible
 - [x] The first six numbered locations are real LocationTile components with public state
-- [x] Board merchants use the shared glowing PlayingPiece renderer
+- [x] Board merchants use cropped images without a rasterizing shadow filter
 
 ## 2. The reviewer enlarges the Wainwright board square
 

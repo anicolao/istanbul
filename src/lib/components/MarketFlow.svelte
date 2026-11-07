@@ -113,7 +113,7 @@
   .sell {
     position: absolute;
     z-index: 3;
-    bottom: 3%;
+    top: 102%;
     left: 15%;
     width: 70%;
     padding: 0.3em 0.2em;

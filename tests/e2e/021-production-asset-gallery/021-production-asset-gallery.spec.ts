@@ -11,7 +11,6 @@ test('the production gallery renders the same logical components used during pla
     journal,
     'The art reviewer'
   );
-  let boardMerchantGlow = '';
   reviewer.setMetadata(
     'Reviewing every Istanbul production component',
     'The reviewer opens the dedicated gallery without creating a game and walks every page of live locations, player trays, playing pieces, Bonus cards, Market demands, and physical components. Locations are the same rectangular, titled, rounded LocationTile instances used on the board; their status apparatus and occupants come from a deterministic game projection. Trays use PlayerMat, rules cards use BonusCard, and demands use MarketDemand. Stable review IDs, renderer names, representative props, loaded production images, responsive pagination, and the no-scroll/no-clipping contract are checked after every input.'
@@ -77,16 +76,14 @@ test('the production gallery renders the same logical components used during pla
         }
       },
       {
-        spec: 'Board merchants use the shared glowing PlayingPiece renderer',
+        spec: 'Board merchants use cropped images without a rasterizing shadow filter',
         check: async () => {
           const merchant = page.locator(
             '[data-asset-id="place-01"] [data-component="PlayingPiece"][data-piece-kind="merchant"]'
           );
           await expect(merchant).toHaveAttribute('data-piece-glow', 'true');
-          boardMerchantGlow = await merchant.evaluate(
-            (piece) => getComputedStyle(piece).filter
-          );
-          expect(boardMerchantGlow).toContain('drop-shadow');
+          await expect(merchant).toHaveCSS('filter', 'none');
+          await expect(merchant.locator('img')).toHaveAttribute('src', /pieces\/wells\/merchant-/);
         }
       }
     ]
@@ -125,7 +122,7 @@ test('the production gallery renders the same logical components used during pla
           ).not.toBe('0px');
           await expect(tile.locator('strong')).toHaveText('Wainwright');
           expect(
-            (await loadedBackgrounds(tile.locator('[data-art-kind]'))).every(
+            (await loadedArtwork(tile.locator('[data-art-kind]'))).every(
               Boolean
             )
           ).toBe(true);
@@ -408,7 +405,7 @@ test('the production gallery renders the same logical components used during pla
             .getByRole('dialog', { name: 'Goods supply' })
             .locator('[data-component="GameArt"]');
           await expect(art).toHaveAttribute('data-art-kind', 'component');
-          expect(await loadedBackgrounds(art)).toEqual([true]);
+          expect(await loadedArtwork(art)).toEqual([true]);
         }
       }
     ]
@@ -505,14 +502,23 @@ async function expectComponentPage(grid: Locator, expectedIds: string[]) {
     ).toBeVisible();
   }
   expect(
-    (await loadedBackgrounds(cards.locator('[data-art-kind]'))).every(Boolean)
+    (await loadedArtwork(cards.locator('[data-art-kind]'))).every(Boolean)
   ).toBe(true);
 }
 
-async function loadedBackgrounds(locator: Locator) {
+async function loadedArtwork(locator: Locator) {
   return locator.evaluateAll(async (elements) =>
     Promise.all(
       elements.map(async (element) => {
+        const renderedImage = element.querySelector('img');
+        if (renderedImage) {
+          try {
+            await renderedImage.decode();
+            return renderedImage.naturalWidth > 0;
+          } catch {
+            return false;
+          }
+        }
         const match = getComputedStyle(element).backgroundImage.match(
           /url\(["']?(.*?)["']?\)/
         );
@@ -628,23 +634,11 @@ async function expectDemandGeometry(demands: Locator) {
     });
     const expectedCenters =
       geometry.market === 'large'
-        ? [
-            [0.501, 0.2508],
-            [0.2719, 0.3819],
-            [0.726, 0.3845],
-            [0.3372, 0.6411],
-            [0.6442, 0.6462]
-          ]
-        : [
-            [0.498, 0.2393],
-            [0.29, 0.395],
-            [0.705, 0.394],
-            [0.3628, 0.6387],
-            [0.6341, 0.6382]
-          ];
+        ? [[0.50, 0.225], [0.24, 0.40], [0.75, 0.40], [0.325, 0.70], [0.65, 0.70]]
+        : [[0.495, 0.23], [0.23, 0.43], [0.755, 0.43], [0.33, 0.735], [0.655, 0.735]];
     expect(geometry.slots).toHaveLength(5);
     for (const [index, slot] of geometry.slots.entries()) {
-      expect(slot.diameter).toBeCloseTo(0.202, 2);
+      expect(slot.diameter).toBeCloseTo(0.30, 2);
       expect(slot.center[0]).toBeCloseTo(expectedCenters[index][0], 2);
       expect(slot.center[1]).toBeCloseTo(expectedCenters[index][1], 2);
     }
