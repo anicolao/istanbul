@@ -47,22 +47,21 @@
           ? `${good} power: hold ${tile.required} ${good}, pay 1. ${tile.ability}${active && owned ? ' Already owned.' : ''}`
           : `${good} power sold out`}
       >
-        <span class="requirement"
-          ><span>≥{tile?.required ?? '—'}</span><GameArt
-            kind="component"
-            component={good}
-          /></span
-        >
+        <span class="requirement" aria-label={tile ? `Hold ${tile.required} ${good}` : 'Sold out'}>
+          {#if tile}
+            {#each Array(tile.required) as _}<GameArt kind="component" component={good} />{/each}
+          {:else}<span>—</span>{/if}
+        </span>
         <GameArt
           kind="component"
           component={`mosque-${good}`}
           class="power-art"
         />
-        <span class="payment" data-mosque-payment={good}
-          ><span>−1</span><GameArt
+        <span class="payment" data-mosque-payment={good} aria-label={`Discard one ${good}`}
+          ><GameArt
             kind="component"
             component={good}
-          />{#if active && owned}<b>✓</b>{/if}</span
+          /><svg class="discard" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 2v13m-5-5 5 5 5-5M3 17v5h18v-5" /></svg>{#if active && owned}<b>✓</b>{/if}</span
         >
       </svelte:element>
     {/each}
@@ -115,17 +114,20 @@
     font-size: 10cqw;
     line-height: 1;
     font-weight: 700;
-    gap: 0.15em;
+    gap: 0;
   }
   .requirement :global(.game-art),
   .payment :global(.game-art) {
-    width: 9cqw;
-    height: 9cqw;
+    width: 7cqw;
+    height: 7cqw;
+    flex: 0 0 auto;
     filter: none;
   }
   .payment {
     font-size: 8cqw;
+    gap: 1cqw;
   }
+  .discard { width: 6cqw; height: 7cqw; }
   .payment :global(.game-art) {
     width: 7cqw;
     height: 7cqw;

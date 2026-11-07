@@ -68,13 +68,13 @@ export const componentArt = {
   die: 'art/game/components/transparent/die.png',
   mail: 'art/game/components/transparent/mail.png',
   mosque: {
-    fabric: 'art/game/components/transparent/mosque-fabric.png',
-    spice: 'art/game/components/transparent/mosque-spice.png',
-    fruit: 'art/game/components/transparent/mosque-fruit.png',
-    jewelry: 'art/game/components/transparent/mosque-jewelry.png'
+    fabric: 'art/game/components/transparent/mosque-fabric-v2.png',
+    spice: 'art/game/components/transparent/mosque-spice-v2.png',
+    fruit: 'art/game/components/transparent/mosque-fruit-v2.png',
+    jewelry: 'art/game/components/transparent/mosque-jewelry-v2.png'
   } satisfies Record<Good, string>,
-  demandLarge: 'art/game/components/transparent/demand-large.png',
-  demandSmall: 'art/game/components/transparent/demand-small.png',
+  demandLarge: 'art/game/components/transparent/demand-large-v2.png',
+  demandSmall: 'art/game/components/transparent/demand-small-v2.png',
   rubySupply: 'art/game/components/transparent/ruby-supply.png',
   goodsSupply: 'art/game/components/transparent/goods-supply.png'
 } as const;

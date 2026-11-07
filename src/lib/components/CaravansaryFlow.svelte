@@ -143,8 +143,15 @@
     position: absolute;
     bottom: -2%;
     right: -3%;
-    padding: 2% 5%;
-    font-size: var(--pile-count-size, 0.85rem);
+    display: grid;
+    place-items: center;
+    min-width: 1.65em;
+    height: 1.65em;
+    box-sizing: border-box;
+    padding: 0 0.2em;
+    font-size: var(--pile-count-size, 1.2rem);
+    font-weight: 700;
+    line-height: 1;
     border-radius: 50%;
     background: #173f43;
     border: 1px solid #d49d42;
