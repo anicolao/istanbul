@@ -6,6 +6,7 @@
     piece,
     color,
     label,
+    help,
     glow = true,
     well = false,
     ownerUid,
@@ -15,6 +16,7 @@
     piece: PieceKind | 'neutral-merchant' | 'governor' | 'smuggler';
     color?: PlayerColorName;
     label?: string;
+    help?: string;
     glow?: boolean;
     well?: boolean;
     ownerUid?: string;
@@ -29,6 +31,7 @@
   data-component="PlayingPiece"
   data-owner-uid={ownerUid}
   data-piece-kind={piece}
+  data-help-context={help}
   data-piece-glow={glow}
 >
   <GameArt kind="piece" {piece} {color} {label} renderSize={well ? 'well' : 'full'} />

@@ -1,4 +1,5 @@
 <script lang="ts">
+  import { pawnHelp } from './component-help-text';
   import { base } from '$app/paths';
   import { locationStateSummary } from '$lib/game/location-state';
   import { places } from '$lib/game/manifests';
@@ -96,6 +97,7 @@
         assistantCount={p.assistantsCarried}
         color={p.color as PlayerColorName}
         label={`${p.name}'s merchant`}
+        help={pawnHelp(p, 'merchant', placeId)}
       />{/each}
     {#each game.neutralMerchants.filter((p) => p.place === placeId) as p (p.id)}<PlayingPiece
         well
@@ -114,6 +116,7 @@
         piece={worker.piece}
         color={worker.player.color as PlayerColorName}
         label={`${worker.player.name}'s ${worker.piece}`}
+        help={pawnHelp(worker.player, worker.piece as 'assistant' | 'family', placeId)}
       />{/each}
   </span>
   <span class="motion-supply" data-component-source aria-hidden="true"></span>
