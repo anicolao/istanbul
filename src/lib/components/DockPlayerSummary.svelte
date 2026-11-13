@@ -1,4 +1,5 @@
 <script lang="ts">
+  import { goodsHelp } from './component-help-text';
   import { base } from '$app/paths';
   import { compactComponentArt, componentArt, playerHighlightColors } from '$lib/game/art';
   import type { SetupPlayer } from '$lib/game/setup';
@@ -10,7 +11,7 @@
   aria-label={`Show ${player.name}'s player mat${active ? ". Current turn." : ""}`} aria-current={active ? "true" : undefined} onclick={onOpen}>
   <span class="name" data-summary-anchor="name">{#if active}<span class="turn-marker" aria-hidden="true">▶</span>{:else}<i aria-hidden="true"></i>{/if}<span>{player.name}</span></span>
   <span class="totals">
-    {#each goods as good}<span data-summary-anchor={good} data-help={`${player.name}: ${player.goods[good]} ${good}, capacity ${player.capacity}`} aria-label={`${player.goods[good]} ${good}`}>
+    {#each goods as good}<span data-summary-anchor={good} data-help-context={goodsHelp(player, good)} aria-label={`${player.goods[good]} ${good}`}>
       <img src={`${base}/${compactComponentArt[good]}`} alt="" /><b>{player.goods[good]}</b>
     </span>{/each}
     <span data-summary-anchor="lira" class="money" data-help={`${player.name}: ${player.lira} Lira`} aria-label={`${player.lira} Lira`}><img src={`${base}/${componentArt.lira}`} alt="" /><b>{player.lira}</b></span>

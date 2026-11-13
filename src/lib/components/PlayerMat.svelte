@@ -1,4 +1,5 @@
 <script lang="ts">
+  import { goodsHelp } from './component-help-text';
   import TabletopArrow from './TabletopArrow.svelte';
   import { base } from '$app/paths';
   import type { RoomProjection } from '$lib/game/protocol';
@@ -59,6 +60,7 @@
     {#each goods as good}<div
         class="good"
         data-good={good}
+        data-help-context={goodsHelp(player, good)}
         aria-label={`${player.goods[good]} ${good}, capacity ${player.capacity}`}
       >
         <span class="good-count"

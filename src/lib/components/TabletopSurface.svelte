@@ -100,7 +100,7 @@
     requestAnimationFrame(() => {
       const seats = surface?.querySelector<HTMLElement>('.mat-dock .seats');
       const mat = Array.from(seats?.querySelectorAll<HTMLElement>('.mat') ?? []).find(el => el.dataset.playerUid === uid);
-      if (seats && mat) seats.scrollTo({ left: mat.offsetLeft - (seats.clientWidth - mat.clientWidth) / 2, behavior: 'smooth' });
+      if (seats && mat) seats.scrollTo({ left: mat.offsetLeft - (seats.clientWidth - mat.clientWidth) / 2, behavior: matchMedia('(prefers-reduced-motion: reduce)').matches ? 'instant' : 'smooth' });
     });
   }
   let dockSelected = $state<string | null>(null);
@@ -180,7 +180,23 @@
     undoMotion = true;
     onUndo();
   }
+  let focusRoomOnOpen = false;
+  let returnToPlace: number | null = null;
+  function roomOpened(event: Event) {
+    zoomReady = true;
+    if (focusRoomOnOpen) {
+      (event.currentTarget as HTMLElement).querySelector<HTMLElement>('[aria-label="Back to table"]')?.focus({ preventScroll: true });
+      focusRoomOnOpen = false;
+    }
+  }
+  function roomClosed() {
+    if (returnToPlace !== null) {
+      surface?.querySelector<HTMLElement>(`.board [data-place-id="${returnToPlace}"]`)?.focus({ preventScroll: true });
+      returnToPlace = null;
+    }
+  }
   function closeRoom() {
+    if (!collapsed && zoom !== null) returnToPlace = zoom;
     endWarning = null;
     if (motion) dismissAfterMotion = true;
     else collapsed = true;
@@ -426,6 +442,7 @@
   }
   function tapRoom(id: number, event: MouseEvent) {
     if (busy) return;
+    focusRoomOnOpen = event.detail === 0;
     if (id === 7 && activePlace === 7 && canEnd && !fountainEncounter) {
       requestEndTurn();
       return;
@@ -804,7 +821,8 @@
           style={`--facing:${zoomAngle}deg`}
           use:roomSize={{ id: zoom, angle: zoomAngle }}
           transition:tileZoom|global={{ id: zoom, angle: zoomAngle }}
-          onintroend={() => (zoomReady = true)}
+          onintroend={roomOpened}
+          onoutroend={roomClosed}
         >
           <LocationFace
             {gemstone}
