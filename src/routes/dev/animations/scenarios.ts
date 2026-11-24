@@ -62,6 +62,7 @@ export const scenarios = [
     ['governor-pay', 'Governor · pay and relocate'],
     ['smuggler', 'Smuggler · trade and relocate'],
     ['family', 'Catch a family member'],
+    ['police-encounters', 'Police Station · visitors after family action'],
     ['fountain-encounters', 'Fountain · visitors after recall'],
     ['tea-house-encounters', 'Tea House · visitors after the wager'],
     ['black-market-capacity', 'Black Market · full goods tracks'],
@@ -227,6 +228,12 @@ export function fixture(
     game.smugglerPlace = 9;
     game.governorPlace = 9;
     trigger = action({ kind: 'tea-house-wager', wager: 7 });
+  }
+  if (id === 'police-encounters') {
+    player.merchantPlace = 12;
+    game.governorPlace = 12;
+    game.smugglerPlace = 12;
+    trigger = action({ kind: 'police-send', destination: 3 });
   }
   if (id === 'fountain-encounters') {
     player.merchantPlace = 7;
