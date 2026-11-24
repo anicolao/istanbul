@@ -609,7 +609,7 @@ export function applyEvent(state: ReplayProjection, event: CanonicalEvent): bool
     if (event.payload.botUid !== player.uid || event.payload.botState !== botStateKey(state.game)) return false;
     const policy = state.room.seats.find(s => s.uid === player.uid)?.botPolicy;
     const decision = policyAction(state.game, policy);
-    const { botUid, botState, botVersion, drawContextVersion, automaticFinalBonus, ...payload } = event.payload;
+    const { botUid, botState, botVersion, drawContextVersion, automaticFinalBonus, policeEncounters, ...payload } = event.payload;
     if (botVersion !== policyVersion(policy) || !decision || !matchesBotAction(decision, event.type, payload)) {
       reject(state, event, 'invalid-bot-decision'); return false;
     }
@@ -744,6 +744,8 @@ export function applyEvent(state: ReplayProjection, event: CanonicalEvent): bool
     if (event.payload.directAction === true && controlsPublicTable(state, event, player.uid)) {
       if (game.pending?.kind === 'warehouse-extra') {
         if (!game.pending.familyAction && game.players.some(p => p.uid !== player.uid && p.familyPlace === player.merchantPlace && p.familyPlace !== 12)) { reject(state, event, 'family-reward-required'); return false; }
+        // Newly exposed station encounters need their own decision, not this End turn tap.
+        if (game.pending.familyAction && event.payload.policeEncounters === true && beginEncounters(game)) return true;
         if (!game.pending.familyAction) beginEncounters(game);
         if (game.pending?.kind === 'warehouse-extra') { game.pending = null; game.phase = 'turn-end'; }
       }
@@ -762,7 +764,7 @@ export function applyEvent(state: ReplayProjection, event: CanonicalEvent): bool
       reject(state, event, 'turn-cannot-end');
       return false;
     }
-    if (game.phase === 'action' && beginEncounters(game)) return true;
+    if ((game.phase === 'action' || (game.phase === 'family-action' && event.payload.policeEncounters === true)) && beginEncounters(game)) return true;
     advanceTurn(game, event.payload.automaticFinalBonus === true);
     return true;
   }
@@ -778,7 +780,7 @@ function finishArrival(state: ReplayProjection, event: CanonicalEvent) {
     applyMerchantPayment(state, { ...event, payload: { recipientUids: game.pending.recipientUids, neutralMerchantIds: [] } });
   }
   const choice = arrivalAction(game);
-  if (choice) applyPlaceAction(state, { ...event, payload: { choice } });
+  if (choice) applyPlaceAction(state, { ...event, payload: { ...event.payload, choice } });
 }
 
 function applyPlaceAction(state: ReplayProjection, event: CanonicalEvent): boolean {
@@ -900,7 +902,8 @@ function applyPlaceAction(state: ReplayProjection, event: CanonicalEvent): boole
     return true;
   }
   game.pending = null;
-  if (familyAction || !beginEncounters(game)) game.phase = 'turn-end';
+  // Legacy events must retain their original outcome when existing rooms replay.
+  if ((familyAction && event.payload.policeEncounters !== true) || !beginEncounters(game)) game.phase = 'turn-end';
   return true;
 }
 
@@ -1022,7 +1025,7 @@ function applyMosqueAbility(state: ReplayProjection, event: CanonicalEvent): boo
       game.lastAction!.summary += ` Paid 2 Lira for 1 extra ${choice.good}.`;
       game.abilitiesUsedThisTurn.push('spice');
     } else game.lastAction!.summary += ' Declined the green Mosque ability.';
-    finishMosqueAbility(game, pending.familyAction);
+    finishMosqueAbility(game, pending.familyAction, event);
     return true;
   }
 
@@ -1046,13 +1049,14 @@ function applyMosqueAbility(state: ReplayProjection, event: CanonicalEvent): boo
   game.lastRoll = { playerUid: player.uid, place: pending.actionPlace, dice, ...(pending.wager ? { declared: pending.wager } : {}), reward };
   game.lastAction = { playerUid: player.uid, place: pending.actionPlace, kind: pending.actionPlace === 8 ? 'black-market-roll' : 'tea-house-wager', summary: `${summary}${choice.adjustment === 'none' ? ' Kept the original roll.' : ` Used the red Mosque ability: ${choice.adjustment.replaceAll('-', ' ')}.`}` };
   game.abilitiesUsedThisTurn.push('fabric');
-  finishMosqueAbility(game, pending.familyAction);
+  finishMosqueAbility(game, pending.familyAction, event);
   return true;
 }
 
-function finishMosqueAbility(game: NonNullable<ReplayProjection['game']>, familyAction: boolean) {
+function finishMosqueAbility(game: NonNullable<ReplayProjection['game']>, familyAction: boolean, event: CanonicalEvent) {
   game.pending = null;
-  if (familyAction || !beginEncounters(game)) game.phase = 'turn-end';
+  // Legacy events must retain their original outcome when existing rooms replay.
+  if ((familyAction && event.payload.policeEncounters !== true) || !beginEncounters(game)) game.phase = 'turn-end';
 }
 
 function applyEncounter(state: ReplayProjection, event: CanonicalEvent): boolean {

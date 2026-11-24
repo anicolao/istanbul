@@ -39,7 +39,7 @@
   let stage: HTMLDivElement;
   function send(type: string, payload: Record<string, unknown> = {}, actorUid?: string) {
     const event = eventFor(projection,
-      { type, payload: { ...payload, directAction: true, separateRelocation: true, drawContextVersion: 1, automaticFinalBonus: true } }, ++sequence);
+      { type, payload: { ...payload, directAction: true, separateRelocation: true, drawContextVersion: 1, automaticFinalBonus: true, policeEncounters: true } }, ++sequence);
     if (actorUid) event.actorUid = actorUid;
     event.id = `${event.actorUid}-${event.clientSeq}`;
     const next = replayEvents([...history, event], $state.snapshot(prepared.state));
