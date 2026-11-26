@@ -38,3 +38,28 @@ test('card fronts and backs paint completely at room, discard, and hand sizes', 
   // Resizing scales a fixed print layout instead of reflowing the rules text.
   expect(await print.evaluate(el => [el.clientWidth, el.clientHeight])).toEqual(printLayout);
 });
+
+test('every Bonus card keeps its enlarged rules inside the print area when scaled', async ({ page }) => {
+  await page.goto('/dev/cards/');
+  const copies = page.locator('[data-card-effect] .card-copy');
+  await expect(copies).toHaveCount(10);
+  await page.evaluate(() => document.fonts.ready);
+  const measurements = () => copies.evaluateAll(nodes => nodes.map(node => {
+    const rules = node.querySelector('p')!;
+    return {
+      size: parseFloat(getComputedStyle(node).fontSize),
+      overflow: node.scrollHeight > node.clientHeight || node.scrollWidth > node.clientWidth,
+      text: rules.textContent,
+      linesHeight: rules.clientHeight
+    };
+  }));
+  await expect.poll(async () => (await measurements()).every(copy => !copy.overflow && copy.size >= 18)).toBe(true);
+  const fullSize = await measurements();
+  await page.locator('[data-card-effect]').evaluateAll(cards => {
+    for (const card of cards) (card as HTMLElement).style.width = '48px';
+  });
+  // The entire printed card shrinks; neither font selection nor line breaks change.
+  await expect.poll(measurements).toEqual(fullSize);
+  await page.setViewportSize({ width: 393, height: 852 });
+  await expect.poll(measurements).toEqual(fullSize);
+});

@@ -1,4 +1,5 @@
 import { expect, test } from '@playwright/test';
+import { locationArt } from '../../../src/lib/game/art';
 import { readState, expectState } from '../helpers/game-journey';
 import {
   openTable,
@@ -27,7 +28,7 @@ test('Gameplay uses the production components', async ({
           2
         );
         await expect(page.locator('[data-place-id]')).toHaveCount(16);
-        await expect(roomTile(page).locator('.artwork')).toHaveAttribute('src', /spice/);
+        await expect(roomTile(page).locator('.artwork')).toHaveAttribute('src', `/${locationArt[3]}`);
         await expect(roomTile(page).locator('.frame')).toHaveAttribute('src', /location-frame/);
       }
     );

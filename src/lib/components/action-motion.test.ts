@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { componentArt } from '$lib/game/art';
+import { componentArt, pieceArt } from '$lib/game/art';
 import {
   fixture,
   scenarios,
@@ -199,7 +199,7 @@ describe('encounter payments precede relocation', () => {
       expect(newPlace).not.toBe(oldPlace);
       const payments = plan.steps.filter((s) => s.from.selector === '[data-lira]');
       expect(payments).toHaveLength(2);
-      const relocation = plan.steps.find((s) => s.art?.endsWith(`/${npc}-transparent.png`))!;
+      const relocation = plan.steps.find((s) => s.art?.endsWith(pieceArt[npc]))!;
       for (const payment of payments) {
         expect(payment.to).toEqual({ place: oldPlace, selector: `[data-piece-kind="${npc}"]`, board: true });
         expect(payment.stage).toBe('board');
@@ -227,7 +227,7 @@ for (const [id, npc] of [['governor-pay', 'governor'], ['smuggler', 'smuggler']]
     expect(applyEvent(state, eventFor(state, { type: 'encounter/resolved', payload: { choice: { kind: `${npc}-roll` } } }, 901))).toBe(true);
     const roll = planActionMotion(paid, state.game!);
     expect(roll.steps.filter(step => step.effect === 'dice')).toHaveLength(1);
-    expect(roll.steps.some(step => step.art?.endsWith(`/${npc}-transparent.png`))).toBe(true);
+    expect(roll.steps.some(step => step.art?.endsWith(pieceArt[npc]))).toBe(true);
     expect(roll.steps.some(step => step.art?.endsWith(componentArt.lira))).toBe(false);
   });
 }

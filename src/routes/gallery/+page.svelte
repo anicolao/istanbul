@@ -245,7 +245,7 @@
         <span>of {category.items.length}</span></strong
       >
     </header>
-    <div class="asset-grid" data-e2e-fit data-e2e-no-scroll>
+    <div class="asset-grid" data-e2e-fit aria-label="Component previews">
       {#each visibleItems as item}
         <article
           class="asset-card"
