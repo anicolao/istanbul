@@ -76,7 +76,7 @@
 <div class="component-help">
   <button bind:this={toggle} aria-label={inspecting ? 'Turn help off' : 'Turn help on'} aria-pressed={inspecting}
     onclick={() => { inspecting = !inspecting; anchor = toggle; text = inspecting ? 'Tap a component to learn about it. Turn help off or press Escape to resume playing.' : ''; }}>
-    <img src={`${base}/art/game/controls/help-${inspecting ? 'on' : 'off'}-v1.png`} alt="" draggable="false" />
+    <img src={`${base}/art/reskin/help-${inspecting ? 'on' : 'off'}.png`} alt="" draggable="false" />
   </button>
   {#if text}
     <!-- The explanation is focusable so keyboard users can scroll long help. -->

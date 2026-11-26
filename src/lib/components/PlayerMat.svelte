@@ -50,12 +50,15 @@
   aria-current={active ? 'true' : undefined}
   data-position={room.seats.find((s) => s.uid === player.uid)?.tablePosition ??
     index + 1}
-  style={`--seat-order:${seat.order ?? index};--x:${seat.x}%;--y:${seat.y}%;--rotation:${seat.angle}deg;--width:${seat.width}%;--seat-color:${playerHighlightColors[player.color]};background-image:url('${asset('art/game/mats/shared-five-slots-v2.png')}')`}
+  style={`--seat-order:${seat.order ?? index};--x:${seat.x}%;--y:${seat.y}%;--rotation:${seat.angle}deg;--width:${seat.width}%;--seat-color:${playerHighlightColors[player.color]};background-image:url('${asset('art/reskin/player-mat.png')}')`}
 >
   {#if active}<TurnHighlight />{/if}
   <strong class="name" data-player-name
     >{player.name}<span class="turn-light"></span></strong
   >
+  <div class="goods-headers" aria-hidden="true">
+    {#each goods as good}<img src={asset(componentArt[good])} alt="" />{/each}
+  </div>
   <div class="cargo" data-wheelbarrow>
     {#each goods as good}<div
         class="good"
@@ -186,6 +189,11 @@
     background: var(--seat-color);
     box-shadow: 0 0 1.6cqw var(--seat-color);
   }
+  .goods-headers {
+    position: absolute; left: 6.6%; top: 5%; width: 51.8%; height: 14%;
+    display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); grid-template-rows: minmax(0, 1fr); gap: 2.2%;
+  }
+  .goods-headers img { width: 100%; height: 100%; min-width: 0; min-height: 0; object-fit: contain; }
   .cargo {
     position: absolute;
     left: 6.6%;

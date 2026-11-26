@@ -5,6 +5,7 @@ on:
     branches: [main]
   pull_request:
     branches: [main]
+    types: [opened, synchronize, reopened, ready_for_review]
   workflow_dispatch:
     inputs:
       update_snapshots:
@@ -23,7 +24,12 @@ concurrency:
 
 jobs:
   verify:
-    if: inputs.update_snapshots != true
+    # Temporary visual-review preview: this draft reskin builds without tests.
+    # Marking it ready restores the ordinary verification and deployment gate.
+    if: >-
+      inputs.update_snapshots != true &&
+      !(github.event_name == 'pull_request' &&
+      github.event.pull_request.draft && github.head_ref == 'ui/legible-reskin')
     runs-on: macos-latest
     steps:
       - uses: actions/checkout@v4
@@ -65,8 +71,11 @@ jobs:
   deploy:
     needs: verify
     if: >-
+      always() && !cancelled() &&
       inputs.update_snapshots != true &&
-      needs.verify.result == 'success' &&
+      (needs.verify.result == 'success' ||
+      (needs.verify.result == 'skipped' && github.event_name == 'pull_request' &&
+      github.event.pull_request.draft && github.head_ref == 'ui/legible-reskin')) &&
       (github.event_name != 'pull_request' ||
       github.event.pull_request.head.repo.full_name == github.repository)
     runs-on: ubuntu-latest

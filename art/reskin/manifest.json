@@ -1,0 +1,352 @@
+[
+  {
+    "id": "fabric",
+    "source": "/Users/anicolao/.codex/generated_images/01a13068-48b3-7953-8479-7caec6a9a692/exec-06acee10-2d4a-467c-a9be-3a8993d3a871.png",
+    "prompt": "Use case: stylized-concept. Asset type: transparent board-game resource icon for Istanbul. Create ONE isolated folded bolt of crimson-red fabric tied by one thick cream cord, visible diagonal fold and rolled end. Preserve the lush hand-painted Ottoman bazaar illustration style, warm natural light and tactile cloth, but simplify aggressively for recognition at 24px: broad bright red planes, dark clean outline, restrained gold edge pattern only, no fine noisy embroidery. Strong unique rectangular silhouette. Object occupies 85% of square image, fully within image with small even padding. Three-quarter view. No frame, no well, no words, no numbers, no ground or backdrop, transparent background."
+  },
+  {
+    "id": "spice",
+    "source": "/Users/anicolao/.codex/generated_images/01a13068-48b3-7953-8479-7caec6a9a692/exec-792219aa-5850-4db3-a8dc-54c573a3ce9e.png",
+    "prompt": "Use case: stylized-concept. Asset type: isolated transparent Istanbul board-game icon. ONE rounded open olive-green cloth sack containing a single bright mound of green spice and three large distinct leaves. A thick cream cord at its neck. Round silhouette, fresh bright green planes. Preserve lush hand-painted Ottoman bazaar illustration, tactile materials, warm light. Legibility at 24px is paramount: strong clean silhouette and dark contour, broad saturated colors, minimal small detail, no noisy texture. Object fills 85% of square canvas with equal padding. Three-quarter view. No background, ground, frame, well, words or numbers. Transparent background."
+  },
+  {
+    "id": "fruit",
+    "source": "/Users/anicolao/.codex/generated_images/01a13068-48b3-7953-8479-7caec6a9a692/exec-03ba6fe6-eb0f-45da-912c-20f9c3250b89.png",
+    "prompt": "Use case: stylized-concept. Asset type: isolated transparent Istanbul board-game icon. ONE shallow golden basket holding THREE large fruits: an orange, a yellow pear and a red pomegranate with a single green leaf. Broad bright yellow-orange dominant silhouette. No tiny grapes. Preserve lush hand-painted Ottoman bazaar illustration, tactile materials, warm light. Legibility at 24px is paramount: strong clean silhouette and dark contour, broad saturated colors, minimal small detail, no noisy texture. Object fills 85% of square canvas with equal padding. Three-quarter view. No background, ground, frame, well, words or numbers. Transparent background."
+  },
+  {
+    "id": "jewelry",
+    "source": "/Users/anicolao/.codex/generated_images/01a13068-48b3-7953-8479-7caec6a9a692/exec-7022027c-7e9a-4127-a7df-6ea3871c3cf3.png",
+    "prompt": "Use case: stylized-concept. Asset type: isolated transparent Istanbul board-game icon. ONE open deep-blue jewelry casket holding a single large luminous blue sapphire. Box lid angled backward, bold blue facets and restrained brass corners. Angular trapezoid silhouette; blue dominates. Preserve lush hand-painted Ottoman bazaar illustration, tactile materials, warm light. Legibility at 24px is paramount: strong clean silhouette and dark contour, broad saturated colors, minimal small detail, no noisy texture. Object fills 85% of square canvas with equal padding. Three-quarter view. No background, ground, frame, well, words or numbers. Transparent background."
+  },
+  {
+    "id": "ruby",
+    "source": "/Users/anicolao/.codex/generated_images/01a13068-48b3-7953-8479-7caec6a9a692/exec-9d59182a-b138-4825-8073-548e0e3371bb.png",
+    "prompt": "Use case: stylized-concept. Asset type: isolated transparent Istanbul board-game icon. ONE brilliant large crimson ruby with a simple slender gold setting. Bold hexagonal silhouette, few large sharply defined luminous ruby-red facets, strong white glint top-left. No ornate filigree. Preserve lush hand-painted Ottoman bazaar illustration, tactile materials, warm light. Legibility at 24px is paramount: strong clean silhouette and dark contour, broad saturated colors, minimal small detail, no noisy texture. Object fills 85% of square canvas with equal padding. Three-quarter view. No background, ground, frame, well, words or numbers. Transparent background."
+  },
+  {
+    "id": "lira",
+    "source": "/Users/anicolao/.codex/generated_images/01a13068-48b3-7953-8479-7caec6a9a692/exec-4aa877e3-837a-494a-879c-88f765d2a6e7.png",
+    "prompt": "Use case: stylized-concept. Asset type: isolated transparent Istanbul board-game icon. ONE small stack of three shiny gold Ottoman coins with a single broad embossed sun emblem. Bright pale yellow-gold planes, dark amber edges, simple clear circular silhouette. No lettering or numbers. Preserve lush hand-painted Ottoman bazaar illustration, tactile materials, warm light. Legibility at 24px is paramount: strong clean silhouette and dark contour, broad saturated colors, minimal small detail, no noisy texture. Object fills 85% of square canvas with equal padding. Three-quarter view. No background, ground, frame, well, words or numbers. Transparent background."
+  },
+  {
+    "id": "any",
+    "source": "/Users/anicolao/.codex/generated_images/01a13068-48b3-7953-8479-7caec6a9a692/exec-c4724e9f-1587-4bd8-be25-84935e3fd930.png",
+    "prompt": "Use case: stylized-concept. Transparent standalone Istanbul game component. A single four-part trading token: red folded cloth at upper left, green spice leaves at upper right, orange fruit at lower left and blue sapphire at lower right, arranged as ONE compact clover symbol. Each quadrant clearly different by shape and color. No lettering or question mark. Warm hand-painted Ottoman brass-and-enamel board game art, tactile painterly shading, clean silhouette, broad high-contrast shapes, minimal ornament readable at 24px. Full object centered with 7% padding. No text, extra symbols, frame, floor, shadows outside the object or background. True transparent background."
+  },
+  {
+    "id": "wheelbarrow",
+    "source": "/Users/anicolao/.codex/generated_images/01a13068-48b3-7953-8479-7caec6a9a692/exec-258df73c-d1bf-47a2-a1e8-78c7b7d9e88d.png",
+    "prompt": "Use case: stylized-concept. Transparent standalone Istanbul game component. A single honey-colored wooden wheelbarrow with one very large dark-rimmed wheel, cream wood bed and two handles. Side three-quarter view, bold recognizable cart silhouette. Warm hand-painted Ottoman brass-and-enamel board game art, tactile painterly shading, clean silhouette, broad high-contrast shapes, minimal ornament readable at 24px. Full object centered with 7% padding. No text, extra symbols, frame, floor, shadows outside the object or background. True transparent background."
+  },
+  {
+    "id": "mail",
+    "source": "/Users/anicolao/.codex/generated_images/01a13068-48b3-7953-8479-7caec6a9a692/exec-1f07e1a8-5788-4633-ac21-670c2ff83f77.png",
+    "prompt": "Use case: stylized-concept. Transparent standalone Istanbul game component. One single ivory envelope with a large red wax seal. Simple bold rectangular silhouette and folded triangular flap. Warm hand-painted Ottoman brass-and-enamel board game art, tactile painterly shading, clean silhouette, broad high-contrast shapes, minimal ornament readable at 24px. Full object centered with 7% padding. No text, extra symbols, frame, floor, shadows outside the object or background. True transparent background."
+  },
+  {
+    "id": "mosque-fabric",
+    "source": "/Users/anicolao/.codex/generated_images/01a13068-48b3-7953-8479-7caec6a9a692/exec-ce89e2f5-67a4-45a8-9567-c5604c3c07f3.png",
+    "prompt": "Use case: stylized-concept. Transparent standalone Istanbul game component. One red enamel Ottoman arch-shaped ability tile. Central large ivory die showing FOUR black pips with a bold gold curved reroll arrow around it. Clear red field, restrained gold outline. Only the die and arrow, no resource icons. Warm hand-painted Ottoman brass-and-enamel board game art, tactile painterly shading, clean silhouette, broad high-contrast shapes, minimal ornament readable at 24px. Full object centered with 7% padding. No text, extra symbols, frame, floor, shadows outside the object or background. True transparent background."
+  },
+  {
+    "id": "mosque-spice",
+    "source": "/Users/anicolao/.codex/generated_images/01a13068-48b3-7953-8479-7caec6a9a692/exec-863c7898-1119-446b-84e4-de748bdaed8f.png",
+    "prompt": "Use case: stylized-concept. Transparent standalone Istanbul game component. One green enamel Ottoman arch-shaped ability tile. Central ivory open warehouse doorway with a large golden PLUS symbol inside and one small bright gold coin at its foot. Clear green field, restrained gold outline. Ability to buy an extra good, no leaf or sack. Warm hand-painted Ottoman brass-and-enamel board game art, tactile painterly shading, clean silhouette, broad high-contrast shapes, minimal ornament readable at 24px. Full object centered with 7% padding. No text, extra symbols, frame, floor, shadows outside the object or background. True transparent background."
+  },
+  {
+    "id": "mosque-fruit",
+    "source": "/Users/anicolao/.codex/generated_images/01a13068-48b3-7953-8479-7caec6a9a692/exec-fb75df68-1d20-4b2d-922a-2a88b1bfdb92.png",
+    "prompt": "Exactly ONE saffron yellow enamel Ottoman arch-shaped power tile with simple gold rim. In the middle, a dark teal silhouette of a young ASSISTANT with a LOW FLAT CAP holding a square parcel at chest. A bold ivory curved returning arrow over left shoulder. The helper must have a FLAT cap, NOT a turban and NOT a round spherical pawn head. One assistant and one returning arrow only. Bold high contrast minimal painted brass-and-enamel game icon readable at 24px. No fruit, no other icons, no background outside tile."
+  },
+  {
+    "id": "mosque-jewelry",
+    "source": "/Users/anicolao/.codex/generated_images/01a13068-48b3-7953-8479-7caec6a9a692/exec-8fea3490-4850-4c26-92dd-d2ad1eedcf20.png",
+    "prompt": "Exactly ONE blue enamel Ottoman arch-shaped power tile with simple gold rim. In the middle, a large IVORY silhouette of a young ASSISTANT with a LOW FLAT CAP holding a square parcel at chest. A bold gold plus sign to the right. The helper must have a FLAT cap, NOT a turban and NOT a round spherical pawn head. One assistant and one plus only. Bold high contrast minimal painted brass-and-enamel game icon readable at 24px. No jewelry, no other icons, no background outside tile."
+  },
+  {
+    "id": "location-frame",
+    "source": "/Users/anicolao/.codex/generated_images/01a13068-48b3-7953-8479-7caec6a9a692/exec-cf6ccd2b-eb13-4544-a7fa-3131b6db5fca.png",
+    "prompt": "Use case: precise-object-edit. Regenerate this Ottoman board-game room frame, preserving its EXACT widescreen proportions, opening, position and size of every rail, top title plaque, two vertical side wells, and bottom corner circular wells. Keep rich hand-painted brass and walnut, but much cleaner bold profiles, less filigree and texture noise. Top title plaque becomes smooth warm ivory, as do both side wells and bottom circles. Rails use restrained bright satin brass, no harsh black shadows. Central artwork opening must remain truly transparent; keep all existing transparent areas transparent. No text, digits, icons, or additional compartments. Legibility-first premium physical board-game component, not flat vector."
+  },
+  {
+    "id": "player-mat",
+    "source": "/Users/anicolao/.codex/generated_images/01a13068-48b3-7953-8479-7caec6a9a692/exec-795edf06-3576-4b71-bcd7-cccc36462864.png",
+    "prompt": "Use case: precise-object-edit. Regenerate this compact wide Ottoman player tray. Preserve EXACT aspect ratio and geometry of all compartments: FOUR columns of FIVE goods slots at left, name plaque upper right and SIX circular ruby wells lower right. Do not change positions. Preserve warm hand-painted walnut and brass style but simplify ornament and wood texture strongly. All twenty goods wells and six ruby wells are smooth warm ivory, not green or red, with thin dark brass dividers. Name plaque is smooth deep teal. REMOVE the four embossed resource icons from the top of the columns: leave these headers empty, we will overlay consistent game icons. Right central area is quiet dark walnut. No text, no digits, no other symbols. Full image only the tray, no extra white margin below."
+  },
+  {
+    "id": "location-01",
+    "source": "/Users/anicolao/.codex/generated_images/01a13068-48b3-7953-8479-7caec6a9a692/exec-7d939db2-abd9-43e4-8cc7-8c0f07f12523.png",
+    "prompt": "Use case: historical-scene. Create a new square location illustration for the Istanbul board game. Reference image is the OLD location atlas, for warm painterly Ottoman art style only; produce ONE scene, not an atlas, and no border. Subject: a honey-colored wooden wheelbarrow with a huge clearly visible wheel in a carpenter's workshop. Large bold focal subject occupying central 65%, simpler surroundings, luminous warm daylight or lamplight. Rich tactile paint and architectural materials, no cartoon vector art. Strong silhouette and distinct dominant palette, readable at 120px. Quiet pale or deep contrasting background behind the focal object. Avoid clutter, tiny props, heavy brown murk, text, digits, frames, UI, symbols, captions. Full bleed square painting."
+  },
+  {
+    "id": "location-02",
+    "source": "/Users/anicolao/.codex/generated_images/01a13068-48b3-7953-8479-7caec6a9a692/exec-c9d7748e-9b5d-44ee-92df-17e3ff3141f6.png",
+    "prompt": "Use case: historical-scene. Create a new square location illustration for the Istanbul board game. Reference image is the OLD location atlas, for warm painterly Ottoman art style only; produce ONE scene, not an atlas, and no border. Subject: a single tall display of rich crimson folded cloth and draped fabric under a cream arch. Large bold focal subject occupying central 65%, simpler surroundings, luminous warm daylight or lamplight. Rich tactile paint and architectural materials, no cartoon vector art. Strong silhouette and distinct dominant palette, readable at 120px. Quiet pale or deep contrasting background behind the focal object. Avoid clutter, tiny props, heavy brown murk, text, digits, frames, UI, symbols, captions. Full bleed square painting."
+  },
+  {
+    "id": "location-03",
+    "source": "/Users/anicolao/.codex/generated_images/01a13068-48b3-7953-8479-7caec6a9a692/exec-a9c4f5d5-5d76-44c7-958d-f0c1f2326a95.png",
+    "prompt": "Use case: historical-scene. Create a new square location illustration for the Istanbul board game. Reference image is the OLD location atlas, for warm painterly Ottoman art style only; produce ONE scene, not an atlas, and no border. Subject: three large open sacks of green spices beneath a green awning. Large bold focal subject occupying central 65%, simpler surroundings, luminous warm daylight or lamplight. Rich tactile paint and architectural materials, no cartoon vector art. Strong silhouette and distinct dominant palette, readable at 120px. Quiet pale or deep contrasting background behind the focal object. Avoid clutter, tiny props, heavy brown murk, text, digits, frames, UI, symbols, captions. Full bleed square painting."
+  },
+  {
+    "id": "location-04",
+    "source": "/Users/anicolao/.codex/generated_images/01a13068-48b3-7953-8479-7caec6a9a692/exec-26056608-1097-44be-9a2a-348aa6041dda.png",
+    "prompt": "Use case: historical-scene. Create a new square location illustration for the Istanbul board game. Reference image is the OLD location atlas, for warm painterly Ottoman art style only; produce ONE scene, not an atlas, and no border. Subject: three overflowing baskets of oranges, yellow pears and pomegranates in a sunlit courtyard. Large bold focal subject occupying central 65%, simpler surroundings, luminous warm daylight or lamplight. Rich tactile paint and architectural materials, no cartoon vector art. Strong silhouette and distinct dominant palette, readable at 120px. Quiet pale or deep contrasting background behind the focal object. Avoid clutter, tiny props, heavy brown murk, text, digits, frames, UI, symbols, captions. Full bleed square painting."
+  },
+  {
+    "id": "location-05",
+    "source": "/Users/anicolao/.codex/generated_images/01a13068-48b3-7953-8479-7caec6a9a692/exec-9c22bd09-6c8b-4520-9cc7-b4193a6ff4c1.png",
+    "prompt": "Use case: historical-scene. Create a new square location illustration for the Istanbul board game. Reference image is the OLD location atlas, for warm painterly Ottoman art style only; produce ONE scene, not an atlas, and no border. Subject: a prominent ivory pigeon perched over neat mail cubbies and a single sealed envelope on an oak desk. Large bold focal subject occupying central 65%, simpler surroundings, luminous warm daylight or lamplight. Rich tactile paint and architectural materials, no cartoon vector art. Strong silhouette and distinct dominant palette, readable at 120px. Quiet pale or deep contrasting background behind the focal object. Avoid clutter, tiny props, heavy brown murk, text, digits, frames, UI, symbols, captions. Full bleed square painting."
+  },
+  {
+    "id": "location-06",
+    "source": "/Users/anicolao/.codex/generated_images/01a13068-48b3-7953-8479-7caec6a9a692/exec-bca0d805-2a01-40d3-834a-477f94466aa9.png",
+    "prompt": "Use case: historical-scene. Create a new square location illustration for the Istanbul board game. Reference image is the OLD location atlas, for warm painterly Ottoman art style only; produce ONE scene, not an atlas, and no border. Subject: a camel under a tall turquoise courtyard arch, with two travelers resting in the distance. Large bold focal subject occupying central 65%, simpler surroundings, luminous warm daylight or lamplight. Rich tactile paint and architectural materials, no cartoon vector art. Strong silhouette and distinct dominant palette, readable at 120px. Quiet pale or deep contrasting background behind the focal object. Avoid clutter, tiny props, heavy brown murk, text, digits, frames, UI, symbols, captions. Full bleed square painting."
+  },
+  {
+    "id": "location-07",
+    "source": "/Users/anicolao/.codex/generated_images/01a13068-48b3-7953-8479-7caec6a9a692/exec-b62bead3-bfa9-4c98-bb89-80fe180455d1.png",
+    "prompt": "Use case: historical-scene. Create a new square location illustration for the Istanbul board game. Reference image is the OLD location atlas, for warm painterly Ottoman art style only; produce ONE scene, not an atlas, and no border. Subject: one large bright white marble fountain spraying water in a pale turquoise tiled courtyard. Large bold focal subject occupying central 65%, simpler surroundings, luminous warm daylight or lamplight. Rich tactile paint and architectural materials, no cartoon vector art. Strong silhouette and distinct dominant palette, readable at 120px. Quiet pale or deep contrasting background behind the focal object. Avoid clutter, tiny props, heavy brown murk, text, digits, frames, UI, symbols, captions. Full bleed square painting."
+  },
+  {
+    "id": "location-08",
+    "source": "/Users/anicolao/.codex/generated_images/01a13068-48b3-7953-8479-7caec6a9a692/exec-c8d251f8-61b3-4ae3-8251-944c402ea9ce.png",
+    "prompt": "Use case: historical-scene. Create a new square location illustration for the Istanbul board game. Reference image is the OLD location atlas, for warm painterly Ottoman art style only; produce ONE scene, not an atlas, and no border. Subject: a secret indigo-lit stall with a blue sapphire casket and a pair of ivory dice on the counter. Large bold focal subject occupying central 65%, simpler surroundings, luminous warm daylight or lamplight. Rich tactile paint and architectural materials, no cartoon vector art. Strong silhouette and distinct dominant palette, readable at 120px. Quiet pale or deep contrasting background behind the focal object. Avoid clutter, tiny props, heavy brown murk, text, digits, frames, UI, symbols, captions. Full bleed square painting."
+  },
+  {
+    "id": "location-09",
+    "source": "/Users/anicolao/.codex/generated_images/01a13068-48b3-7953-8479-7caec6a9a692/exec-588d000a-e980-4705-a749-482f5bbaa249.png",
+    "prompt": "Use case: historical-scene. Create a new square location illustration for the Istanbul board game. Reference image is the OLD location atlas, for warm painterly Ottoman art style only; produce ONE scene, not an atlas, and no border. Subject: one enormous amber tea glass on a brass tray with one other glass behind it in a copper-colored cafe. Large bold focal subject occupying central 65%, simpler surroundings, luminous warm daylight or lamplight. Rich tactile paint and architectural materials, no cartoon vector art. Strong silhouette and distinct dominant palette, readable at 120px. Quiet pale or deep contrasting background behind the focal object. Avoid clutter, tiny props, heavy brown murk, text, digits, frames, UI, symbols, captions. Full bleed square painting."
+  },
+  {
+    "id": "location-10",
+    "source": "/Users/anicolao/.codex/generated_images/01a13068-48b3-7953-8479-7caec6a9a692/exec-5453bbf5-78ae-4570-9a02-b75ba5b7583e.png",
+    "prompt": "Use case: historical-scene. Create a new square location illustration for the Istanbul board game. Reference image is the OLD location atlas, for warm painterly Ottoman art style only; produce ONE scene, not an atlas, and no border. Subject: a monumental covered market hall with cream vaulted arches and broad red awnings, clear deep perspective. Large bold focal subject occupying central 65%, simpler surroundings, luminous warm daylight or lamplight. Rich tactile paint and architectural materials, no cartoon vector art. Strong silhouette and distinct dominant palette, readable at 120px. Quiet pale or deep contrasting background behind the focal object. Avoid clutter, tiny props, heavy brown murk, text, digits, frames, UI, symbols, captions. Full bleed square painting."
+  },
+  {
+    "id": "location-11",
+    "source": "/Users/anicolao/.codex/generated_images/01a13068-48b3-7953-8479-7caec6a9a692/exec-fba60463-de75-49a2-97df-d292386a4a32.png",
+    "prompt": "Use case: historical-scene. Create a new square location illustration for the Istanbul board game. Reference image is the OLD location atlas, for warm painterly Ottoman art style only; produce ONE scene, not an atlas, and no border. Subject: a small intimate outdoor market with three ochre awnings and bright fruit crates, open blue sky. Large bold focal subject occupying central 65%, simpler surroundings, luminous warm daylight or lamplight. Rich tactile paint and architectural materials, no cartoon vector art. Strong silhouette and distinct dominant palette, readable at 120px. Quiet pale or deep contrasting background behind the focal object. Avoid clutter, tiny props, heavy brown murk, text, digits, frames, UI, symbols, captions. Full bleed square painting."
+  },
+  {
+    "id": "location-12",
+    "source": "/Users/anicolao/.codex/generated_images/01a13068-48b3-7953-8479-7caec6a9a692/exec-8f980aea-29e4-4a97-af39-fdd847ffccdc.png",
+    "prompt": "Use case: historical-scene. Create a new square location illustration for the Istanbul board game. Reference image is the OLD location atlas, for warm painterly Ottoman art style only; produce ONE scene, not an atlas, and no border. Subject: a single massive deep blue studded arched door with a bold brass shield, cream stonework and one lantern. Large bold focal subject occupying central 65%, simpler surroundings, luminous warm daylight or lamplight. Rich tactile paint and architectural materials, no cartoon vector art. Strong silhouette and distinct dominant palette, readable at 120px. Quiet pale or deep contrasting background behind the focal object. Avoid clutter, tiny props, heavy brown murk, text, digits, frames, UI, symbols, captions. Full bleed square painting."
+  },
+  {
+    "id": "location-13",
+    "source": "/Users/anicolao/.codex/generated_images/01a13068-48b3-7953-8479-7caec6a9a692/exec-28c407b5-92c0-4073-a70e-783d7e2f365e.png",
+    "prompt": "Use case: historical-scene. Create a new square location illustration for the Istanbul board game. Reference image is the OLD location atlas, for warm painterly Ottoman art style only; produce ONE scene, not an atlas, and no border. Subject: a magnificent red velvet throne below a golden canopy in a crimson and cream palace. Large bold focal subject occupying central 65%, simpler surroundings, luminous warm daylight or lamplight. Rich tactile paint and architectural materials, no cartoon vector art. Strong silhouette and distinct dominant palette, readable at 120px. Quiet pale or deep contrasting background behind the focal object. Avoid clutter, tiny props, heavy brown murk, text, digits, frames, UI, symbols, captions. Full bleed square painting."
+  },
+  {
+    "id": "location-14",
+    "source": "/Users/anicolao/.codex/generated_images/01a13068-48b3-7953-8479-7caec6a9a692/exec-de068d6f-8d9a-424c-bc3b-e763e06c0525.png",
+    "prompt": "Use case: historical-scene. Create a new square location illustration for the Istanbul board game. Reference image is the OLD location atlas, for warm painterly Ottoman art style only; produce ONE scene, not an atlas, and no border. Subject: one small mosque with a single green dome and one slender minaret, garden foreground and cream sky. Large bold focal subject occupying central 65%, simpler surroundings, luminous warm daylight or lamplight. Rich tactile paint and architectural materials, no cartoon vector art. Strong silhouette and distinct dominant palette, readable at 120px. Quiet pale or deep contrasting background behind the focal object. Avoid clutter, tiny props, heavy brown murk, text, digits, frames, UI, symbols, captions. Full bleed square painting."
+  },
+  {
+    "id": "location-15",
+    "source": "/Users/anicolao/.codex/generated_images/01a13068-48b3-7953-8479-7caec6a9a692/exec-526225e6-fb5b-4dfe-a731-e50faf4163e7.png",
+    "prompt": "Use case: historical-scene. Create a new square location illustration for the Istanbul board game. Reference image is the OLD location atlas, for warm painterly Ottoman art style only; produce ONE scene, not an atlas, and no border. Subject: a grand blue-domed mosque with three cascading domes and two tall minarets, white marble terrace. Large bold focal subject occupying central 65%, simpler surroundings, luminous warm daylight or lamplight. Rich tactile paint and architectural materials, no cartoon vector art. Strong silhouette and distinct dominant palette, readable at 120px. Quiet pale or deep contrasting background behind the focal object. Avoid clutter, tiny props, heavy brown murk, text, digits, frames, UI, symbols, captions. Full bleed square painting."
+  },
+  {
+    "id": "location-16",
+    "source": "/Users/anicolao/.codex/generated_images/01a13068-48b3-7953-8479-7caec6a9a692/exec-21846981-5c06-489b-9fd5-32cf9c3834be.png",
+    "prompt": "Use case: historical-scene. Create a new square location illustration for the Istanbul board game. Reference image is the OLD location atlas, for warm painterly Ottoman art style only; produce ONE scene, not an atlas, and no border. Subject: one huge bright red ruby presented in an open cream velvet jewelry box on a deep violet jeweler's counter. Large bold focal subject occupying central 65%, simpler surroundings, luminous warm daylight or lamplight. Rich tactile paint and architectural materials, no cartoon vector art. Strong silhouette and distinct dominant palette, readable at 120px. Quiet pale or deep contrasting background behind the focal object. Avoid clutter, tiny props, heavy brown murk, text, digits, frames, UI, symbols, captions. Full bleed square painting."
+  },
+  {
+    "id": "merchant-ruby",
+    "source": "/Users/anicolao/.codex/generated_images/01a13068-48b3-7953-8479-7caec6a9a692/exec-98dcf68a-02d2-44f0-809f-6cca7f94f403.png",
+    "prompt": "Use case: stylized-concept. Regenerate ONE Istanbul tabletop playing piece. Reference atlas supplies painterly materials only; output a SINGLE isolated piece, never a grid. Subject: a broad-shouldered bearded Ottoman merchant bust with a LARGE ROUND TURBAN and wide robe, holding a small coin purse, proud upright pose. Wide rounded silhouette. Dominant robe/body and headwear color bright crimson red, occupying most of its painted area, restrained cream and gold trim. Hand-painted miniature warm Ottoman historical aesthetic, clear broad color planes, gentle brushwork, satin highlights, minimal fine ornament, strong dark contour, readable at 32px. Front three-quarter view, entire piece including simple brass oval base visible, tightly centered with 6% padding, transparent background. No text, numbers, extra objects, square backdrop or cast shadow."
+  },
+  {
+    "id": "merchant-saffron",
+    "source": "/Users/anicolao/.codex/generated_images/01a13068-48b3-7953-8479-7caec6a9a692/exec-1b16f7de-8cc4-4f1b-b365-5fdb52262708.png",
+    "prompt": "Use case: stylized-concept. Regenerate ONE Istanbul tabletop playing piece. Reference atlas supplies painterly materials only; output a SINGLE isolated piece, never a grid. Subject: a broad-shouldered bearded Ottoman merchant bust with a LARGE ROUND TURBAN and wide robe, holding a small coin purse, proud upright pose. Wide rounded silhouette. Dominant robe/body and headwear color golden saffron yellow, occupying most of its painted area, restrained cream and gold trim. Hand-painted miniature warm Ottoman historical aesthetic, clear broad color planes, gentle brushwork, satin highlights, minimal fine ornament, strong dark contour, readable at 32px. Front three-quarter view, entire piece including simple brass oval base visible, tightly centered with 6% padding, transparent background. No text, numbers, extra objects, square backdrop or cast shadow."
+  },
+  {
+    "id": "merchant-teal",
+    "source": "/Users/anicolao/.codex/generated_images/01a13068-48b3-7953-8479-7caec6a9a692/exec-951a5728-92b4-4796-b939-fa5461073afa.png",
+    "prompt": "Use case: stylized-concept. Regenerate ONE Istanbul tabletop playing piece. Reference atlas supplies painterly materials only; output a SINGLE isolated piece, never a grid. Subject: a broad-shouldered bearded Ottoman merchant bust with a LARGE ROUND TURBAN and wide robe, holding a small coin purse, proud upright pose. Wide rounded silhouette. Dominant robe/body and headwear color bright turquoise teal, occupying most of its painted area, restrained cream and gold trim. Hand-painted miniature warm Ottoman historical aesthetic, clear broad color planes, gentle brushwork, satin highlights, minimal fine ornament, strong dark contour, readable at 32px. Front three-quarter view, entire piece including simple brass oval base visible, tightly centered with 6% padding, transparent background. No text, numbers, extra objects, square backdrop or cast shadow."
+  },
+  {
+    "id": "merchant-indigo",
+    "source": "/Users/anicolao/.codex/generated_images/01a13068-48b3-7953-8479-7caec6a9a692/exec-f2445792-4f37-403a-968c-77bfb71336fe.png",
+    "prompt": "Use case: stylized-concept. Regenerate ONE Istanbul tabletop playing piece. Reference atlas supplies painterly materials only; output a SINGLE isolated piece, never a grid. Subject: a broad-shouldered bearded Ottoman merchant bust with a LARGE ROUND TURBAN and wide robe, holding a small coin purse, proud upright pose. Wide rounded silhouette. Dominant robe/body and headwear color rich cobalt blue, occupying most of its painted area, restrained cream and gold trim. Hand-painted miniature warm Ottoman historical aesthetic, clear broad color planes, gentle brushwork, satin highlights, minimal fine ornament, strong dark contour, readable at 32px. Front three-quarter view, entire piece including simple brass oval base visible, tightly centered with 6% padding, transparent background. No text, numbers, extra objects, square backdrop or cast shadow."
+  },
+  {
+    "id": "merchant-plum",
+    "source": "/Users/anicolao/.codex/generated_images/01a13068-48b3-7953-8479-7caec6a9a692/exec-0eb5d73a-62c7-4a02-9c17-83f21e549837.png",
+    "prompt": "Use case: stylized-concept. Regenerate ONE Istanbul tabletop playing piece. Reference atlas supplies painterly materials only; output a SINGLE isolated piece, never a grid. Subject: a broad-shouldered bearded Ottoman merchant bust with a LARGE ROUND TURBAN and wide robe, holding a small coin purse, proud upright pose. Wide rounded silhouette. Dominant robe/body and headwear color bright purple plum, occupying most of its painted area, restrained cream and gold trim. Hand-painted miniature warm Ottoman historical aesthetic, clear broad color planes, gentle brushwork, satin highlights, minimal fine ornament, strong dark contour, readable at 32px. Front three-quarter view, entire piece including simple brass oval base visible, tightly centered with 6% padding, transparent background. No text, numbers, extra objects, square backdrop or cast shadow."
+  },
+  {
+    "id": "assistant-ruby",
+    "source": "/Users/anicolao/.codex/generated_images/01a13068-48b3-7953-8479-7caec6a9a692/exec-adcaa315-e80a-4411-84f4-ae0ef8904194.png",
+    "prompt": "Use case: stylized-concept. Regenerate ONE Istanbul tabletop playing piece. Reference atlas supplies painterly materials only; output a SINGLE isolated piece, never a grid. Subject: a compact youthful assistant bust wearing a LOW FLAT CAP, holding one large cream parcel in both hands. Short square silhouette, clearly smaller and simpler than a merchant. Dominant robe/body and headwear color bright crimson red, occupying most of its painted area, restrained cream and gold trim. Hand-painted miniature warm Ottoman historical aesthetic, clear broad color planes, gentle brushwork, satin highlights, minimal fine ornament, strong dark contour, readable at 32px. Front three-quarter view, entire piece including simple brass oval base visible, tightly centered with 6% padding, transparent background. No text, numbers, extra objects, square backdrop or cast shadow."
+  },
+  {
+    "id": "assistant-saffron",
+    "source": "/Users/anicolao/.codex/generated_images/01a13068-48b3-7953-8479-7caec6a9a692/exec-5e28cd2d-0218-47b7-96f4-58d62f219fbf.png",
+    "prompt": "Use case: stylized-concept. Regenerate ONE Istanbul tabletop playing piece. Reference atlas supplies painterly materials only; output a SINGLE isolated piece, never a grid. Subject: a compact youthful assistant bust wearing a LOW FLAT CAP, holding one large cream parcel in both hands. Short square silhouette, clearly smaller and simpler than a merchant. Dominant robe/body and headwear color golden saffron yellow, occupying most of its painted area, restrained cream and gold trim. Hand-painted miniature warm Ottoman historical aesthetic, clear broad color planes, gentle brushwork, satin highlights, minimal fine ornament, strong dark contour, readable at 32px. Front three-quarter view, entire piece including simple brass oval base visible, tightly centered with 6% padding, transparent background. No text, numbers, extra objects, square backdrop or cast shadow."
+  },
+  {
+    "id": "assistant-teal",
+    "source": "/Users/anicolao/.codex/generated_images/01a13068-48b3-7953-8479-7caec6a9a692/exec-1a38000c-d37c-492a-83e4-e38cb6d65c27.png",
+    "prompt": "Use case: stylized-concept. Regenerate ONE Istanbul tabletop playing piece. Reference atlas supplies painterly materials only; output a SINGLE isolated piece, never a grid. Subject: a compact youthful assistant bust wearing a LOW FLAT CAP, holding one large cream parcel in both hands. Short square silhouette, clearly smaller and simpler than a merchant. Dominant robe/body and headwear color bright turquoise teal, occupying most of its painted area, restrained cream and gold trim. Hand-painted miniature warm Ottoman historical aesthetic, clear broad color planes, gentle brushwork, satin highlights, minimal fine ornament, strong dark contour, readable at 32px. Front three-quarter view, entire piece including simple brass oval base visible, tightly centered with 6% padding, transparent background. No text, numbers, extra objects, square backdrop or cast shadow."
+  },
+  {
+    "id": "assistant-indigo",
+    "source": "/Users/anicolao/.codex/generated_images/01a13068-48b3-7953-8479-7caec6a9a692/exec-bf1aa6fd-fa51-4575-9638-69f2ed9de9ad.png",
+    "prompt": "Use case: stylized-concept. Regenerate ONE Istanbul tabletop playing piece. Reference atlas supplies painterly materials only; output a SINGLE isolated piece, never a grid. Subject: a compact youthful assistant bust wearing a LOW FLAT CAP, holding one large cream parcel in both hands. Short square silhouette, clearly smaller and simpler than a merchant. Dominant robe/body and headwear color rich cobalt blue, occupying most of its painted area, restrained cream and gold trim. Hand-painted miniature warm Ottoman historical aesthetic, clear broad color planes, gentle brushwork, satin highlights, minimal fine ornament, strong dark contour, readable at 32px. Front three-quarter view, entire piece including simple brass oval base visible, tightly centered with 6% padding, transparent background. No text, numbers, extra objects, square backdrop or cast shadow."
+  },
+  {
+    "id": "assistant-plum",
+    "source": "/Users/anicolao/.codex/generated_images/01a13068-48b3-7953-8479-7caec6a9a692/exec-8c797383-3236-4af2-b47a-57a2f27e6f45.png",
+    "prompt": "Use case: stylized-concept. Regenerate ONE Istanbul tabletop playing piece. Reference atlas supplies painterly materials only; output a SINGLE isolated piece, never a grid. Subject: a compact youthful assistant bust wearing a LOW FLAT CAP, holding one large cream parcel in both hands. Short square silhouette, clearly smaller and simpler than a merchant. Dominant robe/body and headwear color bright purple plum, occupying most of its painted area, restrained cream and gold trim. Hand-painted miniature warm Ottoman historical aesthetic, clear broad color planes, gentle brushwork, satin highlights, minimal fine ornament, strong dark contour, readable at 32px. Front three-quarter view, entire piece including simple brass oval base visible, tightly centered with 6% padding, transparent background. No text, numbers, extra objects, square backdrop or cast shadow."
+  },
+  {
+    "id": "family-ruby",
+    "source": "/Users/anicolao/.codex/generated_images/01a13068-48b3-7953-8479-7caec6a9a692/exec-ea676767-0911-40f8-9577-80f2d869875e.png",
+    "prompt": "Use case: precise-object-edit. Edit this exact pawn: replace ONLY the teal paint with bright crimson red. Keep its exact shape, spherical bare head, proportions, gold and ivory trim, brushwork, highlights, composition, padding, transparent background and edge quality unchanged. Do not add a hat, turban, face, glow, backdrop or cast shadow. This must be an identical member of the same pawn set with a different paint color."
+  },
+  {
+    "id": "family-saffron",
+    "source": "/Users/anicolao/.codex/generated_images/01a13068-48b3-7953-8479-7caec6a9a692/exec-ba397927-eebd-4025-b270-4acf0316fd37.png",
+    "prompt": "Use case: precise-object-edit. Edit this exact pawn: replace ONLY the teal paint with golden saffron yellow. Keep its exact shape, spherical bare head, proportions, gold and ivory trim, brushwork, highlights, composition, padding, transparent background and edge quality unchanged. Do not add a hat, turban, face, glow, backdrop or cast shadow. This must be an identical member of the same pawn set with a different paint color."
+  },
+  {
+    "id": "family-teal",
+    "source": "/Users/anicolao/.codex/generated_images/01a13068-48b3-7953-8479-7caec6a9a692/exec-b40e1996-1463-41e2-9d89-5c9cf9bb429c.png",
+    "prompt": "Use case: stylized-concept. Regenerate ONE Istanbul tabletop playing piece. Reference atlas supplies painterly materials only; output a SINGLE isolated piece, never a grid. Subject: a simple tall polished wooden pawn with a large SPHERICAL HEAD, narrow neck, flared conical body, no face and no arms. Very clear chess-pawn silhouette. Dominant robe/body and headwear color bright turquoise teal, occupying most of its painted area, restrained cream and gold trim. Hand-painted miniature warm Ottoman historical aesthetic, clear broad color planes, gentle brushwork, satin highlights, minimal fine ornament, strong dark contour, readable at 32px. Front three-quarter view, entire piece including simple brass oval base visible, tightly centered with 6% padding, transparent background. No text, numbers, extra objects, square backdrop or cast shadow."
+  },
+  {
+    "id": "family-indigo",
+    "source": "/Users/anicolao/.codex/generated_images/01a13068-48b3-7953-8479-7caec6a9a692/exec-126eac8a-baa0-405b-a440-d79b5fb80c87.png",
+    "prompt": "Use case: stylized-concept. Regenerate ONE Istanbul tabletop playing piece. Reference atlas supplies painterly materials only; output a SINGLE isolated piece, never a grid. Subject: a simple tall polished wooden pawn with a large SPHERICAL HEAD, narrow neck, flared conical body, no face and no arms. Very clear chess-pawn silhouette. Dominant robe/body and headwear color rich cobalt blue, occupying most of its painted area, restrained cream and gold trim. Hand-painted miniature warm Ottoman historical aesthetic, clear broad color planes, gentle brushwork, satin highlights, minimal fine ornament, strong dark contour, readable at 32px. Front three-quarter view, entire piece including simple brass oval base visible, tightly centered with 6% padding, transparent background. No text, numbers, extra objects, square backdrop or cast shadow."
+  },
+  {
+    "id": "family-plum",
+    "source": "/Users/anicolao/.codex/generated_images/01a13068-48b3-7953-8479-7caec6a9a692/exec-f52a50ed-63dd-4fba-9a4b-d56e603d79b9.png",
+    "prompt": "Use case: stylized-concept. Regenerate ONE Istanbul tabletop playing piece. Reference atlas supplies painterly materials only; output a SINGLE isolated piece, never a grid. Subject: a simple tall polished wooden pawn with a large SPHERICAL HEAD, narrow neck, flared conical body, no face and no arms. Very clear chess-pawn silhouette. Dominant robe/body and headwear color bright purple plum, occupying most of its painted area, restrained cream and gold trim. Hand-painted miniature warm Ottoman historical aesthetic, clear broad color planes, gentle brushwork, satin highlights, minimal fine ornament, strong dark contour, readable at 32px. Front three-quarter view, entire piece including simple brass oval base visible, tightly centered with 6% padding, transparent background. No text, numbers, extra objects, square backdrop or cast shadow."
+  },
+  {
+    "id": "governor",
+    "source": "/Users/anicolao/.codex/generated_images/01a13068-48b3-7953-8479-7caec6a9a692/exec-dd83337a-7426-45bc-87e9-4773cc7d9385.png",
+    "prompt": "Use case: stylized-concept. Regenerate ONE Istanbul tabletop playing piece. Reference atlas supplies painterly materials only; output a SINGLE isolated piece, never a grid. Subject: a distinguished Ottoman governor bust, large tall IVORY TURBAN with one emerald, ivory shoulder cape over a deep green robe, holding one broad sealed ivory scroll. Broad white top silhouette distinct from player merchants. Hand-painted miniature warm Ottoman historical aesthetic, clear broad color planes, gentle brushwork, satin highlights, minimal fine ornament, strong dark contour, readable at 32px. Front three-quarter view, entire piece including simple brass oval base visible, tightly centered with 6% padding, transparent background. No text, numbers, extra objects, square backdrop or cast shadow."
+  },
+  {
+    "id": "smuggler",
+    "source": "/Users/anicolao/.codex/generated_images/01a13068-48b3-7953-8479-7caec6a9a692/exec-651547a2-1d4f-4563-bd31-3a517571c4d0.png",
+    "prompt": "Use case: stylized-concept. Regenerate ONE Istanbul tabletop playing piece. Reference atlas supplies painterly materials only; output a SINGLE isolated piece, never a grid. Subject: a mysterious Ottoman smuggler bust in a deep violet hooded triangular cloak, face lit warmly and clearly visible, holding a bright orange sack at chest. Very distinct pointed hood silhouette, no weapons. Hand-painted miniature warm Ottoman historical aesthetic, clear broad color planes, gentle brushwork, satin highlights, minimal fine ornament, strong dark contour, readable at 32px. Front three-quarter view, entire piece including simple brass oval base visible, tightly centered with 6% padding, transparent background. No text, numbers, extra objects, square backdrop or cast shadow."
+  },
+  {
+    "id": "neutral-merchant",
+    "source": "/Users/anicolao/.codex/generated_images/01a13068-48b3-7953-8479-7caec6a9a692/exec-29180fd0-3848-45d3-b908-9b1db9438400.png",
+    "prompt": "Use case: stylized-concept. Regenerate ONE Istanbul tabletop playing piece. Reference atlas supplies painterly materials only; output a SINGLE isolated piece, never a grid. Subject: a bearded Ottoman merchant bust in an ivory robe with an ochre sash and plain white round turban holding a purse. Broad rounded silhouette. Hand-painted miniature warm Ottoman historical aesthetic, clear broad color planes, gentle brushwork, satin highlights, minimal fine ornament, strong dark contour, readable at 32px. Front three-quarter view, entire piece including simple brass oval base visible, tightly centered with 6% padding, transparent background. No text, numbers, extra objects, square backdrop or cast shadow."
+  },
+  {
+    "id": "first-player",
+    "source": "/Users/anicolao/.codex/generated_images/01a13068-48b3-7953-8479-7caec6a9a692/exec-f81ef416-431c-4298-ac40-0f3412c4ecdd.png",
+    "prompt": "Use case: stylized-concept. Regenerate ONE Istanbul tabletop playing piece. Reference atlas supplies painterly materials only; output a SINGLE isolated piece, never a grid. Subject: one tall brass Ottoman medallion with a single bold red tulip and two green leaves. Oval silhouette on a small round base. Hand-painted miniature warm Ottoman historical aesthetic, clear broad color planes, gentle brushwork, satin highlights, minimal fine ornament, strong dark contour, readable at 32px. Front three-quarter view, entire piece including simple brass oval base visible, tightly centered with 6% padding, transparent background. No text, numbers, extra objects, square backdrop or cast shadow."
+  },
+  {
+    "id": "card-gain-good",
+    "source": "/Users/anicolao/.codex/generated_images/01a13068-48b3-7953-8479-7caec6a9a692/exec-226f0c17-11ef-4ef4-b978-a773bea940c2.png",
+    "prompt": "Use case: stylized-concept. ONE square illustration for an Istanbul Bonus card. an open cream cloth bundle presenting red cloth, green spice leaves, one orange and a blue sapphire, a generous outstretched hand beneath. Warm hand-painted Ottoman board-game artwork, rich tactile paint, simplified large readable forms, cream highlights, deep teal and crimson accents, restrained brass. Strong central focal object with quiet surroundings, legible at small card size. No text, lettering, digits, banners or UI. Full bleed square illustration."
+  },
+  {
+    "id": "card-gain-lira",
+    "source": "/Users/anicolao/.codex/generated_images/01a13068-48b3-7953-8479-7caec6a9a692/exec-2c89794b-73ef-42b8-bc19-a45ac918b3bb.png",
+    "prompt": "Use case: stylized-concept. ONE square illustration for an Istanbul Bonus card. a bright gold coin purse tipped to spill three large shining coins onto a cream counter. Warm hand-painted Ottoman board-game artwork, rich tactile paint, simplified large readable forms, cream highlights, deep teal and crimson accents, restrained brass. Strong central focal object with quiet surroundings, legible at small card size. No text, lettering, digits, banners or UI. Full bleed square illustration."
+  },
+  {
+    "id": "card-repeat-sultan",
+    "source": "/Users/anicolao/.codex/generated_images/01a13068-48b3-7953-8479-7caec6a9a692/exec-b5b25648-6012-4de4-80eb-575483046a23.png",
+    "prompt": "Use case: stylized-concept. ONE square illustration for an Istanbul Bonus card. a crimson velvet Ottoman throne with TWO large rubies presented before it on one ivory cushion. Warm hand-painted Ottoman board-game artwork, rich tactile paint, simplified large readable forms, cream highlights, deep teal and crimson accents, restrained brass. Strong central focal object with quiet surroundings, legible at small card size. No text, lettering, digits, banners or UI. Full bleed square illustration."
+  },
+  {
+    "id": "card-repeat-post",
+    "source": "/Users/anicolao/.codex/generated_images/01a13068-48b3-7953-8479-7caec6a9a692/exec-ae6196b5-cf64-4f21-9178-dd18c5aec10b.png",
+    "prompt": "Use case: stylized-concept. ONE square illustration for an Istanbul Bonus card. a white carrier pigeon above TWO sealed ivory envelopes with red wax seals. Warm hand-painted Ottoman board-game artwork, rich tactile paint, simplified large readable forms, cream highlights, deep teal and crimson accents, restrained brass. Strong central focal object with quiet surroundings, legible at small card size. No text, lettering, digits, banners or UI. Full bleed square illustration."
+  },
+  {
+    "id": "card-repeat-gemstone",
+    "source": "/Users/anicolao/.codex/generated_images/01a13068-48b3-7953-8479-7caec6a9a692/exec-4b3177b5-6719-4930-a36a-037ae7c3ae17.png",
+    "prompt": "Use case: stylized-concept. ONE square illustration for an Istanbul Bonus card. an open violet jeweler's box displaying TWO brilliant red rubies side by side. Warm hand-painted Ottoman board-game artwork, rich tactile paint, simplified large readable forms, cream highlights, deep teal and crimson accents, restrained brass. Strong central focal object with quiet surroundings, legible at small card size. No text, lettering, digits, banners or UI. Full bleed square illustration."
+  },
+  {
+    "id": "card-return-family",
+    "source": "/Users/anicolao/.codex/generated_images/01a13068-48b3-7953-8479-7caec6a9a692/exec-0525392d-0335-4c1c-8587-a454b9ba752b.png",
+    "prompt": "Use case: stylized-concept. ONE square illustration for an Istanbul Bonus card. a large polished teal spherical-headed wooden pawn passing through an open cream stone gate, sunlight beyond. Warm hand-painted Ottoman board-game artwork, rich tactile paint, simplified large readable forms, cream highlights, deep teal and crimson accents, restrained brass. Strong central focal object with quiet surroundings, legible at small card size. No text, lettering, digits, banners or UI. Full bleed square illustration."
+  },
+  {
+    "id": "card-stay",
+    "source": "/Users/anicolao/.codex/generated_images/01a13068-48b3-7953-8479-7caec6a9a692/exec-32dfe485-b158-4b84-b645-c8d4573d7e39.png",
+    "prompt": "Use case: stylized-concept. ONE square illustration for an Istanbul Bonus card. a broad ruby-robed Ottoman merchant seated calmly on a cream cushion beneath a red canopy. Warm hand-painted Ottoman board-game artwork, rich tactile paint, simplified large readable forms, cream highlights, deep teal and crimson accents, restrained brass. Strong central focal object with quiet surroundings, legible at small card size. No text, lettering, digits, banners or UI. Full bleed square illustration."
+  },
+  {
+    "id": "card-long-move",
+    "source": "/Users/anicolao/.codex/generated_images/01a13068-48b3-7953-8479-7caec6a9a692/exec-af4641e8-b3b1-49ee-92f7-5b4639716143.png",
+    "prompt": "Use case: stylized-concept. ONE square illustration for an Istanbul Bonus card. a single broad curved gold arrow following a sunlit cobblestone road through three distant Ottoman arches. Warm hand-painted Ottoman board-game artwork, rich tactile paint, simplified large readable forms, cream highlights, deep teal and crimson accents, restrained brass. Strong central focal object with quiet surroundings, legible at small card size. No text, lettering, digits, banners or UI. Full bleed square illustration."
+  },
+  {
+    "id": "card-wild-small-market",
+    "source": "/Users/anicolao/.codex/generated_images/01a13068-48b3-7953-8479-7caec6a9a692/exec-fce2cda5-f9f2-4dbf-8eeb-ee63f35072a0.png",
+    "prompt": "Use case: stylized-concept. ONE square illustration for an Istanbul Bonus card. a cheerful outdoor market stall exchanging a folded red cloth for a golden basket of oranges, two hands meet centrally. Warm hand-painted Ottoman board-game artwork, rich tactile paint, simplified large readable forms, cream highlights, deep teal and crimson accents, restrained brass. Strong central focal object with quiet surroundings, legible at small card size. No text, lettering, digits, banners or UI. Full bleed square illustration."
+  },
+  {
+    "id": "card-return-assistant",
+    "source": "/Users/anicolao/.codex/generated_images/01a13068-48b3-7953-8479-7caec6a9a692/exec-174a0e12-b820-40d6-b7b3-0d0aa4076705.png",
+    "prompt": "Use case: stylized-concept. ONE square illustration for an Istanbul Bonus card. a young teal-capped assistant carrying a large cream parcel toward a welcoming ruby-robed merchant. Warm hand-painted Ottoman board-game artwork, rich tactile paint, simplified large readable forms, cream highlights, deep teal and crimson accents, restrained brass. Strong central focal object with quiet surroundings, legible at small card size. No text, lettering, digits, banners or UI. Full bleed square illustration."
+  },
+  {
+    "id": "card-back",
+    "source": "/Users/anicolao/.codex/generated_images/01a13068-48b3-7953-8479-7caec6a9a692/exec-823bfe65-06c9-43d3-b854-3a9ab4a5673a.png",
+    "prompt": "Use case: stylized-concept. ONE square illustration for an Istanbul Bonus card. an elegant symmetrical Ottoman tulip medallion in ivory and gold on a smooth deep teal enamel field, wide clean border of small gold corner leaves, no scenery. Warm hand-painted Ottoman board-game artwork, rich tactile paint, simplified large readable forms, cream highlights, deep teal and crimson accents, restrained brass. Strong central focal object with quiet surroundings, legible at small card size. No text, lettering, digits, banners or UI. Full bleed square illustration."
+  },
+  {
+    "id": "demand-large",
+    "source": "/Users/anicolao/.codex/generated_images/01a13068-48b3-7953-8479-7caec6a9a692/exec-4406c371-aca1-4805-882e-8d9d8c21b949.png",
+    "prompt": "Use case: precise-object-edit. Regenerate this large market offer tray, keeping EXACTLY the same five circular wells in the same positions and sizes. Smooth ivory fields, simple clean satin brass edges, remove almost all engraving leaving one small floral center. Make the external edge a strong scalloped cream silhouette. Painted Ottoman game component, not vector. No symbols, text, numbers or goods in wells. Transparent outside tray."
+  },
+  {
+    "id": "demand-small",
+    "source": "/Users/anicolao/.codex/generated_images/01a13068-48b3-7953-8479-7caec6a9a692/exec-90b54aef-c3f7-4a4f-acbf-3ab745638984.png",
+    "prompt": "Use case: precise-object-edit. Regenerate this small market offer tray, keeping EXACTLY the same five circular wells in the same positions and sizes. Smooth ivory fields, simple clean satin brass edges, remove almost all engraving leaving one small floral center. Strong emerald-green outer rim clearly distinguishes this from large market. Painted Ottoman game component, not vector. No symbols, text, numbers or goods in wells. Transparent outside tray."
+  },
+  {
+    "id": "die",
+    "source": "/Users/anicolao/.codex/generated_images/01a13068-48b3-7953-8479-7caec6a9a692/exec-d92393e8-e0f9-4e88-83d2-86054d765811.png",
+    "prompt": "Exactly ONE isolated plain ivory die in three-quarter view. Four very large black round pips on front face. Top and right faces have ordinary black pips. Warm hand-painted shading with a simple dark contour. No decoration, no colored patterns, no building, no medallion, no plaque, no icon behind it. Nothing but the one die. True transparent background, generous empty padding."
+  },
+  {
+    "id": "dice-pair",
+    "source": "/Users/anicolao/.codex/generated_images/01a13068-48b3-7953-8479-7caec6a9a692/exec-1c90f708-6c16-42fd-8fab-b287077e546c.png",
+    "prompt": "Use case: stylized-concept. ONE transparent Istanbul board-game icon. A pair of ivory gaming dice with large dark round pips, one showing three and the other showing four. Clear separated silhouettes, three quarter view. Hand-painted Ottoman game style, warm light, bold contours, broad color planes and highly legible at 24px. Centered complete object, 8% padding. No background, frame, cast shadow or text except the explicitly requested question mark."
+  },
+  {
+    "id": "ruby-supply",
+    "source": "/Users/anicolao/.codex/generated_images/01a13068-48b3-7953-8479-7caec6a9a692/exec-3959a06e-f7c9-4b75-945e-9075a6c7b099.png",
+    "prompt": "Use case: stylized-concept. ONE transparent Istanbul board-game icon. A shallow plain brass bowl containing three large brilliant crimson rubies with bold clean facets. No ornate texture. Hand-painted Ottoman game style, warm light, bold contours, broad color planes and highly legible at 24px. Centered complete object, 8% padding. No background, frame, cast shadow or text except the explicitly requested question mark."
+  },
+  {
+    "id": "goods-supply",
+    "source": "/Users/anicolao/.codex/generated_images/01a13068-48b3-7953-8479-7caec6a9a692/exec-9e47b791-fd78-47f8-bd7a-824534b311d1.png",
+    "prompt": "Use case: stylized-concept. ONE transparent Istanbul board-game icon. A shallow wooden tray with four compartments containing red folded fabric, green spice sack, orange fruit and blue sapphire casket. Strong distinct silhouettes. Hand-painted Ottoman game style, warm light, bold contours, broad color planes and highly legible at 24px. Centered complete object, 8% padding. No background, frame, cast shadow or text except the explicitly requested question mark."
+  },
+  {
+    "id": "help-off",
+    "source": "/Users/anicolao/.codex/generated_images/01a13068-48b3-7953-8479-7caec6a9a692/exec-6371b796-4f92-442a-a16f-089f7c2ff68c.png",
+    "prompt": "Use case: stylized-concept. ONE transparent Istanbul board-game icon. One round deep teal enamel medallion with a bold ivory QUESTION MARK, restrained satin brass rim. Help button icon. Hand-painted Ottoman game style, warm light, bold contours, broad color planes and highly legible at 24px. Centered complete object, 8% padding. No background, frame, cast shadow or text except the explicitly requested question mark."
+  },
+  {
+    "id": "help-on",
+    "source": "/Users/anicolao/.codex/generated_images/01a13068-48b3-7953-8479-7caec6a9a692/exec-388d12e4-cb1f-4ccc-8a0b-82b0fc42a7eb.png",
+    "prompt": "Use case: stylized-concept. ONE transparent Istanbul board-game icon. One round ivory enamel medallion with a bold deep teal QUESTION MARK, bright gold rim and four short gold rays outside the rim. Help mode active button icon. Hand-painted Ottoman game style, warm light, bold contours, broad color planes and highly legible at 24px. Centered complete object, 8% padding. No background, frame, cast shadow or text except the explicitly requested question mark."
+  },
+  {
+    "id": "table-background",
+    "source": "/Users/anicolao/.codex/generated_images/01a13068-48b3-7953-8479-7caec6a9a692/exec-8e4a8c31-e2ee-4d8d-b60a-62afc4d1a722.png",
+    "prompt": "Use case: stylized-concept. Wide landscape background for an Istanbul Ottoman board game tabletop. Quiet deep petrol-teal woven cloth covering a table, faint hand-painted Ottoman leaf and tulip motifs only around the outermost edges, subtle warm falloff, broad nearly uniform empty central area. Painterly tactile natural fabric, understated and elegant. Low contrast so brightly colored game tiles stand out. No objects, frames, counters, text, numbers, buildings, perspective lines, or busy pattern. Entire image covered in cloth; 16:9 composition."
+  }
+]
