@@ -13,7 +13,7 @@ test('the production gallery renders the same logical components used during pla
   );
   reviewer.setMetadata(
     'Reviewing every Istanbul production component',
-    'The reviewer opens the dedicated gallery without creating a game and walks every page of live locations, player trays, playing pieces, Bonus cards, Market demands, and physical components. Locations are the same rectangular, titled, rounded LocationTile instances used on the board; their status apparatus and occupants come from a deterministic game projection. Trays use PlayerMat, rules cards use BonusCard, and demands use MarketDemand. Stable review IDs, renderer names, representative props, loaded production images, responsive pagination, and the no-scroll/no-clipping contract are checked after every input.'
+    'The reviewer opens the dedicated gallery without creating a game and walks every page of live locations, player trays, playing pieces, Bonus cards, Market demands, and physical components. Locations are the same rectangular, titled, rounded LocationTile instances used on the board; their status apparatus and occupants come from a deterministic game projection. Trays use PlayerMat, rules cards use BonusCard, and demands use MarketDemand. Stable review IDs, renderer names, representative props, loaded production images, responsive pagination, intentional preview scrolling, and unclipped visible controls are checked after every input.'
   );
 
   await page.goto('/gallery/');
@@ -83,7 +83,7 @@ test('the production gallery renders the same logical components used during pla
           );
           await expect(merchant).toHaveAttribute('data-piece-glow', 'true');
           await expect(merchant).toHaveCSS('filter', 'none');
-          await expect(merchant.locator('img')).toHaveAttribute('src', /pieces\/wells\/merchant-/);
+          await expect(merchant.locator('img')).toHaveAttribute('src', /reskin\/compact\/merchant-/);
         }
       }
     ]
@@ -540,7 +540,7 @@ async function expectTransparentComponentArt(
   grid: Locator,
   expectedCount: number
 ) {
-  const components = grid.locator('[data-art-kind="component"]');
+  const components = grid.locator('.asset-preview [data-art-kind="component"]');
   await expect(components).toHaveCount(expectedCount);
   const alphaChecks = await components.evaluateAll(async (elements) =>
     Promise.all(
@@ -569,7 +569,8 @@ async function expectTransparentComponentArt(
           [canvas.width - 1, canvas.height - 1]
         ];
         const transparentCorners = corners.every(
-          ([x, y]) => context.getImageData(x, y, 1, 1).data[3] === 0
+          ([x, y]) => // Downsampling may leave a one-level alpha rounding residue.
+          context.getImageData(x, y, 1, 1).data[3] <= 1
         );
         const step = Math.max(
           1,

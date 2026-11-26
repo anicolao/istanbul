@@ -48,6 +48,12 @@ export async function expectInterfaceToFit(page: Page) {
         const viewport = dockScroll.getBoundingClientRect();
         if (rect.left < viewport.left - tolerance || rect.right > viewport.right + tolerance) return false;
       }
+      // The component gallery deliberately scrolls to preserve readable previews.
+      const galleryScroll = element.closest('.asset-grid[aria-label="Component previews"]');
+      if (galleryScroll && galleryScroll !== element) {
+        const viewport = galleryScroll.getBoundingClientRect();
+        if (rect.top < viewport.top - tolerance || rect.bottom > viewport.bottom + tolerance) return false;
+      }
       return true;
     };
     const clippedByAncestor = (element: HTMLElement) => {

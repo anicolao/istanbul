@@ -1,4 +1,4 @@
-# Legibility reskin — first review
+# Legibility reskin
 
 70 new raster assets generated with the built-in image-generation tool on 2026-11-26. Exact prompts and original generation paths are recorded in `manifest.json`. The project-consumed images are in `static/art/reskin/`; compact variants use the same artwork, cropped to visible bounds and downsampled for small wells.
 
@@ -19,4 +19,4 @@ All 16 locations, 19 player/visitor/first-player figures, 11 Bonus illustrations
 
 ## Review status
 
-Unapproved visual direction. No tests run and no screenshot baselines updated. Browser previews are inspected for loading and obvious presentation problems only. Particularly review room-art cropping under the frame, resource recognition at 24px, pawn colour consistency, mat slot alignment, and card text density before committing to the direction. Existing source assets remain available in git for comparison; current shared renderers point to the new set.
+The visual direction has been approved for browser regression review. Screenshot baselines now use the reskin across gameplay, the component gallery, and the animation lab. Regression coverage checks fixed-layout Bonus-card text at phone and desktop sizes in Chromium and WebKit, including bounds and consistent line breaks while scaling. Normal verification is required before preview deployment. Existing source assets remain available in git for comparison; current shared renderers point to the new set.

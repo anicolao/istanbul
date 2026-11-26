@@ -9,7 +9,7 @@ for (const [scenario, npc] of [['governor-pay', 'governor'], ['smuggler', 'smugg
       return room && room.getAnimations().every((animation) => animation.playState !== 'running');
     });
     await page.getByRole('button', { name: 'Trigger', exact: true }).click();
-    const coin = page.locator('.motion-token').filter({ has: page.locator('img[src$="/lira-gold-v2.png"]') }).first();
+    const coin = page.locator('.motion-token').filter({ has: page.locator('img[src$="/lira.png"]') }).first();
     await expect(coin).toBeVisible();
     const distance = await coin.evaluate((node, visitor) => {
       const surface = node.closest('[data-motion-active]')!;
@@ -38,6 +38,8 @@ test('arrival payments wait for zoom and a purchased gemstone stays off the offe
   await page.goto(
     '/dev/animations/?scenario=arrival-16&players=4&surface=shared-table&seat=6'
   );
+  await expect(page.getByRole('combobox', { name: 'Scenario', exact: true })).toHaveValue('arrival-16');
+  await expect(page.locator('[data-motion-active]')).toHaveAttribute('data-motion-active', 'false');
   await page.getByRole('button', { name: 'Trigger', exact: true }).click();
   const table = page.locator('[data-motion-active]');
   await expect(table).toHaveAttribute('data-motion-active', 'true');
@@ -72,7 +74,7 @@ test('arrival payments wait for zoom and a purchased gemstone stays off the offe
               node
                 .querySelector('img')
                 ?.getAttribute('src')
-                ?.endsWith('/lira-gold-v2.png') &&
+                ?.endsWith('/lira.png') &&
               Number(getComputedStyle(node).opacity) > 0
           ).length
       )

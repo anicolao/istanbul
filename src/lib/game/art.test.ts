@@ -21,7 +21,13 @@ describe('production art manifest', () => {
     expect(Object.keys(playerMatArt)).toEqual(playerColorNames);
     expect(Object.keys(bonusCardArt)).toHaveLength(12);
     expect(Object.keys(componentArt.mosque)).toEqual(['fabric', 'spice', 'fruit', 'jewelry']);
-    expect(new Set(assets).size).toBe(assets.length);
+    // All seats intentionally share one tray body; decks use the card back.
+    expect(new Set(Object.values(playerMatArt)).size).toBe(1);
+    expect(bonusCardArt.deck).toBe(bonusCardArt.back);
+    const distinct = flattenAssets({ locationArt, pieceArt, componentArt,
+      cards: Object.fromEntries(Object.entries(bonusCardArt).filter(([key]) => key !== 'deck')),
+      mat: playerMatArt.ruby });
+    expect(new Set(distinct).size).toBe(distinct.length);
   });
 
   it.each(assets)('ships %s in the static production bundle', (asset) => {
