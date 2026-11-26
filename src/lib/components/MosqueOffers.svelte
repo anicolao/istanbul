@@ -82,7 +82,7 @@
   }
   .powers {
     display: flex;
-    gap: 8%;
+    gap: 4%;
     justify-content: center;
   }
   .power {
@@ -91,8 +91,8 @@
     grid-template-columns: 1fr;
     justify-items: center;
     gap: 2%;
-    width: 42%;
-    padding: 3%;
+    width: 46%;
+    padding: 2%;
     box-sizing: border-box;
     border: 1px solid #c5a15c;
     border-radius: 8%;
@@ -107,6 +107,7 @@
     filter: none;
   }
   .requirement,
+  .requirement { width: 100%; min-height: 23cqw; flex-wrap: wrap; align-content: center; }
   .payment {
     display: flex;
     align-items: center;
@@ -118,19 +119,20 @@
   }
   .requirement :global(.game-art),
   .payment :global(.game-art) {
-    width: 7cqw;
-    height: 7cqw;
+    width: 14cqw;
+    height: 14cqw;
     flex: 0 0 auto;
     filter: none;
   }
+  .requirement { width: 100%; min-height: 23cqw; flex-wrap: wrap; align-content: center; }
   .payment {
     font-size: 8cqw;
     gap: 1cqw;
   }
-  .discard { width: 6cqw; height: 7cqw; }
+  .discard { width: 6cqw; height: 11.5cqw; }
   .payment :global(.game-art) {
-    width: 7cqw;
-    height: 7cqw;
+    width: 14cqw;
+    height: 14cqw;
   }
   .payment b {
     position: absolute;

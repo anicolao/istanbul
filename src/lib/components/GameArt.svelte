@@ -79,7 +79,7 @@
       return componentPaths[component];
     }
     if (kind === 'piece' && piece) {
-      if (renderSize === 'well') return `art/game/pieces/wells/${piece === 'merchant' ? `merchant-${color}` : piece}.png`;
+      if (renderSize === 'well') return `art/reskin/compact/${piece === 'merchant' ? `merchant-${color}` : piece}.png`;
       if ((piece === 'merchant' || piece === 'assistant' || piece === 'family') && color) return pieceArt[piece][color];
       if (piece === 'neutral-merchant') return pieceArt.neutralMerchant;
       if (piece === 'governor') return pieceArt.governor;

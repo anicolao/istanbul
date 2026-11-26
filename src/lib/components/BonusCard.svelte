@@ -28,6 +28,29 @@
       ? bonusCardArt[card.effect]
       : bonusCardArt[reverse === 'card-deck' ? 'deck' : 'back']
   );
+  function fitCopy(node: HTMLElement, _identity: string | undefined) {
+    let disposed = false;
+    function fit() {
+      if (disposed || !node.isConnected || !node.clientHeight) return;
+      // Measure the fixed 200 × 400 print layout, never its animated scale.
+      let low = 12, high = 48;
+      for (let step = 0; step < 10; step++) {
+        const size = (low + high) / 2;
+        node.style.setProperty('--copy-size', `${size}px`);
+        if (node.scrollHeight <= node.clientHeight && node.scrollWidth <= node.clientWidth) low = size;
+        else high = size;
+      }
+      node.style.setProperty('--copy-size', `${Math.floor(low * 4) / 4}px`);
+    }
+    function schedule() {
+      queueMicrotask(fit);
+      void document.fonts.ready.then(fit);
+    }
+    const observer = new ResizeObserver(fit);
+    observer.observe(node);
+    schedule();
+    return { update(_identity: string | undefined) { schedule(); }, destroy() { disposed = true; observer.disconnect(); } };
+  }
   function sizeCard(node: HTMLElement) {
     // Scale the fixed print layout in HTML. WebKit can paint positioned HTML
     // inside an SVG foreignObject at its unscaled size despite correct bounds.
@@ -65,8 +88,10 @@
       data-art-kind="card"
     ></span>
     {#if card}
-      <strong data-bonus-text="title">{card.title}</strong>
-      <p data-bonus-text="rules">{card.text}</p>
+      <div class="card-copy" use:fitCopy={card.id}>
+        <strong data-bonus-text="title">{card.title}</strong>
+        <p data-bonus-text="rules">{card.text}</p>
+      </div>
     {/if}
   </div>
 </article>
@@ -86,7 +111,7 @@
     padding: 0;
     overflow: hidden;
     border-radius: 6%;
-    color: #fffaf0;
+    color: #2c2115;
     text-align: left;
     box-shadow: 0 0.8rem 1.4rem #4b2c2240;
   }
@@ -103,19 +128,19 @@
     flex-direction: column;
     justify-content: end;
     overflow: hidden;
-    padding: 9px;
+    padding: 12px;
     border: 2px solid #d49d42;
     border-radius: 12px;
-    background: #173f43;
+    background: #f6e8c9;
   }
   .printed-card::after {
     position: absolute;
     inset: 0;
     background: linear-gradient(
       to bottom,
-      transparent 34%,
-      rgb(5 25 27 / 20%) 50%,
-      rgb(5 25 27 / 96%) 100%
+      transparent 36%,
+      #f6e8c9 41%,
+      #f6e8c9 100%
     );
     content: '';
   }
@@ -124,32 +149,31 @@
     inset: 0;
     width: 100%;
     height: 100%;
-    background: var(--card-art) center / cover no-repeat;
+    background: var(--card-art) center top / 100% auto no-repeat;
   }
-  strong,
-  p {
-    position: relative;
+  .card-copy {
+    position: absolute;
     z-index: 1;
-    flex: none;
-    text-shadow: 0 1px 3px #000;
+    top: 164px;
+    bottom: 12px;
+    left: 10px;
+    right: 10px;
+    color: #2c2115;
+    font-size: var(--copy-size, 20px);
   }
   strong {
-    margin-top: auto;
-    font:
-      700 26px/0.94 'Cormorant Garamond',
-      serif;
+    display: block;
+    font: 700 1.25em/1.02 'Cormorant Garamond', serif;
   }
   p {
-    margin: 5.2px 0 0;
-    font:
-      13.6px/1.1 'Atkinson Hyperlegible',
-      sans-serif;
+    margin: 8px 0 0;
+    font: 1em/1.12 'Atkinson Hyperlegible', sans-serif;
   }
   .back {
     padding: 0;
   }
   .back .card-face {
-    background-size: 104% 110%;
+    background-size: cover;
     background-position: center top;
   }
   .back::after {

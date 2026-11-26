@@ -80,7 +80,7 @@
   />
   <img
     class="frame"
-    src={`${base}/art/game/frames/location-frame-v1.png`}
+    src={`${base}/art/reskin/location-frame.png`}
     alt=""
     draggable="false"
   />
@@ -208,8 +208,8 @@
     right: 24%;
   }
   .mosque-position {
-    left: 35%;
-    right: 35%;
+    left: 32%;
+    right: 32%;
     top: 23%;
   }
   .expanded .sultan-position,
@@ -315,15 +315,16 @@
       700 6cqw/1 'Cormorant Garamond',
       serif;
     white-space: nowrap;
-    text-shadow: 0 1px 2px #000;
+    color: #352617;
+    text-shadow: none;
   }
   .piece-well {
     position: absolute;
     z-index: 3;
     top: 24%;
-    background: linear-gradient(90deg, #b9ac89, #e1d5b8 45%, #c5b795);
+    background: #f4e5c5;
     border-radius: 0.7cqw;
-    box-shadow: inset 0 0 0.8cqw #5d4a2e;
+    box-shadow: none;
     width: 9%;
     height: 50%;
     display: grid;
@@ -399,17 +400,15 @@
     height: 95%;
     filter: drop-shadow(0 0.2cqw 0.3cqw #000);
   }
-  .reward[data-location-reward='ruby'] :global(.game-art) {
-    /* Optical alignment of the ruby artwork within the frame's round well. */
-    transform: translate(-0.15cqw, -0.15cqw);
-  }
+
   .location-number {
     right: 4.8%;
     bottom: 9.3%;
     font:
       700 6cqw/1 'Cormorant Garamond',
       serif;
-    text-shadow: 0 1px 3px #000;
+    color: #352617;
+    text-shadow: none;
   }
   .location-number > span {
     /* Center the old-style “11” in the well. Keep this same baseline for all

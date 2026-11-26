@@ -198,9 +198,14 @@
       ><span aria-hidden="true"></span>Istanbul</a
     >
     <div>
-      <p>Production review room</p>
+      <p>Reskin · visual direction review</p>
       <h1>Component gallery</h1>
       <small>{renderedCount} rendered states · shared with live play</small>
+      <nav class="review-links" aria-label="Review previews">
+        <a href={`${base}/dev/animations/?scenario=legibility-review`}>Animation lab</a>
+        <a href={`${base}/dev/animations/mobile?scenario=legibility-review`}>Phone & tablet</a>
+        <a href={`${base}/dev/cards/`}>Bonus cards</a>
+      </nav>
     </div>
     <p class="manifest-status" role="status" data-status="synced">
       <i></i>Components live
@@ -256,6 +261,11 @@
             aria-label={`Inspect ${item.title}`}
             onclick={() => (selected = item)}>Review</button
           >
+          {#if item.kind === 'component' && item.component !== 'bonus-deck'}
+            <div class="size-proof" aria-label="Actual size comparison">
+              {#each [24, 32, 48] as size}<span><span style={`width:${size}px;height:${size}px;display:block`}><GameArt kind="component" component={gameArtComponent(item)} /></span><small>{size}px</small></span>{/each}
+            </div>
+          {/if}
           <code>{rendererName(item)}</code>
         </article>
       {/each}
@@ -316,6 +326,12 @@
 </main>
 
 <style>
+  .review-links { display:flex; flex-wrap:wrap; gap: .5rem 1rem; margin-top:.6rem; font-size:.85rem; }
+  .review-links a { color:#f0cf83; font-weight:700; }
+  .size-proof { grid-column:1 / -1; grid-row:3; display:flex; align-items:end; justify-content:center; gap:.6rem; padding:.4rem; background:#213f3c; border-radius:.4rem; color:#fff4d8; }
+  .size-proof > span { display:grid; justify-items:center; gap:.3rem; }
+  .size-proof :global(.game-art) { width:100%; height:100%; }
+  .size-proof small {font:11px sans-serif;}
   .tray-component :global(.mat) {
     height: 90%;
   }
@@ -388,7 +404,7 @@
   }
   .gallery-header > div p {
     color: #efca7d;
-    font-size: 0.56rem;
+    font-size: 0.8rem;
     font-weight: 700;
     letter-spacing: 0.14em;
     text-transform: uppercase;
@@ -501,9 +517,9 @@
     min-height: 0;
     display: grid;
     grid-template-columns: repeat(3, minmax(0, 1fr));
-    grid-template-rows: repeat(2, minmax(0, 1fr));
+    grid-template-rows: repeat(2, minmax(260px, 1fr));
     gap: 0.55rem;
-    overflow: hidden;
+    overflow: auto;
   }
   .asset-card {
     position: relative;
@@ -521,6 +537,9 @@
     text-align: left;
     background: #efe0bd;
   }
+  .asset-card:has(.size-proof) { grid-template-rows: minmax(90px,1fr) auto auto; }
+  .asset-card:has(.size-proof) .asset-copy { grid-row:2; }
+  .asset-card:has(.size-proof) code { grid-row:2; grid-column:2; }
   .asset-card:has(.inspect-component:hover),
   .asset-card:has(.inspect-component:focus-visible) {
     border-color: #a43b32;
@@ -547,7 +566,7 @@
     white-space: nowrap;
   }
   .asset-copy strong {
-    font-size: 0.67rem;
+    font-size: 0.85rem;
   }
   .asset-copy small {
     color: #5f706d;
@@ -836,7 +855,7 @@
     }
     .asset-grid {
       grid-template-columns: repeat(2, minmax(0, 1fr));
-      grid-template-rows: repeat(3, minmax(0, 1fr));
+      grid-template-rows: repeat(3, minmax(250px, 1fr));
       gap: 0.3rem;
     }
     .asset-card {
@@ -845,10 +864,10 @@
       border-radius: 0.45rem;
     }
     .asset-copy strong {
-      font-size: 0.56rem;
+      font-size: 0.8rem;
     }
     .asset-copy small {
-      font-size: 0.43rem;
+      font-size: 0.65rem;
     }
     .asset-card code {
       max-width: 4.6rem;

@@ -705,7 +705,7 @@
   bind:this={surface}
   class:personal
   class:docked={personal}
-  style={`--log-x:${controls.log.x}px;--log-y:${controls.log.y}px;--undo-x:${controls.undo.x}px;--undo-y:${controls.undo.y}px;--players:${game.players.length};--compact-rows:${Math.ceil(game.players.length / 2)};--courtyard:url('${base}/art/bazaar-courtyard.png')`}
+  style={`--log-x:${controls.log.x}px;--log-y:${controls.log.y}px;--undo-x:${controls.undo.x}px;--undo-y:${controls.undo.y}px;--players:${game.players.length};--compact-rows:${Math.ceil(game.players.length / 2)};--courtyard:url('${base}/art/reskin/table-background.png')`}
   aria-label="Shared Istanbul table"
   data-motion-active={Boolean(motion)}
   data-e2e-fit
