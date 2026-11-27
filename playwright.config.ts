@@ -31,6 +31,7 @@ export default defineConfig({
         '--deterministic-mode',
         '--disable-skia-runtime-opts',
         '--disable-partial-raster',
+        '--disable-checker-imaging',
         '--disable-gpu',
         '--use-gl=swiftshader'
       ]
