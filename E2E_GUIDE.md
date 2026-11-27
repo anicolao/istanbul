@@ -248,6 +248,8 @@ Playwright runs pinned Chromium with:
 - fixed phone portrait, phone landscape, tablet, desktop, and wide tabletop
   viewports where required;
 - device scale factor 1;
+- Chromium deterministic rendering, fixed Skia CPU raster paths, and no partial
+  raster reuse, so rounded-edge colours do not depend on rendering history;
 - `en-CA` locale and `America/Toronto` timezone;
 - service workers blocked;
 - animations disabled for screenshot comparison;
