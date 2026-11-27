@@ -250,6 +250,8 @@ Playwright runs pinned Chromium with:
 - device scale factor 1;
 - Chromium deterministic rendering, fixed Skia CPU raster paths, and no partial
   raster reuse, so rounded-edge colours do not depend on rendering history;
+- synchronous image decoding (`--disable-checker-imaging`) so tiny repeated
+  card artwork is not captured from a deferred decode;
 - `en-CA` locale and `America/Toronto` timezone;
 - service workers blocked;
 - animations disabled for screenshot comparison;

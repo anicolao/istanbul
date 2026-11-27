@@ -11,7 +11,8 @@ test('an unaffordable merchant waits for acknowledgement before the bot can act'
     'Choose before losing a turn',
     'An unaffordable neutral merchant opens a warning on the room itself. Backing out leaves all game state unchanged; only the explicit lost-turn button commits the move and lets the bot play.'
   );
-  const roomCode = testInfo.project.name === 'phone' ? 'TOLLP' : 'TOLLD';
+  const repeat = String.fromCharCode('L'.charCodeAt(0) + testInfo.repeatEachIndex);
+  const roomCode = `TOL${repeat}${testInfo.project.name === 'phone' ? 'P' : 'D'}`;
   const phoneContext = await browser.newContext({
     baseURL: String(testInfo.project.use.baseURL)
   });
