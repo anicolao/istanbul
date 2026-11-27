@@ -175,6 +175,9 @@ export class TestStepHelper {
       'data-status',
       options.status ?? 'synced'
     );
+    // Game state can be synced while an undo/resource flight is still running.
+    // Screenshot animation fast-forwarding alone cannot drain chained motion stages.
+    await expect(this.page.locator('[data-motion-active="true"]')).toHaveCount(0);
     await this.page.bringToFront();
     await this.page.mouse.move(0, 0);
     await expectInterfaceToFit(this.page);

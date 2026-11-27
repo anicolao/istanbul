@@ -254,10 +254,11 @@ Playwright runs pinned Chromium with:
 - hidden carets;
 - deterministic build metadata;
 - stable repository-managed fonts; and
-- zero allowed differing pixels.
+- zero allowed differing pixels and zero colour-difference threshold
+  (`maxDiffPixels: 0`, `threshold: 0`); no per-screenshot tolerance overrides.
 
 Before every capture, the shared helper moves the pointer away, waits for
-explicit settled state, and enforces the viewport-fit invariant. Every tested
+explicit settled state (including completion of resource and undo motion), and enforces the viewport-fit invariant. Every tested
 interface must keep the document at the viewport size and scroll position zero;
 every visible control and every marked layout region must remain inside the
 viewport; and every marked board, panel, tray, and hand must have no hidden or
