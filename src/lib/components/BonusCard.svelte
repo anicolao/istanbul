@@ -170,6 +170,13 @@
     font: 1em/1.12 'Atkinson Hyperlegible', sans-serif;
   }
   .back {
+    /* Backs contain no text: paint directly at their displayed size instead of
+       downscaling an already rasterized 200px print surface. */
+    transform: none;
+    width: 100%;
+    height: 100%;
+    border-width: calc(2px * var(--card-scale, 0));
+    border-radius: 6% / 3%;
     padding: 0;
   }
   .back .card-face {

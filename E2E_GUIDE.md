@@ -281,6 +281,13 @@ Regenerate local baselines intentionally with:
 nix develop --command bun run test:e2e:update-snapshots
 ```
 
+WebKit also keeps native macOS CI baselines in `screenshots/macos-ci/`.
+CoreGraphics edge colours differ slightly between the local and hosted macOS
+versions. Both sets retain zero pixel and colour tolerance. Generate the CI set
+with the explicit workflow inputs `update_snapshots=true` and
+`snapshot_platform=macos-webkit`; review its artifact before committing it.
+Ordinary verification never updates either set.
+
 Linux and local baselines use separate filenames because Chromium text
 rasterization can differ by platform even with bundled fonts. Generate Linux
 baselines through an explicit CI workflow and upload them as an artifact. Commit

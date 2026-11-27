@@ -41,6 +41,9 @@ export default defineConfig({
   projects: [
     {
       name: 'webkit-phone',
+      snapshotPathTemplate: process.env.CI && process.platform === 'darwin'
+        ? '{testDir}/{testFileDir}/screenshots/macos-ci/{arg}{ext}'
+        : '{testDir}/{testFileDir}/screenshots/{arg}{ext}',
       testMatch: ['**/035-bonus-card-rendering/*.spec.ts', '**/037-ruby-dice/*.spec.ts'],
       use: {
         browserName: 'webkit', viewport: { width: 393, height: 852 },
@@ -52,6 +55,9 @@ export default defineConfig({
     },
     {
       name: 'webkit-desktop',
+      snapshotPathTemplate: process.env.CI && process.platform === 'darwin'
+        ? '{testDir}/{testFileDir}/screenshots/macos-ci/{arg}{ext}'
+        : '{testDir}/{testFileDir}/screenshots/{arg}{ext}',
       testMatch: ['**/035-bonus-card-rendering/*.spec.ts', '**/036-occupied-table-edges/*.spec.ts', '**/037-ruby-dice/*.spec.ts'],
       use: {
         browserName: 'webkit', viewport: { width: 1280, height: 1000 },
