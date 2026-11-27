@@ -45,6 +45,12 @@ describe('production art manifest', () => {
     }
   });
 
+  it('keeps the card back in its printed 1:2 format for stable miniature rendering', () => {
+    const png = readFileSync(resolve(process.cwd(), 'static', bonusCardArt.back));
+    expect(png.readUInt32BE(16)).toBe(256);
+    expect(png.readUInt32BE(20)).toBe(512);
+  });
+
   it('backs the rendered review catalogue with every source asset and demand state', () => {
     expect(rawGalleryItems).toHaveLength(72);
     expect(new Set(rawGalleryItems.map(({ assetPath }) => assetPath))).toEqual(new Set(assets));

@@ -35,3 +35,8 @@ were 506, 468, 478, 468, 468, 341, 341, 341, and 341 pixels respectively; width 
 512. Padding starts at `floor((512 - height) / 2)` above the image, with the
 remaining transparent rows below. No source pixels were resampled or repainted.
 The art manifest test protects this canvas contract.
+
+The card back uses a 256 × 512 canvas matching the printed card's 1:2 ratio.
+It is the central crop of the original square 512 × 512 image, without
+resampling; these are the same central pixels previously shown by `cover`.
+This avoids decoding a square texture through a narrow crop at miniature sizes.
