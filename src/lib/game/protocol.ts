@@ -124,11 +124,11 @@ export const modeNames: Record<RoomMode, string> = {
 };
 
 export function isRoomCode(value: string): boolean {
-  return /^[A-Z]{5}$/.test(value);
+  return /^(?:[A-Z]{5}|[A-F0-9]{8})$/.test(value);
 }
 
 export function normalizeRoomCode(value: string): string {
-  return value.toUpperCase().replace(/[^A-Z]/g, '').slice(0, 5);
+  return value.toUpperCase().trim();
 }
 
 export function isTablePosition(value: unknown): value is TablePosition {

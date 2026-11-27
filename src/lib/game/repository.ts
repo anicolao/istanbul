@@ -2,6 +2,7 @@ import {
   collection,
   doc,
   getDoc,
+  getDocsFromServer,
   onSnapshot,
   serverTimestamp,
   setDoc,
@@ -9,10 +10,13 @@ import {
   type Timestamp,
   type Unsubscribe
 } from 'firebase/firestore';
+import { launchAction, type GameLaunch } from './launch';
+import { replayEvents } from './reducer';
 import { getStoredValue, removeStoredValue, setStoredValue } from '$lib/browser-storage';
 import { manifestVersions, reducerVersion, rulesEdition, schemaVersion, type CanonicalEvent } from './protocol';
 
 export interface EventRepository {
+  launch(launch: GameLaunch): Promise<'waiting' | 'seated'>;
   append(type: string, payload: Record<string, unknown>): Promise<string>;
   retryPending(): Promise<string | null>;
   pendingId(): string | null;
@@ -96,6 +100,22 @@ export function createEventRepository(db: Firestore, roomCode: string, actorUid:
   }
 
   return {
+    launch: (launch) => withWriteLock(async () => {
+      // Read committed history inside the cross-tab lock, never a stale cache.
+      const snapshot = await getDocsFromServer(events);
+      const history = snapshot.docs.map(document => {
+        const data = document.data();
+        return { ...data, id: document.id, createdAt: (data.createdAt as Timestamp).toMillis() } as CanonicalEvent;
+      });
+      const state = replayEvents(history);
+      if (history.length && !state.room) throw new Error('This table needs its history checked before you can join.');
+      const action = launchAction(launch, state.room, actorUid);
+      if (action === 'create') await append('game/created', {
+        roomCode, hostName: launch.name, maxPlayers: 5, layout: 'short-path', mode: 'personal-screens'
+      });
+      if (action === 'join') await append('player/joined', { name: launch.name });
+      return action === 'waiting' ? 'waiting' : 'seated';
+    }),
     append: (type, payload) => withWriteLock(() => append(type, payload)),
     retryPending: () => withWriteLock(() => { const pending = readPending(); return pending ? send(pending) : Promise.resolve(null); }),
     pendingId() { return readPending()?.id ?? null; },
