@@ -95,7 +95,7 @@ test('two merchants create, join, configure, ready, and replay a room', async ({
     await bora.step('guest-joins-room', {
       description: 'Bora joins and receives clockwise seat two',
       verifications: [
-        { spec: 'Bora sees himself in seat two and Ada in seat one', check: async () => { await expect(boraPage.getByText('Bora · you')).toBeVisible(); await expect(boraPage.getByText('Ada')).toBeVisible(); } },
+        { spec: 'Bora sees himself in seat two and Ada in seat one', check: async () => { await expect(boraPage.getByText('Bora · you')).toBeVisible(); await expect(boraPage.getByText('Ada', { exact: true })).toBeVisible(); } },
         { spec: 'The guest sees the Short Path configuration selected by Ada', check: async () => expect(boraPage.getByText('Short Path', { exact: true })).toBeVisible() },
         { spec: 'The joined projection contains two clean events and ordered seats', check: async () => expectProjection(boraPage, { screen: 'lobby', eventCount: 2, diagnosticCount: 0, seatCount: 2, ready: [false, false], localSeat: 'Bora' }) }
       ]

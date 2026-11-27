@@ -20,3 +20,18 @@ All 16 locations, 19 player/visitor/first-player figures, 11 Bonus illustrations
 ## Review status
 
 The visual direction has been approved for browser regression review. Screenshot baselines now use the reskin across gameplay, the component gallery, and the animation lab. Regression coverage checks fixed-layout Bonus-card text at phone and desktop sizes in Chromium and WebKit, including bounds and consistent line breaks while scaling. Normal verification is required before preview deployment. Existing source assets remain available in git for comparison; current shared renderers point to the new set.
+
+## Deterministic icon downsampling
+
+Full-size component icons use square, power-of-two PNG canvases. Chromium can
+[reuse an already downsampled image](https://chromium.googlesource.com/chromium/src/+/refs/heads/main/cc/tiles/software_image_decode_cache.cc)
+to draw a smaller copy; non-power-of-two
+heights produced different tiny images depending on decode order. Keep the
+painted pixels intact and centre them on a transparent 512 × 512 canvas.
+
+The normalized files are `any`, `mosque-fabric`, `mosque-spice`, `goods-supply`,
+`ruby-supply`, `wheelbarrow`, `mail`, `die`, and `dice-pair`. Their original heights
+were 506, 468, 478, 468, 468, 341, 341, 341, and 341 pixels respectively; width was
+512. Padding starts at `floor((512 - height) / 2)` above the image, with the
+remaining transparent rows below. No source pixels were resampled or repainted.
+The art manifest test protects this canvas contract.

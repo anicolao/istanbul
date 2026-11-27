@@ -1,4 +1,4 @@
-import { existsSync } from 'node:fs';
+import { existsSync, readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 import { describe, expect, it } from 'vitest';
 import { bonusCardArt, componentArt, locationArt, pieceArt, playerColorNames, playerMatArt } from './art';
@@ -32,6 +32,17 @@ describe('production art manifest', () => {
 
   it.each(assets)('ships %s in the static production bundle', (asset) => {
     expect(existsSync(resolve(process.cwd(), 'static', asset))).toBe(true);
+  });
+
+  it('keeps full-size component icons square with power-of-two dimensions for stable downsampling', () => {
+    const icons = flattenAssets({ ...componentArt, dicePair: pieceArt.dicePair });
+    for (const asset of icons) {
+      const png = readFileSync(resolve(process.cwd(), 'static', asset));
+      expect(png.subarray(1, 4).toString(), asset).toBe('PNG');
+      const width = png.readUInt32BE(16), height = png.readUInt32BE(20);
+      expect(width, asset).toBe(height);
+      expect(width > 0 && (width & (width - 1)) === 0, asset).toBe(true);
+    }
   });
 
   it('backs the rendered review catalogue with every source asset and demand state', () => {
