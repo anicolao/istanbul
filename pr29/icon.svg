@@ -1,0 +1,16 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" role="img" aria-labelledby="title">
+  <title id="title">Istanbul bazaar grid and ruby</title>
+  <rect width="512" height="512" rx="108" fill="#173f43"/>
+  <g fill="#efe0c2">
+    <rect x="86" y="86" width="82" height="82" rx="16"/>
+    <rect x="184" y="86" width="82" height="82" rx="16"/>
+    <rect x="282" y="86" width="82" height="82" rx="16"/>
+    <rect x="86" y="184" width="82" height="82" rx="16"/>
+    <rect x="184" y="184" width="82" height="82" rx="16"/>
+    <rect x="86" y="282" width="82" height="82" rx="16"/>
+    <rect x="184" y="282" width="82" height="82" rx="16"/>
+  </g>
+  <path fill="#d7892f" d="M323 184h103v82H323zM282 323h144v41H282z"/>
+  <path fill="#c63e49" stroke="#f5b1a7" stroke-width="12" d="m351 267 75 75-75 75-75-75z"/>
+  <path fill="none" stroke="#fff4dc" stroke-width="8" d="m351 294 48 48-48 48-48-48z"/>
+</svg>
