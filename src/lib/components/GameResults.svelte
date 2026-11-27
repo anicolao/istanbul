@@ -30,6 +30,6 @@
   {/if}
 </section>
 <style>
-  .finish { position: fixed; z-index: 60; left: 50%; top: 50%; transform: translate(-50%, -50%); box-sizing: border-box; width: min(640px, calc(100% - 24px)); max-height: calc(100dvh - 32px); overflow: auto; padding: 20px; background: #122c22fa; border: 1px solid #a98d50; border-radius: 12px; color: #fff0cf; font: 16px/1.4 'Atkinson Hyperlegible', sans-serif; }
+  .finish { position: fixed; z-index: 60; left: 50%; top: 50%; transform: translate(-50%, -50%); box-sizing: border-box; width: min(640px, calc(100% - 24px)); max-height: calc(100dvh - 32px); overflow: auto; padding: 20px; background: #122c22; border: 1px solid #a98d50; border-radius: 12px; color: #fff0cf; font: 16px/1.4 'Atkinson Hyperlegible', sans-serif; }
   h1 { margin: 0 0 16px; font-size: 28px; } p { font-size: 16px; margin: 12px 0; } small { display: block; font-size: 13px; color: #e0ddc9; } label { display: grid; gap: 5px; margin-top: 20px; } select { min-height: 44px; width: 100%; font: inherit; padding: 8px; border-radius: 6px; background: #f4e5be; color: #16382e; } .actions { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 14px; } button { min-height: 44px; padding: 8px 16px; font: inherit; border: 1px solid #d2b16e; border-radius: 6px; background: #eacd91; color: #18382e; cursor: pointer; } button:disabled { opacity: .45; cursor: default; }
 </style>
