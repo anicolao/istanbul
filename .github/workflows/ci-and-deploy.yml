@@ -8,10 +8,15 @@ on:
   workflow_dispatch:
     inputs:
       update_snapshots:
-        description: Generate Linux screenshot baselines for review
+        description: Generate screenshot baselines for review
         required: false
         default: false
         type: boolean
+      snapshot_platform:
+        description: Rendering environment for baseline generation
+        type: choice
+        default: linux
+        options: [linux, macos-webkit]
 
 permissions:
   contents: write
@@ -46,20 +51,31 @@ jobs:
 
   snapshot-baselines:
     if: inputs.update_snapshots == true
-    runs-on: ubuntu-latest
+    runs-on: ${{ inputs.snapshot_platform == 'macos-webkit' && 'macos-latest' || 'ubuntu-latest' }}
     steps:
       - uses: actions/checkout@v4
       - uses: cachix/install-nix-action@v31
       - run: nix develop --command bun install --frozen-lockfile
       - run: nix develop --command bunx playwright install --with-deps chromium webkit
       - run: nix develop --command bun run test:e2e:update-snapshots
+        if: inputs.snapshot_platform != 'macos-webkit'
+        env:
+          CI: 'true'
+      - name: Generate native CI WebKit baselines
+        if: inputs.snapshot_platform == 'macos-webkit'
+        run: >-
+          nix develop --command bunx firebase emulators:exec
+          --project istanbul-e2e --only auth,firestore
+          "playwright test --project=webkit-phone --project=webkit-desktop --update-snapshots"
         env:
           CI: 'true'
       - uses: actions/upload-artifact@v4
         if: always()
         with:
-          name: linux-screenshot-baselines
-          path: tests/e2e/**/screenshots/*-linux.png
+          name: ${{ inputs.snapshot_platform || 'linux' }}-screenshot-baselines
+          path: |
+            tests/e2e/**/screenshots/*-linux.png
+            tests/e2e/**/screenshots/macos-ci/*.png
           retention-days: 7
 
   deploy:
