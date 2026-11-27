@@ -3,6 +3,7 @@
   import '@fontsource/atkinson-hyperlegible/700.css';
   import '@fontsource/cormorant-garamond/700.css';
   import { replaceState } from '$app/navigation';
+  import { readLaunch, type GameLaunch } from '$lib/game/launch';
   import { onMount } from 'svelte';
   import GameResults from '$lib/components/GameResults.svelte';
   import { rematchSeats } from '$lib/game/rematch';
@@ -68,6 +69,8 @@
   let repository: EventRepository | null = null;
   let unsubscribe: (() => void) | null = null;
   let userUid = $state('');
+  let launch = $state<GameLaunch | null>(null);
+  let launchBusy = false;
   let hostName = $state('');
   let guestName = $state('');
   let joinCode = $state('');
@@ -228,6 +231,8 @@
 
   onMount(async () => {
     try {
+      launch = readLaunch(location.search);
+      if (launch && tabletopRoute) throw new Error('Open this invitation in the web game.');
       const services = await initializeFirebase();
       recoveryReview =
         import.meta.env.VITE_USE_FIREBASE_EMULATORS === 'true' &&
@@ -276,7 +281,11 @@
       const requestedRoom = normalizeRoomCode(
         new URL(location.href).searchParams.get('room') ?? ''
       );
-      if (isRoomCode(requestedRoom)) await openRoom(requestedRoom, services.db);
+      if (launch) {
+        hostName = guestName = launch.name;
+        await openRoom(launch.table, services.db);
+      }
+      else if (isRoomCode(requestedRoom)) await openRoom(requestedRoom, services.db);
       else if (tabletopRoute) await createTabletopRoom(services.db);
     } catch (error) {
       connectionStatus = 'error';
@@ -365,11 +374,35 @@
             ? `Live history synced · ${events.length} events verified`
             : 'Live history synced';
         pendingRetryId = repository?.pendingId() ?? null;
+        void advanceLaunch();
       },
       (error) => {
         message = `Room connection failed: ${error.message}`;
       }
     );
+  }
+
+  async function advanceLaunch() {
+    if (!launch || !repository || launchBusy || !liveSynced) return;
+    launchBusy = true;
+    actionPending = true;
+    let waiting = false;
+    try {
+      const outcome = await repository.launch(launch);
+      waiting = outcome === 'waiting';
+      if (!waiting) {
+        replaceState(makeInviteUrl(launch.table), {});
+        launch = null;
+      }
+    } catch (error) {
+      message = error instanceof Error ? error.message : 'Could not open this invitation.';
+      launch = null;
+    } finally {
+      launchBusy = false;
+      actionPending = false;
+      // A host may have arrived while our first server read was in flight.
+      if (waiting && projection.room) void advanceLaunch();
+    }
   }
 
   function updateProjection(roomCode: string) {
@@ -1093,7 +1126,7 @@
                   value={joinCode}
                   oninput={(event) =>
                     (joinCode = normalizeRoomCode(event.currentTarget.value))}
-                  maxlength="5"
+                  maxlength="8"
                   autocomplete="off"
                 /></label
               >
@@ -1111,8 +1144,9 @@
     {:else if screen === 'loading-room'}
       <section class="loading" aria-live="polite">
         <span class="lantern" aria-hidden="true"></span>
-        <h1>Finding the table…</h1>
-        <p>Replaying its immutable history.</p>
+        <h1>{launch?.mode === 'join' ? 'Waiting for your host…' : 'Finding the table…'}</h1>
+        <p>{launch?.mode === 'join' ? 'You’ll take your seat as soon as the table opens.' : 'Replaying its immutable history.'}</p>
+        {#if message}<p class="error" role="alert">{message}</p>{/if}
       </section>
     {:else if screen === 'join-room' && room}
       <section class="join-room" aria-labelledby="join-room-title">

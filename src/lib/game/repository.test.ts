@@ -3,13 +3,15 @@ import type { Firestore } from 'firebase/firestore';
 import { resetVolatileStorageForTests } from '$lib/browser-storage';
 
 const firestore = vi.hoisted(() => ({
-  setDoc: vi.fn<() => Promise<void>>()
+  setDoc: vi.fn<() => Promise<void>>(),
+  getDocsFromServer: vi.fn()
 }));
 
 vi.mock('firebase/firestore', () => ({
   collection: vi.fn(() => ({ kind: 'collection' })),
   doc: vi.fn(() => ({ kind: 'document' })),
   getDoc: vi.fn(),
+  getDocsFromServer: firestore.getDocsFromServer,
   onSnapshot: vi.fn(),
   serverTimestamp: vi.fn(() => ({ kind: 'server-timestamp' })),
   setDoc: firestore.setDoc
@@ -23,6 +25,7 @@ describe('event repository browser persistence', () => {
     localStorage.clear();
     resetVolatileStorageForTests();
     firestore.setDoc.mockReset().mockResolvedValue(undefined);
+    firestore.getDocsFromServer.mockReset();
   });
 
   afterEach(() => vi.restoreAllMocks());
@@ -32,6 +35,20 @@ describe('event repository browser persistence', () => {
     const results = await Promise.all([repository.append('turn/moved', {}), repository.append('turn/ended', {}), repository.append('turn/moved', {})]);
     expect(results).toEqual(['player-000001', 'player-000002', 'player-000003']);
     expect(repository.pendingId()).toBeNull();
+  });
+
+  it('serializes duplicate launches and reads committed identity before appending', async () => {
+    const repository = createEventRepository({} as Firestore, 'A1B2C3D4', 'player');
+    firestore.getDocsFromServer.mockResolvedValueOnce({ docs: [] }).mockImplementation(async () => ({
+      docs: [{ id: 'player-000001', data: () => ({
+        ...(firestore.setDoc.mock.calls[0] as unknown as [unknown, Record<string, unknown>])[1],
+        createdAt: { toMillis: () => 1 }
+      }) }]
+    }));
+    const invitation = { mode: 'create' as const, table: 'A1B2C3D4', name: 'Ada' };
+    expect(await Promise.all([repository.launch(invitation), repository.launch(invitation)])).toEqual(['seated', 'seated']);
+    expect(firestore.setDoc).toHaveBeenCalledTimes(1);
+    expect(firestore.getDocsFromServer).toHaveBeenCalledTimes(2);
   });
 
   it('continues Firebase gameplay writes when localStorage rejects every write', async () => {
