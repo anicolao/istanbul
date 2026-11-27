@@ -27,6 +27,10 @@ export default defineConfig({
         '--disable-font-subpixel-positioning',
         '--disable-lcd-text',
         '--force-device-scale-factor=1',
+        // Use the same raster path on developer machines and CI.
+        '--deterministic-mode',
+        '--disable-skia-runtime-opts',
+        '--disable-partial-raster',
         '--disable-gpu',
         '--use-gl=swiftshader'
       ]
