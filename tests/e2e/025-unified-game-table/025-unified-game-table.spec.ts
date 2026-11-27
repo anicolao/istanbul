@@ -143,6 +143,8 @@ test('personal games use direct table actions, private cards, and a one-second r
     expect(undoBounds!.width).toBeGreaterThanOrEqual(info.project.name === 'phone' ? 44 : 88);
     await undo.click();
     await expectState(page, { game: before.game });
+    await expect(page.locator('[data-motion-active]')).toHaveAttribute('data-motion-active', 'false');
+    await expect(page.locator('.flying-good')).toHaveCount(0);
     await revealPlayerMats(page);
   await page
       .getByRole('button', { name: 'Your Bonus cards', exact: true })
